@@ -239,7 +239,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           placeholder="yourchurch"
                           required
                         />
-                        <span className="slug-suffix">.onchurch.kr</span>
+                        <span className="slug-suffix">.everychurch.co.kr</span>
                       </div>
                       <span className="form-hint">영문 소문자, 숫자, 하이픈만 사용 가능 · 한 번 발급되면 변경에 제한이 있을 수 있습니다.</span>
                     </div>

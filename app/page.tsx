@@ -11,7 +11,7 @@ const FEATURES: { ic: IconKey; title: string; desc: string }[] = [
   { ic: "video", title: "설교 · 주보 한 흐름", desc: "유튜브 영상 임베드, 주보 PDF 업로드, 시리즈 필터까지. 매주 화요일 자동 업로드 워크플로우." },
   { ic: "users", title: "다음 세대를 위한 구조", desc: "유아부부터 청년부까지 6개 부서 + 소그룹. 부서별 권한과 알림을 분리해 관리합니다." },
   { ic: "pray", title: "기도 요청 · 익명 옵션", desc: "공개 범위(중보기도팀/담임/전체)와 익명 처리. 개인정보 보유 기간 자동 만료." },
-  { ic: "building", title: "서브도메인 즉시 발급", desc: "yourchurch.onchurch.kr 형태로 발급. 추후 자체 도메인 연결도 한 번의 토글로." },
+  { ic: "building", title: "서브도메인 즉시 발급", desc: "yourchurch.everychurch.co.kr 형태로 발급. 추후 자체 도메인 연결도 한 번의 토글로." },
 ];
 
 const STEPS: { n: string; title: string; desc: string }[] = [
@@ -23,7 +23,7 @@ const STEPS: { n: string; title: string; desc: string }[] = [
 
 const FAQ: { q: string; a: string }[] = [
   { q: "이미 운영 중인 교회 홈페이지가 있는데 옮길 수 있나요?", a: "기존 사이트의 데이터를 CSV/엑셀로 일괄 가져오는 마이그레이션 도구를 베타 단계에서 무료로 제공합니다." },
-  { q: "자체 도메인을 사용할 수 있나요?", a: "네. 발급받은 서브도메인(yourchurch.onchurch.kr) 외에 보유하신 도메인(예: yourchurch.kr)을 연결할 수 있습니다. SSL은 자동 발급됩니다." },
+  { q: "자체 도메인을 사용할 수 있나요?", a: "네. 발급받은 서브도메인(yourchurch.everychurch.co.kr) 외에 보유하신 도메인(예: yourchurch.kr)을 연결할 수 있습니다. SSL은 자동 발급됩니다." },
   { q: "여러 교역자가 함께 관리할 수 있나요?", a: "역할(담임/부서장/관리자/편집자) 기반 권한과 부서별 콘텐츠 격리를 지원합니다. 청년부 담당이 청년부 페이지만 편집하도록 제한할 수 있습니다." },
   { q: "가격은 어떻게 되나요?", a: "교회 규모와 무관하게 월 단돈 1만원입니다. 모든 기능이 포함되어 있으며 추가 결제는 없습니다. 첫 14일은 무료 체험으로 자유롭게 둘러보실 수 있습니다." },
 ];
@@ -100,7 +100,7 @@ export default function LandingPage() {
                 <div className="demo-card-body">
                   <div className="demo-card-tag">{t.tagline}</div>
                   <div className="demo-card-url">
-                    <span className="demo-card-url-prefix">{t.slug}.</span>onchurch.kr
+                    <span className="demo-card-url-prefix">{t.slug}.</span>everychurch.co.kr
                   </div>
                   <div className="demo-card-cta">
                     데모 열기 <Icon.arrow style={{ width: 14, height: 14 }} />

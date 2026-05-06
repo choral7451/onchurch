@@ -2,6 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const RESERVED = new Set(["www", "app"]);
 
+const ROOT_DOMAINS = [
+  "everychurch.co.kr",
+  "onchurch.kr",
+];
+
 function parseSubdomain(host: string): string | null {
   const hostname = host.split(":")[0];
   if (!hostname) return null;
@@ -12,9 +17,14 @@ function parseSubdomain(host: string): string | null {
     return hostname.slice(0, -".localhost".length) || null;
   }
 
-  const parts = hostname.split(".");
-  if (parts.length <= 2) return null;
-  return parts[0];
+  for (const root of ROOT_DOMAINS) {
+    if (hostname === root) return null;
+    if (hostname.endsWith(`.${root}`)) {
+      return hostname.slice(0, -(`.${root}`.length));
+    }
+  }
+
+  return null;
 }
 
 export function proxy(req: NextRequest) {
