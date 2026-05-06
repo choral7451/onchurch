@@ -4,10 +4,21 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
-import type { Brand, EventItem, NavItem, Notice, WorshipService } from "@/lib/types";
+import type {
+  Brand,
+  EventItem,
+  HistoryItem,
+  NavItem,
+  Notice,
+  Pastor,
+  StaffMember,
+  VisionItem,
+  WorshipService,
+} from "@/lib/types";
 import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
 import { ScheduleEditor } from "./page-editors/schedule";
+import { AboutEditor } from "./page-editors/about";
 
 type Initial = {
   slug: string;
@@ -18,6 +29,10 @@ type Initial = {
   notices: Notice[];
   noticeCategories: string[];
   events: EventItem[];
+  pastor: Pastor;
+  vision: VisionItem[];
+  history: HistoryItem[];
+  staff: StaffMember[];
 };
 
 type SaveState = "idle" | "saving" | "saved";
@@ -63,6 +78,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [notices, setNotices] = useState<Notice[]>(initial.notices);
   const [noticeCategories, setNoticeCategories] = useState<string[]>(initial.noticeCategories);
   const [events, setEvents] = useState<EventItem[]>(initial.events);
+
+  const [pastor, setPastor] = useState<Pastor>(initial.pastor);
+  const [vision, setVision] = useState<VisionItem[]>(initial.vision);
+  const [history, setHistory] = useState<HistoryItem[]>(initial.history);
+  const [staff, setStaff] = useState<StaffMember[]>(initial.staff);
 
   const [save, setSave] = useState<SaveState>("idle");
 
@@ -333,14 +353,30 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <ScheduleEditor events={events} setEvents={setEvents} />
                   )}
 
-                  {activePage !== "worship" && activePage !== "notices" && activePage !== "schedule" && (
-                    <section className="admin-section admin-section-empty">
-                      <div className="admin-section-head">
-                        <h2>설정 준비 중</h2>
-                        <p>이 페이지의 상세 설정 폼은 곧 추가됩니다. 지금은 사이드바의 토글로 페이지 노출 여부만 변경할 수 있습니다.</p>
-                      </div>
-                    </section>
+                  {activePage === "about" && (
+                    <AboutEditor
+                      pastor={pastor}
+                      setPastor={setPastor}
+                      vision={vision}
+                      setVision={setVision}
+                      history={history}
+                      setHistory={setHistory}
+                      staff={staff}
+                      setStaff={setStaff}
+                    />
                   )}
+
+                  {activePage !== "worship" &&
+                    activePage !== "notices" &&
+                    activePage !== "schedule" &&
+                    activePage !== "about" && (
+                      <section className="admin-section admin-section-empty">
+                        <div className="admin-section-head">
+                          <h2>설정 준비 중</h2>
+                          <p>이 페이지의 상세 설정 폼은 곧 추가됩니다. 지금은 사이드바의 토글로 페이지 노출 여부만 변경할 수 있습니다.</p>
+                        </div>
+                      </section>
+                    )}
                 </div>
               )}
 

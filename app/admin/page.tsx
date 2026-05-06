@@ -19,6 +19,10 @@ export default function AdminPage() {
         notices: SITE_DATA.notices,
         noticeCategories: SITE_DATA.noticeCategories,
         events: SITE_DATA.events,
+        pastor: SITE_DATA.pastor,
+        vision: SITE_DATA.vision,
+        history: SITE_DATA.history,
+        staff: SITE_DATA.staff,
       }}
     />
   );
