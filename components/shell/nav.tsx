@@ -38,7 +38,6 @@ export function Nav({ tenant, brand, nav }: Props) {
           {nav.map((item) => (
             <Link key={item.id} href={tenantHref(tenant, item.href)} className={`nav-link ${isActive(item.href) ? "active" : ""}`}>
               {item.label}
-              {item.children && <Icon.arrowDown />}
             </Link>
           ))}
         </div>
