@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import type { Brand, EventItem, NavItem, Notice, WorshipService } from "@/lib/types";
 import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
+import { ScheduleEditor } from "./page-editors/schedule";
 
 type Initial = {
   slug: string;
@@ -25,7 +26,8 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   about: "담임목사 인사 · 비전 · 연혁 · 교역자",
   worship: "주일/수요/새벽 예배 안내 · 예배 순서",
   sermons: "설교 영상 · 주보 PDF · 시리즈 필터",
-  notices: "공지사항 · 행사 캘린더",
+  notices: "공지사항",
+  schedule: "행사 캘린더 · 다가오는 일정",
   departments: "유아부부터 청년부까지 · 소그룹",
   prayer: "기도 요청 폼 · 익명 옵션",
   gallery: "사진 갤러리",
@@ -324,12 +326,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       setNotices={setNotices}
                       categories={noticeCategories}
                       setCategories={setNoticeCategories}
-                      events={events}
-                      setEvents={setEvents}
                     />
                   )}
 
-                  {activePage !== "worship" && activePage !== "notices" && (
+                  {activePage === "schedule" && (
+                    <ScheduleEditor events={events} setEvents={setEvents} />
+                  )}
+
+                  {activePage !== "worship" && activePage !== "notices" && activePage !== "schedule" && (
                     <section className="admin-section admin-section-empty">
                       <div className="admin-section-head">
                         <h2>설정 준비 중</h2>

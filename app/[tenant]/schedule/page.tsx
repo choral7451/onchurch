@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
+import { Calendar } from "@/components/calendar";
 import { getTenant } from "@/lib/tenants";
-import { NoticesList } from "./list";
 
-export default async function NoticesPage({ params }: { params: Promise<{ tenant: string }> }) {
+export default async function SchedulePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
   const D = getTenant(tenant);
   if (!D) notFound();
@@ -11,13 +11,13 @@ export default async function NoticesPage({ params }: { params: Promise<{ tenant
   return (
     <div>
       <PageHeader
-        eyebrow="NOTICES"
-        title="공지사항 · 교회 소식"
-        sub="교회의 공지와 새 소식을 한 곳에서 확인하세요."
+        eyebrow="SCHEDULE"
+        title="교회 일정"
+        sub="이번 달 예배·행사 일정과 다가오는 모임을 한 곳에서 확인하세요."
       />
       <section className="section">
         <div className="container">
-          <NoticesList notices={D.notices} categories={D.noticeCategories} />
+          <Calendar config={D.calendar} events={D.events} />
         </div>
       </section>
     </div>

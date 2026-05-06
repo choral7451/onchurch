@@ -153,7 +153,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
               <h2>이번 달 교회 일정</h2>
             </div>
             <div className="section-head-action">
-              <Link href={url("/notices")}>전체 일정 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+              <Link href={url("/schedule")}>전체 일정 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
             </div>
           </div>
           <Calendar config={D.calendar} events={D.events} />
