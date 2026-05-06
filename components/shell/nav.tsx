@@ -42,7 +42,6 @@ export function Nav({ tenant, brand, nav }: Props) {
           ))}
         </div>
         <div className="nav-cta">
-          <button className="icon-btn" title="검색" aria-label="검색"><Icon.search /></button>
           <Link href={`/${tenant}/prayer`} className="btn btn-primary">
             <Icon.pray style={{ width: 16, height: 16 }} />
             기도 요청
