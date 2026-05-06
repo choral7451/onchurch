@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type Props = {
   tagline: string;
 };
@@ -10,7 +12,7 @@ export function UtilBar({ tagline }: Props) {
           <span>{tagline}</span>
         </div>
         <div className="utilbar-right">
-          <a href="#">로그인</a>
+          <Link href="/login">로그인</Link>
           <span className="utilbar-divider" />
           <a href="#">교적 등록</a>
           <span className="utilbar-divider" />
