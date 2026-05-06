@@ -4,6 +4,7 @@ import { UtilBar } from "@/components/shell/util-bar";
 import { Nav } from "@/components/shell/nav";
 import { Footer } from "@/components/shell/footer";
 import { getTenant, KNOWN_TENANT_SLUGS } from "@/lib/tenants";
+import { getPathPrefix } from "@/lib/path-prefix";
 
 type Params = { tenant: string };
 
@@ -32,10 +33,12 @@ export default async function TenantLayout({
   const data = getTenant(tenant);
   if (!data) notFound();
 
+  const pathPrefix = await getPathPrefix(tenant);
+
   return (
     <div className="app">
       <UtilBar tagline={data.brand.tagline} />
-      <Nav tenant={tenant} brand={data.brand} nav={data.nav} />
+      <Nav tenant={tenant} brand={data.brand} nav={data.nav} pathPrefix={pathPrefix} />
       <main>{children}</main>
       <Footer brand={data.brand} footerNav={data.footerNav} />
     </div>

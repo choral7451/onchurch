@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenant } from "@/lib/tenants";
+import { getPathPrefix } from "@/lib/path-prefix";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { SermonCard } from "@/components/sermon-card";
@@ -17,7 +18,8 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const { tenant } = await params;
   const D = getTenant(tenant);
   if (!D) notFound();
-  const url = (path: string) => `/${tenant}${path}`;
+  const pathPrefix = await getPathPrefix(tenant);
+  const url = (path: string) => `${pathPrefix}${path}`;
 
   return (
     <div>
