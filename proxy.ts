@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { KNOWN_TENANT_SLUGS } from "@/lib/tenants";
 
 const RESERVED = new Set(["www", "app"]);
 
@@ -7,35 +8,49 @@ const ROOT_DOMAINS = [
   "onchurch.kr",
 ];
 
-function parseSubdomain(host: string): string | null {
-  const hostname = host.split(":")[0];
-  if (!hostname) return null;
+function parseHost(host: string): { hostname: string; root: string | null; sub: string | null } {
+  const hostname = host.split(":")[0] ?? "";
+  if (!hostname) return { hostname, root: null, sub: null };
 
-  if (hostname === "localhost" || hostname === "127.0.0.1") return null;
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return { hostname, root: null, sub: null };
+  }
 
   if (hostname.endsWith(".localhost")) {
-    return hostname.slice(0, -".localhost".length) || null;
+    return { hostname, root: "localhost", sub: hostname.slice(0, -".localhost".length) || null };
   }
 
   for (const root of ROOT_DOMAINS) {
-    if (hostname === root) return null;
+    if (hostname === root) return { hostname, root, sub: null };
     if (hostname.endsWith(`.${root}`)) {
-      return hostname.slice(0, -(`.${root}`.length));
+      return { hostname, root, sub: hostname.slice(0, -(`.${root}`.length)) };
     }
   }
 
-  return null;
+  return { hostname, root: null, sub: null };
 }
 
+const KNOWN_SLUGS = new Set(KNOWN_TENANT_SLUGS);
+
 export function proxy(req: NextRequest) {
-  const host = req.headers.get("host") ?? "";
-  const sub = parseSubdomain(host);
+  const { root, sub } = parseHost(req.headers.get("host") ?? "");
 
   if (sub && !RESERVED.has(sub)) {
     const url = req.nextUrl.clone();
     if (!url.pathname.startsWith(`/${sub}`)) {
       url.pathname = `/${sub}${url.pathname === "/" ? "" : url.pathname}`;
       return NextResponse.rewrite(url);
+    }
+    return NextResponse.next();
+  }
+
+  if (root && !sub) {
+    const segments = req.nextUrl.pathname.split("/").filter(Boolean);
+    const first = segments[0];
+    if (first && KNOWN_SLUGS.has(first)) {
+      const rest = segments.slice(1).join("/");
+      const target = new URL(`https://${first}.${root}${rest ? `/${rest}` : ""}${req.nextUrl.search}`);
+      return NextResponse.redirect(target, 308);
     }
   }
 

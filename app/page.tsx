@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { listTenants } from "@/lib/tenants";
 import { LandingNav } from "@/components/marketing/landing-nav";
 import { LandingFooter } from "@/components/marketing/landing-footer";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
+
+const ROOT_DOMAINS = ["everychurch.co.kr", "onchurch.kr"];
 
 const FEATURES: { ic: IconKey; title: string; desc: string }[] = [
   { ic: "calendar", title: "교회 전용 컴포넌트", desc: "예배 안내, 설교 아카이브, 주보, 공지, 기도 요청, 갤러리, 통독 플랜 — 처음부터 교회를 위해 만들어졌습니다." },
@@ -28,8 +31,13 @@ const FAQ: { q: string; a: string }[] = [
   { q: "가격은 어떻게 되나요?", a: "교회 규모와 무관하게 월 단돈 1만원입니다. 모든 기능이 포함되어 있으며 추가 결제는 없습니다. 첫 14일은 무료 체험으로 자유롭게 둘러보실 수 있습니다." },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
   const tenants = listTenants();
+  const h = await headers();
+  const host = (h.get("host") ?? "").split(":")[0];
+  const root = ROOT_DOMAINS.find((r) => host === r || host.endsWith(`.${r}`));
+  const tenantHref = (slug: string) =>
+    root ? `https://${slug}.${root}` : `/${slug}`;
 
   return (
     <div className="landing">
@@ -88,7 +96,7 @@ export default function LandingPage() {
           </div>
           <div className="demo-grid">
             {tenants.map((t) => (
-              <Link key={t.slug} href={`/${t.slug}`} className="demo-card">
+              <Link key={t.slug} href={tenantHref(t.slug)} className="demo-card">
                 <div className="demo-card-thumb">
                   <LightRays style={{ position: "absolute", inset: 0, width: "100%", height: "100%", color: "white", opacity: 0.5 }} />
                   <div className="demo-card-thumb-inner">
