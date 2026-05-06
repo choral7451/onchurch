@@ -1,6 +1,17 @@
 "use client";
 
+import { useRef } from "react";
+import { Icon } from "@/components/icons";
 import type { HistoryItem, Pastor, StaffMember, VisionItem } from "@/lib/types";
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
 
 type Props = {
   pastor: Pastor;
@@ -23,8 +34,33 @@ export function AboutEditor({
   staff,
   setStaff,
 }: Props) {
+  const pastorPhotoRef = useRef<HTMLInputElement>(null);
+  const staffPhotoRefs = useRef<Array<HTMLInputElement | null>>([]);
+
   function patchPastor(patch: Partial<Pastor>) {
     setPastor({ ...pastor, ...patch });
+  }
+
+  async function onPickPastorPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+    const dataUrl = await readFileAsDataURL(file);
+    patchPastor({ photo: dataUrl });
+  }
+
+  async function onPickStaffPhoto(idx: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+    const dataUrl = await readFileAsDataURL(file);
+    updateStaff(idx, { photo: dataUrl });
   }
 
   function updateVision(idx: number, patch: Partial<VisionItem>) {
@@ -66,6 +102,39 @@ export function AboutEditor({
           <p>인사말과 담임목사 프로필 정보를 입력합니다.</p>
         </div>
         <div className="admin-section-body">
+          <div className="logo-row">
+            <div className="logo-preview">
+              {pastor.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={pastor.photo} alt="담임목사 사진" />
+              ) : (
+                <div className="logo-placeholder">
+                  <Icon.image width={28} height={28} />
+                  <span>담임목사 사진</span>
+                </div>
+              )}
+            </div>
+            <div className="logo-actions">
+              <input
+                ref={pastorPhotoRef}
+                type="file"
+                accept="image/*"
+                onChange={onPickPastorPhoto}
+                style={{ display: "none" }}
+              />
+              <button type="button" className="btn btn-primary" onClick={() => pastorPhotoRef.current?.click()}>
+                <Icon.image style={{ width: 14, height: 14 }} />
+                {pastor.photo ? "사진 변경" : "사진 업로드"}
+              </button>
+              {pastor.photo && (
+                <button type="button" className="btn btn-ghost" onClick={() => patchPastor({ photo: undefined })}>
+                  제거
+                </button>
+              )}
+              <p className="form-hint" style={{ marginTop: 4 }}>가로 세로 비율 1:1.2 권장 · JPG/PNG.</p>
+            </div>
+          </div>
+
           <div className="form-grid">
             <div className="form-row">
               <label htmlFor="ad-pastor-name">이름</label>
@@ -212,6 +281,28 @@ export function AboutEditor({
           <div className="editor-list">
             {staff.map((s, i) => (
               <div key={i} className="editor-row editor-row-staff">
+                <button
+                  type="button"
+                  className="editor-photo"
+                  onClick={() => staffPhotoRefs.current[i]?.click()}
+                  aria-label={`${s.name || `교역자 ${i + 1}`} 사진 업로드`}
+                >
+                  {s.photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={s.photo} alt="" />
+                  ) : (
+                    <Icon.image width={18} height={18} />
+                  )}
+                </button>
+                <input
+                  ref={(el) => {
+                    staffPhotoRefs.current[i] = el;
+                  }}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => onPickStaffPhoto(i, e)}
+                  style={{ display: "none" }}
+                />
                 <input
                   type="text"
                   value={s.name}

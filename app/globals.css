@@ -530,7 +530,10 @@ main { flex: 1; }
 .editor-row-event { grid-template-columns: 90px 1fr 1fr auto; }
 .editor-row-vision { grid-template-columns: 130px 130px 1fr auto; }
 .editor-row-history { grid-template-columns: 90px 1fr 1.5fr auto; }
-.editor-row-staff { grid-template-columns: 1fr 1fr 1.2fr auto; }
+.editor-row-staff { grid-template-columns: 48px 1fr 1fr 1.2fr auto; }
+.editor-photo { width: 44px; height: 44px; border-radius: var(--r-md); border: 1px dashed var(--muted-2); background: var(--surface-2); overflow: hidden; display: grid; place-items: center; cursor: pointer; padding: 0; color: var(--muted); transition: border-color 0.15s ease, color 0.15s ease; }
+.editor-photo:hover { border-color: var(--accent); color: var(--primary-deep); }
+.editor-photo img { width: 100%; height: 100%; object-fit: cover; }
 .editor-feat { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap; user-select: none; }
 .editor-feat input { width: auto !important; }
 .editor-row-remove { width: 32px; height: 32px; background: transparent; border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; transition: all 0.15s ease; }
@@ -596,8 +599,10 @@ main { flex: 1; }
   .logo-row { flex-direction: column; }
   .admin-savebar { flex-direction: column; align-items: stretch; }
   .admin-savebar-actions { justify-content: flex-end; }
-  .editor-row-worship, .editor-row-notice, .editor-row-event, .editor-row-order, .editor-row-vision, .editor-row-history, .editor-row-staff { grid-template-columns: 1fr 1fr; }
-  .editor-row-worship > *:nth-child(n+5), .editor-row-notice > *:nth-child(n+5), .editor-row-event > *:nth-child(n+3), .editor-row-order > *:nth-child(n+3), .editor-row-vision > *:nth-child(n+3), .editor-row-history > *:nth-child(n+3), .editor-row-staff > *:nth-child(n+3) { grid-column: span 2; }
+  .editor-row-worship, .editor-row-notice, .editor-row-event, .editor-row-order, .editor-row-vision, .editor-row-history { grid-template-columns: 1fr 1fr; }
+  .editor-row-staff { grid-template-columns: 48px 1fr 1fr; }
+  .editor-row-worship > *:nth-child(n+5), .editor-row-notice > *:nth-child(n+5), .editor-row-event > *:nth-child(n+3), .editor-row-order > *:nth-child(n+3), .editor-row-vision > *:nth-child(n+3), .editor-row-history > *:nth-child(n+3), .editor-row-staff > *:nth-child(n+4) { grid-column: span 2; }
+  .editor-row-staff > *:nth-child(1) { grid-row: span 2; }
 }
 
 /* Responsive */

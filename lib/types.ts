@@ -103,6 +103,7 @@ export type Pastor = {
   eng: string;
   message: string;
   longMessage: string;
+  photo?: string;
 };
 
 export type VisionItem = {
@@ -121,6 +122,7 @@ export type StaffMember = {
   name: string;
   role: string;
   area: string;
+  photo?: string;
 };
 
 export type PrayerSample = {
