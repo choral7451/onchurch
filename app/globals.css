@@ -531,9 +531,26 @@ main { flex: 1; }
 .editor-row-vision { grid-template-columns: 130px 130px 1fr auto; }
 .editor-row-history { grid-template-columns: 90px 1fr 1.5fr auto; }
 .editor-row-staff { grid-template-columns: 48px 1fr 1fr 1.2fr auto; }
+.editor-row-transport { grid-template-columns: 56px 110px 1fr 1.4fr auto; }
+.editor-row-transport > input:first-child { text-align: center; font-size: 18px !important; }
 .editor-photo { width: 44px; height: 44px; border-radius: var(--r-md); border: 1px dashed var(--muted-2); background: var(--surface-2); overflow: hidden; display: grid; place-items: center; cursor: pointer; padding: 0; color: var(--muted); transition: border-color 0.15s ease, color 0.15s ease; }
 .editor-photo:hover { border-color: var(--accent); color: var(--primary-deep); }
 .editor-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.gallery-editor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.gallery-editor-card { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: var(--bg-tinted); border: 1px solid var(--line); border-radius: var(--r-md); }
+.gallery-editor-photo { aspect-ratio: 4 / 3; border-radius: var(--r-md); border: 1px dashed var(--muted-2); overflow: hidden; cursor: pointer; padding: 0; background: var(--surface-2); display: grid; place-items: center; transition: border-color 0.15s ease; }
+.gallery-editor-photo:not(.ph-grad-1):not(.ph-grad-2):not(.ph-grad-3):not(.ph-grad-4):hover { border-color: var(--accent); }
+.gallery-editor-photo img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-editor-photo.ph-grad-1, .gallery-editor-photo.ph-grad-2, .gallery-editor-photo.ph-grad-3, .gallery-editor-photo.ph-grad-4 { border-style: solid; border-color: transparent; }
+.gallery-editor-photo-cta { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.gallery-editor-fields { display: flex; flex-direction: column; gap: 6px; }
+.gallery-editor-fields input, .gallery-editor-fields select { padding: 8px 10px !important; font-size: 13px !important; }
+.gallery-editor-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.gallery-editor-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 2px; }
+.gallery-editor-link { background: transparent; border: none; padding: 0; font-size: 12px; color: var(--muted); cursor: pointer; }
+.gallery-editor-link:hover { color: var(--primary-deep); }
+.gallery-editor-link.danger:hover { color: oklch(0.55 0.2 25); }
 .editor-feat { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap; user-select: none; }
 .editor-feat input { width: auto !important; }
 .editor-row-remove { width: 32px; height: 32px; background: transparent; border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; transition: all 0.15s ease; }
@@ -599,9 +616,9 @@ main { flex: 1; }
   .logo-row { flex-direction: column; }
   .admin-savebar { flex-direction: column; align-items: stretch; }
   .admin-savebar-actions { justify-content: flex-end; }
-  .editor-row-worship, .editor-row-notice, .editor-row-event, .editor-row-order, .editor-row-vision, .editor-row-history { grid-template-columns: 1fr 1fr; }
+  .editor-row-worship, .editor-row-notice, .editor-row-event, .editor-row-order, .editor-row-vision, .editor-row-history, .editor-row-transport { grid-template-columns: 1fr 1fr; }
   .editor-row-staff { grid-template-columns: 48px 1fr 1fr; }
-  .editor-row-worship > *:nth-child(n+5), .editor-row-notice > *:nth-child(n+5), .editor-row-event > *:nth-child(n+3), .editor-row-order > *:nth-child(n+3), .editor-row-vision > *:nth-child(n+3), .editor-row-history > *:nth-child(n+3), .editor-row-staff > *:nth-child(n+4) { grid-column: span 2; }
+  .editor-row-worship > *:nth-child(n+5), .editor-row-notice > *:nth-child(n+5), .editor-row-event > *:nth-child(n+3), .editor-row-order > *:nth-child(n+3), .editor-row-vision > *:nth-child(n+3), .editor-row-history > *:nth-child(n+3), .editor-row-staff > *:nth-child(n+4), .editor-row-transport > *:nth-child(n+3) { grid-column: span 2; }
   .editor-row-staff > *:nth-child(1) { grid-row: span 2; }
 }
 

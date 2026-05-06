@@ -7,11 +7,13 @@ import { Icon } from "@/components/icons";
 import type {
   Brand,
   EventItem,
+  GalleryItem,
   HistoryItem,
   NavItem,
   Notice,
   Pastor,
   StaffMember,
+  Transportation,
   VisionItem,
   WorshipService,
 } from "@/lib/types";
@@ -19,6 +21,8 @@ import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
 import { ScheduleEditor } from "./page-editors/schedule";
 import { AboutEditor } from "./page-editors/about";
+import { DirectionsEditor } from "./page-editors/directions";
+import { GalleryEditor } from "./page-editors/gallery";
 
 type Initial = {
   slug: string;
@@ -33,6 +37,9 @@ type Initial = {
   vision: VisionItem[];
   history: HistoryItem[];
   staff: StaffMember[];
+  transportation: Transportation[];
+  galleries: GalleryItem[];
+  galleryCategories: string[];
 };
 
 type SaveState = "idle" | "saving" | "saved";
@@ -83,6 +90,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [vision, setVision] = useState<VisionItem[]>(initial.vision);
   const [history, setHistory] = useState<HistoryItem[]>(initial.history);
   const [staff, setStaff] = useState<StaffMember[]>(initial.staff);
+
+  const [transportation, setTransportation] = useState<Transportation[]>(initial.transportation);
+  const [galleries, setGalleries] = useState<GalleryItem[]>(initial.galleries);
+  const [galleryCategories, setGalleryCategories] = useState<string[]>(initial.galleryCategories);
 
   const [save, setSave] = useState<SaveState>("idle");
 
@@ -366,10 +377,25 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     />
                   )}
 
+                  {activePage === "directions" && (
+                    <DirectionsEditor transportation={transportation} setTransportation={setTransportation} />
+                  )}
+
+                  {activePage === "gallery" && (
+                    <GalleryEditor
+                      galleries={galleries}
+                      setGalleries={setGalleries}
+                      categories={galleryCategories}
+                      setCategories={setGalleryCategories}
+                    />
+                  )}
+
                   {activePage !== "worship" &&
                     activePage !== "notices" &&
                     activePage !== "schedule" &&
-                    activePage !== "about" && (
+                    activePage !== "about" &&
+                    activePage !== "directions" &&
+                    activePage !== "gallery" && (
                       <section className="admin-section admin-section-empty">
                         <div className="admin-section-head">
                           <h2>설정 준비 중</h2>
