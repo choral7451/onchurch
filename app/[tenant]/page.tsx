@@ -24,10 +24,19 @@ type PublicBanner = {
   isDefault: boolean;
 };
 
+type PublicNotice = {
+  id: number;
+  category: string | null;
+  title: string;
+  publishedAt: string | null;
+  createdAt: string;
+};
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
+
 async function fetchBanners(slug: string): Promise<PublicBanner[]> {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
   try {
-    const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/banners`, {
+    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/banners`, {
       cache: "no-store",
     });
     if (!res.ok) return [];
@@ -38,6 +47,26 @@ async function fetchBanners(slug: string): Promise<PublicBanner[]> {
   }
 }
 
+async function fetchRecentNotices(slug: string): Promise<PublicNotice[]> {
+  try {
+    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/notices?size=5`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    return (body?.item?.notices ?? []) as PublicNotice[];
+  } catch {
+    return [];
+  }
+}
+
+function dateParts(iso: string | null, fallbackIso: string): { day: string; mon: string } {
+  const d = new Date(iso ?? fallbackIso);
+  if (Number.isNaN(d.getTime())) return { day: "—", mon: "—" };
+  const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  return { day: String(d.getDate()).padStart(2, "0"), mon: months[d.getMonth()] };
+}
+
 export default async function TenantHome({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
   const D = getTenant(tenant);
@@ -45,7 +74,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const pathPrefix = await getPathPrefix(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
 
-  const banners = await fetchBanners(tenant);
+  const [banners, recentNotices] = await Promise.all([fetchBanners(tenant), fetchRecentNotices(tenant)]);
 
   return (
     <div>
@@ -81,21 +110,30 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
               <Link href={url("/notices")}>전체보기 →</Link>
             </div>
             <ul className="news-list">
-              {D.hero.sideList.map((item, i) => (
-                <li key={i} className="news-item">
-                  <Link href={url("/notices")} style={{ display: "contents" }}>
-                    <div className="news-item-date">
-                      <span className="day">{item.day}</span>
-                      <span className="mon">{item.mon}</span>
-                    </div>
-                    <div className="news-item-body">
-                      <div className="news-item-title">{item.title}</div>
-                      <div className="news-item-cat">{item.cat}</div>
-                    </div>
-                    <div className="news-item-pin"><Icon.arrow style={{ width: 12, height: 12 }} /></div>
-                  </Link>
+              {recentNotices.length === 0 ? (
+                <li className="news-item" style={{ color: "var(--muted)", fontSize: 13, padding: "12px 0" }}>
+                  등록된 공지가 없습니다.
                 </li>
-              ))}
+              ) : (
+                recentNotices.map((item) => {
+                  const { day, mon } = dateParts(item.publishedAt, item.createdAt);
+                  return (
+                    <li key={item.id} className="news-item">
+                      <Link href={url("/notices")} style={{ display: "contents" }}>
+                        <div className="news-item-date">
+                          <span className="day">{day}</span>
+                          <span className="mon">{mon}</span>
+                        </div>
+                        <div className="news-item-body">
+                          <div className="news-item-title">{item.title}</div>
+                          <div className="news-item-cat">{item.category ?? "공지"}</div>
+                        </div>
+                        <div className="news-item-pin"><Icon.arrow style={{ width: 12, height: 12 }} /></div>
+                      </Link>
+                    </li>
+                  );
+                })
+              )}
             </ul>
           </div>
         </div>

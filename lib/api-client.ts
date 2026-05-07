@@ -290,3 +290,69 @@ export const onchurchBanner = {
       method: "GET",
     }),
 };
+
+export type Notice = {
+  id: number;
+  category: string | null;
+  title: string;
+  content: string | null;
+  author: string | null;
+  isPinned: boolean;
+  isActive: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+};
+
+export type NoticeWriteInput = {
+  category?: string | null;
+  title: string;
+  content?: string | null;
+  author?: string | null;
+  isPinned: boolean;
+  isActive: boolean;
+  publishedAt?: string | null;
+};
+
+export const onchurchNotice = {
+  listMine: () =>
+    request<{ notices: Notice[] }>("/onchurch/notices/me", { method: "GET", auth: true }),
+  create: (input: NoticeWriteInput) =>
+    request<Notice>("/onchurch/notices/me", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({
+        category: input.category ?? null,
+        title: input.title,
+        content: input.content ?? null,
+        author: input.author ?? null,
+        isPinned: input.isPinned,
+        isActive: input.isActive,
+        publishedAt: input.publishedAt ?? null,
+      }),
+    }),
+  update: (id: number, input: NoticeWriteInput) =>
+    request<Notice>(`/onchurch/notices/me/${id}`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({
+        category: input.category ?? null,
+        title: input.title,
+        content: input.content ?? null,
+        author: input.author ?? null,
+        isPinned: input.isPinned,
+        isActive: input.isActive,
+        publishedAt: input.publishedAt ?? null,
+      }),
+    }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/notices/me/${id}`, { method: "DELETE", auth: true }),
+  listPublic: (slug: string, opts?: { category?: string; page?: number; size?: number }) => {
+    const qs = new URLSearchParams();
+    if (opts?.category && opts.category !== "전체") qs.set("category", opts.category);
+    if (opts?.page) qs.set("page", String(opts.page));
+    if (opts?.size) qs.set("size", String(opts.size));
+    const query = qs.toString();
+    const path = `/onchurch/sites/${encodeURIComponent(slug)}/notices${query ? `?${query}` : ""}`;
+    return request<{ notices: Notice[]; totalCount: number }>(path, { method: "GET" });
+  },
+};

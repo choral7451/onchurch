@@ -3,10 +3,43 @@ import { PageHeader } from "@/components/shell/page-header";
 import { getTenant } from "@/lib/tenants";
 import { NoticesList } from "./list";
 
+type Notice = {
+  id: number;
+  category: string | null;
+  title: string;
+  content: string | null;
+  author: string | null;
+  isPinned: boolean;
+  isActive: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+};
+
+async function fetchNotices(slug: string): Promise<{ notices: Notice[]; totalCount: number }> {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
+  try {
+    const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/notices?size=100`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return { notices: [], totalCount: 0 };
+    const body = await res.json();
+    return {
+      notices: (body?.item?.notices ?? []) as Notice[],
+      totalCount: (body?.item?.totalCount ?? 0) as number,
+    };
+  } catch {
+    return { notices: [], totalCount: 0 };
+  }
+}
+
 export default async function NoticesPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
   const D = getTenant(tenant);
   if (!D) notFound();
+
+  const { notices } = await fetchNotices(tenant);
+  const categories = Array.from(new Set(notices.map((n) => n.category).filter((c): c is string => !!c)));
+  categories.unshift("전체");
 
   return (
     <div>
@@ -17,7 +50,7 @@ export default async function NoticesPage({ params }: { params: Promise<{ tenant
       />
       <section className="section">
         <div className="container">
-          <NoticesList notices={D.notices} categories={D.noticeCategories} />
+          <NoticesList notices={notices} categories={categories} />
         </div>
       </section>
     </div>

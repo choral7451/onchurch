@@ -597,14 +597,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     />
                   )}
 
-                  {activePage === "notices" && (
-                    <NoticesEditor
-                      notices={notices}
-                      setNotices={setNotices}
-                      categories={noticeCategories}
-                      setCategories={setNoticeCategories}
-                    />
-                  )}
+                  {activePage === "notices" && <NoticesEditor />}
 
                   {activePage === "schedule" && (
                     <ScheduleEditor events={events} setEvents={setEvents} />
