@@ -60,6 +60,30 @@ async function fetchRecentNotices(slug: string): Promise<PublicNotice[]> {
   }
 }
 
+type PublicEvent = {
+  id: number;
+  title: string;
+  description: string | null;
+  location: string | null;
+  startAt: string;
+  endAt: string | null;
+  isAllDay: boolean;
+  isActive: boolean;
+};
+
+async function fetchEvents(slug: string): Promise<PublicEvent[]> {
+  try {
+    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/events`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    return (body?.item?.events ?? []) as PublicEvent[];
+  } catch {
+    return [];
+  }
+}
+
 function dateParts(iso: string | null, fallbackIso: string): { day: string; mon: string } {
   const d = new Date(iso ?? fallbackIso);
   if (Number.isNaN(d.getTime())) return { day: "—", mon: "—" };
@@ -74,7 +98,11 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const pathPrefix = await getPathPrefix(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
 
-  const [banners, recentNotices] = await Promise.all([fetchBanners(tenant), fetchRecentNotices(tenant)]);
+  const [banners, recentNotices, events] = await Promise.all([
+    fetchBanners(tenant),
+    fetchRecentNotices(tenant),
+    fetchEvents(tenant),
+  ]);
 
   return (
     <div>
@@ -223,7 +251,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
               <Link href={url("/schedule")}>전체 일정 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
             </div>
           </div>
-          <Calendar config={D.calendar} events={D.events} />
+          <Calendar events={events} />
         </div>
       </section>
 

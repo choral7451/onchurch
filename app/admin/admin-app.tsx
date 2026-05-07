@@ -599,9 +599,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
                   {activePage === "notices" && <NoticesEditor />}
 
-                  {activePage === "schedule" && (
-                    <ScheduleEditor events={events} setEvents={setEvents} />
-                  )}
+                  {activePage === "schedule" && <ScheduleEditor />}
 
                   {activePage === "about" && (
                     <AboutEditor

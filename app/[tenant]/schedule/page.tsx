@@ -3,10 +3,37 @@ import { PageHeader } from "@/components/shell/page-header";
 import { Calendar } from "@/components/calendar";
 import { getTenant } from "@/lib/tenants";
 
+type EventItem = {
+  id: number;
+  title: string;
+  description: string | null;
+  location: string | null;
+  startAt: string;
+  endAt: string | null;
+  isAllDay: boolean;
+  isActive: boolean;
+};
+
+async function fetchEvents(slug: string): Promise<EventItem[]> {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
+  try {
+    const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/events`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    return (body?.item?.events ?? []) as EventItem[];
+  } catch {
+    return [];
+  }
+}
+
 export default async function SchedulePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
   const D = getTenant(tenant);
   if (!D) notFound();
+
+  const events = await fetchEvents(tenant);
 
   return (
     <div>
@@ -17,7 +44,7 @@ export default async function SchedulePage({ params }: { params: Promise<{ tenan
       />
       <section className="section">
         <div className="container">
-          <Calendar config={D.calendar} events={D.events} />
+          <Calendar events={events} />
         </div>
       </section>
     </div>

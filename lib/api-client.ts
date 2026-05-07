@@ -356,3 +356,67 @@ export const onchurchNotice = {
     return request<{ notices: Notice[]; totalCount: number }>(path, { method: "GET" });
   },
 };
+
+export type EventItem = {
+  id: number;
+  title: string;
+  description: string | null;
+  location: string | null;
+  startAt: string;
+  endAt: string | null;
+  isAllDay: boolean;
+  isActive: boolean;
+};
+
+export type EventWriteInput = {
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  startAt: string;
+  endAt?: string | null;
+  isAllDay: boolean;
+  isActive: boolean;
+};
+
+export const onchurchEvent = {
+  listMine: () =>
+    request<{ events: EventItem[] }>("/onchurch/events/me", { method: "GET", auth: true }),
+  create: (input: EventWriteInput) =>
+    request<EventItem>("/onchurch/events/me", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({
+        title: input.title,
+        description: input.description ?? null,
+        location: input.location ?? null,
+        startAt: input.startAt,
+        endAt: input.endAt ?? null,
+        isAllDay: input.isAllDay,
+        isActive: input.isActive,
+      }),
+    }),
+  update: (id: number, input: EventWriteInput) =>
+    request<EventItem>(`/onchurch/events/me/${id}`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({
+        title: input.title,
+        description: input.description ?? null,
+        location: input.location ?? null,
+        startAt: input.startAt,
+        endAt: input.endAt ?? null,
+        isAllDay: input.isAllDay,
+        isActive: input.isActive,
+      }),
+    }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/events/me/${id}`, { method: "DELETE", auth: true }),
+  listPublic: (slug: string, opts?: { from?: string; to?: string }) => {
+    const qs = new URLSearchParams();
+    if (opts?.from) qs.set("from", opts.from);
+    if (opts?.to) qs.set("to", opts.to);
+    const query = qs.toString();
+    const path = `/onchurch/sites/${encodeURIComponent(slug)}/events${query ? `?${query}` : ""}`;
+    return request<{ events: EventItem[] }>(path, { method: "GET" });
+  },
+};
