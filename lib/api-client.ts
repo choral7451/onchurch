@@ -420,3 +420,138 @@ export const onchurchEvent = {
     return request<{ events: EventItem[] }>(path, { method: "GET" });
   },
 };
+
+export type Pastor = {
+  id: number;
+  name: string;
+  role: string | null;
+  eng: string | null;
+  message: string | null;
+  longMessage: string | null;
+  photoUrl: string | null;
+};
+
+export type PastorWriteInput = {
+  name: string;
+  role?: string | null;
+  eng?: string | null;
+  message?: string | null;
+  longMessage?: string | null;
+  photoUrl?: string | null;
+};
+
+export type VisionItem = {
+  id: number;
+  ko: string;
+  en: string | null;
+  description: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type VisionWriteInput = {
+  ko: string;
+  en?: string | null;
+  description?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type HistoryItem = {
+  id: number;
+  year: string;
+  title: string;
+  description: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type HistoryWriteInput = {
+  year: string;
+  title: string;
+  description?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type StaffMember = {
+  id: number;
+  name: string;
+  role: string | null;
+  area: string | null;
+  photoUrl: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type StaffWriteInput = {
+  name: string;
+  role?: string | null;
+  area?: string | null;
+  photoUrl?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type PublicAbout = {
+  pastor: Pastor | null;
+  visions: VisionItem[];
+  histories: HistoryItem[];
+  staffs: StaffMember[];
+};
+
+export const onchurchPastor = {
+  getMine: () =>
+    request<{ pastor: Pastor | null }>("/onchurch/pastors/me", { method: "GET", auth: true }),
+  upsertMine: (input: PastorWriteInput) =>
+    request<Pastor>("/onchurch/pastors/me", {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({
+        name: input.name,
+        role: input.role ?? null,
+        eng: input.eng ?? null,
+        message: input.message ?? null,
+        longMessage: input.longMessage ?? null,
+        photoUrl: input.photoUrl ?? null,
+      }),
+    }),
+};
+
+export const onchurchVision = {
+  listMine: () =>
+    request<{ visions: VisionItem[] }>("/onchurch/visions/me", { method: "GET", auth: true }).then((r) => r.visions ?? []),
+  create: (input: VisionWriteInput) =>
+    request<VisionItem>("/onchurch/visions/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: VisionWriteInput) =>
+    request<VisionItem>(`/onchurch/visions/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/visions/me/${id}`, { method: "DELETE", auth: true }),
+};
+
+export const onchurchHistory = {
+  listMine: () =>
+    request<{ histories: HistoryItem[] }>("/onchurch/histories/me", { method: "GET", auth: true }).then((r) => r.histories ?? []),
+  create: (input: HistoryWriteInput) =>
+    request<HistoryItem>("/onchurch/histories/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: HistoryWriteInput) =>
+    request<HistoryItem>(`/onchurch/histories/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/histories/me/${id}`, { method: "DELETE", auth: true }),
+};
+
+export const onchurchStaff = {
+  listMine: () =>
+    request<{ staffs: StaffMember[] }>("/onchurch/staffs/me", { method: "GET", auth: true }).then((r) => r.staffs ?? []),
+  create: (input: StaffWriteInput) =>
+    request<StaffMember>("/onchurch/staffs/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: StaffWriteInput) =>
+    request<StaffMember>(`/onchurch/staffs/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/staffs/me/${id}`, { method: "DELETE", auth: true }),
+};
+
+export const onchurchAbout = {
+  listPublic: (slug: string) =>
+    request<PublicAbout>(`/onchurch/sites/${encodeURIComponent(slug)}/about`, { method: "GET" }),
+};

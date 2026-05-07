@@ -601,18 +601,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
                   {activePage === "schedule" && <ScheduleEditor />}
 
-                  {activePage === "about" && (
-                    <AboutEditor
-                      pastor={pastor}
-                      setPastor={setPastor}
-                      vision={vision}
-                      setVision={setVision}
-                      history={history}
-                      setHistory={setHistory}
-                      staff={staff}
-                      setStaff={setStaff}
-                    />
-                  )}
+                  {activePage === "about" && <AboutEditor />}
 
                   {activePage === "directions" && (
                     <DirectionsEditor transportation={transportation} setTransportation={setTransportation} />
