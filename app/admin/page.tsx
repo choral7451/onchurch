@@ -11,8 +11,17 @@ export default function AdminPage() {
   return (
     <AdminApp
       initial={{
-        slug: "sungdong",
-        brand: SITE_DATA.brand,
+        slug: "",
+        brand: {
+          name: "",
+          eng: "",
+          tagline: "",
+          address: "",
+          phone: "",
+          email: "",
+          representative: "",
+          businessNo: "",
+        },
         nav: SITE_DATA.nav.filter((n) => n.id !== "home"),
         worshipServices: SITE_DATA.worshipServices,
         worshipOrder: SITE_DATA.worshipOrder,
