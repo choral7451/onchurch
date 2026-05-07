@@ -146,9 +146,34 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const previewHref = useMemo(() => `/${slug || initial.slug}`, [slug, initial.slug]);
 
-  const siteRequiredFilled = !!slug.trim() && !!name.trim();
+  const [slugCheck, setSlugCheck] = useState<"idle" | "checking" | "available" | "taken">("idle");
+  const trimmedSlug = slug.trim();
+  const siteRequiredFilled = !!trimmedSlug && !!name.trim() && slugCheck !== "taken";
   const contactRequiredFilled = !!phone.trim() && !!email.trim() && !!address.trim();
   const allRequiredFilled = siteRequiredFilled && contactRequiredFilled;
+
+  useEffect(() => {
+    if (!loaded) return;
+    if (!trimmedSlug) {
+      setSlugCheck("idle");
+      return;
+    }
+    let cancelled = false;
+    setSlugCheck("checking");
+    const t = setTimeout(async () => {
+      try {
+        const res = await onchurchChurch.checkSlug(trimmedSlug);
+        if (cancelled) return;
+        setSlugCheck(res.available ? "available" : "taken");
+      } catch {
+        if (!cancelled) setSlugCheck("idle");
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [trimmedSlug, loaded]);
 
   function onPickFile() {
     fileRef.current?.click();
@@ -177,16 +202,16 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!siteRequiredFilled) {
+    if (!trimmedSlug || !name.trim()) {
       setSave("error");
-      setSaveMsg("기본 정보의 필수 항목(서브도메인, 교회 이름)을 입력해주세요.");
+      setSaveMsg("서브도메인과 교회 이름은 필수로 입력해야 합니다.");
       setActiveSection("site");
       return;
     }
-    if (!contactRequiredFilled) {
+    if (slugCheck === "taken") {
       setSave("error");
-      setSaveMsg("연락처의 필수 항목(전화번호, 이메일, 주소)을 입력해주세요.");
-      setActiveSection("contact");
+      setSaveMsg("이미 사용 중인 서브도메인입니다. 다른 값을 입력해주세요.");
+      setActiveSection("site");
       return;
     }
     setSave("saving");
@@ -201,9 +226,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
         name,
         eng: eng || null,
         tagline: tagline || null,
-        phone,
-        email,
-        address,
+        phone: phone || null,
+        email: email || null,
+        address: address || null,
         representative: null,
         businessNo: null,
         logoUrl: logoPreview && !logoPreview.startsWith("blob:") ? logoPreview : null,
@@ -415,6 +440,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <span className="slug-suffix">.everychurch.co.kr</span>
                       </div>
                       <span className="form-hint">영문 소문자, 숫자, 하이픈만 사용 가능 · 한 번 발급되면 변경에 제한이 있을 수 있습니다.</span>
+                      {trimmedSlug && (
+                        <span
+                          className={`form-hint slug-check slug-check-${slugCheck}`}
+                          aria-live="polite"
+                          style={{ marginTop: 2 }}
+                        >
+                          {slugCheck === "checking" && "확인 중..."}
+                          {slugCheck === "available" && "✓ 사용 가능한 서브도메인입니다."}
+                          {slugCheck === "taken" && "✕ 이미 사용 중인 서브도메인입니다."}
+                        </span>
+                      )}
                     </div>
 
                     <div className="form-grid">
@@ -596,7 +632,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   <button
                     type="submit"
                     className="btn btn-primary btn-lg"
-                    disabled={save === "saving" || !loaded || !allRequiredFilled}
+                    disabled={save === "saving" || !loaded || !trimmedSlug || !name.trim() || slugCheck === "taken" || slugCheck === "checking"}
                   >
                     {save === "saving" ? "저장 중..." : "변경사항 저장"}
                   </button>

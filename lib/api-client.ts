@@ -219,4 +219,9 @@ export const onchurchChurch = {
       auth: true,
       body: JSON.stringify({ isPublished }),
     }),
+  checkSlug: (slug: string) =>
+    request<{ available: boolean }>(`/onchurch/churches/check-slug?slug=${encodeURIComponent(slug)}`, {
+      method: "GET",
+      auth: true,
+    }),
 };
