@@ -137,6 +137,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const previewHref = useMemo(() => `/${slug || initial.slug}`, [slug, initial.slug]);
 
+  const siteRequiredFilled = !!slug.trim() && !!name.trim();
+  const contactRequiredFilled = !!phone.trim() && !!email.trim() && !!address.trim();
+  const allRequiredFilled = siteRequiredFilled && contactRequiredFilled;
+
   function onPickFile() {
     fileRef.current?.click();
   }
@@ -164,6 +168,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!siteRequiredFilled) {
+      setSave("error");
+      setSaveMsg("기본 정보의 필수 항목(서브도메인, 교회 이름)을 입력해주세요.");
+      setActiveSection("site");
+      return;
+    }
+    if (!contactRequiredFilled) {
+      setSave("error");
+      setSaveMsg("연락처의 필수 항목(전화번호, 이메일, 주소)을 입력해주세요.");
+      setActiveSection("contact");
+      return;
+    }
     setSave("saving");
     setSaveMsg("");
     try {
@@ -176,9 +192,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
         name,
         eng: eng || null,
         tagline: tagline || null,
-        phone: phone || null,
-        email: email || null,
-        address: address || null,
+        phone,
+        email,
+        address,
         representative: null,
         businessNo: null,
         logoUrl: logoPreview && !logoPreview.startsWith("blob:") ? logoPreview : null,
@@ -242,21 +258,38 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 className={`admin-sidebar-item ${activeSection === "site" ? "active" : ""}`}
                 onClick={() => setActiveSection("site")}
               >
-                기본 정보
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "logo" ? "active" : ""}`}
-                onClick={() => setActiveSection("logo")}
-              >
-                로고
+                <span className="admin-sidebar-item-label">기본 정보</span>
+                <span className="admin-sidebar-item-meta">
+                  <span className="admin-required-badge">필수</span>
+                  <span
+                    className={`admin-status-dot ${siteRequiredFilled ? "filled" : "missing"}`}
+                    aria-label={siteRequiredFilled ? "필수항목 입력 완료" : "필수항목 미입력"}
+                  />
+                </span>
               </button>
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "contact" ? "active" : ""}`}
                 onClick={() => setActiveSection("contact")}
               >
-                연락처
+                <span className="admin-sidebar-item-label">연락처</span>
+                <span className="admin-sidebar-item-meta">
+                  <span className="admin-required-badge">필수</span>
+                  <span
+                    className={`admin-status-dot ${contactRequiredFilled ? "filled" : "missing"}`}
+                    aria-label={contactRequiredFilled ? "필수항목 입력 완료" : "필수항목 미입력"}
+                  />
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "logo" ? "active" : ""}`}
+                onClick={() => setActiveSection("logo")}
+              >
+                <span className="admin-sidebar-item-label">로고</span>
+                <span className="admin-sidebar-item-meta">
+                  <span className="admin-optional-badge">선택</span>
+                </span>
               </button>
             </div>
 
@@ -490,7 +523,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   <button type="button" className="btn btn-secondary" onClick={() => router.refresh()}>
                     변경 취소
                   </button>
-                  <button type="submit" className="btn btn-primary btn-lg" disabled={save === "saving" || !loaded}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-lg"
+                    disabled={save === "saving" || !loaded || !allRequiredFilled}
+                  >
                     {save === "saving" ? "저장 중..." : "변경사항 저장"}
                   </button>
                 </div>
