@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
+import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
 
 type Status = "idle" | "submitting" | "error";
 
@@ -16,10 +17,6 @@ export function LoginForm() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setStatus("submitting");
-    setErrorMsg("");
-
-    await new Promise((r) => setTimeout(r, 500));
 
     if (!userId || !pw) {
       setStatus("error");
@@ -27,7 +24,17 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/admin");
+    setStatus("submitting");
+    setErrorMsg("");
+
+    try {
+      const tokens = await onchurchAuth.login(userId, pw);
+      saveTokens(tokens);
+      router.push("/admin");
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg(err instanceof ApiError ? err.message : "로그인에 실패했습니다.");
+    }
   }
 
   return (

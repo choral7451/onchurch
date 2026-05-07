@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
+import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
 
-type PhoneStatus = "idle" | "code-sent" | "verified";
+type PhoneStatus = "idle" | "code-sent" | "verifying" | "verified";
 type FormStatus = "idle" | "submitting" | "error" | "success";
 
-const CODE_TTL_SECONDS = 180;
+const CODE_TTL_SECONDS = 300;
 
 function formatPhone(raw: string) {
   const d = raw.replace(/[^0-9]/g, "").slice(0, 11);
@@ -16,6 +18,7 @@ function formatPhone(raw: string) {
 }
 
 export function SignupForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [userId, setUserId] = useState("");
   const [pw, setPw] = useState("");
@@ -23,6 +26,7 @@ export function SignupForm() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [phoneStatus, setPhoneStatus] = useState<PhoneStatus>("idle");
+  const [phoneSending, setPhoneSending] = useState(false);
   const [phoneMsg, setPhoneMsg] = useState<{ kind: "info" | "error" | "success"; text: string } | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [agree, setAgree] = useState(false);
@@ -41,18 +45,30 @@ export function SignupForm() {
     return s.replace(/[^0-9]/g, "");
   }
 
-  function sendCode() {
+  async function sendCode() {
     if (digitsOnly(phone).length < 10) {
       setPhoneMsg({ kind: "error", text: "올바른 휴대전화 번호를 입력해주세요." });
       return;
     }
-    setPhoneStatus("code-sent");
-    setSecondsLeft(CODE_TTL_SECONDS);
-    setPhoneMsg({ kind: "info", text: "인증번호가 발송되었습니다. 3분 안에 입력해주세요. (데모: 아무 6자리 숫자)" });
-    setTimeout(() => codeInputRef.current?.focus(), 50);
+    setPhoneSending(true);
+    setPhoneMsg(null);
+    try {
+      await onchurchAuth.sendVerification(phone);
+      setPhoneStatus("code-sent");
+      setSecondsLeft(CODE_TTL_SECONDS);
+      setPhoneMsg({ kind: "info", text: "인증번호가 발송되었습니다. 5분 안에 입력해주세요." });
+      setTimeout(() => codeInputRef.current?.focus(), 50);
+    } catch (err) {
+      setPhoneMsg({
+        kind: "error",
+        text: err instanceof ApiError ? err.message : "인증번호 발송에 실패했습니다.",
+      });
+    } finally {
+      setPhoneSending(false);
+    }
   }
 
-  function verifyCode() {
+  async function verifyCode() {
     if (!/^\d{6}$/.test(code)) {
       setPhoneMsg({ kind: "error", text: "6자리 숫자 인증번호를 입력해주세요." });
       return;
@@ -61,8 +77,19 @@ export function SignupForm() {
       setPhoneMsg({ kind: "error", text: "인증번호가 만료되었습니다. 다시 발송해주세요." });
       return;
     }
-    setPhoneStatus("verified");
-    setPhoneMsg({ kind: "success", text: "연락처 인증이 완료되었습니다." });
+    setPhoneStatus("verifying");
+    setPhoneMsg(null);
+    try {
+      await onchurchAuth.verifyCode(phone, code);
+      setPhoneStatus("verified");
+      setPhoneMsg({ kind: "success", text: "연락처 인증이 완료되었습니다." });
+    } catch (err) {
+      setPhoneStatus("code-sent");
+      setPhoneMsg({
+        kind: "error",
+        text: err instanceof ApiError ? err.message : "인증번호 검증에 실패했습니다.",
+      });
+    }
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -74,9 +101,22 @@ export function SignupForm() {
     }
     setStatus("submitting");
     setErrorMsg("");
-    await new Promise((r) => setTimeout(r, 800));
-    setStatus("error");
-    setErrorMsg("아직 백엔드가 연결되지 않았습니다. API 연결 후 정상 동작합니다.");
+
+    try {
+      const tokens = await onchurchAuth.signup({
+        userId,
+        password: pw,
+        name,
+        phone,
+        marketingConsent: false,
+      });
+      saveTokens(tokens);
+      setStatus("success");
+      router.push("/admin");
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg(err instanceof ApiError ? err.message : "회원가입에 실패했습니다.");
+    }
   }
 
   const canSubmit =
@@ -172,14 +212,14 @@ export function SignupForm() {
             type="button"
             className="btn btn-secondary"
             onClick={sendCode}
-            disabled={phoneStatus === "verified" || digitsOnly(phone).length < 10}
+            disabled={phoneStatus === "verified" || phoneSending || digitsOnly(phone).length < 10}
             style={{ whiteSpace: "nowrap" }}
           >
-            {phoneStatus === "idle" ? "인증번호 발송" : "재발송"}
+            {phoneSending ? "발송 중..." : phoneStatus === "idle" ? "인증번호 발송" : "재발송"}
           </button>
         </div>
 
-        {phoneStatus === "code-sent" && (
+        {(phoneStatus === "code-sent" || phoneStatus === "verifying") && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
             <div style={{ position: "relative" }}>
               <input
@@ -210,10 +250,10 @@ export function SignupForm() {
               type="button"
               className="btn btn-primary"
               onClick={verifyCode}
-              disabled={code.length < 6 || secondsLeft <= 0}
+              disabled={code.length < 6 || secondsLeft <= 0 || phoneStatus === "verifying"}
               style={{ whiteSpace: "nowrap" }}
             >
-              확인
+              {phoneStatus === "verifying" ? "확인 중..." : "확인"}
             </button>
           </div>
         )}
