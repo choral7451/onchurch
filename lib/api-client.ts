@@ -20,6 +20,14 @@ export type Church = {
   businessNo: string | null;
   logoUrl: string | null;
   enabledPages: string[];
+  isPublished: boolean;
+};
+
+export type Subscription = {
+  isActive: boolean;
+  isFreeTrial: boolean;
+  freeTrialUntil: string | null;
+  paidUntil: string | null;
 };
 
 export type UpsertChurchInput = {
@@ -183,7 +191,7 @@ export const onchurchAuth = {
 
 export const onchurchChurch = {
   getMine: () =>
-    request<{ church: Church | null }>("/onchurch/churches/me", {
+    request<{ church: Church | null; subscription: Subscription }>("/onchurch/churches/me", {
       method: "GET",
       auth: true,
     }),
@@ -204,5 +212,11 @@ export const onchurchChurch = {
         logoUrl: input.logoUrl ?? null,
         enabledPages: input.enabledPages,
       }),
+    }),
+  publish: (isPublished: boolean) =>
+    request<Church>("/onchurch/churches/me/publish", {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ isPublished }),
     }),
 };

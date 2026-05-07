@@ -511,6 +511,16 @@ main { flex: 1; }
 .admin-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .admin-status-dot.filled { background: oklch(0.6 0.14 145); box-shadow: 0 0 0 2px oklch(0.6 0.14 145 / 0.18); }
 .admin-status-dot.missing { background: oklch(0.65 0.16 28); box-shadow: 0 0 0 2px oklch(0.65 0.16 28 / 0.18); }
+.admin-publish-toggle { display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
+.admin-publish-toggle-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.admin-publish-state { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 999px; letter-spacing: 0.04em; }
+.admin-publish-state.on { background: oklch(0.6 0.14 145 / 0.16); color: oklch(0.42 0.16 145); }
+.admin-publish-state.off { background: var(--bg-tinted); color: var(--muted); }
+.admin-modal-backdrop { position: fixed; inset: 0; background: oklch(0 0 0 / 0.5); display: grid; place-items: center; z-index: 100; padding: 20px; }
+.admin-modal { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 28px 24px; max-width: 440px; width: 100%; box-shadow: 0 20px 50px -10px oklch(0 0 0 / 0.25); }
+.admin-modal-title { font-size: 18px; font-weight: 700; color: var(--ink); margin: 0 0 12px; }
+.admin-modal-body { font-size: 14px; color: var(--ink); line-height: 1.55; margin: 0 0 22px; }
+.admin-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .admin-sidebar-page { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: var(--r-md); border: 1px solid transparent; transition: background 0.15s ease, border-color 0.15s ease; }
 .admin-sidebar-page:hover { background: var(--bg-tinted); }
 .admin-sidebar-page.active { background: oklch(0.62 0.14 245 / 0.08); border-color: oklch(0.62 0.14 245 / 0.25); }

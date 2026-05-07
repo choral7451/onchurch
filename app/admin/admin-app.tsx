@@ -17,7 +17,7 @@ import type {
   VisionItem,
   WorshipService,
 } from "@/lib/types";
-import { ApiError, clearTokens, onchurchChurch } from "@/lib/api-client";
+import { ApiError, clearTokens, onchurchChurch, type Subscription } from "@/lib/api-client";
 import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
 import { ScheduleEditor } from "./page-editors/schedule";
@@ -100,6 +100,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [saveMsg, setSaveMsg] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
 
+  const [isPublished, setIsPublished] = useState(false);
+  const [churchExistsOnServer, setChurchExistsOnServer] = useState(false);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [modal, setModal] = useState<null | "required" | "payment">(null);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -119,7 +125,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
           if (c.enabledPages?.length) {
             setBoards(Object.fromEntries(initial.nav.map((n) => [n.id, c.enabledPages.includes(n.id)])));
           }
+          setIsPublished(c.isPublished);
+          setChurchExistsOnServer(true);
         }
+        if (res?.subscription) setSubscription(res.subscription);
       } catch (err) {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
@@ -187,7 +196,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         .filter(([, on]) => on)
         .map(([id]) => id);
 
-      await onchurchChurch.upsertMine({
+      const updated = await onchurchChurch.upsertMine({
         slug,
         name,
         eng: eng || null,
@@ -200,6 +209,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
         logoUrl: logoPreview && !logoPreview.startsWith("blob:") ? logoPreview : null,
         enabledPages,
       });
+      setIsPublished(updated.isPublished);
+      setChurchExistsOnServer(true);
       setSave("saved");
       setTimeout(() => setSave("idle"), 2000);
     } catch (err) {
@@ -222,6 +233,49 @@ export function AdminApp({ initial }: { initial: Initial }) {
     router.push("/login");
   }
 
+  async function onTogglePublish() {
+    if (publishLoading) return;
+    const target = !isPublished;
+
+    if (target) {
+      if (!churchExistsOnServer || !allRequiredFilled) {
+        setModal("required");
+        return;
+      }
+      if (!subscription?.isActive) {
+        setModal("payment");
+        return;
+      }
+    }
+
+    setPublishLoading(true);
+    try {
+      const updated = await onchurchChurch.publish(target);
+      setIsPublished(updated.isPublished);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          clearTokens();
+          router.push("/login");
+          return;
+        }
+        if (err.code === "ONCHURCH-CHURCH-003" || err.code === "ONCHURCH-CHURCH-002") {
+          setModal("required");
+          return;
+        }
+        if (err.code === "ONCHURCH-CHURCH-004" || err.status === 402) {
+          setModal("payment");
+          return;
+        }
+        alert(err.message);
+      } else {
+        alert("사이트 운영 상태 변경에 실패했습니다.");
+      }
+    } finally {
+      setPublishLoading(false);
+    }
+  }
+
   const activePage = activeSection.startsWith("page:") ? activeSection.slice(5) : null;
   const activePageItem = activePage ? initial.nav.find((n) => n.id === activePage) : null;
 
@@ -237,6 +291,22 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
           </Link>
           <div className="admin-topbar-actions">
+            <div className="admin-publish-toggle" aria-live="polite">
+              <span className="admin-publish-toggle-label">
+                사이트 운영
+                <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
+                  {isPublished ? "ON" : "OFF"}
+                </span>
+              </span>
+              <button
+                type="button"
+                className={`toggle ${isPublished ? "on" : ""}`}
+                onClick={onTogglePublish}
+                disabled={!loaded || publishLoading}
+                aria-label="사이트 운영 토글"
+                aria-pressed={isPublished}
+              />
+            </div>
             <Link href={previewHref} className="btn btn-secondary" target="_blank">
               <Icon.video style={{ width: 14, height: 14 }} />
               사이트 미리보기
@@ -536,6 +606,63 @@ export function AdminApp({ initial }: { initial: Initial }) {
           </div>
         </form>
       </main>
+
+      {modal && (
+        <div
+          className="admin-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setModal(null)}
+        >
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            {modal === "required" ? (
+              <>
+                <h3 className="admin-modal-title">필수 정보가 부족합니다</h3>
+                <p className="admin-modal-body">
+                  사이트를 운영하려면 <strong>기본 정보</strong>와 <strong>연락처</strong>의 필수 항목을 모두 입력하고 저장해야 합니다.
+                </p>
+                <div className="admin-modal-actions">
+                  <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>
+                    닫기
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setModal(null);
+                      setActiveSection(siteRequiredFilled ? "contact" : "site");
+                    }}
+                  >
+                    필수 정보 입력하기
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="admin-modal-title">결제가 필요합니다</h3>
+                <p className="admin-modal-body">
+                  무료 체험이 종료되었거나 결제 정보가 없습니다. 사이트를 계속 운영하려면 결제를 진행해주세요.
+                </p>
+                <div className="admin-modal-actions">
+                  <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>
+                    닫기
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setModal(null);
+                      router.push("/billing");
+                    }}
+                  >
+                    결제하기
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
