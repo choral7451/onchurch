@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import type {
@@ -17,6 +17,7 @@ import type {
   VisionItem,
   WorshipService,
 } from "@/lib/types";
+import { ApiError, clearTokens, onchurchChurch } from "@/lib/api-client";
 import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
 import { ScheduleEditor } from "./page-editors/schedule";
@@ -42,7 +43,7 @@ type Initial = {
   galleryCategories: string[];
 };
 
-type SaveState = "idle" | "saving" | "saved";
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 const BOARD_DESCRIPTIONS: Record<string, string> = {
   about: "담임목사 인사 · 비전 · 연혁 · 교역자",
@@ -96,6 +97,43 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [galleryCategories, setGalleryCategories] = useState<string[]>(initial.galleryCategories);
 
   const [save, setSave] = useState<SaveState>("idle");
+  const [saveMsg, setSaveMsg] = useState<string>("");
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await onchurchChurch.getMine();
+        if (cancelled) return;
+        if (res?.church) {
+          const c = res.church;
+          setSlug(c.slug);
+          setName(c.name);
+          setEng(c.eng ?? "");
+          setTagline(c.tagline ?? "");
+          setPhone(c.phone ?? "");
+          setEmail(c.email ?? "");
+          setAddress(c.address ?? "");
+          if (c.logoUrl) setLogoPreview(c.logoUrl);
+          if (c.enabledPages?.length) {
+            setBoards(Object.fromEntries(initial.nav.map((n) => [n.id, c.enabledPages.includes(n.id)])));
+          }
+        }
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.status === 401) {
+          clearTokens();
+          router.push("/login");
+        }
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [initial.nav, router]);
 
   const previewHref = useMemo(() => `/${slug || initial.slug}`, [slug, initial.slug]);
 
@@ -127,12 +165,44 @@ export function AdminApp({ initial }: { initial: Initial }) {
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSave("saving");
-    await new Promise((r) => setTimeout(r, 700));
-    setSave("saved");
-    setTimeout(() => setSave("idle"), 2000);
+    setSaveMsg("");
+    try {
+      const enabledPages = Object.entries(boards)
+        .filter(([, on]) => on)
+        .map(([id]) => id);
+
+      await onchurchChurch.upsertMine({
+        slug,
+        name,
+        eng: eng || null,
+        tagline: tagline || null,
+        phone: phone || null,
+        email: email || null,
+        address: address || null,
+        representative: null,
+        businessNo: null,
+        logoUrl: logoPreview && !logoPreview.startsWith("blob:") ? logoPreview : null,
+        enabledPages,
+      });
+      setSave("saved");
+      setTimeout(() => setSave("idle"), 2000);
+    } catch (err) {
+      setSave("error");
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          clearTokens();
+          router.push("/login");
+          return;
+        }
+        setSaveMsg(err.message);
+      } else {
+        setSaveMsg("저장에 실패했습니다.");
+      }
+    }
   }
 
   function onLogout() {
+    clearTokens();
     router.push("/login");
   }
 
@@ -409,13 +479,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <div className="admin-savebar">
                 <div className="admin-savebar-msg">
                   {save === "saved" && <span className="phone-msg phone-msg-success">변경사항이 저장되었습니다.</span>}
-                  {save === "idle" && <span style={{ color: "var(--muted)", fontSize: 13 }}>변경사항은 저장 후 적용됩니다.</span>}
+                  {save === "error" && saveMsg && <span className="phone-msg phone-msg-error">{saveMsg}</span>}
+                  {save === "idle" && (
+                    <span style={{ color: "var(--muted)", fontSize: 13 }}>
+                      {loaded ? "변경사항은 저장 후 적용됩니다." : "교회 정보를 불러오는 중..."}
+                    </span>
+                  )}
                 </div>
                 <div className="admin-savebar-actions">
                   <button type="button" className="btn btn-secondary" onClick={() => router.refresh()}>
                     변경 취소
                   </button>
-                  <button type="submit" className="btn btn-primary btn-lg" disabled={save === "saving"}>
+                  <button type="submit" className="btn btn-primary btn-lg" disabled={save === "saving" || !loaded}>
                     {save === "saving" ? "저장 중..." : "변경사항 저장"}
                   </button>
                 </div>
