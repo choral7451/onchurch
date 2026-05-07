@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon } from "@/components/icons";
 import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
 
 type PhoneStatus = "idle" | "code-sent" | "verifying" | "verified";
@@ -22,7 +21,7 @@ export function SignupForm() {
   const [name, setName] = useState("");
   const [userId, setUserId] = useState("");
   const [pw, setPw] = useState("");
-  const [showPw, setShowPw] = useState(false);
+  const [pwConfirm, setPwConfirm] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [phoneStatus, setPhoneStatus] = useState<PhoneStatus>("idle");
@@ -99,6 +98,11 @@ export function SignupForm() {
       setErrorMsg("연락처 인증을 먼저 완료해주세요.");
       return;
     }
+    if (pw !== pwConfirm) {
+      setStatus("error");
+      setErrorMsg("비밀번호가 일치하지 않습니다.");
+      return;
+    }
     setStatus("submitting");
     setErrorMsg("");
 
@@ -120,7 +124,14 @@ export function SignupForm() {
   }
 
   const canSubmit =
-    !!name.trim() && userId.length >= 4 && pw.length >= 8 && phoneStatus === "verified" && agree && status !== "submitting";
+    !!name.trim() &&
+    userId.length >= 4 &&
+    pw.length >= 8 &&
+    pwConfirm.length >= 8 &&
+    pw === pwConfirm &&
+    phoneStatus === "verified" &&
+    agree &&
+    status !== "submitting";
 
   const mmss = `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
@@ -155,38 +166,35 @@ export function SignupForm() {
 
       <div className="form-row full">
         <label htmlFor="signup-pw">비밀번호</label>
-        <div style={{ position: "relative" }}>
-          <input
-            id="signup-pw"
-            type={showPw ? "text" : "password"}
-            autoComplete="new-password"
-            placeholder="8자 이상"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            minLength={8}
-            required
-            style={{ paddingRight: 44, width: "100%" }}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPw((v) => !v)}
-            aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}
-            style={{
-              position: "absolute",
-              right: 8,
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              display: "grid",
-              placeItems: "center",
-              color: "var(--muted)",
-            }}
-          >
-            <Icon.search style={{ width: 16, height: 16 }} />
-          </button>
-        </div>
+        <input
+          id="signup-pw"
+          type="password"
+          autoComplete="new-password"
+          placeholder="8자 이상"
+          value={pw}
+          onChange={(e) => setPw(e.target.value)}
+          minLength={8}
+          required
+        />
+      </div>
+
+      <div className="form-row full">
+        <label htmlFor="signup-pw-confirm">비밀번호 확인</label>
+        <input
+          id="signup-pw-confirm"
+          type="password"
+          autoComplete="new-password"
+          placeholder="비밀번호를 다시 입력해주세요"
+          value={pwConfirm}
+          onChange={(e) => setPwConfirm(e.target.value)}
+          minLength={8}
+          required
+        />
+        {pwConfirm.length > 0 && pw !== pwConfirm && (
+          <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>
+            비밀번호가 일치하지 않습니다.
+          </span>
+        )}
       </div>
 
       <div className="form-row full">
