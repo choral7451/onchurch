@@ -6,6 +6,7 @@ import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { SermonCard } from "@/components/sermon-card";
 import { Calendar } from "@/components/calendar";
+import { TopBanner } from "@/components/top-banner";
 
 const QUICK_LINKS: { ic: IconKey; title: string; desc: string; path: string }[] = [
   { ic: "calendar", title: "예배 안내", desc: "주일/수요/새벽 모든 예배 시간을 확인하세요", path: "/worship" },
@@ -14,6 +15,29 @@ const QUICK_LINKS: { ic: IconKey; title: string; desc: string; path: string }[] 
   { ic: "mapPin", title: "찾아오시는 길", desc: "처음 오시는 분도 어렵지 않게 안내합니다", path: "/directions" },
 ];
 
+type PublicBanner = {
+  id: number | null;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  isDefault: boolean;
+};
+
+async function fetchBanners(slug: string): Promise<PublicBanner[]> {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
+  try {
+    const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/banners`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    return (body?.item?.banners ?? []) as PublicBanner[];
+  } catch {
+    return [];
+  }
+}
+
 export default async function TenantHome({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
   const D = getTenant(tenant);
@@ -21,8 +45,11 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const pathPrefix = await getPathPrefix(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
 
+  const banners = await fetchBanners(tenant);
+
   return (
     <div>
+      <TopBanner banners={banners} />
       <section className="hero">
         <div className="hero-bg">
           <Mesh style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }} />

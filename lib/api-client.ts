@@ -225,3 +225,68 @@ export const onchurchChurch = {
       auth: true,
     }),
 };
+
+export type Banner = {
+  id: number;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type BannerWriteInput = {
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type PublicBanner = {
+  id: number | null;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  isDefault: boolean;
+};
+
+export const onchurchBanner = {
+  listMine: () =>
+    request<{ banners: Banner[] }>("/onchurch/banners/me", { method: "GET", auth: true }),
+  create: (input: BannerWriteInput) =>
+    request<Banner>("/onchurch/banners/me", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({
+        title: input.title,
+        description: input.description ?? null,
+        imageUrl: input.imageUrl ?? null,
+        linkUrl: input.linkUrl ?? null,
+        sortOrder: input.sortOrder,
+        isActive: input.isActive,
+      }),
+    }),
+  update: (id: number, input: BannerWriteInput) =>
+    request<Banner>(`/onchurch/banners/me/${id}`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({
+        title: input.title,
+        description: input.description ?? null,
+        imageUrl: input.imageUrl ?? null,
+        linkUrl: input.linkUrl ?? null,
+        sortOrder: input.sortOrder,
+        isActive: input.isActive,
+      }),
+    }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/banners/me/${id}`, { method: "DELETE", auth: true }),
+  listPublic: (slug: string) =>
+    request<{ banners: PublicBanner[] }>(`/onchurch/sites/${encodeURIComponent(slug)}/banners`, {
+      method: "GET",
+    }),
+};

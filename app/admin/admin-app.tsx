@@ -24,6 +24,7 @@ import { ScheduleEditor } from "./page-editors/schedule";
 import { AboutEditor } from "./page-editors/about";
 import { DirectionsEditor } from "./page-editors/directions";
 import { GalleryEditor } from "./page-editors/gallery";
+import { BannersEditor } from "./page-editors/banners";
 
 type Initial = {
   slug: string;
@@ -58,7 +59,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "site" | "logo" | "contact" | `page:${string}`;
+type SectionKey = "site" | "logo" | "contact" | "banners" | `page:${string}`;
 
 export function AdminApp({ initial }: { initial: Initial }) {
   const router = useRouter();
@@ -382,6 +383,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 <span className="admin-sidebar-item-label">로고</span>
                 <span className="admin-sidebar-pill optional">선택</span>
               </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "banners" ? "active" : ""}`}
+                onClick={() => setActiveSection("banners")}
+              >
+                <span className="admin-sidebar-item-label">홈 배너</span>
+                <span className="admin-sidebar-pill optional">선택</span>
+              </button>
             </div>
 
             <div className="admin-sidebar-group">
@@ -566,6 +575,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </div>
                 </section>
               )}
+
+              {activeSection === "banners" && <BannersEditor />}
 
               {activePage && activePageItem && (
                 <div className="admin-page-editor">
