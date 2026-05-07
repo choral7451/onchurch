@@ -350,30 +350,34 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <div className="admin-sidebar-eyebrow">사이트</div>
               <button
                 type="button"
-                className={`admin-sidebar-item ${activeSection === "site" ? "active" : ""}`}
+                className={`admin-sidebar-item ${activeSection === "site" ? "active" : ""} ${siteRequiredFilled ? "is-complete" : "is-incomplete"}`}
                 onClick={() => setActiveSection("site")}
               >
-                <span className="admin-sidebar-item-label">기본 정보</span>
-                <span className="admin-sidebar-item-meta">
+                <span className="admin-sidebar-item-label">
+                  기본 정보
                   <span className="admin-required-badge">필수</span>
-                  <span
-                    className={`admin-status-dot ${siteRequiredFilled ? "filled" : "missing"}`}
-                    aria-label={siteRequiredFilled ? "필수항목 입력 완료" : "필수항목 미입력"}
-                  />
+                </span>
+                <span
+                  className={`admin-sidebar-status ${siteRequiredFilled ? "complete" : "incomplete"}`}
+                  aria-label={siteRequiredFilled ? "필수항목 입력 완료" : "필수항목 미입력"}
+                >
+                  {siteRequiredFilled ? "✓ 완료" : "● 미입력"}
                 </span>
               </button>
               <button
                 type="button"
-                className={`admin-sidebar-item ${activeSection === "contact" ? "active" : ""}`}
+                className={`admin-sidebar-item ${activeSection === "contact" ? "active" : ""} ${contactRequiredFilled ? "is-complete" : "is-incomplete"}`}
                 onClick={() => setActiveSection("contact")}
               >
-                <span className="admin-sidebar-item-label">연락처</span>
-                <span className="admin-sidebar-item-meta">
+                <span className="admin-sidebar-item-label">
+                  연락처
                   <span className="admin-required-badge">필수</span>
-                  <span
-                    className={`admin-status-dot ${contactRequiredFilled ? "filled" : "missing"}`}
-                    aria-label={contactRequiredFilled ? "필수항목 입력 완료" : "필수항목 미입력"}
-                  />
+                </span>
+                <span
+                  className={`admin-sidebar-status ${contactRequiredFilled ? "complete" : "incomplete"}`}
+                  aria-label={contactRequiredFilled ? "필수항목 입력 완료" : "필수항목 미입력"}
+                >
+                  {contactRequiredFilled ? "✓ 완료" : "● 미입력"}
                 </span>
               </button>
               <button
@@ -381,8 +385,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 className={`admin-sidebar-item ${activeSection === "logo" ? "active" : ""}`}
                 onClick={() => setActiveSection("logo")}
               >
-                <span className="admin-sidebar-item-label">로고</span>
-                <span className="admin-sidebar-item-meta">
+                <span className="admin-sidebar-item-label">
+                  로고
                   <span className="admin-optional-badge">선택</span>
                 </span>
               </button>
@@ -424,9 +428,26 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <h2>사이트 기본 정보</h2>
                     <p>방문자에게 노출되는 교회의 식별 정보입니다.</p>
                   </div>
+                  <div className={`admin-section-banner ${siteRequiredFilled ? "complete" : "incomplete"}`}>
+                    {siteRequiredFilled ? (
+                      <>
+                        <span className="admin-section-banner-icon">✓</span>
+                        <span>필수 항목을 모두 입력했습니다.</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="admin-section-banner-icon">!</span>
+                        <span>
+                          필수 항목 미입력 — <strong>서브도메인</strong>, <strong>교회 이름(한글)</strong>을 입력해주세요.
+                        </span>
+                      </>
+                    )}
+                  </div>
                   <div className="admin-section-body">
                     <div className="form-row full">
-                      <label htmlFor="ad-slug">서브도메인</label>
+                      <label htmlFor="ad-slug">
+                        서브도메인 <span className="required-mark" aria-hidden="true">*</span>
+                      </label>
                       <div className="slug-input">
                         <span className="slug-prefix">https://</span>
                         <input
@@ -455,7 +476,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
                     <div className="form-grid">
                       <div className="form-row">
-                        <label htmlFor="ad-name">교회 이름 (한글)</label>
+                        <label htmlFor="ad-name">
+                          교회 이름 (한글) <span className="required-mark" aria-hidden="true">*</span>
+                        </label>
                         <input id="ad-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="온교회" required />
                       </div>
                       <div className="form-row">
@@ -522,18 +545,43 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <h2>교회 연락처</h2>
                     <p>풋터와 &quot;찾아오시는 길&quot; 페이지에 사용됩니다.</p>
                   </div>
+                  <div className={`admin-section-banner ${contactRequiredFilled ? "complete" : "incomplete"}`}>
+                    {contactRequiredFilled ? (
+                      <>
+                        <span className="admin-section-banner-icon">✓</span>
+                        <span>필수 항목을 모두 입력했습니다.</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="admin-section-banner-icon">!</span>
+                        <span>
+                          필수 항목 미입력 —
+                          {!phone.trim() && " 전화번호"}
+                          {!email.trim() && " 이메일"}
+                          {!address.trim() && " 주소"}
+                          {" "}을 입력해주세요.
+                        </span>
+                      </>
+                    )}
+                  </div>
                   <div className="admin-section-body">
                     <div className="form-grid">
                       <div className="form-row">
-                        <label htmlFor="ad-phone">전화번호</label>
+                        <label htmlFor="ad-phone">
+                          전화번호 <span className="required-mark" aria-hidden="true">*</span>
+                        </label>
                         <input id="ad-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="02-1234-5678" required />
                       </div>
                       <div className="form-row">
-                        <label htmlFor="ad-email">이메일</label>
+                        <label htmlFor="ad-email">
+                          이메일 <span className="required-mark" aria-hidden="true">*</span>
+                        </label>
                         <input id="ad-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@onchurch.kr" required />
                       </div>
                       <div className="form-row full">
-                        <label htmlFor="ad-address">주소</label>
+                        <label htmlFor="ad-address">
+                          주소 <span className="required-mark" aria-hidden="true">*</span>
+                        </label>
                         <input id="ad-address" type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="서울특별시 강남구 테헤란로 ..." required />
                       </div>
                     </div>
