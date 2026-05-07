@@ -100,7 +100,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [history, setHistory] = useState<HistoryItem[]>(initial.history);
   const [staff, setStaff] = useState<StaffMember[]>(initial.staff);
 
-  const [transportation, setTransportation] = useState<Transportation[]>(initial.transportation);
   const [galleries, setGalleries] = useState<GalleryItem[]>(initial.galleries);
   const [galleryCategories, setGalleryCategories] = useState<string[]>(initial.galleryCategories);
 
@@ -635,9 +634,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     />
                   )}
 
-                  {activePage === "directions" && (
-                    <DirectionsEditor transportation={transportation} setTransportation={setTransportation} />
-                  )}
+                  {activePage === "directions" && <DirectionsEditor />}
 
                   {activePage === "gallery" && (
                     <GalleryEditor

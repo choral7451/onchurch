@@ -584,6 +584,38 @@ export const onchurchStaff = {
     request<unknown>(`/onchurch/staffs/me/${id}`, { method: "DELETE", auth: true }),
 };
 
+export type TransportationItem = {
+  id: number;
+  icon: string | null;
+  tag: string;
+  title: string;
+  description: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type TransportationWriteInput = {
+  icon?: string | null;
+  tag: string;
+  title: string;
+  description?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export const onchurchTransportation = {
+  listMine: () =>
+    request<{ transportations: TransportationItem[] }>("/onchurch/transportations/me", { method: "GET", auth: true }).then(
+      (r) => r.transportations ?? [],
+    ),
+  create: (input: TransportationWriteInput) =>
+    request<TransportationItem>("/onchurch/transportations/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: TransportationWriteInput) =>
+    request<TransportationItem>(`/onchurch/transportations/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/transportations/me/${id}`, { method: "DELETE", auth: true }),
+};
+
 export const onchurchAbout = {
   listPublic: (slug: string) =>
     request<PublicAbout>(`/onchurch/sites/${encodeURIComponent(slug)}/about`, { method: "GET" }),
