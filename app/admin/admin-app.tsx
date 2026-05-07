@@ -339,7 +339,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           type="text"
                           value={slug}
                           onChange={(e) => setSlug(e.target.value.replace(/[^a-z0-9-]/g, "").slice(0, 30))}
-                          placeholder="yourchurch"
+                          placeholder="onchurch"
                           required
                         />
                         <span className="slug-suffix">.everychurch.co.kr</span>
@@ -350,7 +350,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <div className="form-grid">
                       <div className="form-row">
                         <label htmlFor="ad-name">교회 이름 (한글)</label>
-                        <input id="ad-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="성동교회" required />
+                        <input id="ad-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="온교회" required />
                       </div>
                       <div className="form-row">
                         <label htmlFor="ad-eng">영문명</label>
@@ -420,15 +420,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <div className="form-grid">
                       <div className="form-row">
                         <label htmlFor="ad-phone">전화번호</label>
-                        <input id="ad-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="02-1234-5678" />
+                        <input id="ad-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="02-1234-5678" required />
                       </div>
                       <div className="form-row">
                         <label htmlFor="ad-email">이메일</label>
-                        <input id="ad-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@yourchurch.kr" />
+                        <input id="ad-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@onchurch.kr" required />
                       </div>
                       <div className="form-row full">
                         <label htmlFor="ad-address">주소</label>
-                        <input id="ad-address" type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="서울특별시 ..." />
+                        <input id="ad-address" type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="서울특별시 강남구 테헤란로 ..." required />
                       </div>
                     </div>
                   </div>
