@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ApiError,
   onchurchPastor,
   onchurchVision,
   onchurchHistory,
   onchurchStaff,
+  uploadImages,
   type Pastor,
   type PastorWriteInput,
   type VisionItem,
@@ -18,6 +19,12 @@ import {
 } from "@/lib/api-client";
 
 type SectionKey = "pastor" | "vision" | "history" | "staff";
+
+type AboutVisibility = { vision: boolean; history: boolean; staff: boolean };
+type AboutEditorProps = {
+  visibility: AboutVisibility;
+  onToggleVisibility: (key: keyof AboutVisibility, on: boolean) => void;
+};
 
 const EMPTY_PASTOR: PastorWriteInput = {
   name: "",
@@ -34,32 +41,167 @@ const EMPTY_STAFF: StaffWriteInput = { name: "", role: "", area: "", photoUrl: "
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
-export function AboutEditor() {
+export function AboutEditor({ visibility, onToggleVisibility }: AboutEditorProps) {
   const [section, setSection] = useState<SectionKey>("pastor");
+
+  const subLabel: Record<SectionKey, string> = {
+    pastor: "담임목사",
+    vision: "비전",
+    history: "연혁",
+    staff: "교역자",
+  };
 
   return (
     <section className="admin-section">
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">ABOUT</div>
-        <h2>교회 소개</h2>
-        <p>담임목사 인사말 · 비전 · 연혁 · 교역자를 관리합니다.</p>
+        <h2>교회 소개 <span className="admin-sidebar-pill complete" style={{ fontSize: 10, marginLeft: 8, verticalAlign: "middle" }}>필수</span></h2>
+        <p>담임목사 인사말은 필수입니다. 비전 · 연혁 · 교역자는 공개 여부를 선택할 수 있습니다.</p>
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div className="chips">
-          {(["pastor", "vision", "history", "staff"] as const).map((s) => (
-            <div key={s} className={`chip ${section === s ? "active" : ""}`} onClick={() => setSection(s)}>
-              {s === "pastor" ? "담임목사" : s === "vision" ? "비전" : s === "history" ? "연혁" : "교역자"}
-            </div>
-          ))}
+          {(["pastor", "vision", "history", "staff"] as const).map((s) => {
+            const isPastor = s === "pastor";
+            const isOn = isPastor ? true : visibility[s as keyof AboutVisibility];
+            return (
+              <div
+                key={s}
+                className={`chip ${section === s ? "active" : ""}`}
+                onClick={() => setSection(s)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+              >
+                <span>{subLabel[s]}</span>
+                {isPastor ? (
+                  <span className="required-mark" aria-hidden="true">*</span>
+                ) : (
+                  <span className={`admin-sidebar-pill ${isOn ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
+                    {isOn ? "공개" : "비공개"}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {section === "pastor" && <PastorEditor />}
-        {section === "vision" && <VisionEditor />}
-        {section === "history" && <HistoryEditor />}
-        {section === "staff" && <StaffEditor />}
+        {section === "vision" && (
+          <VisionEditor visible={visibility.vision} onToggleVisible={(on) => onToggleVisibility("vision", on)} />
+        )}
+        {section === "history" && (
+          <HistoryEditor visible={visibility.history} onToggleVisible={(on) => onToggleVisibility("history", on)} />
+        )}
+        {section === "staff" && (
+          <StaffEditor visible={visibility.staff} onToggleVisible={(on) => onToggleVisibility("staff", on)} />
+        )}
       </div>
     </section>
+  );
+}
+
+function SectionVisibilityToggle({ label, visible, onToggle }: { label: string; visible: boolean; onToggle: (on: boolean) => void }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+        padding: "12px 16px",
+        border: "1px solid var(--line)",
+        borderRadius: "var(--r-md)",
+        background: visible ? "var(--surface)" : "var(--bg-tinted)",
+      }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <strong style={{ fontSize: 14 }}>{label} 섹션 공개</strong>
+        <span style={{ color: "var(--muted)", fontSize: 12.5 }}>
+          {visible ? "사이트 방문자에게 노출됩니다." : "관리자만 볼 수 있고 공개 페이지에서는 숨겨집니다."}
+        </span>
+      </div>
+      <button
+        type="button"
+        className={`toggle ${visible ? "on" : ""}`}
+        onClick={() => onToggle(!visible)}
+        aria-pressed={visible}
+        aria-label={`${label} 섹션 공개 토글`}
+      />
+    </div>
+  );
+}
+
+function PhotoUploadField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string | null;
+  onChange: (url: string | null) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [errMsg, setErrMsg] = useState("");
+
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErrMsg("이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+    setErrMsg("");
+    setUploading(true);
+    try {
+      const [uploaded] = await uploadImages([file]);
+      if (uploaded?.url) onChange(uploaded.url);
+    } catch (err) {
+      setErrMsg(err instanceof ApiError ? err.message : "업로드에 실패했습니다.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="form-row full">
+      <label>{label}</label>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+        <div
+          style={{
+            width: 96,
+            height: 96,
+            borderRadius: "var(--r-md)",
+            border: "1px dashed var(--muted-2)",
+            background: "var(--surface-2)",
+            overflow: "hidden",
+            display: "grid",
+            placeItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          {value ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={value} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <span style={{ color: "var(--muted)", fontSize: 11 }}>미리보기</span>
+          )}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+          <input ref={fileRef} type="file" accept="image/*" onChange={onPick} style={{ display: "none" }} />
+          <button type="button" className="btn btn-secondary" onClick={() => fileRef.current?.click()} disabled={uploading}>
+            {uploading ? "업로드 중..." : value ? "사진 변경" : "사진 업로드"}
+          </button>
+          {value && (
+            <button type="button" className="btn btn-ghost" onClick={() => onChange(null)} disabled={uploading}>
+              제거
+            </button>
+          )}
+          <span className="form-hint" style={{ fontSize: 12 }}>JPG/PNG · 최대 32MB</span>
+          {errMsg && <span style={{ color: "oklch(0.55 0.18 28)", fontSize: 12 }}>{errMsg}</span>}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -143,10 +285,11 @@ function PastorEditor() {
           <label>영문 이름</label>
           <input value={draft.eng ?? ""} onChange={(e) => setDraft({ ...draft, eng: e.target.value })} placeholder="HONG GIL-DONG" />
         </div>
-        <div className="form-row">
-          <label>사진 URL</label>
-          <input value={draft.photoUrl ?? ""} onChange={(e) => setDraft({ ...draft, photoUrl: e.target.value })} placeholder="https://..." />
-        </div>
+        <PhotoUploadField
+          label="사진"
+          value={draft.photoUrl ?? null}
+          onChange={(url) => setDraft({ ...draft, photoUrl: url ?? "" })}
+        />
         <div className="form-row full">
           <label>인사말 (요약)</label>
           <textarea rows={4} value={draft.message ?? ""} onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
@@ -165,7 +308,7 @@ function PastorEditor() {
   );
 }
 
-function VisionEditor() {
+function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggleVisible: (on: boolean) => void }) {
   const [items, setItems] = useState<VisionItem[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<VisionWriteInput>(EMPTY_VISION);
@@ -216,6 +359,7 @@ function VisionEditor() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <SectionVisibilityToggle label="비전" visible={visible} onToggle={onToggleVisible} />
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 비전 추가</button>
@@ -283,7 +427,7 @@ function VisionEditor() {
   );
 }
 
-function HistoryEditor() {
+function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggleVisible: (on: boolean) => void }) {
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<HistoryWriteInput>(EMPTY_HISTORY);
@@ -334,6 +478,7 @@ function HistoryEditor() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <SectionVisibilityToggle label="연혁" visible={visible} onToggle={onToggleVisible} />
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 연혁 추가</button>
@@ -400,7 +545,7 @@ function HistoryEditor() {
   );
 }
 
-function StaffEditor() {
+function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleVisible: (on: boolean) => void }) {
   const [items, setItems] = useState<StaffMember[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<StaffWriteInput>(EMPTY_STAFF);
@@ -452,6 +597,7 @@ function StaffEditor() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <SectionVisibilityToggle label="교역자" visible={visible} onToggle={onToggleVisible} />
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 교역자 추가</button>
@@ -472,10 +618,6 @@ function StaffEditor() {
               <input value={draft.area ?? ""} onChange={(e) => setDraft({ ...draft, area: e.target.value })} placeholder="청년부" />
             </div>
             <div className="form-row">
-              <label>사진 URL</label>
-              <input value={draft.photoUrl ?? ""} onChange={(e) => setDraft({ ...draft, photoUrl: e.target.value })} placeholder="https://..." />
-            </div>
-            <div className="form-row">
               <label>정렬</label>
               <input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
             </div>
@@ -485,6 +627,11 @@ function StaffEditor() {
                 <span>활성</span>
               </label>
             </div>
+            <PhotoUploadField
+              label="사진"
+              value={draft.photoUrl ?? null}
+              onChange={(url) => setDraft({ ...draft, photoUrl: url ?? "" })}
+            />
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>

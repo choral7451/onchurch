@@ -155,6 +155,39 @@ async function request<T>(path: string, opts: RequestOpts = {}): Promise<T> {
   throw new ApiError(result.message, result.code, result.status);
 }
 
+export type UploadedImage = {
+  id: number;
+  url: string;
+  width: number;
+  height: number;
+  size: number;
+  mimeType: string;
+  originalFilename: string;
+};
+
+export async function uploadImages(files: File[]): Promise<UploadedImage[]> {
+  if (!files.length) return [];
+  const accessToken = getAccessToken();
+  const form = new FormData();
+  form.append("target", "USER");
+  files.forEach((f) => form.append("imageFiles", f));
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+  const res = await fetch(`${API_BASE}/system/upload/images`, {
+    method: "POST",
+    headers,
+    body: form,
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    const code = body?.code ?? "ERROR";
+    const rawMessage = body?.message;
+    const message = Array.isArray(rawMessage) ? rawMessage.join("\n") : rawMessage ?? "이미지 업로드에 실패했습니다.";
+    throw new ApiError(message, code, res.status);
+  }
+  return (body?.item?.images ?? []) as UploadedImage[];
+}
+
 export const onchurchAuth = {
   sendVerification: (phone: string) =>
     request<{ sent: boolean }>("/onchurch/auths/verifications/mobile", {

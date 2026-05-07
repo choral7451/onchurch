@@ -77,8 +77,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const ABOUT_SUB_KEYS = ["about-vision", "about-history", "about-staff"] as const;
+
   const [boards, setBoards] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(initial.nav.map((n) => [n.id, true])),
+    () => {
+      const base = Object.fromEntries(initial.nav.map((n) => [n.id, true]));
+      base["about"] = true;
+      for (const k of ABOUT_SUB_KEYS) base[k] = true;
+      return base;
+    },
   );
 
   const [worshipServices, setWorshipServices] = useState<WorshipService[]>(initial.worshipServices);
@@ -124,7 +131,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
           setAddress(c.address ?? "");
           if (c.logoUrl) setLogoPreview(c.logoUrl);
           if (c.enabledPages?.length) {
-            setBoards(Object.fromEntries(initial.nav.map((n) => [n.id, c.enabledPages.includes(n.id)])));
+            const next: Record<string, boolean> = {};
+            for (const n of initial.nav) next[n.id] = c.enabledPages.includes(n.id);
+            next["about"] = true;
+            for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
+            setBoards(next);
           }
           setIsPublished(c.isPublished);
           setChurchExistsOnServer(true);
@@ -198,7 +209,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
   }
 
   function toggleBoard(id: string) {
+    if (id === "about") return;
     setBoards((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function setAboutSubSection(key: "vision" | "history" | "staff", on: boolean) {
+    setBoards((prev) => ({ ...prev, [`about-${key}`]: on }));
   }
 
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
@@ -398,6 +414,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {initial.nav.map((n) => {
                 const on = boards[n.id] ?? true;
                 const isActive = activeSection === `page:${n.id}`;
+                const isRequired = n.id === "about";
                 return (
                   <div key={n.id} className={`admin-sidebar-page ${isActive ? "active" : ""}`}>
                     <button
@@ -407,13 +424,19 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     >
                       <span>{n.label}</span>
                     </button>
-                    <button
-                      type="button"
-                      className={`toggle ${on ? "on" : ""}`}
-                      onClick={() => toggleBoard(n.id)}
-                      aria-label={`${n.label} 활성화`}
-                      aria-pressed={on}
-                    />
+                    {isRequired ? (
+                      <span className="admin-sidebar-pill complete" aria-label="필수 섹션" style={{ fontSize: 10 }}>
+                        필수
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`toggle ${on ? "on" : ""}`}
+                        onClick={() => toggleBoard(n.id)}
+                        aria-label={`${n.label} 활성화`}
+                        aria-pressed={on}
+                      />
+                    )}
                   </div>
                 );
               })}
@@ -601,7 +624,16 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
                   {activePage === "schedule" && <ScheduleEditor />}
 
-                  {activePage === "about" && <AboutEditor />}
+                  {activePage === "about" && (
+                    <AboutEditor
+                      visibility={{
+                        vision: boards["about-vision"] ?? true,
+                        history: boards["about-history"] ?? true,
+                        staff: boards["about-staff"] ?? true,
+                      }}
+                      onToggleVisibility={setAboutSubSection}
+                    />
+                  )}
 
                   {activePage === "directions" && (
                     <DirectionsEditor transportation={transportation} setTransportation={setTransportation} />
