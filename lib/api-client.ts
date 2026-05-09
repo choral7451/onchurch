@@ -756,3 +756,63 @@ export const onchurchSermon = {
   remove: (id: number) =>
     request<unknown>(`/onchurch/sermons/me/${id}`, { method: "DELETE", auth: true }),
 };
+
+export type GalleryCategoryItem = {
+  id: number;
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type GalleryCategoryWriteInput = {
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type GalleryItemRow = {
+  id: number;
+  categoryId: number | null;
+  title: string;
+  date: string | null;
+  photoUrl: string | null;
+  grad: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type GalleryWriteInput = {
+  categoryId: number | null;
+  title: string;
+  date?: string | null;
+  photoUrl?: string | null;
+  grad?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export const onchurchGalleryCategory = {
+  listMine: () =>
+    request<{ categories: GalleryCategoryItem[] }>("/onchurch/gallery-categories/me", { method: "GET", auth: true }).then(
+      (r) => r.categories ?? [],
+    ),
+  create: (input: GalleryCategoryWriteInput) =>
+    request<GalleryCategoryItem>("/onchurch/gallery-categories/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: GalleryCategoryWriteInput) =>
+    request<GalleryCategoryItem>(`/onchurch/gallery-categories/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/gallery-categories/me/${id}`, { method: "DELETE", auth: true }),
+};
+
+export const onchurchGallery = {
+  listMine: () =>
+    request<{ galleries: GalleryItemRow[] }>("/onchurch/galleries/me", { method: "GET", auth: true }).then(
+      (r) => r.galleries ?? [],
+    ),
+  create: (input: GalleryWriteInput) =>
+    request<GalleryItemRow>("/onchurch/galleries/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: GalleryWriteInput) =>
+    request<GalleryItemRow>(`/onchurch/galleries/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/galleries/me/${id}`, { method: "DELETE", auth: true }),
+};

@@ -7,7 +7,6 @@ import { Icon } from "@/components/icons";
 import type {
   Brand,
   EventItem,
-  GalleryItem,
   HistoryItem,
   NavItem,
   Notice,
@@ -45,8 +44,6 @@ type Initial = {
   history: HistoryItem[];
   staff: StaffMember[];
   transportation: Transportation[];
-  galleries: GalleryItem[];
-  galleryCategories: string[];
 };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -103,9 +100,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [vision, setVision] = useState<VisionItem[]>(initial.vision);
   const [history, setHistory] = useState<HistoryItem[]>(initial.history);
   const [staff, setStaff] = useState<StaffMember[]>(initial.staff);
-
-  const [galleries, setGalleries] = useState<GalleryItem[]>(initial.galleries);
-  const [galleryCategories, setGalleryCategories] = useState<string[]>(initial.galleryCategories);
 
   const [save, setSave] = useState<SaveState>("idle");
   const [saveMsg, setSaveMsg] = useState<string>("");
@@ -677,14 +671,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
                   {activePage === "sermons" && <SermonsEditor />}
 
-                  {activePage === "gallery" && (
-                    <GalleryEditor
-                      galleries={galleries}
-                      setGalleries={setGalleries}
-                      categories={galleryCategories}
-                      setCategories={setGalleryCategories}
-                    />
-                  )}
+                  {activePage === "gallery" && <GalleryEditor />}
 
                   {activePage !== "worship" &&
                     activePage !== "notices" &&

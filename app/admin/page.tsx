@@ -31,8 +31,6 @@ export default function AdminPage() {
         history: SITE_DATA.history,
         staff: SITE_DATA.staff,
         transportation: SITE_DATA.transportation,
-        galleries: SITE_DATA.galleries,
-        galleryCategories: SITE_DATA.galleryCategories,
       }}
     />
   );
