@@ -2,11 +2,75 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
 import { getTenant } from "@/lib/tenants";
 
+type WorshipServiceTag = "MAIN" | "WEEK" | "DAILY";
+
+type WorshipServiceItem = {
+  id: number;
+  tag: WorshipServiceTag;
+  name: string;
+  time: string;
+  meta: string | null;
+  isFeatured: boolean;
+};
+
+type WorshipOrderItem = {
+  id: number;
+  no: string;
+  item: string;
+  leader: string | null;
+};
+
+type WorshipData = {
+  services: WorshipServiceItem[];
+  orders: WorshipOrderItem[];
+};
+
+async function fetchWorship(slug: string): Promise<WorshipData> {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
+  try {
+    const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/worship`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return { services: [], orders: [] };
+    const body = await res.json();
+    return {
+      services: (body?.item?.services ?? []) as WorshipServiceItem[],
+      orders: (body?.item?.orders ?? []) as WorshipOrderItem[],
+    };
+  } catch {
+    return { services: [], orders: [] };
+  }
+}
+
 export default async function WorshipPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  void tenant;
   const D = getTenant(tenant);
   if (!D) notFound();
+
+  const data = await fetchWorship(tenant);
+
+  const services: WorshipServiceItem[] =
+    data.services.length > 0
+      ? data.services
+      : D.worshipServices.map((w, i) => ({
+          id: i,
+          tag: w.tag,
+          name: w.name,
+          time: w.time,
+          meta: w.meta ?? null,
+          isFeatured: !!w.feat,
+        }));
+
+  const orders: WorshipOrderItem[] =
+    data.orders.length > 0
+      ? data.orders
+      : D.worshipOrder.map((row, i) => ({
+          id: i,
+          no: row[0],
+          item: row[1],
+          leader: row[2] ?? null,
+        }));
+
   return (
     <div>
       <PageHeader
@@ -17,43 +81,45 @@ export default async function WorshipPage({ params }: { params: Promise<{ tenant
       <section className="section">
         <div className="container">
           <div className="worship-grid">
-            {D.worshipServices.map((w, i) => (
-              <div key={i} className={`worship-card ${w.feat ? "feat" : ""}`}>
+            {services.map((w) => (
+              <div key={w.id} className={`worship-card ${w.isFeatured ? "feat" : ""}`}>
                 <span className="worship-cat">{w.tag}</span>
                 <div className="worship-name">{w.name}</div>
                 <div className="worship-time">{w.time}</div>
-                <div className="worship-meta">{w.meta}</div>
-                {w.feat && <span className="worship-pill">대표 예배</span>}
+                {w.meta && <div className="worship-meta">{w.meta}</div>}
+                {w.isFeatured && <span className="worship-pill">대표 예배</span>}
               </div>
             ))}
           </div>
 
-          <div style={{ marginTop: 64 }}>
-            <div className="section-head">
-              <div>
-                <span className="eyebrow">Order of Worship</span>
-                <h2>주일예배 순서</h2>
+          {orders.length > 0 && (
+            <div style={{ marginTop: 64 }}>
+              <div className="section-head">
+                <div>
+                  <span className="eyebrow">Order of Worship</span>
+                  <h2>주일예배 순서</h2>
+                </div>
+              </div>
+              <div className="card" style={{ padding: 0 }}>
+                {orders.map((row, i) => (
+                  <div
+                    key={row.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "60px 1fr 200px",
+                      padding: "18px 28px",
+                      borderBottom: i < orders.length - 1 ? "1px solid var(--line-2)" : "none",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--accent)", fontWeight: 600 }}>{row.no}</div>
+                    <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 16, letterSpacing: "-0.01em" }}>{row.item}</div>
+                    <div style={{ fontSize: 13, color: "var(--muted)" }}>{row.leader ?? ""}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="card" style={{ padding: 0 }}>
-              {D.worshipOrder.map((row, i) => (
-                <div
-                  key={row[0]}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "60px 1fr 200px",
-                    padding: "18px 28px",
-                    borderBottom: i < D.worshipOrder.length - 1 ? "1px solid var(--line-2)" : "none",
-                    alignItems: "center",
-                  }}
-                >
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--accent)", fontWeight: 600 }}>{row[0]}</div>
-                  <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 16, letterSpacing: "-0.01em" }}>{row[1]}</div>
-                  <div style={{ fontSize: 13, color: "var(--muted)" }}>{row[2]}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </section>
     </div>

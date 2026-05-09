@@ -23,8 +23,6 @@ export default function AdminPage() {
           businessNo: "",
         },
         nav: SITE_DATA.nav.filter((n) => n.id !== "home"),
-        worshipServices: SITE_DATA.worshipServices,
-        worshipOrder: SITE_DATA.worshipOrder,
         notices: SITE_DATA.notices,
         noticeCategories: SITE_DATA.noticeCategories,
         events: SITE_DATA.events,

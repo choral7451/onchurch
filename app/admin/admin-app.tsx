@@ -15,7 +15,6 @@ import type {
   StaffMember,
   Transportation,
   VisionItem,
-  WorshipService,
 } from "@/lib/types";
 import { ApiError, clearTokens, onchurchChurch, type Subscription } from "@/lib/api-client";
 import { WorshipEditor } from "./page-editors/worship";
@@ -30,8 +29,6 @@ type Initial = {
   slug: string;
   brand: Brand;
   nav: NavItem[];
-  worshipServices: WorshipService[];
-  worshipOrder: [string, string, string][];
   notices: Notice[];
   noticeCategories: string[];
   events: EventItem[];
@@ -77,18 +74,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const ABOUT_SUB_KEYS = ["about-vision", "about-history", "about-staff"] as const;
+  const WORSHIP_SUB_KEYS = ["worship-order"] as const;
 
   const [boards, setBoards] = useState<Record<string, boolean>>(
     () => {
       const base = Object.fromEntries(initial.nav.map((n) => [n.id, true]));
       base["about"] = true;
+      base["worship"] = true;
       for (const k of ABOUT_SUB_KEYS) base[k] = true;
+      for (const k of WORSHIP_SUB_KEYS) base[k] = true;
       return base;
     },
   );
-
-  const [worshipServices, setWorshipServices] = useState<WorshipService[]>(initial.worshipServices);
-  const [worshipOrder, setWorshipOrder] = useState<[string, string, string][]>(initial.worshipOrder);
 
   const [notices, setNotices] = useState<Notice[]>(initial.notices);
   const [noticeCategories, setNoticeCategories] = useState<string[]>(initial.noticeCategories);
@@ -132,7 +129,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
             const next: Record<string, boolean> = {};
             for (const n of initial.nav) next[n.id] = c.enabledPages.includes(n.id);
             next["about"] = true;
+            next["worship"] = true;
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
+            for (const k of WORSHIP_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);
           }
           setIsPublished(c.isPublished);
@@ -412,7 +411,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {initial.nav.filter((n) => n.id !== "directions").map((n) => {
                 const on = boards[n.id] ?? true;
                 const isActive = activeSection === `page:${n.id}`;
-                const isRequired = n.id === "about";
+                const isRequired = n.id === "about" || n.id === "worship";
                 return (
                   <div key={n.id} className={`admin-sidebar-page ${isActive ? "active" : ""}`}>
                     <button
@@ -612,10 +611,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
                   {activePage === "worship" && (
                     <WorshipEditor
-                      services={worshipServices}
-                      setServices={setWorshipServices}
-                      order={worshipOrder}
-                      setOrder={setWorshipOrder}
+                      orderVisible={boards["worship-order"] ?? true}
+                      onToggleOrderVisible={(on) => setBoards((prev) => ({ ...prev, ["worship-order"]: on }))}
                     />
                   )}
 

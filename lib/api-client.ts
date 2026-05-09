@@ -620,3 +620,69 @@ export const onchurchAbout = {
   listPublic: (slug: string) =>
     request<PublicAbout>(`/onchurch/sites/${encodeURIComponent(slug)}/about`, { method: "GET" }),
 };
+
+export type WorshipServiceTag = "MAIN" | "WEEK" | "DAILY";
+
+export type WorshipServiceItem = {
+  id: number;
+  tag: WorshipServiceTag;
+  name: string;
+  time: string;
+  meta: string | null;
+  isFeatured: boolean;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type WorshipServiceWriteInput = {
+  tag: WorshipServiceTag;
+  name: string;
+  time: string;
+  meta?: string | null;
+  isFeatured: boolean;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type WorshipOrderItem = {
+  id: number;
+  no: string;
+  item: string;
+  leader: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type WorshipOrderWriteInput = {
+  no: string;
+  item: string;
+  leader?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export const onchurchWorshipService = {
+  listMine: () =>
+    request<{ services: WorshipServiceItem[] }>("/onchurch/worship-services/me", { method: "GET", auth: true }).then(
+      (r) => r.services ?? [],
+    ),
+  create: (input: WorshipServiceWriteInput) =>
+    request<WorshipServiceItem>("/onchurch/worship-services/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: WorshipServiceWriteInput) =>
+    request<WorshipServiceItem>(`/onchurch/worship-services/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/worship-services/me/${id}`, { method: "DELETE", auth: true }),
+};
+
+export const onchurchWorshipOrder = {
+  listMine: () =>
+    request<{ orders: WorshipOrderItem[] }>("/onchurch/worship-orders/me", { method: "GET", auth: true }).then(
+      (r) => r.orders ?? [],
+    ),
+  create: (input: WorshipOrderWriteInput) =>
+    request<WorshipOrderItem>("/onchurch/worship-orders/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: WorshipOrderWriteInput) =>
+    request<WorshipOrderItem>(`/onchurch/worship-orders/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/worship-orders/me/${id}`, { method: "DELETE", auth: true }),
+};
