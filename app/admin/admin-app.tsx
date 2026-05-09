@@ -21,6 +21,7 @@ import {
   onchurchChurch,
   onchurchPastor,
   onchurchWorshipService,
+  uploadImages,
   type Subscription,
 } from "@/lib/api-client";
 import { WorshipEditor } from "./page-editors/worship";
@@ -76,6 +77,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [address, setAddress] = useState(initial.brand.address);
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoErr, setLogoErr] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const ABOUT_SUB_KEYS = ["about-vision", "about-history", "about-staff"] as const;
@@ -210,20 +213,30 @@ export function AdminApp({ initial }: { initial: Initial }) {
     fileRef.current?.click();
   }
 
-  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert("이미지 파일만 업로드할 수 있습니다.");
+      setLogoErr("이미지 파일만 업로드할 수 있습니다.");
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
-    const url = URL.createObjectURL(file);
-    setLogoPreview(url);
+    setLogoErr("");
+    setLogoUploading(true);
+    try {
+      const [uploaded] = await uploadImages([file]);
+      if (uploaded?.url) setLogoPreview(uploaded.url);
+    } catch (err) {
+      setLogoErr(err instanceof ApiError ? err.message : "로고 업로드에 실패했습니다.");
+    } finally {
+      setLogoUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   }
 
   function clearLogo() {
-    if (logoPreview) URL.revokeObjectURL(logoPreview);
     setLogoPreview(null);
+    setLogoErr("");
     if (fileRef.current) fileRef.current.value = "";
   }
 
@@ -267,7 +280,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         address: address || null,
         representative: null,
         businessNo: null,
-        logoUrl: logoPreview && !logoPreview.startsWith("blob:") ? logoPreview : null,
+        logoUrl: logoPreview || null,
         enabledPages,
       });
       setIsPublished(updated.isPublished);
@@ -572,16 +585,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           onChange={onFileChange}
                           style={{ display: "none" }}
                         />
-                        <button type="button" className="btn btn-primary" onClick={onPickFile}>
+                        <button type="button" className="btn btn-primary" onClick={onPickFile} disabled={logoUploading}>
                           <Icon.image style={{ width: 14, height: 14 }} />
-                          이미지 업로드
+                          {logoUploading ? "업로드 중..." : logoPreview ? "이미지 변경" : "이미지 업로드"}
                         </button>
-                        {logoPreview && (
+                        {logoPreview && !logoUploading && (
                           <button type="button" className="btn btn-ghost" onClick={clearLogo}>
                             제거
                           </button>
                         )}
-                        <p className="form-hint" style={{ marginTop: 4 }}>최대 2MB. PNG/SVG 권장.</p>
+                        {logoErr && <p className="form-hint" style={{ marginTop: 4, color: "oklch(0.55 0.18 28)" }}>{logoErr}</p>}
+                        <p className="form-hint" style={{ marginTop: 4 }}>JPG/PNG/SVG. 정사각형 권장 (256×256 이상).</p>
                       </div>
                     </div>
                   </div>
