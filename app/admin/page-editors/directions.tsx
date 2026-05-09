@@ -10,9 +10,20 @@ import {
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
+const TAG_OPTIONS = ["지하철", "버스", "셔틀"] as const;
+type TagOption = (typeof TAG_OPTIONS)[number];
+
+const TAG_ICONS: Record<TagOption, string> = {
+  지하철: "🚇",
+  버스: "🚌",
+  셔틀: "🚐",
+};
+
+const DEFAULT_TAG: TagOption = "지하철";
+
 const EMPTY: TransportationWriteInput = {
-  icon: "🚇",
-  tag: "",
+  icon: TAG_ICONS[DEFAULT_TAG],
+  tag: DEFAULT_TAG,
   title: "",
   description: "",
   sortOrder: 0,
@@ -48,10 +59,13 @@ export function DirectionsEditor() {
   }
 
   function startEdit(it: TransportationItem) {
+    const tag = (TAG_OPTIONS as readonly string[]).includes(it.tag)
+      ? (it.tag as TagOption)
+      : DEFAULT_TAG;
     setEditing(it.id);
     setDraft({
-      icon: it.icon ?? "",
-      tag: it.tag,
+      icon: TAG_ICONS[tag],
+      tag,
       title: it.title,
       description: it.description ?? "",
       sortOrder: it.sortOrder,
@@ -124,22 +138,21 @@ export function DirectionsEditor() {
           <div className="admin-banner-card editing">
             <div className="form-grid">
               <div className="form-row">
-                <label>아이콘 (이모지)</label>
-                <input
-                  value={draft.icon ?? ""}
-                  onChange={(e) => setDraft({ ...draft, icon: e.target.value })}
-                  placeholder="🚇"
-                  maxLength={4}
-                />
-              </div>
-              <div className="form-row">
                 <label>구분 <span className="required-mark" aria-hidden="true">*</span></label>
-                <input
+                <select
                   value={draft.tag}
-                  onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
-                  placeholder="지하철"
+                  onChange={(e) => {
+                    const tag = e.target.value as TagOption;
+                    setDraft({ ...draft, tag, icon: TAG_ICONS[tag] });
+                  }}
                   required
-                />
+                >
+                  {TAG_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {TAG_ICONS[opt]} {opt}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="form-row full">
                 <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
