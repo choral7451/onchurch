@@ -1,19 +1,22 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTenant } from "@/lib/tenants";
+import { fetchPublicChurch } from "@/lib/public-site";
 import { getPathPrefix } from "@/lib/path-prefix";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { SermonCard } from "@/components/sermon-card";
 import { Calendar } from "@/components/calendar";
 import { TopBanner } from "@/components/top-banner";
+import type { Sermon } from "@/lib/types";
 
 const QUICK_LINKS: { ic: IconKey; title: string; desc: string; path: string }[] = [
   { ic: "calendar", title: "예배 안내", desc: "주일/수요/새벽 모든 예배 시간을 확인하세요", path: "/worship" },
   { ic: "video", title: "설교 영상", desc: "지난 설교를 언제든 다시 듣고 묵상하세요", path: "/sermons" },
-  { ic: "users", title: "교회학교", desc: "각 부서별 모임과 다음 세대 사역 안내", path: "/departments" },
+  { ic: "image", title: "갤러리", desc: "공동체의 사진과 추억을 모아두는 곳", path: "/gallery" },
   { ic: "mapPin", title: "찾아오시는 길", desc: "처음 오시는 분도 어렵지 않게 안내합니다", path: "/directions" },
 ];
+
+const GRAD_CYCLE: Sermon["grad"][] = ["ph-grad-1", "ph-grad-2", "ph-grad-3", "ph-grad-4"];
 
 type PublicBanner = {
   id: number | null;
@@ -32,34 +35,6 @@ type PublicNotice = {
   createdAt: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
-
-async function fetchBanners(slug: string): Promise<PublicBanner[]> {
-  try {
-    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/banners`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    const body = await res.json();
-    return (body?.item?.banners ?? []) as PublicBanner[];
-  } catch {
-    return [];
-  }
-}
-
-async function fetchRecentNotices(slug: string): Promise<PublicNotice[]> {
-  try {
-    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/notices?size=5`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    const body = await res.json();
-    return (body?.item?.notices ?? []) as PublicNotice[];
-  } catch {
-    return [];
-  }
-}
-
 type PublicEvent = {
   id: number;
   title: string;
@@ -71,16 +46,45 @@ type PublicEvent = {
   isActive: boolean;
 };
 
-async function fetchEvents(slug: string): Promise<PublicEvent[]> {
+type PublicWorshipService = {
+  id: number;
+  tag: "MAIN" | "WEEK" | "DAILY";
+  name: string;
+  time: string;
+  meta: string | null;
+  isFeatured: boolean;
+};
+
+type PublicSermon = {
+  id: number;
+  seriesId: number | null;
+  title: string;
+  pastor: string | null;
+  date: string | null;
+  duration: string | null;
+  isFeatured: boolean;
+};
+
+type PublicSermonSeries = { id: number; name: string };
+
+type PublicPastor = {
+  id: number;
+  name: string;
+  role: string | null;
+  eng: string | null;
+  message: string | null;
+} | null;
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
+
+async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   try {
-    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/events`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
+    const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+    if (!res.ok) return fallback;
     const body = await res.json();
-    return (body?.item?.events ?? []) as PublicEvent[];
+    return (body?.item ?? fallback) as T;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
@@ -93,16 +97,42 @@ function dateParts(iso: string | null, fallbackIso: string): { day: string; mon:
 
 export default async function TenantHome({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const D = getTenant(tenant);
-  if (!D) notFound();
+  const church = await fetchPublicChurch(tenant);
+  if (!church) notFound();
+
   const pathPrefix = await getPathPrefix(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
 
-  const [banners, recentNotices, events] = await Promise.all([
-    fetchBanners(tenant),
-    fetchRecentNotices(tenant),
-    fetchEvents(tenant),
+  const slug = encodeURIComponent(tenant);
+  const [bannersRes, noticesRes, eventsRes, worshipRes, sermonsRes, aboutRes] = await Promise.all([
+    fetchJson<{ banners: PublicBanner[] }>(`/onchurch/sites/${slug}/banners`, { banners: [] }),
+    fetchJson<{ notices: PublicNotice[] }>(`/onchurch/sites/${slug}/notices?size=5`, { notices: [] }),
+    fetchJson<{ events: PublicEvent[] }>(`/onchurch/sites/${slug}/events`, { events: [] }),
+    fetchJson<{ services: PublicWorshipService[] }>(`/onchurch/sites/${slug}/worship`, { services: [] }),
+    fetchJson<{ series: PublicSermonSeries[]; sermons: PublicSermon[] }>(`/onchurch/sites/${slug}/sermons`, {
+      series: [],
+      sermons: [],
+    }),
+    fetchJson<{ pastor: PublicPastor }>(`/onchurch/sites/${slug}/about`, { pastor: null }),
   ]);
+
+  const banners = bannersRes.banners;
+  const recentNotices = noticesRes.notices;
+  const events = eventsRes.events;
+  const worshipServices = worshipRes.services.slice(0, 6);
+
+  const seriesById = new Map(sermonsRes.series.map((s) => [s.id, s.name] as const));
+  const sermonAdapter = (s: PublicSermon, i: number): Sermon => ({
+    series: s.seriesId != null ? seriesById.get(s.seriesId) ?? "미분류" : "미분류",
+    title: s.title,
+    pastor: s.pastor ?? "",
+    date: s.date ?? "",
+    duration: s.duration ?? "",
+    feat: s.isFeatured,
+    grad: GRAD_CYCLE[i % GRAD_CYCLE.length],
+  });
+  const homeSermons: Sermon[] = sermonsRes.sermons.slice(0, 3).map(sermonAdapter);
+  const pastor = aboutRes.pastor;
 
   return (
     <div>
@@ -118,15 +148,14 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
               <div>
                 <div className="news-feature-tag">
                   <span className="pulse" />
-                  {D.hero.feature.tag}
+                  {church.tagline ?? "환영합니다"}
                 </div>
-                <h2 className="news-feature-title">{D.hero.feature.title}</h2>
-                <p className="news-feature-desc">{D.hero.feature.desc}</p>
+                <h2 className="news-feature-title">{church.name}</h2>
+                {church.eng && <p className="news-feature-desc">{church.eng}</p>}
               </div>
               <div>
-                <div className="news-feature-meta">{D.hero.feature.meta}</div>
-                <Link href={url("/notices")} className="news-feature-cta">
-                  자세히 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
+                <Link href={url("/about")} className="news-feature-cta">
+                  교회 소개 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
                 </Link>
               </div>
             </div>
@@ -183,124 +212,126 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         </div>
       </section>
 
-      <section className="section section-tinted">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">Worship Schedule</span>
-              <h2>예배는 우리 공동체의<br />가장 중요한 시간입니다</h2>
-            </div>
-            <div className="section-head-action">
-              <Link href={url("/worship")}>전체 예배 안내 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
-            </div>
-          </div>
-          <div className="worship-grid">
-            {D.worshipServices.slice(0, 6).map((w, i) => (
-              <div key={i} className={`worship-card ${w.feat ? "feat" : ""}`}>
-                <span className="worship-cat">{w.tag}</span>
-                <div className="worship-name">{w.name}</div>
-                <div className="worship-time">{w.time}</div>
-                <div className="worship-meta">{w.meta}</div>
-                {w.feat && <span className="worship-pill">대표 예배</span>}
+      {worshipServices.length > 0 && (
+        <section className="section section-tinted">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">Worship Schedule</span>
+                <h2>예배는 우리 공동체의<br />가장 중요한 시간입니다</h2>
               </div>
-            ))}
+              <div className="section-head-action">
+                <Link href={url("/worship")}>전체 예배 안내 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+              </div>
+            </div>
+            <div className="worship-grid">
+              {worshipServices.map((w) => (
+                <div key={w.id} className={`worship-card ${w.isFeatured ? "feat" : ""}`}>
+                  <span className="worship-cat">{w.tag}</span>
+                  <div className="worship-name">{w.name}</div>
+                  <div className="worship-time">{w.time}</div>
+                  {w.meta && <div className="worship-meta">{w.meta}</div>}
+                  {w.isFeatured && <span className="worship-pill">대표 예배</span>}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <section className="section">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">Sermons</span>
-              <h2>이번 주 말씀</h2>
+      {homeSermons.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">Sermons</span>
+                <h2>이번 주 말씀</h2>
+              </div>
+              <div className="section-head-action">
+                <Link href={url("/sermons")}>설교 아카이브 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+              </div>
             </div>
-            <div className="section-head-action">
-              <Link href={url("/sermons")}>설교 아카이브 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+            <div className="sermon-grid">
+              {homeSermons[0] && <SermonCard sermon={homeSermons[0]} feat />}
+              {homeSermons[1] && <SermonCard sermon={homeSermons[1]} />}
+              {homeSermons[2] && <SermonCard sermon={homeSermons[2]} />}
             </div>
           </div>
-          <div className="sermon-grid">
-            <SermonCard sermon={D.sermons[0]} feat />
-            <SermonCard sermon={D.sermons[1]} />
-            <SermonCard sermon={D.sermons[2]} />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <section className="verse-banner">
-        <LightRays className="verse-bg" style={{ width: "100%", height: "100%", color: "white" }} />
-        <div className="verse-banner-inner">
-          <div className="verse-eyebrow">VERSE OF THE WEEK</div>
-          <p className="verse-text">
-            &ldquo;{D.verseOfWeek.text.split("\n").map((line, i, arr) => (
-              <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
-            ))}&rdquo;
-          </p>
-          <div className="verse-ref">{D.verseOfWeek.ref}</div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">Calendar & Events</span>
-              <h2>이번 달 교회 일정</h2>
+      {events.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">Calendar & Events</span>
+                <h2>이번 달 교회 일정</h2>
+              </div>
+              <div className="section-head-action">
+                <Link href={url("/schedule")}>전체 일정 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+              </div>
             </div>
-            <div className="section-head-action">
-              <Link href={url("/schedule")}>전체 일정 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
-            </div>
+            <Calendar events={events} />
           </div>
-          <Calendar events={events} />
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="section section-tinted">
         <div className="container">
           <div className="pray-cta">
             <Rings className="pray-cta-bg" style={{ color: "var(--primary)" }} />
             <div style={{ position: "relative", zIndex: 1 }}>
-              <span className="eyebrow">Prayer Request</span>
-              <h3>혼자 감당하기 어려운 일이 있으신가요?</h3>
-              <p>성도와 목회진이 함께 마음을 모아 기도해 드립니다. 익명으로도 가능합니다.</p>
+              <span className="eyebrow">Visit</span>
+              <h3>처음 오시는 분들을 환영합니다</h3>
+              <p>예배 시간과 오시는 길을 확인하시고, 언제든 편하게 방문해주세요.</p>
             </div>
             <div style={{ position: "relative", zIndex: 1 }}>
-              <Link href={url("/prayer")} className="btn btn-primary btn-lg">
-                <Icon.pray style={{ width: 16, height: 16 }} />
-                기도 요청 보내기
+              <Link href={url("/directions")} className="btn btn-primary btn-lg">
+                <Icon.mapPin style={{ width: 16, height: 16 }} />
+                찾아오시는 길
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <div className="pastor-section">
-            <div className="pastor-photo">
-              <div className="pastor-photo-label">담임목사 사진</div>
-            </div>
-            <div className="pastor-block">
-              <span className="eyebrow">Greetings from Pastor</span>
-              <h2 className="pastor-name">{D.pastor.name} <span>{D.pastor.role} / {D.pastor.eng}</span></h2>
-              <p className="pastor-msg">
-                {D.pastor.message.split("\n\n").map((para, i, arr) => (
-                  <span key={i}>
-                    {para}
-                    {i < arr.length - 1 && <><br /><br /></>}
-                  </span>
-                ))}
-              </p>
-              <div className="pastor-sign">담임목사 <strong>{D.pastor.name.replace(/\s/g, "")}</strong></div>
-              <div style={{ marginTop: 28 }}>
-                <Link href={url("/about")} className="btn btn-secondary">
-                  교회 소개 자세히 <Icon.arrow style={{ width: 14, height: 14 }} />
-                </Link>
+      {pastor && (pastor.message?.trim() || pastor.name) && (
+        <section className="section">
+          <div className="container">
+            <div className="pastor-section">
+              <div className="pastor-photo">
+                <div className="pastor-photo-label">담임목사</div>
+              </div>
+              <div className="pastor-block">
+                <span className="eyebrow">Greetings from Pastor</span>
+                <h2 className="pastor-name">
+                  {pastor.name}
+                  {(pastor.role || pastor.eng) && (
+                    <span> {pastor.role}{pastor.role && pastor.eng ? " / " : ""}{pastor.eng}</span>
+                  )}
+                </h2>
+                {pastor.message && (
+                  <p className="pastor-msg">
+                    {pastor.message.split("\n\n").map((para, i, arr) => (
+                      <span key={i}>
+                        {para}
+                        {i < arr.length - 1 && <><br /><br /></>}
+                      </span>
+                    ))}
+                  </p>
+                )}
+                <div className="pastor-sign">담임목사 <strong>{pastor.name.replace(/\s/g, "")}</strong></div>
+                <div style={{ marginTop: 28 }}>
+                  <Link href={url("/about")} className="btn btn-secondary">
+                    교회 소개 자세히 <Icon.arrow style={{ width: 14, height: 14 }} />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

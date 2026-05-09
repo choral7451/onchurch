@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
-import { getTenant } from "@/lib/tenants";
+import { fetchPublicChurch } from "@/lib/public-site";
 import { Icon } from "@/components/icons";
 
 const MAP_LABELS = [
@@ -34,17 +34,14 @@ async function fetchTransportations(slug: string): Promise<PublicTransportation[
 
 export default async function DirectionsPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const D = getTenant(tenant);
-  if (!D) notFound();
+  const church = await fetchPublicChurch(tenant);
+  if (!church) notFound();
 
-  const transportations = await fetchTransportations(tenant);
-  const items = transportations.length > 0 ? transportations : D.transportation.map((t, i) => ({
-    id: -1 - i,
-    icon: t.icon,
-    tag: t.tag,
-    title: t.title,
-    description: t.desc,
-  }));
+  const items = await fetchTransportations(tenant);
+  const address = church.address ?? "";
+  const phone = church.phone ?? "";
+  const email = church.email ?? "";
+  const churchName = church.name;
 
   return (
     <div>
@@ -66,7 +63,7 @@ export default async function DirectionsPage({ params }: { params: Promise<{ ten
             </div>
             <div className="map-pin">
               <div className="map-pin-dot" />
-              <div className="map-pin-label">{D.brand.name}</div>
+              <div className="map-pin-label">{churchName}</div>
             </div>
           </div>
 
@@ -77,8 +74,8 @@ export default async function DirectionsPage({ params }: { params: Promise<{ ten
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>주소</span>
               </div>
               <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5 }}>
-                {D.brand.address.split(" ").slice(0, 2).join(" ")}<br />
-                {D.brand.address.split(" ").slice(2).join(" ")}
+                {address.split(" ").slice(0, 2).join(" ")}<br />
+                {address.split(" ").slice(2).join(" ")}
               </div>
             </div>
             <div className="card">
@@ -87,9 +84,9 @@ export default async function DirectionsPage({ params }: { params: Promise<{ ten
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>연락처</span>
               </div>
               <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5 }}>
-                {D.brand.phone}
+                {phone}
                 <br />
-                <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>{D.brand.email}</span>
+                <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>{email}</span>
               </div>
             </div>
             <div className="card">

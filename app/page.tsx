@@ -1,12 +1,8 @@
 import Link from "next/link";
-import { headers } from "next/headers";
-import { listTenants } from "@/lib/tenants";
 import { LandingNav } from "@/components/marketing/landing-nav";
 import { LandingFooter } from "@/components/marketing/landing-footer";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
-
-const ROOT_DOMAINS = ["everychurch.co.kr", "onchurch.kr"];
 
 const FEATURES: { ic: IconKey; title: string; desc: string }[] = [
   { ic: "calendar", title: "교회 전용 컴포넌트", desc: "예배 안내, 설교 아카이브, 주보, 공지, 기도 요청, 갤러리, 통독 플랜 — 처음부터 교회를 위해 만들어졌습니다." },
@@ -28,17 +24,10 @@ const FAQ: { q: string; a: string }[] = [
   { q: "이미 운영 중인 교회 홈페이지가 있는데 옮길 수 있나요?", a: "기존 사이트의 데이터를 CSV/엑셀로 일괄 가져오는 마이그레이션 도구를 베타 단계에서 무료로 제공합니다." },
   { q: "자체 도메인을 사용할 수 있나요?", a: "네. 발급받은 서브도메인(yourchurch.everychurch.co.kr) 외에 보유하신 도메인(예: yourchurch.kr)을 연결할 수 있습니다. SSL은 자동 발급됩니다." },
   { q: "여러 교역자가 함께 관리할 수 있나요?", a: "역할(담임/부서장/관리자/편집자) 기반 권한과 부서별 콘텐츠 격리를 지원합니다. 청년부 담당이 청년부 페이지만 편집하도록 제한할 수 있습니다." },
-  { q: "가격은 어떻게 되나요?", a: "교회 규모와 무관하게 월 단돈 1만원입니다. 모든 기능이 포함되어 있으며 추가 결제는 없습니다. 첫 14일은 무료 체험으로 자유롭게 둘러보실 수 있습니다." },
+  { q: "가격은 어떻게 되나요?", a: "교회 규모와 무관하게 월 단돈 1만원입니다. 모든 기능이 포함되어 있으며 추가 결제는 없습니다. 사이트 운영을 시작하면 7일 무료 체험이 자동으로 시작되어 자유롭게 둘러보실 수 있습니다." },
 ];
 
 export default async function LandingPage() {
-  const tenants = listTenants();
-  const h = await headers();
-  const host = (h.get("host") ?? "").split(":")[0];
-  const root = ROOT_DOMAINS.find((r) => host === r || host.endsWith(`.${r}`));
-  const tenantHref = (slug: string) =>
-    root ? `https://${slug}.${root}` : `/${slug}`;
-
   return (
     <div className="landing">
       <LandingNav />
@@ -71,60 +60,9 @@ export default async function LandingPage() {
             </a>
           </div>
           <div className="landing-trust">
-            <span>이미 사용 중인 교회</span>
-            <strong>{tenants.length}곳</strong>
-            <span className="landing-trust-divider" />
             <span>월 <strong>1만원</strong></span>
             <span className="landing-trust-divider" />
-            <span>14일 무료 체험</span>
-          </div>
-        </div>
-      </section>
-
-      <section id="demo" className="section section-tinted">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">Live Demos</span>
-              <h2>실제로 돌아가는 홈페이지</h2>
-            </div>
-            <div className="section-head-action">
-              <span style={{ fontSize: 13, color: "var(--muted)" }}>
-                각 카드 클릭 시 해당 교회의 사이트로 이동합니다
-              </span>
-            </div>
-          </div>
-          <div className="demo-grid">
-            {tenants.map((t) => (
-              <Link key={t.slug} href={tenantHref(t.slug)} className="demo-card">
-                <div className="demo-card-thumb">
-                  <LightRays style={{ position: "absolute", inset: 0, width: "100%", height: "100%", color: "white", opacity: 0.5 }} />
-                  <div className="demo-card-thumb-inner">
-                    <div className="demo-card-mark" />
-                    <div className="demo-card-name">{t.name}</div>
-                    <div className="demo-card-eng">{t.eng}</div>
-                  </div>
-                </div>
-                <div className="demo-card-body">
-                  <div className="demo-card-tag">{t.tagline}</div>
-                  <div className="demo-card-url">
-                    <span className="demo-card-url-prefix">{t.slug}.</span>everychurch.co.kr
-                  </div>
-                  <div className="demo-card-cta">
-                    데모 열기 <Icon.arrow style={{ width: 14, height: 14 }} />
-                  </div>
-                </div>
-              </Link>
-            ))}
-            <div className="demo-card demo-card-empty">
-              <div className="demo-card-empty-inner">
-                <Icon.cross style={{ width: 28, height: 28, color: "var(--muted-2)" }} />
-                <div className="demo-card-empty-title">우리 교회가<br />여기 들어갈 수 있어요</div>
-                <Link href="/login" className="btn btn-primary">
-                  지금 신청 <Icon.arrow style={{ width: 12, height: 12 }} />
-                </Link>
-              </div>
-            </div>
+            <span>7일 무료 체험</span>
           </div>
         </div>
       </section>
@@ -206,9 +144,9 @@ export default async function LandingPage() {
                 ))}
               </ul>
               <Link href="/login" className="btn btn-primary btn-lg" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
-                14일 무료로 시작 <Icon.arrow style={{ width: 14, height: 14 }} />
+                7일 무료로 시작 <Icon.arrow style={{ width: 14, height: 14 }} />
               </Link>
-              <p className="price-note">14일 동안 자유롭게 사용해보시고, 결제는 그 이후에 시작됩니다.</p>
+              <p className="price-note">사이트 운영을 시작하면 7일 무료 체험이 자동으로 시작됩니다.</p>
             </div>
           </div>
         </div>
@@ -244,14 +182,11 @@ export default async function LandingPage() {
             우리 교회의 다음 사역,<br />
             홈페이지에서 시작하세요
           </h2>
-          <p className="cta-banner-desc">월 1만원, 첫 14일 무료. 신청 후 5분이면 발급됩니다.</p>
+          <p className="cta-banner-desc">월 1만원, 첫 7일 무료. 신청 후 5분이면 발급됩니다.</p>
           <div className="cta-banner-buttons">
             <Link href="/login" className="btn btn-primary btn-lg" style={{ background: "white", color: "var(--primary-deep)" }}>
               <Icon.mail style={{ width: 16, height: 16 }} />
-              데모 신청 보내기
-            </Link>
-            <Link href={`/${tenants[0]?.slug ?? ""}`} className="btn btn-lg" style={{ background: "oklch(1 0 0 / 0.12)", color: "white", border: "1px solid oklch(1 0 0 / 0.2)" }}>
-              먼저 데모 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
+              지금 시작하기
             </Link>
           </div>
         </div>

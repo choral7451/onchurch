@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
-import { getTenant } from "@/lib/tenants";
+import { fetchPublicChurch } from "@/lib/public-site";
 
 type WorshipServiceTag = "MAIN" | "WEEK" | "DAILY";
 
@@ -44,32 +44,12 @@ async function fetchWorship(slug: string): Promise<WorshipData> {
 
 export default async function WorshipPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const D = getTenant(tenant);
-  if (!D) notFound();
+  const church = await fetchPublicChurch(tenant);
+  if (!church) notFound();
 
   const data = await fetchWorship(tenant);
-
-  const services: WorshipServiceItem[] =
-    data.services.length > 0
-      ? data.services
-      : D.worshipServices.map((w, i) => ({
-          id: i,
-          tag: w.tag,
-          name: w.name,
-          time: w.time,
-          meta: w.meta ?? null,
-          isFeatured: !!w.feat,
-        }));
-
-  const orders: WorshipOrderItem[] =
-    data.orders.length > 0
-      ? data.orders
-      : D.worshipOrder.map((row, i) => ({
-          id: i,
-          no: row[0],
-          item: row[1],
-          leader: row[2] ?? null,
-        }));
+  const services = data.services;
+  const orders = data.orders;
 
   return (
     <div>

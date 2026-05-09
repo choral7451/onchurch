@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
-import { getTenant } from "@/lib/tenants";
+import { fetchPublicChurch } from "@/lib/public-site";
 import { GalleryView } from "./view";
 
 const LAYOUT = [
@@ -38,30 +38,12 @@ async function fetchGallery(slug: string): Promise<{ categories: ApiCategory[]; 
 
 export default async function GalleryPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const D = getTenant(tenant);
-  if (!D) notFound();
+  const church = await fetchPublicChurch(tenant);
+  if (!church) notFound();
 
   const data = await fetchGallery(tenant);
-
-  let galleries: ApiGallery[];
-  let categories: ApiCategory[];
-
-  if (data.galleries.length > 0 || data.categories.length > 0) {
-    galleries = data.galleries;
-    categories = data.categories;
-  } else {
-    galleries = D.galleries.map((g, i) => ({
-      id: i,
-      categoryId: null,
-      title: g.title,
-      date: g.date,
-      photoUrl: g.photo ?? null,
-      grad: g.grad,
-    }));
-    categories = D.galleryCategories
-      .filter((c) => c !== "전체")
-      .map((c, i) => ({ id: i, name: c, isActive: true }));
-  }
+  const galleries = data.galleries;
+  const categories = data.categories;
 
   return (
     <div>

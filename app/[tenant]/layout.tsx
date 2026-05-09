@@ -3,22 +3,19 @@ import type { Metadata } from "next";
 import { UtilBar } from "@/components/shell/util-bar";
 import { Nav } from "@/components/shell/nav";
 import { Footer } from "@/components/shell/footer";
-import { getTenant, KNOWN_TENANT_SLUGS } from "@/lib/tenants";
+import { fetchPublicChurch, brandFromChurch, PUBLIC_NAV, PUBLIC_FOOTER_NAV } from "@/lib/public-site";
 import { getPathPrefix } from "@/lib/path-prefix";
 
 type Params = { tenant: string };
 
-export function generateStaticParams(): Params[] {
-  return KNOWN_TENANT_SLUGS.map((tenant) => ({ tenant }));
-}
-
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { tenant } = await params;
-  const data = getTenant(tenant);
-  if (!data) return { title: "Not Found" };
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "Not Found" };
+  const tagline = church.tagline ?? "";
   return {
-    title: `${data.brand.name} — ${data.brand.tagline}`,
-    description: data.brand.tagline,
+    title: tagline ? `${church.name} — ${tagline}` : church.name,
+    description: tagline || undefined,
   };
 }
 
@@ -30,17 +27,18 @@ export default async function TenantLayout({
   params: Promise<Params>;
 }) {
   const { tenant } = await params;
-  const data = getTenant(tenant);
-  if (!data) notFound();
+  const church = await fetchPublicChurch(tenant);
+  if (!church) notFound();
 
+  const brand = brandFromChurch(church);
   const pathPrefix = await getPathPrefix(tenant);
 
   return (
     <div className="app">
-      <UtilBar tagline={data.brand.tagline} />
-      <Nav tenant={tenant} brand={data.brand} nav={data.nav} pathPrefix={pathPrefix} />
+      <UtilBar tagline={brand.tagline} />
+      <Nav tenant={tenant} brand={brand} nav={PUBLIC_NAV} pathPrefix={pathPrefix} />
       <main>{children}</main>
-      <Footer brand={data.brand} footerNav={data.footerNav} />
+      <Footer brand={brand} footerNav={PUBLIC_FOOTER_NAV} />
     </div>
   );
 }

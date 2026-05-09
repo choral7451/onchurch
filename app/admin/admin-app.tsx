@@ -112,7 +112,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [churchExistsOnServer, setChurchExistsOnServer] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [publishLoading, setPublishLoading] = useState(false);
-  const [modal, setModal] = useState<null | "required" | "payment">(null);
+  const [modal, setModal] = useState<null | "required" | "payment" | "trial-started">(null);
+  const [trialEndDateLabel, setTrialEndDateLabel] = useState<string>("");
 
   const [aboutFilled, setAboutFilled] = useState(false);
   const [worshipFilled, setWorshipFilled] = useState(false);
@@ -316,7 +317,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
         setModal("required");
         return;
       }
-      if (!subscription?.isActive) {
+      // 첫 publish 시 서버가 자동으로 7일 무료 체험을 부여하므로 클라이언트에선 차단하지 않음.
+      // 체험/결제가 모두 만료된 재publish 만 차단.
+      if (!subscription?.isActive && subscription?.freeTrialUntil) {
         setModal("payment");
         return;
       }
@@ -325,7 +328,16 @@ export function AdminApp({ initial }: { initial: Initial }) {
     setPublishLoading(true);
     try {
       const updated = await onchurchChurch.publish(target);
-      setIsPublished(updated.isPublished);
+      setIsPublished(updated.church.isPublished);
+      setSubscription(updated.subscription);
+      if (target && updated.subscription.freeTrialUntil) {
+        const end = new Date(updated.subscription.freeTrialUntil);
+        const yyyy = end.getFullYear();
+        const mm = String(end.getMonth() + 1).padStart(2, "0");
+        const dd = String(end.getDate()).padStart(2, "0");
+        setTrialEndDateLabel(`${yyyy}년 ${mm}월 ${dd}일`);
+        setModal("trial-started");
+      }
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 401) {
@@ -764,7 +776,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </button>
                 </div>
               </>
-            ) : (
+            ) : modal === "payment" ? (
               <>
                 <h3 className="admin-modal-title">결제가 필요합니다</h3>
                 <p className="admin-modal-body">
@@ -783,6 +795,22 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     }}
                   >
                     결제하기
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="admin-modal-title">🎉 사이트 운영이 시작되었습니다</h3>
+                <p className="admin-modal-body">
+                  <strong>7일 무료 체험</strong>이 시작되었습니다.<br />
+                  종료일: <strong>{trialEndDateLabel}</strong><br />
+                  <span style={{ color: "var(--muted)", fontSize: 13 }}>
+                    체험 기간 동안 모든 기능을 자유롭게 사용해보세요. 종료 전에 결제하시면 끊김 없이 이어집니다.
+                  </span>
+                </p>
+                <div className="admin-modal-actions">
+                  <button type="button" className="btn btn-primary" onClick={() => setModal(null)}>
+                    확인
                   </button>
                 </div>
               </>

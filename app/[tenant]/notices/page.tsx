@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
-import { getTenant } from "@/lib/tenants";
+import { fetchPublicChurch } from "@/lib/public-site";
 import { NoticesList } from "./list";
 
 type Notice = {
@@ -34,8 +34,8 @@ async function fetchNotices(slug: string): Promise<{ notices: Notice[]; totalCou
 
 export default async function NoticesPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const D = getTenant(tenant);
-  if (!D) notFound();
+  const church = await fetchPublicChurch(tenant);
+  if (!church) notFound();
 
   const { notices } = await fetchNotices(tenant);
   const categories = Array.from(new Set(notices.map((n) => n.category).filter((c): c is string => !!c)));

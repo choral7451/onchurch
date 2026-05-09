@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
 import { Calendar } from "@/components/calendar";
-import { getTenant } from "@/lib/tenants";
+import { fetchPublicChurch } from "@/lib/public-site";
 
 type EventItem = {
   id: number;
@@ -30,8 +30,8 @@ async function fetchEvents(slug: string): Promise<EventItem[]> {
 
 export default async function SchedulePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const D = getTenant(tenant);
-  if (!D) notFound();
+  const church = await fetchPublicChurch(tenant);
+  if (!church) notFound();
 
   const events = await fetchEvents(tenant);
 

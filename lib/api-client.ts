@@ -247,7 +247,7 @@ export const onchurchChurch = {
       }),
     }),
   publish: (isPublished: boolean) =>
-    request<Church>("/onchurch/churches/me/publish", {
+    request<{ church: Church; subscription: Subscription }>("/onchurch/churches/me/publish", {
       method: "PUT",
       auth: true,
       body: JSON.stringify({ isPublished }),

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
-import { getTenant } from "@/lib/tenants";
+import { fetchPublicChurch } from "@/lib/public-site";
 import { AboutTabs } from "./tabs";
 
 type Pastor = {
@@ -63,8 +63,8 @@ async function fetchAbout(slug: string): Promise<AboutData> {
 
 export default async function AboutPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const D = getTenant(tenant);
-  if (!D) notFound();
+  const church = await fetchPublicChurch(tenant);
+  if (!church) notFound();
 
   const data = await fetchAbout(tenant);
 
