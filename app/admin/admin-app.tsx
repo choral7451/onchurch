@@ -738,7 +738,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <>
                 <h3 className="admin-modal-title">필수 정보가 부족합니다</h3>
                 <p className="admin-modal-body">
-                  사이트를 운영하려면 <strong>기본 정보</strong>, <strong>연락처</strong>, <strong>교회 소개</strong>(담임목사), <strong>예배 안내</strong>(예배 시간표)의 필수 항목을 모두 입력하고 저장해야 합니다.
+                  필수 항목(<strong>기본정보</strong>·<strong>연락처</strong>·<strong>교회 소개</strong>·<strong>예배 안내</strong>)이 모두 입력되어야 사이트를 운영할 수 있습니다.
                 </p>
                 <div className="admin-modal-actions">
                   <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>
