@@ -24,6 +24,7 @@ type AboutVisibility = { vision: boolean; history: boolean; staff: boolean };
 type AboutEditorProps = {
   visibility: AboutVisibility;
   onToggleVisibility: (key: keyof AboutVisibility, on: boolean) => void;
+  onChanged?: () => void;
 };
 
 const EMPTY_PASTOR: PastorWriteInput = {
@@ -41,7 +42,7 @@ const EMPTY_STAFF: StaffWriteInput = { name: "", role: "", area: "", photoUrl: "
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
-export function AboutEditor({ visibility, onToggleVisibility }: AboutEditorProps) {
+export function AboutEditor({ visibility, onToggleVisibility, onChanged }: AboutEditorProps) {
   const [section, setSection] = useState<SectionKey>("pastor");
 
   const subLabel: Record<SectionKey, string> = {
@@ -84,7 +85,7 @@ export function AboutEditor({ visibility, onToggleVisibility }: AboutEditorProps
           })}
         </div>
 
-        {section === "pastor" && <PastorEditor />}
+        {section === "pastor" && <PastorEditor onChanged={onChanged} />}
         {section === "vision" && (
           <VisionEditor visible={visibility.vision} onToggleVisible={(on) => onToggleVisibility("vision", on)} />
         )}
@@ -205,7 +206,7 @@ function PhotoUploadField({
   );
 }
 
-function PastorEditor() {
+function PastorEditor({ onChanged }: { onChanged?: () => void }) {
   const [pastor, setPastor] = useState<Pastor | null>(null);
   const [draft, setDraft] = useState<PastorWriteInput>(EMPTY_PASTOR);
   const [status, setStatus] = useState<Status>("loading");
@@ -259,6 +260,7 @@ function PastorEditor() {
       setPastor(updated);
       setSavedMsg("저장되었습니다.");
       setTimeout(() => setSavedMsg(""), 2000);
+      onChanged?.();
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "저장에 실패했습니다.");
     } finally {

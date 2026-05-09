@@ -37,11 +37,12 @@ const EMPTY_ORDER: WorshipOrderWriteInput = {
 type WorshipEditorProps = {
   orderVisible: boolean;
   onToggleOrderVisible: (on: boolean) => void;
+  onChanged?: () => void;
 };
 
 type SubKey = "services" | "orders";
 
-export function WorshipEditor({ orderVisible, onToggleOrderVisible }: WorshipEditorProps) {
+export function WorshipEditor({ orderVisible, onToggleOrderVisible, onChanged }: WorshipEditorProps) {
   const [section, setSection] = useState<SubKey>("services");
 
   return (
@@ -78,7 +79,7 @@ export function WorshipEditor({ orderVisible, onToggleOrderVisible }: WorshipEdi
           })}
         </div>
 
-        {section === "services" && <WorshipServicesEditor />}
+        {section === "services" && <WorshipServicesEditor onChanged={onChanged} />}
         {section === "orders" && (
           <WorshipOrdersEditor visible={orderVisible} onToggleVisible={onToggleOrderVisible} />
         )}
@@ -118,7 +119,7 @@ function SectionVisibilityToggle({ label, visible, onToggle }: { label: string; 
   );
 }
 
-function WorshipServicesEditor() {
+function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
   const [items, setItems] = useState<WorshipServiceItem[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<WorshipServiceWriteInput>(EMPTY_SERVICE);
@@ -168,6 +169,7 @@ function WorshipServicesEditor() {
       if (editing === 0 || editing === null) await onchurchWorshipService.create(payload);
       else await onchurchWorshipService.update(editing, payload);
       cancel(); await load();
+      onChanged?.();
     } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "저장에 실패했습니다."); }
     finally { setStatus("idle"); }
   }
@@ -175,7 +177,7 @@ function WorshipServicesEditor() {
   async function remove(id: number) {
     if (!confirm("이 예배 항목을 삭제할까요?")) return;
     setStatus("deleting"); setErrMsg("");
-    try { await onchurchWorshipService.remove(id); await load(); }
+    try { await onchurchWorshipService.remove(id); await load(); onChanged?.(); }
     catch (err) { setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다."); }
     finally { setStatus("idle"); }
   }

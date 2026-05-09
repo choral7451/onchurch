@@ -16,7 +16,14 @@ import type {
   Transportation,
   VisionItem,
 } from "@/lib/types";
-import { ApiError, clearTokens, onchurchChurch, type Subscription } from "@/lib/api-client";
+import {
+  ApiError,
+  clearTokens,
+  onchurchChurch,
+  onchurchPastor,
+  onchurchWorshipService,
+  type Subscription,
+} from "@/lib/api-client";
 import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
 import { ScheduleEditor } from "./page-editors/schedule";
@@ -109,6 +116,26 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [publishLoading, setPublishLoading] = useState(false);
   const [modal, setModal] = useState<null | "required" | "payment">(null);
 
+  const [aboutFilled, setAboutFilled] = useState(false);
+  const [worshipFilled, setWorshipFilled] = useState(false);
+
+  async function refreshRequiredStatus() {
+    try {
+      const [pastorRes, services] = await Promise.all([
+        onchurchPastor.getMine().catch(() => ({ pastor: null })),
+        onchurchWorshipService.listMine().catch(() => []),
+      ]);
+      setAboutFilled(!!pastorRes?.pastor?.name?.trim());
+      setWorshipFilled((services?.length ?? 0) > 0);
+    } catch {
+      // ignore — pill will just stay incomplete
+    }
+  }
+
+  useEffect(() => {
+    void refreshRequiredStatus();
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -159,7 +186,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const trimmedSlug = slug.trim();
   const siteRequiredFilled = !!trimmedSlug && !!name.trim() && slugCheck !== "taken";
   const contactRequiredFilled = !!phone.trim() && !!email.trim() && !!address.trim();
-  const allRequiredFilled = siteRequiredFilled && contactRequiredFilled;
+  const allRequiredFilled = siteRequiredFilled && contactRequiredFilled && aboutFilled && worshipFilled;
 
   useEffect(() => {
     if (!loaded) return;
@@ -412,8 +439,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 const on = boards[n.id] ?? true;
                 const isActive = activeSection === `page:${n.id}`;
                 const isRequired = n.id === "about" || n.id === "worship";
+                const requiredFilled =
+                  n.id === "about" ? aboutFilled : n.id === "worship" ? worshipFilled : false;
+                const completionClass = isRequired
+                  ? requiredFilled
+                    ? "is-complete"
+                    : "is-incomplete"
+                  : "";
                 return (
-                  <div key={n.id} className={`admin-sidebar-page ${isActive ? "active" : ""}`}>
+                  <div
+                    key={n.id}
+                    className={`admin-sidebar-page ${isActive ? "active" : ""} ${completionClass}`}
+                  >
                     <button
                       type="button"
                       className="admin-sidebar-page-label"
@@ -422,8 +459,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       <span>{n.label}</span>
                     </button>
                     {isRequired ? (
-                      <span className="admin-sidebar-pill complete" aria-label="필수 섹션" style={{ fontSize: 10 }}>
-                        필수
+                      <span
+                        className={`admin-sidebar-pill ${requiredFilled ? "complete" : "incomplete"}`}
+                        aria-label={requiredFilled ? "필수 항목 입력 완료" : "필수 항목 미입력"}
+                        style={{ fontSize: 10 }}
+                      >
+                        {requiredFilled ? "필수 ✓" : "필수 미입력"}
                       </span>
                     ) : (
                       <button
@@ -613,6 +654,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <WorshipEditor
                       orderVisible={boards["worship-order"] ?? true}
                       onToggleOrderVisible={(on) => setBoards((prev) => ({ ...prev, ["worship-order"]: on }))}
+                      onChanged={refreshRequiredStatus}
                     />
                   )}
 
@@ -628,6 +670,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         staff: boards["about-staff"] ?? true,
                       }}
                       onToggleVisibility={setAboutSubSection}
+                      onChanged={refreshRequiredStatus}
                     />
                   )}
 
@@ -695,7 +738,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <>
                 <h3 className="admin-modal-title">필수 정보가 부족합니다</h3>
                 <p className="admin-modal-body">
-                  사이트를 운영하려면 <strong>기본 정보</strong>와 <strong>연락처</strong>의 필수 항목을 모두 입력하고 저장해야 합니다.
+                  사이트를 운영하려면 <strong>기본 정보</strong>, <strong>연락처</strong>, <strong>교회 소개</strong>(담임목사), <strong>예배 안내</strong>(예배 시간표)의 필수 항목을 모두 입력하고 저장해야 합니다.
                 </p>
                 <div className="admin-modal-actions">
                   <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>
@@ -706,7 +749,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     className="btn btn-primary"
                     onClick={() => {
                       setModal(null);
-                      setActiveSection(siteRequiredFilled ? "contact" : "site");
+                      if (!siteRequiredFilled) setActiveSection("site");
+                      else if (!contactRequiredFilled) setActiveSection("contact");
+                      else if (!aboutFilled) setActiveSection("page:about" as SectionKey);
+                      else if (!worshipFilled) setActiveSection("page:worship" as SectionKey);
                     }}
                   >
                     필수 정보 입력하기
