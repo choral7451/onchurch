@@ -55,7 +55,6 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   departments: "유아부부터 청년부까지 · 소그룹",
   prayer: "기도 요청 폼 · 익명 옵션",
   gallery: "사진 갤러리",
-  directions: "찾아오시는 길 · 지도 · 대중교통",
   bible: "성경 통독 · QT 가이드",
 };
 
@@ -410,7 +409,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">페이지</div>
-              {initial.nav.map((n) => {
+              {initial.nav.filter((n) => n.id !== "directions").map((n) => {
                 const on = boards[n.id] ?? true;
                 const isActive = activeSection === `page:${n.id}`;
                 const isRequired = n.id === "about";
@@ -594,6 +593,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <input id="ad-address" type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="서울특별시 강남구 테헤란로 ..." required />
                       </div>
                     </div>
+                    <DirectionsEditor />
                   </div>
                 </section>
               )}
@@ -634,8 +634,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     />
                   )}
 
-                  {activePage === "directions" && <DirectionsEditor />}
-
                   {activePage === "gallery" && (
                     <GalleryEditor
                       galleries={galleries}
@@ -649,7 +647,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     activePage !== "notices" &&
                     activePage !== "schedule" &&
                     activePage !== "about" &&
-                    activePage !== "directions" &&
                     activePage !== "gallery" && (
                       <section className="admin-section admin-section-empty">
                         <div className="admin-section-head">
