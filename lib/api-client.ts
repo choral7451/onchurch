@@ -686,3 +686,73 @@ export const onchurchWorshipOrder = {
   remove: (id: number) =>
     request<unknown>(`/onchurch/worship-orders/me/${id}`, { method: "DELETE", auth: true }),
 };
+
+export type SermonSeriesItem = {
+  id: number;
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type SermonSeriesWriteInput = {
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type SermonItem = {
+  id: number;
+  seriesId: number | null;
+  title: string;
+  pastor: string | null;
+  date: string | null;
+  duration: string | null;
+  videoUrl: string | null;
+  thumbnailUrl: string | null;
+  bulletinUrl: string | null;
+  summary: string | null;
+  isFeatured: boolean;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type SermonWriteInput = {
+  seriesId: number | null;
+  title: string;
+  pastor?: string | null;
+  date?: string | null;
+  duration?: string | null;
+  videoUrl?: string | null;
+  thumbnailUrl?: string | null;
+  bulletinUrl?: string | null;
+  summary?: string | null;
+  isFeatured: boolean;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export const onchurchSermonSeries = {
+  listMine: () =>
+    request<{ series: SermonSeriesItem[] }>("/onchurch/sermon-series/me", { method: "GET", auth: true }).then(
+      (r) => r.series ?? [],
+    ),
+  create: (input: SermonSeriesWriteInput) =>
+    request<SermonSeriesItem>("/onchurch/sermon-series/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: SermonSeriesWriteInput) =>
+    request<SermonSeriesItem>(`/onchurch/sermon-series/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/sermon-series/me/${id}`, { method: "DELETE", auth: true }),
+};
+
+export const onchurchSermon = {
+  listMine: () =>
+    request<{ sermons: SermonItem[] }>("/onchurch/sermons/me", { method: "GET", auth: true }).then(
+      (r) => r.sermons ?? [],
+    ),
+  create: (input: SermonWriteInput) =>
+    request<SermonItem>("/onchurch/sermons/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: SermonWriteInput) =>
+    request<SermonItem>(`/onchurch/sermons/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/sermons/me/${id}`, { method: "DELETE", auth: true }),
+};

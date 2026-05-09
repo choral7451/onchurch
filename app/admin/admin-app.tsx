@@ -31,6 +31,7 @@ import { AboutEditor } from "./page-editors/about";
 import { DirectionsEditor } from "./page-editors/directions";
 import { GalleryEditor } from "./page-editors/gallery";
 import { BannersEditor } from "./page-editors/banners";
+import { SermonsEditor } from "./page-editors/sermons";
 
 type Initial = {
   slug: string;
@@ -674,6 +675,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     />
                   )}
 
+                  {activePage === "sermons" && <SermonsEditor />}
+
                   {activePage === "gallery" && (
                     <GalleryEditor
                       galleries={galleries}
@@ -687,6 +690,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     activePage !== "notices" &&
                     activePage !== "schedule" &&
                     activePage !== "about" &&
+                    activePage !== "sermons" &&
                     activePage !== "gallery" && (
                       <section className="admin-section admin-section-empty">
                         <div className="admin-section-head">
