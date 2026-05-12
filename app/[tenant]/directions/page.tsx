@@ -60,8 +60,7 @@ async function ChurchInfoSection({ tenant }: { tenant: string }) {
             <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>주소</span>
           </div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5 }}>
-            {address.split(" ").slice(0, 2).join(" ")}<br />
-            {address.split(" ").slice(2).join(" ")}
+            {address || <span style={{ color: "var(--muted)", fontWeight: 400 }}>등록된 주소가 없습니다.</span>}
           </div>
         </div>
         <div className="card">
@@ -70,20 +69,24 @@ async function ChurchInfoSection({ tenant }: { tenant: string }) {
             <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>연락처</span>
           </div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5 }}>
-            {phone}
-            <br />
-            <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>{email}</span>
+            {phone ? (
+              <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} style={{ color: "inherit", textDecoration: "none" }}>{phone}</a>
+            ) : (
+              <span style={{ color: "var(--muted)", fontWeight: 400 }}>등록된 연락처가 없습니다.</span>
+            )}
           </div>
         </div>
         <div className="card">
           <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--accent)", marginBottom: 10 }}>
-            <Icon.clock />
-            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>사무실</span>
+            <Icon.mail />
+            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>이메일</span>
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5 }}>
-            평일 09:00 — 18:00
-            <br />
-            <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>토요일 09:00 — 14:00</span>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5, wordBreak: "break-all" }}>
+            {email ? (
+              <a href={`mailto:${email}`} style={{ color: "inherit", textDecoration: "none" }}>{email}</a>
+            ) : (
+              <span style={{ color: "var(--muted)", fontWeight: 400 }}>등록된 이메일이 없습니다.</span>
+            )}
           </div>
         </div>
       </div>
