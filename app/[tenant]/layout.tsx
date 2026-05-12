@@ -36,7 +36,7 @@ export default async function TenantLayout({
   return (
     <div className="app">
       <UtilBar tagline={brand.tagline} />
-      <Nav tenant={tenant} brand={brand} nav={PUBLIC_NAV} pathPrefix={pathPrefix} />
+      <Nav tenant={tenant} brand={brand} nav={PUBLIC_NAV} pathPrefix={pathPrefix} enabledPages={church.enabledPages} />
       <main>{children}</main>
       <Footer brand={brand} footerNav={PUBLIC_FOOTER_NAV} />
     </div>

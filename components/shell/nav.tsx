@@ -10,9 +10,10 @@ type Props = {
   brand: Brand;
   nav: NavItem[];
   pathPrefix: string;
+  enabledPages?: string[];
 };
 
-export function Nav({ tenant, brand, nav, pathPrefix }: Props) {
+export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
   const pathname = usePathname();
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const base = `/${tenant}`;
@@ -28,6 +29,10 @@ export function Nav({ tenant, brand, nav, pathPrefix }: Props) {
     );
   };
 
+  const visibleNav = enabledPages && enabledPages.length > 0
+    ? nav.filter((item) => enabledPages.includes(item.id))
+    : nav;
+
   return (
     <nav className="nav">
       <div className="nav-inner">
@@ -39,7 +44,7 @@ export function Nav({ tenant, brand, nav, pathPrefix }: Props) {
           </div>
         </Link>
         <div className="nav-links">
-          {nav.map((item) => (
+          {visibleNav.map((item) => (
             <Link key={item.id} href={link(item.href)} className={`nav-link ${isActive(item.href) ? "active" : ""}`}>
               {item.label}
             </Link>

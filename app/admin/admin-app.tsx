@@ -98,6 +98,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const ABOUT_SUB_KEYS = ["about-vision", "about-history", "about-staff"] as const;
   const WORSHIP_SUB_KEYS = ["worship-order"] as const;
+  const HOME_SECTION_KEYS = [
+    { id: "home-news", label: "최근 소식 영역" },
+  ] as const;
 
   const [boards, setBoards] = useState<Record<string, boolean>>(
     () => {
@@ -106,6 +109,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       base["worship"] = true;
       for (const k of ABOUT_SUB_KEYS) base[k] = true;
       for (const k of WORSHIP_SUB_KEYS) base[k] = true;
+      for (const k of HOME_SECTION_KEYS) base[k.id] = true;
       return base;
     },
   );
@@ -173,6 +177,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
             next["worship"] = true;
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             for (const k of WORSHIP_SUB_KEYS) next[k] = c.enabledPages.includes(k);
+            for (const k of HOME_SECTION_KEYS) next[k.id] = c.enabledPages.includes(k.id);
             setBoards(next);
           }
           setIsPublished(c.isPublished);
@@ -470,6 +475,27 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 <span className="admin-sidebar-item-label">홈 배너</span>
                 <span className="admin-sidebar-pill optional">선택</span>
               </button>
+            </div>
+
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">홈 화면</div>
+              {HOME_SECTION_KEYS.map((s) => {
+                const on = boards[s.id] ?? true;
+                return (
+                  <div key={s.id} className="admin-sidebar-page">
+                    <span className="admin-sidebar-page-label" style={{ cursor: "default" }}>
+                      <span>{s.label}</span>
+                    </span>
+                    <button
+                      type="button"
+                      className={`toggle ${on ? "on" : ""}`}
+                      onClick={() => toggleBoard(s.id)}
+                      aria-label={`${s.label} 활성화`}
+                      aria-pressed={on}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             <div className="admin-sidebar-group">

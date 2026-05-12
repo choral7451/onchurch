@@ -301,6 +301,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const pathPrefix = await getPathPrefix(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
   const slug = encodeURIComponent(tenant);
+  const showHomeNews = (church.enabledPages?.length ?? 0) === 0 || church.enabledPages.includes("home-news");
 
   return (
     <div>
@@ -312,6 +313,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         <div className="hero-bg">
           <Mesh style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }} />
         </div>
+        {showHomeNews && (
         <div className="hero-inner">
           <div className="news-feature">
             <LightRays className="news-feature-bg" style={{ width: "100%", height: "100%", position: "absolute", inset: 0, color: "white" }} />
@@ -342,6 +344,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
             </Suspense>
           </div>
         </div>
+        )}
 
         <div className="container">
           <div className="quick-strip">
