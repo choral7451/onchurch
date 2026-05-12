@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { PageHeader } from "@/components/shell/page-header";
 
-type WorshipServiceTag = "MAIN" | "WEEK" | "DAILY";
+type WorshipServiceTag = "WEEK" | "DAILY";
 
 type WorshipServiceItem = {
   id: number;

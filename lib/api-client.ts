@@ -621,7 +621,7 @@ export const onchurchAbout = {
     request<PublicAbout>(`/onchurch/sites/${encodeURIComponent(slug)}/about`, { method: "GET" }),
 };
 
-export type WorshipServiceTag = "MAIN" | "WEEK" | "DAILY";
+export type WorshipServiceTag = "WEEK" | "DAILY";
 
 export type WorshipServiceItem = {
   id: number;

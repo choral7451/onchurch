@@ -32,7 +32,7 @@ export type NewsItem = {
 };
 
 export type WorshipService = {
-  tag: "MAIN" | "WEEK" | "DAILY";
+  tag: "WEEK" | "DAILY";
   name: string;
   time: string;
   meta: string;

@@ -14,10 +14,10 @@ import {
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
-const TAGS: WorshipServiceTag[] = ["MAIN", "WEEK", "DAILY"];
+const TAGS: WorshipServiceTag[] = ["WEEK", "DAILY"];
 
 const EMPTY_SERVICE: WorshipServiceWriteInput = {
-  tag: "MAIN",
+  tag: "WEEK",
   name: "",
   time: "",
   meta: "",

@@ -49,7 +49,7 @@ type PublicEvent = {
 
 type PublicWorshipService = {
   id: number;
-  tag: "MAIN" | "WEEK" | "DAILY";
+  tag: "WEEK" | "DAILY";
   name: string;
   time: string;
   meta: string | null;

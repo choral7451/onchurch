@@ -38,9 +38,9 @@ export const SITE_DATA: SiteData = {
     ],
   },
   worshipServices: [
-    { tag: "MAIN", name: "주일 1부 예배", time: "오전 09:00", meta: "본당 · 1시간 30분" },
-    { tag: "MAIN", name: "주일 2부 예배", time: "오전 11:00", meta: "본당 · 1시간 30분", feat: true },
-    { tag: "MAIN", name: "주일 3부 예배", time: "오후 02:00", meta: "본당 · 청년 중심" },
+    { tag: "WEEK", name: "주일 1부 예배", time: "오전 09:00", meta: "본당 · 1시간 30분" },
+    { tag: "WEEK", name: "주일 2부 예배", time: "오전 11:00", meta: "본당 · 1시간 30분", feat: true },
+    { tag: "WEEK", name: "주일 3부 예배", time: "오후 02:00", meta: "본당 · 청년 중심" },
     { tag: "WEEK", name: "수요예배", time: "오후 07:30", meta: "본당 · 1시간" },
     { tag: "WEEK", name: "금요철야", time: "오후 09:00", meta: "본당 · 2시간" },
     { tag: "DAILY", name: "새벽기도회", time: "오전 05:30", meta: "본당 · 매일" },
