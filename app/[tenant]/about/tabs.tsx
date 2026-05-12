@@ -48,22 +48,30 @@ type Props = {
   vision: VisionItem[];
   history: HistoryItem[];
   staff: StaffMember[];
+  enabledPages?: string[];
 };
 
-export function AboutTabs({ pastor, vision, history, staff }: Props) {
+export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Props) {
+  const enabled = enabledPages ?? [];
+  const isOn = (key: string) => enabled.length === 0 || enabled.includes(key);
+  const visibleTabs = TABS.filter((t) => {
+    if (t.id === "greeting") return true;
+    return isOn(`about-${t.id}`);
+  });
   const [tab, setTab] = useState<TabId>("greeting");
+  const activeTab = visibleTabs.some((t) => t.id === tab) ? tab : "greeting";
 
   return (
     <>
       <div className="tabs">
-        {TABS.map((t) => (
-          <div key={t.id} className={`tab ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
+        {visibleTabs.map((t) => (
+          <div key={t.id} className={`tab ${activeTab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
             {t.label}
           </div>
         ))}
       </div>
 
-      {tab === "greeting" && (
+      {activeTab === "greeting" && (
         pastor ? (
           <div className="pastor-section">
             <div className="pastor-photo">
@@ -98,7 +106,7 @@ export function AboutTabs({ pastor, vision, history, staff }: Props) {
         )
       )}
 
-      {tab === "vision" && (
+      {activeTab === "vision" && (
         vision.length === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 비전이 등록되지 않았습니다.</div>
         ) : (
@@ -114,7 +122,7 @@ export function AboutTabs({ pastor, vision, history, staff }: Props) {
         )
       )}
 
-      {tab === "history" && (
+      {activeTab === "history" && (
         history.length === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 교회 연혁이 등록되지 않았습니다.</div>
         ) : (
@@ -132,7 +140,7 @@ export function AboutTabs({ pastor, vision, history, staff }: Props) {
         )
       )}
 
-      {tab === "staff" && (
+      {activeTab === "staff" && (
         staff.length === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 교역자 정보가 등록되지 않았습니다.</div>
         ) : (

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { PageHeader } from "@/components/shell/page-header";
+import { fetchPublicChurch } from "@/lib/public-site";
 import { AboutTabs } from "./tabs";
 
 type Pastor = {
@@ -61,9 +62,18 @@ async function fetchAbout(slug: string): Promise<AboutData> {
 }
 
 async function AboutContent({ tenant }: { tenant: string }) {
-  const data = await fetchAbout(tenant);
+  const [data, church] = await Promise.all([
+    fetchAbout(tenant),
+    fetchPublicChurch(tenant),
+  ]);
   return (
-    <AboutTabs pastor={data.pastor} vision={data.visions} history={data.histories} staff={data.staffs} />
+    <AboutTabs
+      pastor={data.pastor}
+      vision={data.visions}
+      history={data.histories}
+      staff={data.staffs}
+      enabledPages={church?.enabledPages ?? []}
+    />
   );
 }
 
