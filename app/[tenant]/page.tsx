@@ -301,7 +301,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const pathPrefix = await getPathPrefix(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
   const slug = encodeURIComponent(tenant);
-  const showHomeNews = (church.enabledPages?.length ?? 0) === 0 || church.enabledPages.includes("home-news");
+  const showHomeNews = (church.enabledPages?.length ?? 0) === 0 || church.enabledPages.includes("notices");
 
   return (
     <div>

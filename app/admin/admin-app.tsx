@@ -98,9 +98,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const ABOUT_SUB_KEYS = ["about-vision", "about-history", "about-staff"] as const;
   const WORSHIP_SUB_KEYS = ["worship-order"] as const;
-  const HOME_SECTION_KEYS = [
-    { id: "home-news", label: "최근 소식 영역" },
-  ] as const;
 
   const [boards, setBoards] = useState<Record<string, boolean>>(
     () => {
@@ -109,7 +106,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
       base["worship"] = true;
       for (const k of ABOUT_SUB_KEYS) base[k] = true;
       for (const k of WORSHIP_SUB_KEYS) base[k] = true;
-      for (const k of HOME_SECTION_KEYS) base[k.id] = true;
       return base;
     },
   );
@@ -177,7 +173,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
             next["worship"] = true;
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             for (const k of WORSHIP_SUB_KEYS) next[k] = c.enabledPages.includes(k);
-            for (const k of HOME_SECTION_KEYS) next[k.id] = c.enabledPages.includes(k.id);
             setBoards(next);
           }
           setIsPublished(c.isPublished);
@@ -265,13 +260,47 @@ export function AdminApp({ initial }: { initial: Initial }) {
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  async function persistEnabledPages(nextBoards: Record<string, boolean>) {
+    if (!churchExistsOnServer || !slug.trim() || !name.trim()) return;
+    const enabledPages = Object.entries(nextBoards).filter(([, on]) => on).map(([id]) => id);
+    try {
+      await onchurchChurch.upsertMine({
+        slug,
+        name,
+        eng: eng || null,
+        tagline: tagline || null,
+        phone: phone || null,
+        email: email || null,
+        address: address || null,
+        representative: null,
+        businessNo: null,
+        logoUrl: logoPreview || null,
+        enabledPages,
+      });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        clearTokens();
+        router.push("/login");
+      }
+      // 다른 오류는 조용히 무시 — 다음 명시적 저장 시 재시도
+    }
+  }
+
   function toggleBoard(id: string) {
     if (id === "about") return;
-    setBoards((prev) => ({ ...prev, [id]: !prev[id] }));
+    setBoards((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      void persistEnabledPages(next);
+      return next;
+    });
   }
 
   function setAboutSubSection(key: "vision" | "history" | "staff", on: boolean) {
-    setBoards((prev) => ({ ...prev, [`about-${key}`]: on }));
+    setBoards((prev) => {
+      const next = { ...prev, [`about-${key}`]: on };
+      void persistEnabledPages(next);
+      return next;
+    });
   }
 
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
@@ -475,27 +504,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 <span className="admin-sidebar-item-label">홈 배너</span>
                 <span className="admin-sidebar-pill optional">선택</span>
               </button>
-            </div>
-
-            <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">홈 화면</div>
-              {HOME_SECTION_KEYS.map((s) => {
-                const on = boards[s.id] ?? true;
-                return (
-                  <div key={s.id} className="admin-sidebar-page">
-                    <span className="admin-sidebar-page-label" style={{ cursor: "default" }}>
-                      <span>{s.label}</span>
-                    </span>
-                    <button
-                      type="button"
-                      className={`toggle ${on ? "on" : ""}`}
-                      onClick={() => toggleBoard(s.id)}
-                      aria-label={`${s.label} 활성화`}
-                      aria-pressed={on}
-                    />
-                  </div>
-                );
-              })}
             </div>
 
             <div className="admin-sidebar-group">
@@ -719,7 +727,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   {activePage === "worship" && (
                     <WorshipEditor
                       orderVisible={boards["worship-order"] ?? true}
-                      onToggleOrderVisible={(on) => setBoards((prev) => ({ ...prev, ["worship-order"]: on }))}
+                      onToggleOrderVisible={(on) => setBoards((prev) => {
+                        const next = { ...prev, ["worship-order"]: on };
+                        void persistEnabledPages(next);
+                        return next;
+                      })}
                       onChanged={refreshRequiredStatus}
                     />
                   )}
