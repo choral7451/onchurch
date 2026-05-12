@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
+import { AddressPicker } from "@/components/address-picker";
 import type {
   Brand,
   EventItem,
@@ -707,7 +708,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <label htmlFor="ad-address">
                           주소 <span className="required-mark" aria-hidden="true">*</span>
                         </label>
-                        <input id="ad-address" type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="서울특별시 강남구 테헤란로 ..." required />
+                        <AddressPicker
+                          id="ad-address"
+                          value={address}
+                          onChange={setAddress}
+                          placeholder="서울특별시 강남구 테헤란로 ..."
+                          required
+                          churchName={name}
+                        />
                       </div>
                     </div>
                     <DirectionsEditor />
