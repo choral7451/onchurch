@@ -4,7 +4,35 @@ import type { Metadata } from "next";
 import type { PublicChurch } from "@/lib/public-site";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
-const ROOT_DOMAINS = ["everychurch.co.kr", "onchurch.kr"];
+export const ROOT_DOMAINS = ["everychurch.co.kr", "onchurch.kr"];
+
+// 현재 요청 host 가 어떤 모드인지 판별
+// - "subdomain": tenant.{root} 형태 → 서브도메인이 곧 한 교회 사이트
+// - "root": ROOT_DOMAINS 자체 → 서비스 랜딩
+// - "unknown": 그 외
+export type HostKind = "subdomain" | "root" | "unknown";
+
+export type ResolvedHost = {
+  kind: HostKind;
+  host: string;
+  tenant: string | null;
+};
+
+export async function resolveHost(): Promise<ResolvedHost> {
+  const h = await headers();
+  const host = ((h.get("host") ?? "").split(",")[0] ?? "").split(":")[0]?.trim() ?? "";
+  for (const root of ROOT_DOMAINS) {
+    if (host === root) return { kind: "root", host, tenant: null };
+    if (host.endsWith(`.${root}`)) {
+      return { kind: "subdomain", host, tenant: host.slice(0, -1 * (root.length + 1)) };
+    }
+  }
+  if (host === "localhost" || host === "127.0.0.1") return { kind: "root", host, tenant: null };
+  if (host.endsWith(".localhost")) {
+    return { kind: "subdomain", host, tenant: host.slice(0, -".localhost".length) };
+  }
+  return { kind: "unknown", host, tenant: null };
+}
 
 export type PublicPastor = {
   id: number;
