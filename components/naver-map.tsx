@@ -49,8 +49,15 @@ function loadNaverSdk(clientId: string): Promise<NaverNamespace> {
       existing.addEventListener("error", () => reject(new Error("naver sdk load error")));
       return;
     }
+    // 네이버 SDK 는 발급 시기에 따라 `ncpKeyId`(신규) 또는 `ncpClientId`(구버전) 사용.
+    // 두 파라미터를 함께 보내면 어느 쪽 키든 동작.
+    const params = new URLSearchParams({
+      ncpKeyId: clientId,
+      ncpClientId: clientId,
+      submodules: "geocoder",
+    });
     const script = document.createElement("script");
-    script.src = `${SDK_BASE}?ncpKeyId=${encodeURIComponent(clientId)}&submodules=geocoder`;
+    script.src = `${SDK_BASE}?${params.toString()}`;
     script.async = true;
     script.dataset.naverSdk = "1";
     script.onload = onReady;
