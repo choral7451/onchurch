@@ -49,17 +49,17 @@ function loadGoogleSdk(apiKey: string): Promise<GoogleNamespace> {
       existing.addEventListener("error", () => reject(new Error("google sdk load error")));
       return;
     }
+    // `loading=async` 모드는 Geocoder 등을 importLibrary() 로 받아야 하는 새 패턴이라
+    // 즉시 `new google.maps.Geocoder()` 호출이 실패함. 동기 부트스트랩으로 고정.
     const params = new URLSearchParams({
       key: apiKey,
       v: "weekly",
-      loading: "async",
       language: "ko",
       region: "KR",
     });
     const script = document.createElement("script");
     script.src = `${SDK_BASE}?${params.toString()}`;
     script.async = true;
-    script.defer = true;
     script.dataset.googleSdk = "1";
     script.onload = onReady;
     script.onerror = () => reject(new Error("google sdk load error"));
