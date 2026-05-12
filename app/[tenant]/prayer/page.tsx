@@ -1,12 +1,6 @@
-import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
-import { fetchPublicChurch } from "@/lib/public-site";
 
-export default async function PrayerPage({ params }: { params: Promise<{ tenant: string }> }) {
-  const { tenant } = await params;
-  const church = await fetchPublicChurch(tenant);
-  if (!church) notFound();
-
+export default function PrayerPage() {
   return (
     <div>
       <PageHeader

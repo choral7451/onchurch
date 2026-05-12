@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/shell/page-header";
-import { fetchPublicChurch } from "@/lib/public-site";
 import { AboutTabs } from "./tabs";
 
 type Pastor = {
@@ -61,13 +60,25 @@ async function fetchAbout(slug: string): Promise<AboutData> {
   }
 }
 
+async function AboutContent({ tenant }: { tenant: string }) {
+  const data = await fetchAbout(tenant);
+  return (
+    <AboutTabs pastor={data.pastor} vision={data.visions} history={data.histories} staff={data.staffs} />
+  );
+}
+
+function AboutSkeleton() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <span className="skel" style={{ width: 320, height: 32 }} />
+      <span className="skel" style={{ width: "100%", height: 220 }} />
+      <span className="skel" style={{ width: "100%", height: 160 }} />
+    </div>
+  );
+}
+
 export default async function AboutPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const church = await fetchPublicChurch(tenant);
-  if (!church) notFound();
-
-  const data = await fetchAbout(tenant);
-
   return (
     <div>
       <PageHeader
@@ -77,7 +88,9 @@ export default async function AboutPage({ params }: { params: Promise<{ tenant: 
       />
       <section className="section">
         <div className="container">
-          <AboutTabs pastor={data.pastor} vision={data.visions} history={data.histories} staff={data.staffs} />
+          <Suspense fallback={<AboutSkeleton />}>
+            <AboutContent tenant={tenant} />
+          </Suspense>
         </div>
       </section>
     </div>

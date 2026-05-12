@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/shell/page-header";
-import { fetchPublicChurch } from "@/lib/public-site";
 import { SermonsList } from "./list";
 import { SermonCard } from "@/components/sermon-card";
 import type { Sermon } from "@/lib/types";
@@ -39,13 +38,8 @@ async function fetchSermons(slug: string): Promise<{ series: ApiSermonSeries[]; 
   }
 }
 
-export default async function SermonsPage({ params }: { params: Promise<{ tenant: string }> }) {
-  const { tenant } = await params;
-  const church = await fetchPublicChurch(tenant);
-  if (!church) notFound();
-
+async function SermonsContent({ tenant }: { tenant: string }) {
   const data = await fetchSermons(tenant);
-
   const seriesById = new Map(data.series.map((s) => [s.id, s.name] as const));
   const sermons: Sermon[] = data.sermons.map((s, i) => ({
     series: s.seriesId != null ? seriesById.get(s.seriesId) ?? "미분류" : "미분류",
@@ -59,6 +53,35 @@ export default async function SermonsPage({ params }: { params: Promise<{ tenant
   const filters: string[] = ["전체", ...data.series.map((s) => s.name)];
 
   return (
+    <>
+      <div className="sermon-grid" style={{ marginBottom: 56 }}>
+        {sermons[0] && <SermonCard sermon={sermons[0]} feat />}
+        {sermons[1] && <SermonCard sermon={sermons[1]} />}
+        {sermons[2] && <SermonCard sermon={sermons[2]} />}
+      </div>
+      <SermonsList sermons={sermons} filters={filters} />
+    </>
+  );
+}
+
+function SermonsSkeleton() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 16, marginBottom: 40 }}>
+        <span className="skel" style={{ width: "100%", height: 280 }} />
+        <span className="skel" style={{ width: "100%", height: 280 }} />
+        <span className="skel" style={{ width: "100%", height: 280 }} />
+      </div>
+      <span className="skel" style={{ width: 220, height: 32 }} />
+      <span className="skel" style={{ width: "100%", height: 80 }} />
+      <span className="skel" style={{ width: "100%", height: 80 }} />
+    </div>
+  );
+}
+
+export default async function SermonsPage({ params }: { params: Promise<{ tenant: string }> }) {
+  const { tenant } = await params;
+  return (
     <div>
       <PageHeader
         eyebrow="SERMONS"
@@ -67,12 +90,9 @@ export default async function SermonsPage({ params }: { params: Promise<{ tenant
       />
       <section className="section">
         <div className="container">
-          <div className="sermon-grid" style={{ marginBottom: 56 }}>
-            {sermons[0] && <SermonCard sermon={sermons[0]} feat />}
-            {sermons[1] && <SermonCard sermon={sermons[1]} />}
-            {sermons[2] && <SermonCard sermon={sermons[2]} />}
-          </div>
-          <SermonsList sermons={sermons} filters={filters} />
+          <Suspense fallback={<SermonsSkeleton />}>
+            <SermonsContent tenant={tenant} />
+          </Suspense>
         </div>
       </section>
     </div>

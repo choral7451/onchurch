@@ -1,7 +1,6 @@
-import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/shell/page-header";
 import { Calendar } from "@/components/calendar";
-import { fetchPublicChurch } from "@/lib/public-site";
 
 type EventItem = {
   id: number;
@@ -28,13 +27,17 @@ async function fetchEvents(slug: string): Promise<EventItem[]> {
   }
 }
 
+async function ScheduleContent({ tenant }: { tenant: string }) {
+  const events = await fetchEvents(tenant);
+  return <Calendar events={events} />;
+}
+
+function ScheduleSkeleton() {
+  return <span className="skel" style={{ width: "100%", height: 520 }} />;
+}
+
 export default async function SchedulePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const church = await fetchPublicChurch(tenant);
-  if (!church) notFound();
-
-  const events = await fetchEvents(tenant);
-
   return (
     <div>
       <PageHeader
@@ -44,7 +47,9 @@ export default async function SchedulePage({ params }: { params: Promise<{ tenan
       />
       <section className="section">
         <div className="container">
-          <Calendar events={events} />
+          <Suspense fallback={<ScheduleSkeleton />}>
+            <ScheduleContent tenant={tenant} />
+          </Suspense>
         </div>
       </section>
     </div>

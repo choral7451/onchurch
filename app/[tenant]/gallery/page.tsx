@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/shell/page-header";
-import { fetchPublicChurch } from "@/lib/public-site";
 import { GalleryView } from "./view";
 
 const LAYOUT = [
@@ -36,21 +35,35 @@ async function fetchGallery(slug: string): Promise<{ categories: ApiCategory[]; 
   }
 }
 
+async function GalleryContent({ tenant }: { tenant: string }) {
+  const data = await fetchGallery(tenant);
+  return <GalleryView categories={data.categories} galleries={data.galleries} layout={LAYOUT} />;
+}
+
+function GallerySkeleton() {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 12 }}>
+      <span className="skel" style={{ gridColumn: "span 6", height: 320 }} />
+      <span className="skel" style={{ gridColumn: "span 3", height: 320 }} />
+      <span className="skel" style={{ gridColumn: "span 3", height: 150 }} />
+      <span className="skel" style={{ gridColumn: "span 3", height: 150 }} />
+      <span className="skel" style={{ gridColumn: "span 4", height: 320 }} />
+      <span className="skel" style={{ gridColumn: "span 4", height: 150 }} />
+      <span className="skel" style={{ gridColumn: "span 4", height: 150 }} />
+    </div>
+  );
+}
+
 export default async function GalleryPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const church = await fetchPublicChurch(tenant);
-  if (!church) notFound();
-
-  const data = await fetchGallery(tenant);
-  const galleries = data.galleries;
-  const categories = data.categories;
-
   return (
     <div>
       <PageHeader eyebrow="GALLERY" title="갤러리" sub="우리 공동체의 사진과 추억을 모아 두는 곳입니다." />
       <section className="section">
         <div className="container">
-          <GalleryView categories={categories} galleries={galleries} layout={LAYOUT} />
+          <Suspense fallback={<GallerySkeleton />}>
+            <GalleryContent tenant={tenant} />
+          </Suspense>
         </div>
       </section>
     </div>

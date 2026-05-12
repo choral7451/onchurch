@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/shell/page-header";
-import { fetchPublicChurch } from "@/lib/public-site";
 import { NoticesList } from "./list";
 
 type Notice = {
@@ -32,15 +31,27 @@ async function fetchNotices(slug: string): Promise<{ notices: Notice[]; totalCou
   }
 }
 
-export default async function NoticesPage({ params }: { params: Promise<{ tenant: string }> }) {
-  const { tenant } = await params;
-  const church = await fetchPublicChurch(tenant);
-  if (!church) notFound();
-
+async function NoticesContent({ tenant }: { tenant: string }) {
   const { notices } = await fetchNotices(tenant);
   const categories = Array.from(new Set(notices.map((n) => n.category).filter((c): c is string => !!c)));
   categories.unshift("전체");
+  return <NoticesList notices={notices} categories={categories} />;
+}
 
+function NoticesSkeleton() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <span className="skel" style={{ width: 280, height: 32, marginBottom: 8 }} />
+      <span className="skel" style={{ width: "100%", height: 60 }} />
+      <span className="skel" style={{ width: "100%", height: 60 }} />
+      <span className="skel" style={{ width: "100%", height: 60 }} />
+      <span className="skel" style={{ width: "100%", height: 60 }} />
+    </div>
+  );
+}
+
+export default async function NoticesPage({ params }: { params: Promise<{ tenant: string }> }) {
+  const { tenant } = await params;
   return (
     <div>
       <PageHeader
@@ -50,7 +61,9 @@ export default async function NoticesPage({ params }: { params: Promise<{ tenant
       />
       <section className="section">
         <div className="container">
-          <NoticesList notices={notices} categories={categories} />
+          <Suspense fallback={<NoticesSkeleton />}>
+            <NoticesContent tenant={tenant} />
+          </Suspense>
         </div>
       </section>
     </div>

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Brand, NavItem } from "@/lib/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
@@ -18,7 +19,7 @@ export type PublicChurch = {
   isPublished: boolean;
 };
 
-export async function fetchPublicChurch(slug: string): Promise<PublicChurch | null> {
+export const fetchPublicChurch = cache(async (slug: string): Promise<PublicChurch | null> => {
   try {
     const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}`, {
       cache: "no-store",
@@ -29,7 +30,7 @@ export async function fetchPublicChurch(slug: string): Promise<PublicChurch | nu
   } catch {
     return null;
   }
-}
+});
 
 export function brandFromChurch(church: PublicChurch): Brand {
   return {
