@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { NaverMap } from "@/components/naver-map";
+import { GoogleMap } from "@/components/google-map";
 
 type DaumPostcodeData = {
   roadAddress?: string;
@@ -116,7 +116,7 @@ export function AddressPicker({
       {err && <div className="phone-msg phone-msg-error" style={{ fontSize: 12 }}>{err}</div>}
       {showPreview && value.trim() && (
         <div style={{ borderRadius: "var(--r-md)", overflow: "hidden", border: "1px solid var(--line)" }}>
-          <NaverMap address={value} name={churchName || "교회"} />
+          <GoogleMap address={value} name={churchName || "교회"} />
         </div>
       )}
     </div>

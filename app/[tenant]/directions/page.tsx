@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { Icon } from "@/components/icons";
-import { NaverMap } from "@/components/naver-map";
+import { GoogleMap } from "@/components/google-map";
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
@@ -51,7 +51,7 @@ async function ChurchInfoSection({ tenant }: { tenant: string }) {
 
   return (
     <>
-      <NaverMap address={address} name={churchName} />
+      <GoogleMap address={address} name={churchName} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 40 }}>
         <div className="card">
