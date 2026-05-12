@@ -87,15 +87,30 @@ function AboutSkeleton() {
   );
 }
 
+function josaUlReul(text: string): "을" | "를" {
+  const last = text[text.length - 1];
+  if (!last) return "를";
+  const code = last.charCodeAt(0);
+  if (code < 0xac00 || code > 0xd7a3) return "를";
+  return (code - 0xac00) % 28 === 0 ? "를" : "을";
+}
+
 export default async function AboutPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  const enabled = church?.enabledPages ?? [];
+  const isOn = (key: string) => enabled.length === 0 || enabled.includes(key);
+
+  const sections: string[] = ["담임목사 인사"];
+  if (isOn("about-vision")) sections.push("비전");
+  if (isOn("about-history")) sections.push("연혁");
+  if (isOn("about-staff")) sections.push("교역자 소개");
+  const last = sections[sections.length - 1];
+  const sub = `우리 교회를 소개합니다. ${sections.join(" · ")}${josaUlReul(last)} 확인하세요.`;
+
   return (
     <div>
-      <PageHeader
-        eyebrow="ABOUT US"
-        title="교회 소개"
-        sub="우리 교회를 소개합니다. 담임목사 인사 · 비전 · 연혁 · 교역자 소개를 확인하세요."
-      />
+      <PageHeader eyebrow="ABOUT US" title="교회 소개" sub={sub} />
       <section className="section">
         <div className="container">
           <Suspense fallback={<AboutSkeleton />}>
