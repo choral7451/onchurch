@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import type {
@@ -48,6 +48,21 @@ type Initial = {
 };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+
+const PREVIEW_ROOTS = ["everychurch.co.kr", "onchurch.kr", "localhost"];
+
+function buildPreviewUrl(slug: string): string {
+  if (typeof window === "undefined") return `/${slug}`;
+  const { protocol, host } = window.location;
+  const [hostname, port] = host.split(":");
+  const portSuffix = port ? `:${port}` : "";
+  for (const root of PREVIEW_ROOTS) {
+    if (hostname === root || hostname.endsWith(`.${root}`)) {
+      return `${protocol}//${slug}.${root}${portSuffix}`;
+    }
+  }
+  return `/${slug}`;
+}
 
 const BOARD_DESCRIPTIONS: Record<string, string> = {
   about: "담임목사 인사 · 비전 · 연혁 · 교역자",
@@ -179,7 +194,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
     };
   }, [initial.nav, router]);
 
-  const previewHref = useMemo(() => `/${slug || initial.slug}`, [slug, initial.slug]);
+  const previewSlug = slug || initial.slug;
+  const [previewHref, setPreviewHref] = useState(`/${previewSlug}`);
+  useEffect(() => {
+    setPreviewHref(buildPreviewUrl(previewSlug));
+  }, [previewSlug]);
 
   const [slugCheck, setSlugCheck] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const trimmedSlug = slug.trim();
