@@ -1,7 +1,23 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { Icon } from "@/components/icons";
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "찾아오시는 길", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  const addr = church.address ?? "";
+  return buildChurchMetadata(church, pastor, {
+    pageTitle: "찾아오시는 길",
+    path: "/directions",
+    pageDescription: `${church.name}을(를) 찾아오시는 방법을 안내합니다.${addr ? ` 주소: ${addr}.` : ""}${church.phone ? ` 문의: ${church.phone}.` : ""}`,
+    extraKeywords: ["찾아오시는 길", "오시는 길", "주소", "지도", "교통", ...(addr ? [addr] : [])],
+  });
+}
 
 const MAP_LABELS = [
   { x: "12%", y: "30%", l: "왕십리역" },

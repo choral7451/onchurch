@@ -1,6 +1,22 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { Calendar } from "@/components/calendar";
+import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "일정", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  return buildChurchMetadata(church, pastor, {
+    pageTitle: "일정",
+    path: "/schedule",
+    pageDescription: `${church.name}의 월별 예배·행사 일정을 캘린더로 확인하세요.`,
+    extraKeywords: ["교회 일정", "행사 일정", "교회 캘린더", "예배 일정"],
+  });
+}
 
 type EventItem = {
   id: number;

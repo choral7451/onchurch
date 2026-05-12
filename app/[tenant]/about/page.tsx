@@ -1,7 +1,23 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { AboutTabs } from "./tabs";
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "교회 소개", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  const pastorPhrase = pastor?.name ? `담임목사 ${pastor.name}${pastor.role ? ` ${pastor.role}` : ""}의 인사말과 ` : "";
+  return buildChurchMetadata(church, pastor, {
+    pageTitle: "교회 소개",
+    path: "/about",
+    pageDescription: `${pastorPhrase}${church.name}의 비전·연혁·교역자를 소개합니다.${church.address ? ` 위치: ${church.address}.` : ""}`,
+    extraKeywords: ["교회 소개", "비전", "연혁", "교역자", ...(pastor?.name ? [pastor.name, `${pastor.name} 담임목사`] : [])],
+  });
+}
 
 type Pastor = {
   id: number;

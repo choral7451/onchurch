@@ -1,5 +1,21 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
+import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "예배 안내", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  return buildChurchMetadata(church, pastor, {
+    pageTitle: "예배 안내",
+    path: "/worship",
+    pageDescription: `${church.name}의 주일·주중·새벽 예배 시간과 예배 순서를 안내합니다.${church.address ? ` 위치: ${church.address}.` : ""}`,
+    extraKeywords: ["예배 안내", "주일예배", "수요예배", "새벽기도", "예배 시간", "예배 순서"],
+  });
+}
 
 type WorshipServiceTag = "WEEK" | "DAILY";
 

@@ -1,6 +1,22 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { NoticesList } from "./list";
+import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "교회 소식", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  return buildChurchMetadata(church, pastor, {
+    pageTitle: "교회 소식",
+    path: "/notices",
+    pageDescription: `${church.name}의 공지사항과 새소식, 행사 안내를 확인하세요.`,
+    extraKeywords: ["교회 소식", "공지사항", "새소식", "교회 행사"],
+  });
+}
 
 type Notice = {
   id: number;

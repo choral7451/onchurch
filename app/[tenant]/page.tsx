@@ -1,7 +1,9 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { getPathPrefix } from "@/lib/path-prefix";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
@@ -292,6 +294,14 @@ async function PastorSection({ slug, url }: { slug: string; url: (p: string) => 
 }
 
 // ------ Page ------
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "Not Found", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  return buildChurchMetadata(church, pastor, { path: "" });
+}
 
 export default async function TenantHome({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;

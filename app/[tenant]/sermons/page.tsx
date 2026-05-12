@@ -1,8 +1,24 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { SermonsList } from "./list";
 import { SermonCard } from "@/components/sermon-card";
 import type { Sermon } from "@/lib/types";
+import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "말씀과 주보", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  return buildChurchMetadata(church, pastor, {
+    pageTitle: "말씀과 주보",
+    path: "/sermons",
+    pageDescription: `${church.name}의 설교 영상과 주보를 시리즈별로 모아 보실 수 있습니다.${pastor?.name ? ` 담임목사 ${pastor.name}의 말씀.` : ""}`,
+    extraKeywords: ["설교", "설교 영상", "주보", "말씀", "묵상", ...(pastor?.name ? [`${pastor.name} 설교`] : [])],
+  });
+}
 
 type ApiSermonSeries = { id: number; name: string; isActive: boolean };
 type ApiSermon = {

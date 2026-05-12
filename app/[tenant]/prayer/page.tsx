@@ -1,4 +1,20 @@
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
+import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "기도 요청", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  return buildChurchMetadata(church, pastor, {
+    pageTitle: "기도 요청",
+    path: "/prayer",
+    pageDescription: `${church.name}에 기도 제목을 보내주시면 함께 마음을 모아 기도해드립니다.`,
+    extraKeywords: ["기도 요청", "중보기도", "기도 제목"],
+  });
+}
 
 export default function PrayerPage() {
   return (

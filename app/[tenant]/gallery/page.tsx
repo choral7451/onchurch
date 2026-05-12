@@ -1,6 +1,22 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { GalleryView } from "./view";
+import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  if (!church) return { title: "갤러리", robots: { index: false, follow: false } };
+  const pastor = await fetchPublicPastor(tenant);
+  return buildChurchMetadata(church, pastor, {
+    pageTitle: "갤러리",
+    path: "/gallery",
+    pageDescription: `${church.name}의 공동체 사진과 행사 기록을 갤러리로 만나보세요.`,
+    extraKeywords: ["갤러리", "교회 사진", "행사 사진", "공동체"],
+  });
+}
 
 const LAYOUT = [
   { col: 6, row: 2 }, { col: 3, row: 2 }, { col: 3, row: 1 },
