@@ -301,7 +301,10 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const pathPrefix = await getPathPrefix(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
   const slug = encodeURIComponent(tenant);
-  const showHomeNews = (church.enabledPages?.length ?? 0) === 0 || church.enabledPages.includes("notices");
+  const enabled = church.enabledPages ?? [];
+  const isPageEnabled = (id: string) => enabled.length === 0 || enabled.includes(id);
+  const showHomeNews = isPageEnabled("notices");
+  const visibleQuickLinks = QUICK_LINKS.filter((q) => isPageEnabled(q.path.replace(/^\//, "")));
 
   return (
     <div>
@@ -346,9 +349,10 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         </div>
         )}
 
+        {visibleQuickLinks.length > 0 && (
         <div className="container">
           <div className="quick-strip">
-            {QUICK_LINKS.map((q) => {
+            {visibleQuickLinks.map((q) => {
               const QuickIcon = Icon[q.ic];
               return (
                 <Link key={q.title} href={url(q.path)} className="quick-card">
@@ -361,6 +365,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
             })}
           </div>
         </div>
+        )}
       </section>
 
       <Suspense fallback={<SectionSkeleton tinted height={200} />}>
