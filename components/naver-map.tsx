@@ -86,6 +86,7 @@ export function NaverMap({ address, name }: { address: string; name: string }) {
         naver.maps.Service.geocode({ query: address }, (geoStatus, response) => {
           if (cancelled || !containerRef.current) return;
           if (geoStatus !== naver.maps.Service.Status.OK || !response?.v2?.addresses?.length) {
+            console.error("[NaverMap] geocode failed", { geoStatus, response, address });
             setStatus("geocode-failed");
             return;
           }
@@ -104,7 +105,10 @@ export function NaverMap({ address, name }: { address: string; name: string }) {
           setStatus("ready");
         });
       })
-      .catch(() => { if (!cancelled) setStatus("error"); });
+      .catch((err) => {
+        console.error("[NaverMap] SDK load/auth failed", err, { host: window.location.host });
+        if (!cancelled) setStatus("error");
+      });
 
     return () => { cancelled = true; };
   }, [address, name]);
