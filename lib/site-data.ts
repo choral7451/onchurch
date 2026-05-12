@@ -10,6 +10,7 @@ export const SITE_DATA: SiteData = {
     email: "hello@sungdongchurch.kr",
     representative: "대표 김주은 목사",
     businessNo: "123-45-67890",
+    logoUrl: null,
   },
   nav: [
     { id: "about", label: "교회 소개", href: "/about", children: ["담임목사 인사", "교회 연혁", "비전과 사명"] },

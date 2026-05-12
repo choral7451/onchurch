@@ -7,6 +7,7 @@ export type Brand = {
   email: string;
   representative: string;
   businessNo: string;
+  logoUrl: string | null;
 };
 
 export type NavItem = {

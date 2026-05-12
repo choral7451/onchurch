@@ -37,7 +37,10 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
     <nav className="nav">
       <div className="nav-inner">
         <Link href={link("/")} className="brand">
-          <div className="brand-mark" />
+          {brand.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={brand.logoUrl} alt="" className="brand-logo" />
+          )}
           <div className="brand-text">
             <div className="brand-name">{brand.name}</div>
             <div className="brand-eng">{brand.eng}</div>

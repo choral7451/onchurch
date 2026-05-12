@@ -13,7 +13,10 @@ export function Footer({ brand, footerNav }: Props) {
         <div className="footer-grid">
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <div className="brand-mark" />
+              {brand.logoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={brand.logoUrl} alt="" className="brand-logo" />
+              )}
               <div>
                 <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>{brand.name}</div>
                 <div style={{ fontSize: 10, letterSpacing: "0.18em", opacity: 0.6, marginTop: 2 }}>{brand.eng}</div>

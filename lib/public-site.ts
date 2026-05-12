@@ -42,6 +42,7 @@ export function brandFromChurch(church: PublicChurch): Brand {
     email: church.email ?? "",
     representative: church.representative ?? "",
     businessNo: church.businessNo ?? "",
+    logoUrl: church.logoUrl ?? null,
   };
 }
 

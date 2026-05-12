@@ -21,6 +21,7 @@ export default function AdminPage() {
           email: "",
           representative: "",
           businessNo: "",
+          logoUrl: null,
         },
         nav: SITE_DATA.nav.filter((n) => n.id !== "home"),
         notices: SITE_DATA.notices,
