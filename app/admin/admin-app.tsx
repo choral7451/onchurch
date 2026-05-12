@@ -135,12 +135,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   async function refreshRequiredStatus() {
     try {
-      const [pastorRes, services] = await Promise.all([
+      const [pastorRes, services, churchRes] = await Promise.all([
         onchurchPastor.getMine().catch(() => ({ pastor: null })),
         onchurchWorshipService.listMine().catch(() => []),
+        onchurchChurch.getMine().catch(() => null),
       ]);
       setAboutFilled(!!pastorRes?.pastor?.name?.trim());
       setWorshipFilled((services?.length ?? 0) > 0);
+      if (churchRes?.church) setIsPublished(churchRes.church.isPublished);
+      if (churchRes?.subscription) setSubscription(churchRes.subscription);
     } catch {
       // ignore — pill will just stay incomplete
     }
