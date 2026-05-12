@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { Icon } from "@/components/icons";
+import { KakaoMap } from "@/components/kakao-map";
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
@@ -18,13 +19,6 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
     extraKeywords: ["찾아오시는 길", "오시는 길", "주소", "지도", "교통", ...(addr ? [addr] : [])],
   });
 }
-
-const MAP_LABELS = [
-  { x: "12%", y: "30%", l: "왕십리역" },
-  { x: "78%", y: "20%", l: "한양대" },
-  { x: "85%", y: "80%", l: "성수동" },
-  { x: "20%", y: "75%", l: "마장동" },
-];
 
 type PublicTransportation = {
   id: number;
@@ -57,20 +51,7 @@ async function ChurchInfoSection({ tenant }: { tenant: string }) {
 
   return (
     <>
-      <div className="map-placeholder">
-        <div className="map-grid" />
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
-          {MAP_LABELS.map((p) => (
-            <div key={p.l} style={{ position: "absolute", left: p.x, top: p.y, fontSize: 11, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
-              ○ {p.l}
-            </div>
-          ))}
-        </div>
-        <div className="map-pin">
-          <div className="map-pin-dot" />
-          <div className="map-pin-label">{churchName}</div>
-        </div>
-      </div>
+      <KakaoMap address={address} name={churchName} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 40 }}>
         <div className="card">
