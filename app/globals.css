@@ -137,12 +137,21 @@ main { flex: 1; }
 .footer { margin-top: 80px; background: var(--primary-deep); color: oklch(0.92 0.01 250); padding: 64px 0 32px; position: relative; overflow: hidden; }
 .footer::before { content: ""; position: absolute; inset: 0; background: radial-gradient(800px 400px at 90% 0%, oklch(0.62 0.14 245 / 0.25), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.42 0.09 248 / 0.3), transparent 60%); pointer-events: none; }
 .footer-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
-.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid oklch(1 0 0 / 0.1); }
+.footer-grid { display: grid; grid-template-columns: 1.4fr repeat(auto-fit, minmax(140px, 1fr)); gap: 48px; padding-bottom: 48px; border-bottom: 1px solid oklch(1 0 0 / 0.1); }
+.footer-brand { display: flex; flex-direction: column; gap: 16px; }
+.footer-brand-head { display: flex; align-items: center; gap: 12px; }
+.footer-brand-name { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+.footer-brand-eng { font-size: 10px; letter-spacing: 0.18em; opacity: 0.6; margin-top: 2px; text-transform: uppercase; }
+.footer-brand-desc { font-size: 13px; opacity: 0.65; line-height: 1.7; max-width: 320px; margin: 0; }
+.footer-contacts { display: flex; flex-wrap: wrap; gap: 14px 18px; margin-top: 4px; font-size: 13px; opacity: 0.75; }
+.footer-contact { display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.15s ease; }
+.footer-contact:hover { opacity: 1; }
+.footer-col h4 { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: oklch(0.85 0.02 245); margin: 0 0 16px; }
 .footer h4 { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: oklch(0.85 0.02 245); margin: 0 0 16px; }
 .footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
 .footer ul a { font-size: 14px; opacity: 0.7; transition: opacity 0.15s ease; }
 .footer ul a:hover { opacity: 1; }
-.footer-meta { padding: 28px 0 0; display: flex; justify-content: space-between; gap: 32px; font-size: 12px; opacity: 0.55; }
+.footer-meta { padding: 28px 0 0; display: flex; justify-content: space-between; gap: 12px; font-size: 12px; opacity: 0.55; flex-wrap: wrap; }
 
 /* Hero */
 .hero { position: relative; padding: 56px 0 80px; overflow: hidden; }
@@ -692,7 +701,8 @@ main { flex: 1; }
 @media (max-width: 960px) {
   .hero-inner, .pastor-section, .calendar-wrap, .bible-hero { grid-template-columns: 1fr; }
   .quick-strip, .worship-grid, .dept-grid { grid-template-columns: repeat(2, 1fr); }
-  .sermon-grid, .footer-grid { grid-template-columns: 1fr 1fr; }
+  .sermon-grid { grid-template-columns: 1fr 1fr; }
+  .footer-grid { grid-template-columns: 1fr; gap: 32px; padding-bottom: 32px; }
   .form-grid { grid-template-columns: 1fr; }
   .nav-links, .landing-nav-links { display: none; }
   .nav-cta { display: none; }
@@ -747,4 +757,9 @@ main { flex: 1; }
   .info-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 24px; }
   .info-card { padding: 18px 20px; }
   .info-card-body { font-size: 15px; }
+  .footer { margin-top: 56px; padding: 48px 0 24px; }
+  .footer-grid { gap: 28px; padding-bottom: 28px; }
+  .footer-brand-desc { max-width: none; }
+  .footer-contacts { flex-direction: column; gap: 8px; }
+  .footer-meta { flex-direction: column; gap: 6px; padding: 20px 0 0; }
 }

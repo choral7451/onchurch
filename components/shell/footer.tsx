@@ -1,42 +1,74 @@
+import Link from "next/link";
 import { Icon } from "@/components/icons";
-import type { Brand } from "@/lib/types";
+import type { Brand, NavItem } from "@/lib/types";
+
+type FooterNavGroup = { heading: string; ids: string[] };
 
 type Props = {
   brand: Brand;
-  footerNav: Record<string, string[]>;
+  nav: NavItem[];
+  footerNav: FooterNavGroup[];
+  pathPrefix: string;
+  enabledPages?: string[];
 };
 
-export function Footer({ brand, footerNav }: Props) {
+export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages }: Props) {
+  const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
+  const navById = new Map(nav.map((n) => [n.id, n] as const));
+  const isEnabled = (id: string) =>
+    !enabledPages || enabledPages.length === 0 || enabledPages.includes(id);
+
+  const groups = footerNav
+    .map((g) => ({
+      heading: g.heading,
+      items: g.ids.map((id) => navById.get(id)).filter((n): n is NavItem => !!n && isEnabled(n.id)),
+    }))
+    .filter((g) => g.items.length > 0);
+
   return (
     <footer className="footer">
       <div className="footer-inner">
         <div className="footer-grid">
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+          <div className="footer-brand">
+            <div className="footer-brand-head">
               {brand.logoUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={brand.logoUrl} alt="" className="brand-logo" />
               )}
               <div>
-                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>{brand.name}</div>
-                <div style={{ fontSize: 10, letterSpacing: "0.18em", opacity: 0.6, marginTop: 2 }}>{brand.eng}</div>
+                <div className="footer-brand-name">{brand.name}</div>
+                {brand.eng && <div className="footer-brand-eng">{brand.eng}</div>}
               </div>
             </div>
-            <p style={{ fontSize: 13, opacity: 0.65, lineHeight: 1.7, maxWidth: 320, margin: 0 }}>
-              {brand.tagline}.<br />
-              {brand.address}
-            </p>
-            <div style={{ display: "flex", gap: 16, marginTop: 20, fontSize: 13, opacity: 0.7 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon.phone /> {brand.phone}</span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon.mail /> {brand.email}</span>
-            </div>
+            {(brand.tagline || brand.address) && (
+              <p className="footer-brand-desc">
+                {brand.tagline && <>{brand.tagline}.<br /></>}
+                {brand.address}
+              </p>
+            )}
+            {(brand.phone || brand.email) && (
+              <div className="footer-contacts">
+                {brand.phone && (
+                  <a href={`tel:${brand.phone.replace(/[^0-9+]/g, "")}`} className="footer-contact">
+                    <Icon.phone /> {brand.phone}
+                  </a>
+                )}
+                {brand.email && (
+                  <a href={`mailto:${brand.email}`} className="footer-contact">
+                    <Icon.mail /> {brand.email}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
-          {Object.entries(footerNav).map(([heading, items]) => (
-            <div key={heading}>
-              <h4>{heading}</h4>
+          {groups.map((g) => (
+            <div key={g.heading} className="footer-col">
+              <h4>{g.heading}</h4>
               <ul>
-                {items.map((item) => (
-                  <li key={item}><a href="#">{item}</a></li>
+                {g.items.map((item) => (
+                  <li key={item.id}>
+                    <Link href={link(item.href)}>{item.label}</Link>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -44,7 +76,13 @@ export function Footer({ brand, footerNav }: Props) {
         </div>
         <div className="footer-meta">
           <div>© {new Date().getFullYear()} {brand.name}. All rights reserved.</div>
-          <div>{brand.representative} · 사업자등록번호 {brand.businessNo}</div>
+          {(brand.representative || brand.businessNo) && (
+            <div>
+              {brand.representative}
+              {brand.representative && brand.businessNo ? " · " : ""}
+              {brand.businessNo && `사업자등록번호 ${brand.businessNo}`}
+            </div>
+          )}
         </div>
       </div>
     </footer>

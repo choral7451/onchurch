@@ -57,8 +57,8 @@ export const PUBLIC_NAV: NavItem[] = [
   { id: "directions", label: "찾아오시는 길", href: "/directions" },
 ];
 
-export const PUBLIC_FOOTER_NAV: Record<string, string[]> = {
-  교회: ["교회 소개", "예배 안내", "찾아오시는 길"],
-  콘텐츠: ["말씀과 주보", "교회 소식", "갤러리"],
-  기타: ["일정"],
-};
+export const PUBLIC_FOOTER_NAV: { heading: string; ids: string[] }[] = [
+  { heading: "교회", ids: ["about", "worship", "directions"] },
+  { heading: "콘텐츠", ids: ["sermons", "notices", "gallery"] },
+  { heading: "기타", ids: ["schedule"] },
+];

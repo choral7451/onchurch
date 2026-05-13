@@ -53,7 +53,7 @@ export default async function TenantLayout({
       <UtilBar tagline={brand.tagline} />
       <Nav tenant={tenant} brand={brand} nav={PUBLIC_NAV} pathPrefix={pathPrefix} enabledPages={church.enabledPages} />
       <main>{children}</main>
-      <Footer brand={brand} footerNav={PUBLIC_FOOTER_NAV} />
+      <Footer brand={brand} nav={PUBLIC_NAV} footerNav={PUBLIC_FOOTER_NAV} pathPrefix={pathPrefix} enabledPages={church.enabledPages} />
     </div>
   );
 }
