@@ -87,8 +87,8 @@ img { display: block; max-width: 100%; }
 .nav-toggle { display: none; flex-shrink: 0; width: 42px; height: 42px; background: transparent; border: 1px solid var(--line); color: var(--ink); border-radius: 10px; padding: 0; cursor: pointer; align-items: center; justify-content: center; }
 .nav-toggle:hover { background: var(--surface-2); }
 .nav-toggle svg { width: 24px; height: 24px; display: block; }
-.nav-overlay { position: fixed; inset: 0; background: oklch(0 0 0 / 0.4); z-index: 100; border: none; padding: 0; cursor: pointer; animation: nav-fade-in 0.18s ease; }
-.nav-drawer { position: fixed; right: 0; top: 0; bottom: 0; width: min(320px, 84vw); background: var(--surface); z-index: 101; display: flex; flex-direction: column; box-shadow: -8px 0 32px oklch(0 0 0 / 0.12); animation: nav-drawer-in 0.2s ease; }
+.nav-overlay { position: fixed; inset: 0; background: oklch(0 0 0 / 0.4); z-index: 1000; border: none; padding: 0; cursor: pointer; animation: nav-fade-in 0.18s ease; }
+.nav-drawer { position: fixed; right: 0; top: 0; bottom: 0; width: min(320px, 84vw); background: var(--surface); z-index: 1001; display: flex; flex-direction: column; box-shadow: -8px 0 32px oklch(0 0 0 / 0.12); animation: nav-drawer-in 0.2s ease; }
 .nav-drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); }
 .nav-drawer-head span { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
 .nav-drawer-close { background: transparent; border: none; padding: 6px; cursor: pointer; color: var(--muted); display: grid; place-items: center; border-radius: 8px; }
