@@ -451,8 +451,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
               />
             </div>
             <Link href={previewHref} className="btn btn-secondary" target="_blank">
-              <Icon.video style={{ width: 14, height: 14 }} />
-              사이트 미리보기
+              <Icon.arrow style={{ width: 14, height: 14 }} />
+              홈페이지 바로가기
             </Link>
             <button type="button" className="btn btn-ghost" onClick={onLogout}>
               로그아웃

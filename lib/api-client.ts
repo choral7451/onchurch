@@ -88,7 +88,7 @@ export function getAccessToken(): string | null {
   return localStorage.getItem(TOKEN_KEYS.accessToken);
 }
 
-function getRefreshToken(): string | null {
+export function getRefreshToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(TOKEN_KEYS.refreshToken);
 }

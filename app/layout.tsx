@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { AuthBootstrap } from "@/components/shell/auth-bootstrap";
 import "./globals.css";
 
 const interTight = Inter_Tight({
@@ -28,7 +29,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <AuthBootstrap />
+        {children}
+      </body>
     </html>
   );
 }
