@@ -8,8 +8,7 @@ import { LightRays, Mesh, Rings } from "@/components/decorative";
 
 export const metadata: Metadata = {
   title: "교회 홈페이지 만들기 · 5분이면 완성 | 온교회",
-  description:
-    "교회 홈페이지 제작이 어렵게 느껴지시나요? 온교회는 코딩 지식 없이 5분이면 우리 교회 홈페이지가 완성되는 빌더입니다. 예배 안내, 설교 영상, 주보 PDF, 공지, 일정, 갤러리, 통독, 부서, 기도 요청 9종 페이지를 ON/OFF 토글로 운영하고, 서브도메인이 즉시 발급됩니다. 월 1만원, 7일 무료 체험.",
+  description: "5분이면 완성되는 교회 홈페이지. 예배·설교·주보·공지 한 번에. 월 1만원, 7일 무료.",
   keywords: [
     "교회 홈페이지",
     "교회 홈페이지 만들기",
@@ -37,13 +36,12 @@ export const metadata: Metadata = {
     url: "https://everychurch.co.kr/",
     siteName: "온교회",
     title: "교회 홈페이지 만들기 · 5분이면 완성 | 온교회",
-    description:
-      "코딩 없이 5분이면 완성되는 교회 홈페이지 빌더. 예배·설교·주보·공지·갤러리·통독·부서까지 한 번에. 월 1만원, 7일 무료 체험.",
+    description: "코딩 없이 5분이면 완성되는 교회 홈페이지. 월 1만원, 7일 무료 체험.",
   },
   twitter: {
     card: "summary_large_image",
     title: "교회 홈페이지 만들기 · 5분이면 완성 | 온교회",
-    description: "코딩 없이 우리 교회 홈페이지를. 월 1만원, 7일 무료 체험.",
+    description: "코딩 없이 5분이면 완성되는 교회 홈페이지. 월 1만원, 7일 무료 체험.",
   },
 };
 
