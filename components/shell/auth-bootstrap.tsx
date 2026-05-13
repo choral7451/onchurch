@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import {
   clearTokens,
   getAccessToken,
@@ -27,22 +26,10 @@ async function tryRefresh(): Promise<boolean> {
 }
 
 export function AuthBootstrap() {
-  const pathname = usePathname();
-  const router = useRouter();
-
   useEffect(() => {
-    let cancelled = false;
     let timer: ReturnType<typeof setInterval> | null = null;
 
-    const run = async () => {
-      const ok = await tryRefresh();
-      if (cancelled) return;
-      if (ok && pathname === "/") {
-        router.replace("/admin");
-      }
-    };
-
-    run();
+    void tryRefresh();
     timer = setInterval(() => {
       void tryRefresh();
     }, REFRESH_INTERVAL_MS);
@@ -53,11 +40,10 @@ export function AuthBootstrap() {
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
-      cancelled = true;
       if (timer) clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [pathname, router]);
+  }, []);
 
   return null;
 }
