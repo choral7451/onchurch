@@ -436,7 +436,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           <div className="admin-topbar-actions">
             <div className="admin-publish-toggle" aria-live="polite">
               <span className="admin-publish-toggle-label">
-                사이트 운영
+                <span className="admin-action-label">사이트 운영</span>
                 <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
                   {isPublished ? "ON" : "OFF"}
                 </span>
@@ -452,7 +452,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
             <Link href={previewHref} className="btn btn-secondary" target="_blank">
               <Icon.arrow style={{ width: 14, height: 14 }} />
-              홈페이지 바로가기
+              <span className="admin-action-label">홈페이지 바로가기</span>
             </Link>
             <button type="button" className="btn btn-ghost" onClick={onLogout}>
               로그아웃
