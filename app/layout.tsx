@@ -18,10 +18,10 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://everychurch.co.kr"),
   title: {
-    default: "온교회 — 교회 홈페이지 만들기 · 5분이면 완성되는 빌더",
+    default: "온교회 — 교회 홈페이지 제작·만들기 5분 빌더",
     template: "%s | 온교회",
   },
-  description: "코딩 없이 5분이면 완성되는 교회 홈페이지 빌더. 월 1만원, 7일 무료 체험.",
+  description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성되는 빌더. 월 1만원, 7일 무료 체험.",
   applicationName: "온교회",
   generator: "Next.js",
   keywords: [
@@ -56,13 +56,13 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: "https://everychurch.co.kr",
     siteName: "온교회",
-    title: "온교회 — 교회 홈페이지 만들기 · 5분이면 완성되는 빌더",
-    description: "코딩 없이 5분이면 완성되는 교회 홈페이지 빌더. 월 1만원, 7일 무료 체험.",
+    title: "온교회 — 교회 홈페이지 제작·만들기 5분 빌더",
+    description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료 체험.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "온교회 — 교회 홈페이지 빌더",
-    description: "코딩 없이 5분이면 완성되는 교회 홈페이지. 월 1만원, 7일 무료 체험.",
+    title: "온교회 — 교회 홈페이지 제작 빌더",
+    description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료.",
   },
   icons: { icon: "/favicon.ico" },
   verification: {
