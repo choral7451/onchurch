@@ -1,9 +1,93 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { LandingNav } from "@/components/marketing/landing-nav";
 import { LandingFooter } from "@/components/marketing/landing-footer";
 import { HideWhenAuthed } from "@/components/marketing/hide-when-authed";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
+
+export const metadata: Metadata = {
+  title: "교회 홈페이지 만들기 · 5분이면 완성 | 온교회",
+  description:
+    "교회 홈페이지 제작이 어렵게 느껴지시나요? 온교회는 코딩 지식 없이 5분이면 우리 교회 홈페이지가 완성되는 빌더입니다. 예배 안내, 설교 영상, 주보 PDF, 공지, 일정, 갤러리, 통독, 부서, 기도 요청 9종 페이지를 ON/OFF 토글로 운영하고, 서브도메인이 즉시 발급됩니다. 월 1만원, 7일 무료 체험.",
+  keywords: [
+    "교회 홈페이지",
+    "교회 홈페이지 만들기",
+    "교회 홈페이지 제작",
+    "교회 홈페이지 빌더",
+    "교회 홈페이지 템플릿",
+    "교회 홈페이지 무료 체험",
+    "작은 교회 홈페이지",
+    "교회 사이트",
+    "교회 웹사이트",
+    "예배 홈페이지",
+    "설교 영상 홈페이지",
+    "주보 업로드",
+    "교회 공지",
+    "교회 갤러리",
+    "성경 통독 홈페이지",
+    "기도 요청 폼",
+    "교회 서브도메인",
+    "온교회",
+  ],
+  alternates: { canonical: "https://everychurch.co.kr/" },
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: "https://everychurch.co.kr/",
+    siteName: "온교회",
+    title: "교회 홈페이지 만들기 · 5분이면 완성 | 온교회",
+    description:
+      "코딩 없이 5분이면 완성되는 교회 홈페이지 빌더. 예배·설교·주보·공지·갤러리·통독·부서까지 한 번에. 월 1만원, 7일 무료 체험.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "교회 홈페이지 만들기 · 5분이면 완성 | 온교회",
+    description: "코딩 없이 우리 교회 홈페이지를. 월 1만원, 7일 무료 체험.",
+  },
+};
+
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://everychurch.co.kr/#organization",
+      name: "온교회",
+      alternateName: "Everychurch",
+      url: "https://everychurch.co.kr/",
+      description: "교회를 위해 처음부터 설계된 홈페이지 빌더 서비스.",
+      sameAs: ["https://everychurch.co.kr/"],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://everychurch.co.kr/#website",
+      url: "https://everychurch.co.kr/",
+      name: "온교회 — 교회 홈페이지 빌더",
+      inLanguage: "ko-KR",
+      publisher: { "@id": "https://everychurch.co.kr/#organization" },
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "온교회 교회 홈페이지 빌더",
+      operatingSystem: "Web",
+      applicationCategory: "BusinessApplication",
+      description:
+        "코딩 없이 5분이면 완성되는 교회 홈페이지 빌더. 9종 페이지(소개·예배·설교·주보·공지·일정·갤러리·부서·기도·통독)를 ON/OFF 토글로 운영.",
+      offers: {
+        "@type": "Offer",
+        price: "10000",
+        priceCurrency: "KRW",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "10000",
+          priceCurrency: "KRW",
+          unitText: "MONTH",
+        },
+      },
+    },
+  ],
+};
 
 const FEATURES: { ic: IconKey; title: string; desc: string }[] = [
   { ic: "building", title: "교회 전용 페이지 9종", desc: "교회 소개·예배 안내·말씀과 주보·공지·일정·갤러리·부서·기도 요청·통독 — 처음부터 교회를 위해 설계되었습니다." },
@@ -58,6 +142,10 @@ export default async function LandingPage() {
 
   return (
     <div className="landing">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       <LandingNav />
 
       <section className="landing-hero">
@@ -68,7 +156,7 @@ export default async function LandingPage() {
         <div className="landing-hero-inner">
           <div className="landing-eyebrow">
             <span className="pulse" />
-            교회 홈페이지 빌더 · 베타
+            교회 홈페이지 빌더
           </div>
           <h1 className="landing-h1">
             교회의 디지털 사역을<br />
