@@ -677,3 +677,43 @@ main { flex: 1; }
   .top-banner { padding: 28px 24px; }
   .top-banner-title { font-size: 22px; }
 }
+
+@media (max-width: 640px) {
+  .utilbar-inner, .nav-inner, .container, .page-header-inner, .hero-inner, .footer-inner, .verse-banner-inner { padding-left: 16px; padding-right: 16px; }
+  .section { padding: 56px 0; }
+  .section-head { flex-direction: column; align-items: flex-start; margin-bottom: 24px; gap: 10px; }
+  .section-head h2 { font-size: 24px; line-height: 1.18; }
+  .page-header { padding: 36px 0 28px; }
+  .page-title { font-size: 30px; }
+  .page-sub { font-size: 14px; }
+  .hero { padding: 32px 0 48px; }
+  .news-feature { padding: 28px 24px 26px; min-height: 320px; border-radius: var(--r-lg); }
+  .news-feature-title { font-size: 24px; margin: 12px 0 14px; }
+  .news-feature-desc { font-size: 14px; }
+  .news-list-card { padding: 20px; border-radius: var(--r-lg); }
+  .news-item { grid-template-columns: 44px 1fr auto; gap: 10px; padding: 14px 0; }
+  .news-item-date .day { font-size: 18px; }
+  .news-item-title { font-size: 13.5px; }
+  .quick-strip { margin-top: 40px; gap: 10px; }
+  .quick-card { padding: 18px 16px; gap: 10px; }
+  .quick-card-title { font-size: 15px; }
+  .quick-card-desc { font-size: 12.5px; }
+  .worship-grid { grid-template-columns: 1fr; }
+  .worship-card { padding: 22px 22px 24px; }
+  .worship-name { font-size: 19px; }
+  .worship-time { font-size: 26px; }
+  .sermon-grid { grid-template-columns: 1fr; }
+  .sermon-card.feat .sermon-title { font-size: 18px; }
+  .verse-banner { padding: 56px 0; }
+  .verse-text { font-size: 24px; line-height: 1.5; margin: 18px 0; }
+  .pastor-section { gap: 28px; }
+  .pastor-name { font-size: 26px; }
+  .pastor-name span { font-size: 13px; margin-top: 6px; }
+  .pastor-msg { font-size: 14.5px; margin: 18px 0; line-height: 1.7; }
+  .bible-hero { padding: 32px 24px; gap: 24px; }
+  .bible-day-title { font-size: 26px; }
+  .qt-grid { grid-template-columns: 1fr; }
+  .qt-card { padding: 22px; }
+  .pray-cta { padding: 32px 24px; gap: 20px; grid-template-columns: 1fr; }
+  .pray-cta h3 { font-size: 22px; }
+}
