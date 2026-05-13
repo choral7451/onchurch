@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
@@ -15,6 +16,8 @@ type Props = {
 
 export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const base = `/${tenant}`;
   const isActive = (href: string) => {
@@ -32,6 +35,19 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
   const visibleNav = enabledPages && enabledPages.length > 0
     ? nav.filter((item) => enabledPages.includes(item.id))
     : nav;
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [open]);
 
   return (
     <nav className="nav">
@@ -59,7 +75,59 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
             기도 요청
           </Link>
         </div>
+        <button
+          type="button"
+          className="nav-toggle"
+          aria-label="메뉴 열기"
+          aria-expanded={open}
+          onClick={() => setOpen(true)}
+        >
+          <Icon.menu style={{ width: 22, height: 22 }} />
+        </button>
       </div>
+
+      {open && (
+        <>
+          <button
+            type="button"
+            className="nav-overlay"
+            aria-label="메뉴 닫기"
+            onClick={() => setOpen(false)}
+          />
+          <aside className="nav-drawer" role="dialog" aria-label="모바일 메뉴">
+            <header className="nav-drawer-head">
+              <span>메뉴</span>
+              <button
+                type="button"
+                className="nav-drawer-close"
+                aria-label="닫기"
+                onClick={() => setOpen(false)}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </header>
+            <div className="nav-drawer-links">
+              {visibleNav.map((item) => (
+                <Link
+                  key={item.id}
+                  href={link(item.href)}
+                  className={`nav-drawer-link ${isActive(item.href) ? "active" : ""}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+            <div className="nav-drawer-cta">
+              <Link href={link("/prayer")} className="btn btn-primary">
+                <Icon.pray style={{ width: 16, height: 16 }} />
+                기도 요청
+              </Link>
+            </div>
+          </aside>
+        </>
+      )}
     </nav>
   );
 }
