@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { getAccessToken } from "@/lib/api-client";
 
 type Props = {
@@ -30,7 +29,7 @@ export function UtilBar({ tagline }: Props) {
         </div>
         <div className="utilbar-right">
           {authed === null ? null : authed ? (
-            <Link href="/admin">관리자 페이지</Link>
+            <a href="https://everychurch.co.kr/admin">관리자 페이지</a>
           ) : (
             <a href="https://everychurch.co.kr/login">로그인</a>
           )}
