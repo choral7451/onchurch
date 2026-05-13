@@ -39,11 +39,13 @@ export function LandingNav() {
             </Link>
           ) : (
             <>
-              <Link href="/login" className="btn btn-secondary">
+              <Link href="/login" className="btn btn-secondary nav-cta-desktop-only">
                 로그인
               </Link>
               <Link href="/login" className="btn btn-primary">
-                신청하기 <Icon.arrow style={{ width: 14, height: 14 }} />
+                <span className="nav-cta-desktop-only">신청하기</span>
+                <span className="nav-cta-mobile-only">시작하기</span>
+                <Icon.arrow style={{ width: 14, height: 14 }} />
               </Link>
             </>
           )}
