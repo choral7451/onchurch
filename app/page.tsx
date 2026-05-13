@@ -28,7 +28,34 @@ const FAQ: { q: string; a: string }[] = [
   { q: "가격은 어떻게 되나요?", a: "교회 규모와 무관하게 월 단돈 1만원입니다. 모든 기능이 포함되어 있으며 추가 결제는 없습니다. 사이트 운영을 시작하면 7일 무료 체험이 자동으로 시작되어 자유롭게 둘러보실 수 있습니다." },
 ];
 
+type PublicChurchListItem = {
+  id: number;
+  slug: string;
+  name: string;
+  eng: string | null;
+  tagline: string | null;
+  logoUrl: string | null;
+};
+
+async function fetchPublicChurches(): Promise<PublicChurchListItem[]> {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
+  try {
+    const res = await fetch(`${base}/onchurch/sites`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const body = await res.json();
+    return (body?.item?.churches ?? []) as PublicChurchListItem[];
+  } catch {
+    return [];
+  }
+}
+
+function churchUrl(slug: string): string {
+  return `https://${slug}.everychurch.co.kr`;
+}
+
 export default async function LandingPage() {
+  const churches = await fetchPublicChurches();
+
   return (
     <div className="landing">
       <LandingNav />
@@ -67,6 +94,55 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+
+      {churches.length > 0 && (
+        <section id="demo" className="section section-tinted">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">Live Sites</span>
+                <h2>지금 운영 중인 교회 홈페이지</h2>
+              </div>
+              <div className="section-head-action">
+                <span style={{ fontSize: 13, color: "var(--muted)" }}>{churches.length}개 운영 중</span>
+              </div>
+            </div>
+            <div className="demo-grid">
+              {churches.map((c) => (
+                <a
+                  key={c.id}
+                  href={churchUrl(c.slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="demo-card"
+                >
+                  <div className="demo-card-thumb">
+                    <div className="demo-card-thumb-inner">
+                      {c.logoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.logoUrl} alt="" style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover", margin: "0 auto 18px", border: "1px solid oklch(1 0 0 / 0.3)" }} />
+                      ) : (
+                        <div className="demo-card-mark" />
+                      )}
+                      <div className="demo-card-name">{c.name}</div>
+                      {c.eng && <div className="demo-card-eng">{c.eng}</div>}
+                    </div>
+                  </div>
+                  <div className="demo-card-body">
+                    {c.tagline && <div className="demo-card-tag">{c.tagline}</div>}
+                    <div className="demo-card-url">
+                      <span className="demo-card-url-prefix">{c.slug}</span>.everychurch.co.kr
+                    </div>
+                    <div className="demo-card-cta">
+                      바로 둘러보기 <Icon.arrow style={{ width: 12, height: 12 }} />
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section id="features" className="section">
         <div className="container">
