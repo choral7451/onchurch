@@ -734,8 +734,9 @@ main { flex: 1; }
   .verse-banner { padding: 56px 0; }
   .verse-text { font-size: 24px; line-height: 1.5; margin: 18px 0; }
   .pastor-section { gap: 28px; }
-  .pastor-name { font-size: 26px; }
-  .pastor-name span { font-size: 13px; margin-top: 6px; }
+  .pastor-block .eyebrow { margin-bottom: 18px; }
+  .pastor-name { font-size: 26px; line-height: 1.2; }
+  .pastor-name span { font-size: 13px; margin-top: 12px; }
   .pastor-msg { font-size: 14.5px; margin: 18px 0; line-height: 1.7; }
   .bible-hero { padding: 32px 24px; gap: 24px; }
   .bible-day-title { font-size: 26px; }
