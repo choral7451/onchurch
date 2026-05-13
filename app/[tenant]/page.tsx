@@ -76,6 +76,7 @@ type PublicPastor = {
   role: string | null;
   eng: string | null;
   message: string | null;
+  photoUrl: string | null;
 } | null;
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
@@ -260,7 +261,12 @@ async function PastorSection({ slug, url }: { slug: string; url: (p: string) => 
       <div className="container">
         <div className="pastor-section">
           <div className="pastor-photo">
-            <div className="pastor-photo-label">담임목사</div>
+            {pastor.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={pastor.photoUrl} alt={pastor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <div className="pastor-photo-label">담임목사</div>
+            )}
           </div>
           <div className="pastor-block">
             <span className="eyebrow">Greetings from Pastor</span>
