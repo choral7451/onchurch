@@ -1,7 +1,22 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
+import { getAccessToken } from "@/lib/api-client";
 
 export function LandingNav() {
+  const [authed, setAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setAuthed(!!getAccessToken());
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && e.key.startsWith("onchurch.")) setAuthed(!!getAccessToken());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   return (
     <nav className="landing-nav">
       <div className="landing-nav-inner">
@@ -18,12 +33,20 @@ export function LandingNav() {
           <a href="/#pricing">가격</a>
         </div>
         <div className="nav-cta">
-          <Link href="/login" className="btn btn-secondary">
-            로그인
-          </Link>
-          <Link href="/login" className="btn btn-primary">
-            신청하기 <Icon.arrow style={{ width: 14, height: 14 }} />
-          </Link>
+          {authed === null ? null : authed ? (
+            <Link href="/admin" className="btn btn-secondary">
+              관리자 페이지
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="btn btn-secondary">
+                로그인
+              </Link>
+              <Link href="/login" className="btn btn-primary">
+                신청하기 <Icon.arrow style={{ width: 14, height: 14 }} />
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
