@@ -82,7 +82,9 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
           aria-expanded={open}
           onClick={() => setOpen(true)}
         >
-          <Icon.menu style={{ width: 22, height: 22 }} />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
         </button>
       </div>
 

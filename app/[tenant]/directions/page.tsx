@@ -53,39 +53,39 @@ async function ChurchInfoSection({ tenant }: { tenant: string }) {
     <>
       <GoogleMap address={address} name={churchName} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 40 }}>
-        <div className="card">
-          <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--accent)", marginBottom: 10 }}>
+      <div className="info-grid">
+        <div className="card info-card">
+          <div className="info-card-head">
             <Icon.mapPin />
-            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>주소</span>
+            <span>주소</span>
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5 }}>
-            {address || <span style={{ color: "var(--muted)", fontWeight: 400 }}>등록된 주소가 없습니다.</span>}
+          <div className="info-card-body">
+            {address || <span className="info-card-empty">등록된 주소가 없습니다.</span>}
           </div>
         </div>
-        <div className="card">
-          <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--accent)", marginBottom: 10 }}>
+        <div className="card info-card">
+          <div className="info-card-head">
             <Icon.phone />
-            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>연락처</span>
+            <span>연락처</span>
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5 }}>
+          <div className="info-card-body">
             {phone ? (
-              <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} style={{ color: "inherit", textDecoration: "none" }}>{phone}</a>
+              <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`}>{phone}</a>
             ) : (
-              <span style={{ color: "var(--muted)", fontWeight: 400 }}>등록된 연락처가 없습니다.</span>
+              <span className="info-card-empty">등록된 연락처가 없습니다.</span>
             )}
           </div>
         </div>
-        <div className="card">
-          <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--accent)", marginBottom: 10 }}>
+        <div className="card info-card">
+          <div className="info-card-head">
             <Icon.mail />
-            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>이메일</span>
+            <span>이메일</span>
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: "var(--ink)", lineHeight: 1.5, wordBreak: "break-all" }}>
+          <div className="info-card-body" style={{ wordBreak: "break-all" }}>
             {email ? (
-              <a href={`mailto:${email}`} style={{ color: "inherit", textDecoration: "none" }}>{email}</a>
+              <a href={`mailto:${email}`}>{email}</a>
             ) : (
-              <span style={{ color: "var(--muted)", fontWeight: 400 }}>등록된 이메일이 없습니다.</span>
+              <span className="info-card-empty">등록된 이메일이 없습니다.</span>
             )}
           </div>
         </div>
@@ -98,7 +98,7 @@ function ChurchInfoSkeleton() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <span className="skel" style={{ width: "100%", height: 360 }} />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 24 }}>
+      <div className="info-grid" style={{ marginTop: 24 }}>
         <span className="skel" style={{ height: 110 }} />
         <span className="skel" style={{ height: 110 }} />
         <span className="skel" style={{ height: 110 }} />
@@ -118,7 +118,7 @@ async function TransportationsSection({ tenant }: { tenant: string }) {
           <h2>대중교통 안내</h2>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+      <div className="info-grid">
         {items.map((t) => (
           <div key={t.id} className="card">
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "var(--accent)", textTransform: "uppercase", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
@@ -138,7 +138,7 @@ async function TransportationsSection({ tenant }: { tenant: string }) {
 
 function TransportationsSkeleton() {
   return (
-    <div style={{ marginTop: 64, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+    <div className="info-grid" style={{ marginTop: 64 }}>
       <span className="skel" style={{ height: 130 }} />
       <span className="skel" style={{ height: 130 }} />
       <span className="skel" style={{ height: 130 }} />

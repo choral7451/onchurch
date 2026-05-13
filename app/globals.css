@@ -84,8 +84,9 @@ img { display: block; max-width: 100%; }
 .nav-link svg { width: 10px; height: 10px; opacity: 0.5; }
 
 .nav-cta { display: flex; gap: 10px; align-items: center; }
-.nav-toggle { display: none; background: transparent; border: 1px solid var(--line); color: var(--ink); border-radius: 10px; padding: 8px; cursor: pointer; align-items: center; justify-content: center; }
+.nav-toggle { display: none; flex-shrink: 0; width: 42px; height: 42px; background: transparent; border: 1px solid var(--line); color: var(--ink); border-radius: 10px; padding: 0; cursor: pointer; align-items: center; justify-content: center; }
 .nav-toggle:hover { background: var(--surface-2); }
+.nav-toggle svg { width: 24px; height: 24px; display: block; }
 .nav-overlay { position: fixed; inset: 0; background: oklch(0 0 0 / 0.4); z-index: 100; border: none; padding: 0; cursor: pointer; animation: nav-fade-in 0.18s ease; }
 .nav-drawer { position: fixed; right: 0; top: 0; bottom: 0; width: min(320px, 84vw); background: var(--surface); z-index: 101; display: flex; flex-direction: column; box-shadow: -8px 0 32px oklch(0 0 0 / 0.12); animation: nav-drawer-in 0.2s ease; }
 .nav-drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); }
@@ -123,6 +124,13 @@ main { flex: 1; }
 .bg-rings { position: absolute; pointer-events: none; opacity: 0.4; }
 
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; transition: all 0.18s ease; }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 40px; }
+.info-card { display: flex; flex-direction: column; gap: 10px; }
+.info-card-head { display: flex; align-items: center; gap: 10px; color: var(--accent); }
+.info-card-head span { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+.info-card-body { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.5; }
+.info-card-body a { color: inherit; text-decoration: none; }
+.info-card-empty { color: var(--muted); font-weight: 400; }
 .card-hover:hover { border-color: oklch(0.62 0.14 245 / 0.4); box-shadow: var(--shadow-md); transform: translateY(-2px); }
 
 /* Footer */
@@ -735,4 +743,7 @@ main { flex: 1; }
   .qt-card { padding: 22px; }
   .pray-cta { padding: 32px 24px; gap: 20px; grid-template-columns: 1fr; }
   .pray-cta h3 { font-size: 22px; }
+  .info-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 24px; }
+  .info-card { padding: 18px 20px; }
+  .info-card-body { font-size: 15px; }
 }
