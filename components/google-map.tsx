@@ -5,15 +5,30 @@ import { useEffect, useRef, useState } from "react";
 type GoogleLatLng = { lat: () => number; lng: () => number };
 type GoogleMapInstance = unknown;
 type GoogleMarker = unknown;
-type GoogleInfoWindow = { open: (opts: { map: GoogleMapInstance; anchor: GoogleMarker }) => void };
 
 type GeocodeResult = { geometry: { location: GoogleLatLng } };
+
+type MarkerIconSymbol = {
+  path: number;
+  scale: number;
+  fillColor: string;
+  fillOpacity: number;
+  strokeColor: string;
+  strokeWeight: number;
+};
 
 type GoogleNamespace = {
   maps: {
     Map: new (container: HTMLElement, options: Record<string, unknown>) => GoogleMapInstance;
-    Marker: new (options: { position: GoogleLatLng; map: GoogleMapInstance; title?: string }) => GoogleMarker;
-    InfoWindow: new (options: { content: string }) => GoogleInfoWindow;
+    Marker: new (options: {
+      position: GoogleLatLng;
+      map: GoogleMapInstance;
+      title?: string;
+      icon?: MarkerIconSymbol;
+      animation?: number;
+    }) => GoogleMarker;
+    SymbolPath: { CIRCLE: number };
+    Animation: { DROP: number };
     Geocoder: new () => {
       geocode: (
         opt: { address: string; region?: string },
@@ -101,15 +116,20 @@ export function GoogleMap({ address, name }: { address: string; name: string }) 
             streetViewControl: false,
             fullscreenControl: true,
           });
-          const marker = new google.maps.Marker({
+          new google.maps.Marker({
             position: location,
             map,
             title: name,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 10,
+              fillColor: "#2563eb",
+              fillOpacity: 1,
+              strokeColor: "#ffffff",
+              strokeWeight: 3,
+            },
+            animation: google.maps.Animation.DROP,
           });
-          const info = new google.maps.InfoWindow({
-            content: `<div style="padding:4px 8px;font-size:12px;font-weight:600;white-space:nowrap;">${escapeHtml(name)}</div>`,
-          });
-          info.open({ map, anchor: marker });
 
           setStatus("ready");
         });
@@ -148,11 +168,3 @@ export function GoogleMap({ address, name }: { address: string; name: string }) 
   );
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
