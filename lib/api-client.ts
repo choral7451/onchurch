@@ -70,27 +70,79 @@ const TOKEN_KEYS = {
   refreshTokenExpiresIn: "onchurch.refreshTokenExpiresIn",
 } as const;
 
+const COOKIE_ROOTS = ["everychurch.co.kr", "onchurch.kr"];
+
+function getCookieDomain(): string | null {
+  if (typeof window === "undefined") return null;
+  const host = window.location.host.split(":")[0];
+  if (!host) return null;
+  if (host === "localhost" || host === "127.0.0.1") return null;
+  for (const root of COOKIE_ROOTS) {
+    if (host === root || host.endsWith(`.${root}`)) return `.${root}`;
+  }
+  return null;
+}
+
+function setCookie(name: string, value: string, maxAgeSec = 60 * 60 * 24 * 30) {
+  if (typeof document === "undefined") return;
+  const domain = getCookieDomain();
+  const parts = [
+    `${name}=${encodeURIComponent(value)}`,
+    "Path=/",
+    `Max-Age=${maxAgeSec}`,
+    "SameSite=Lax",
+  ];
+  if (window.location.protocol === "https:") parts.push("Secure");
+  if (domain) parts.push(`Domain=${domain}`);
+  document.cookie = parts.join("; ");
+}
+
+function deleteCookie(name: string) {
+  if (typeof document === "undefined") return;
+  const domain = getCookieDomain();
+  const parts = [`${name}=`, "Path=/", "Max-Age=0", "SameSite=Lax"];
+  if (domain) parts.push(`Domain=${domain}`);
+  document.cookie = parts.join("; ");
+  document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
+}
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const target = `${name}=`;
+  for (const raw of document.cookie.split(";")) {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith(target)) {
+      return decodeURIComponent(trimmed.slice(target.length));
+    }
+  }
+  return null;
+}
+
 export function saveTokens(tokens: AuthTokens) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(TOKEN_KEYS.accessToken, tokens.accessToken);
-  localStorage.setItem(TOKEN_KEYS.accessTokenExpiresIn, tokens.accessTokenExpiresIn);
-  localStorage.setItem(TOKEN_KEYS.refreshToken, tokens.refreshToken);
-  localStorage.setItem(TOKEN_KEYS.refreshTokenExpiresIn, tokens.refreshTokenExpiresIn);
+  setCookie(TOKEN_KEYS.accessToken, tokens.accessToken);
+  setCookie(TOKEN_KEYS.accessTokenExpiresIn, tokens.accessTokenExpiresIn);
+  setCookie(TOKEN_KEYS.refreshToken, tokens.refreshToken);
+  setCookie(TOKEN_KEYS.refreshTokenExpiresIn, tokens.refreshTokenExpiresIn);
+  Object.values(TOKEN_KEYS).forEach((k) => localStorage.removeItem(k));
 }
 
 export function clearTokens() {
   if (typeof window === "undefined") return;
-  Object.values(TOKEN_KEYS).forEach((k) => localStorage.removeItem(k));
+  Object.values(TOKEN_KEYS).forEach((k) => {
+    deleteCookie(k);
+    localStorage.removeItem(k);
+  });
 }
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEYS.accessToken);
+  return getCookie(TOKEN_KEYS.accessToken) ?? localStorage.getItem(TOKEN_KEYS.accessToken);
 }
 
 export function getRefreshToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEYS.refreshToken);
+  return getCookie(TOKEN_KEYS.refreshToken) ?? localStorage.getItem(TOKEN_KEYS.refreshToken);
 }
 
 async function rawRequest<T>(path: string, opts: RequestOpts, accessToken: string | null): Promise<{ ok: true; data: T } | { ok: false; status: number; code: string; message: string }> {
