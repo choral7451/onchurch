@@ -91,7 +91,7 @@ const FEATURES: { ic: IconKey; title: string; desc: string }[] = [
   { ic: "building", title: "교회 전용 페이지 9종", desc: "교회 소개·예배 안내·말씀·공지·일정·갤러리·부서·기도 요청·통독 — 처음부터 교회를 위해 설계되었습니다." },
   { ic: "filter", title: "페이지 ON/OFF 자유롭게", desc: "필요한 페이지만 켜고 운영하세요. 관리자 콘솔의 토글 한 번으로 메뉴와 노출 여부가 즉시 반영됩니다." },
   { ic: "users", title: "담임목사 인사 · 비전 · 연혁", desc: "교회 소개 페이지를 풍부하게. 담임목사 인사말과 사진, 비전, 교회 연혁, 교역자 명단을 한 곳에." },
-  { ic: "video", title: "설교 영상 + 주보 PDF", desc: "유튜브 영상을 임베드하고 주보 PDF를 업로드. 시리즈별 필터로 지난 설교까지 한 흐름에." },
+  { ic: "video", title: "설교 영상", desc: "유튜브 영상을 임베드하고, 카테고리 필터와 키워드 검색으로 지난 설교까지 한 흐름에." },
   { ic: "calendar", title: "행사 캘린더 · 공지", desc: "다가오는 일정을 캘린더로, 새 소식은 카테고리별 공지로. 홈에 자동 노출됩니다." },
   { ic: "mapPin", title: "서브도메인 + 사이트 운영 ON", desc: "yourchurch.everychurch.co.kr 형태로 즉시 발급. 관리자 토글 하나로 사이트가 공개됩니다." },
 ];

@@ -57,7 +57,7 @@ export const SITE_DATA: SiteData = {
     ["09", "축 도", "담임목사"],
   ],
   sermons: [
-    { series: "마태복음 강해", title: "산상수훈, 천국 백성의 길", pastor: "김주은 목사", date: "2026.03.22", duration: "42:18", feat: true, grad: "ph-grad-3" },
+    { series: "마태복음 강해", title: "산상수훈, 천국 백성의 길", pastor: "김주은 목사", date: "2026.03.22", duration: "42:18", grad: "ph-grad-3" },
     { series: "주일설교", title: "흔들리지 않는 믿음", pastor: "김주은 목사", date: "2026.03.15", duration: "38:20", grad: "ph-grad-1" },
     { series: "수요예배", title: "기도의 골방으로", pastor: "이은혜 목사", date: "2026.03.18", duration: "32:45", grad: "ph-grad-2" },
     { series: "주일설교", title: "광야를 지나는 자에게", pastor: "김주은 목사", date: "2026.03.08", duration: "40:12", grad: "ph-grad-4" },

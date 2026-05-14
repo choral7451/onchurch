@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   return buildChurchMetadata(church, pastor, {
     pageTitle: "말씀",
     path: "/sermons",
-    pageDescription: `${church.name}의 설교 영상을 시리즈별로 모아 보실 수 있습니다.${pastor?.name ? ` 담임목사 ${pastor.name}의 말씀.` : ""}`,
+    pageDescription: `${church.name}의 설교 영상을 카테고리별로 모아 보실 수 있습니다.${pastor?.name ? ` 담임목사 ${pastor.name}의 말씀.` : ""}`,
     extraKeywords: ["설교", "설교 영상", "말씀", "묵상", ...(pastor?.name ? [`${pastor.name} 설교`] : [])],
   });
 }
@@ -63,7 +63,6 @@ async function SermonsContent({ tenant }: { tenant: string }) {
     date: s.date ?? "",
     duration: s.duration ?? "",
     videoUrl: s.videoUrl,
-    feat: s.isFeatured,
     grad: GRAD_CYCLE[i % GRAD_CYCLE.length],
   }));
   const filters: string[] = ["전체", ...data.series.map((s) => s.name)];

@@ -52,7 +52,7 @@ export function SermonsEditor() {
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">SERMONS</div>
         <h2>말씀</h2>
-        <p>설교 영상 · 시리즈 필터를 관리합니다. 시리즈를 먼저 만든 뒤 설교에서 선택할 수 있습니다.</p>
+        <p>설교 영상 · 카테고리 필터를 관리합니다. 카테고리를 먼저 만든 뒤 설교에서 선택할 수 있습니다.</p>
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -63,7 +63,7 @@ export function SermonsEditor() {
               className={`chip ${section === s ? "active" : ""}`}
               onClick={() => setSection(s)}
             >
-              <span>{s === "sermons" ? "설교" : "시리즈"}</span>
+              <span>{s === "sermons" ? "설교" : "카테고리"}</span>
             </div>
           ))}
         </div>
@@ -146,7 +146,7 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
 
   function seriesName(id: number | null): string {
     if (id == null) return "미분류";
-    return seriesList.find((s) => s.id === id)?.name ?? "(삭제된 시리즈)";
+    return seriesList.find((s) => s.id === id)?.name ?? "(삭제된 카테고리)";
   }
 
   return (
@@ -159,7 +159,7 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
         <div className="admin-banner-card editing">
           <div className="form-grid">
             <div className="form-row">
-              <label>시리즈</label>
+              <label>카테고리</label>
               <select
                 value={draft.seriesId ?? ""}
                 onChange={(e) => setDraft({ ...draft, seriesId: e.target.value === "" ? null : Number(e.target.value) })}
@@ -182,19 +182,9 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
               <label>날짜</label>
               <input value={draft.date ?? ""} onChange={(e) => setDraft({ ...draft, date: e.target.value })} placeholder="2026.03.22" />
             </div>
-            <div className="form-row">
-              <label>정렬</label>
-              <input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
-            </div>
             <div className="form-row full">
               <label>영상 URL</label>
               <input value={draft.videoUrl ?? ""} onChange={(e) => setDraft({ ...draft, videoUrl: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." />
-            </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isFeatured} onChange={(e) => setDraft({ ...draft, isFeatured: e.target.checked })} />
-                <span>대표 설교</span>
-              </label>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
@@ -216,11 +206,9 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{seriesName(it.seriesId)}</span>
                 <strong>{it.title}</strong>
-                {it.isFeatured && <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>대표</span>}
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <span style={{ color: "var(--muted)", fontSize: 12 }}>순서 {it.sortOrder}</span>
               </div>
               <div style={{ color: "var(--muted)", fontSize: 13 }}>
                 {it.pastor && <span>{it.pastor}</span>}
@@ -253,7 +241,7 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
   async function load() {
     setStatus("loading"); setErrMsg("");
     try { setItems(await onchurchSermonSeries.listMine()); }
-    catch (err) { setErrMsg(err instanceof ApiError ? err.message : "시리즈 목록을 불러오지 못했습니다."); }
+    catch (err) { setErrMsg(err instanceof ApiError ? err.message : "카테고리 목록을 불러오지 못했습니다."); }
     finally { setStatus("idle"); }
   }
 
@@ -281,7 +269,7 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
   }
 
   async function remove(id: number) {
-    if (!confirm("이 시리즈를 삭제할까요? 시리즈에 속한 설교는 '미분류'로 남습니다.")) return;
+    if (!confirm("이 카테고리를 삭제할까요? 카테고리에 속한 설교는 '미분류'로 남습니다.")) return;
     setStatus("deleting"); setErrMsg("");
     try { await onchurchSermonSeries.remove(id); await load(); onChanged(); }
     catch (err) { setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다."); }
@@ -292,7 +280,7 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 시리즈 추가</button>
+        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 카테고리 추가</button>
       </div>
       {editing !== null && (
         <div className="admin-banner-card editing">
@@ -300,16 +288,6 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
             <div className="form-row">
               <label>이름 <span className="required-mark" aria-hidden="true">*</span></label>
               <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="마태복음 강해" required />
-            </div>
-            <div className="form-row">
-              <label>정렬</label>
-              <input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
-            </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
-              </label>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
@@ -323,7 +301,7 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {status === "loading" && <p style={{ color: "var(--muted)" }}>불러오는 중...</p>}
         {status !== "loading" && items.length === 0 && editing === null && (
-          <p style={{ color: "var(--muted)" }}>등록된 시리즈가 없습니다.</p>
+          <p style={{ color: "var(--muted)" }}>등록된 카테고리가 없습니다.</p>
         )}
         {items.map((it) => (
           <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
@@ -333,7 +311,6 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <span style={{ color: "var(--muted)", fontSize: 12 }}>순서 {it.sortOrder}</span>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>

@@ -12,8 +12,18 @@ type Props = {
 
 export function SermonsList({ sermons, filters }: Props) {
   const [filter, setFilter] = useState<string>(filters[0] ?? "전체");
+  const [query, setQuery] = useState("");
   const [active, setActive] = useState<Sermon | null>(null);
-  const filtered = filter === "전체" ? sermons : sermons.filter((s) => s.series === filter);
+  const q = query.trim().toLowerCase();
+  const filtered = sermons.filter((s) => {
+    if (filter !== "전체" && s.series !== filter) return false;
+    if (!q) return true;
+    return (
+      s.title.toLowerCase().includes(q) ||
+      s.pastor.toLowerCase().includes(q) ||
+      s.series.toLowerCase().includes(q)
+    );
+  });
   const activeId = parseYouTubeId(active?.videoUrl);
 
   useEffect(() => {
@@ -35,14 +45,30 @@ export function SermonsList({ sermons, filters }: Props) {
         {sermons[2] && <SermonCard sermon={sermons[2]} onPlay={setActive} />}
       </div>
 
-      <div className="chips" style={{ marginBottom: 24 }}>
-        {filters.map((f) => (
-          <div key={f} className={`chip ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>{f}</div>
-        ))}
+      <div className="sermon-toolbar">
+        <div className="chips" style={{ marginBottom: 0 }}>
+          {filters.map((f) => (
+            <div key={f} className={`chip ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>{f}</div>
+          ))}
+        </div>
+        <input
+          type="search"
+          className="sermon-search"
+          placeholder="제목·설교자·카테고리 검색"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="설교 검색"
+        />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-        {filtered.map((s) => <SermonCard key={s.title} sermon={s} onPlay={setActive} />)}
+        {filtered.length === 0 ? (
+          <p style={{ gridColumn: "1 / -1", color: "var(--muted)", textAlign: "center", padding: "32px 0" }}>
+            검색 결과가 없습니다.
+          </p>
+        ) : (
+          filtered.map((s, i) => <SermonCard key={`${s.title}-${i}`} sermon={s} onPlay={setActive} />)
+        )}
       </div>
 
       {active && activeId && (

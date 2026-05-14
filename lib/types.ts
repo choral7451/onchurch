@@ -46,7 +46,6 @@ export type Sermon = {
   date: string;
   duration: string;
   videoUrl?: string | null;
-  feat?: boolean;
   grad: "ph-grad-1" | "ph-grad-2" | "ph-grad-3" | "ph-grad-4";
 };
 

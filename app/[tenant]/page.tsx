@@ -207,7 +207,6 @@ async function HomeSermonsSection({ slug, url }: { slug: string; url: (p: string
     date: s.date ?? "",
     duration: s.duration ?? "",
     videoUrl: s.videoUrl,
-    feat: s.isFeatured,
     grad: GRAD_CYCLE[i % GRAD_CYCLE.length],
   }));
   if (sermons.length === 0) return null;
