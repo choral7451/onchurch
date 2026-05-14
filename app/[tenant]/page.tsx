@@ -8,7 +8,6 @@ import { getPathPrefix } from "@/lib/path-prefix";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { SermonFeatureGrid } from "@/components/sermon-feature-grid";
-import { Calendar } from "@/components/calendar";
 import { TopBanner } from "@/components/top-banner";
 import type { Sermon } from "@/lib/types";
 
@@ -108,12 +107,18 @@ async function TopBannerSection({ slug }: { slug: string }) {
 }
 
 function pickUpcoming(events: PublicEvent[]): PublicEvent[] {
-  const now = Date.now();
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const cutoff = startOfToday.getTime();
   return events
     .filter((e) => e.isActive !== false)
     .filter((e) => {
-      const t = new Date(e.endAt ?? e.startAt).getTime();
-      return Number.isFinite(t) && t >= now;
+      // 비교 기준: endAt 이 있으면 endAt, 없으면 startAt.
+      // 종일 일정·endAt 없는 일정은 그 날 23:59 까지 유효한 것으로 본다.
+      const ref = new Date(e.endAt ?? e.startAt);
+      if (Number.isNaN(ref.getTime())) return false;
+      if (!e.endAt || e.isAllDay) ref.setHours(23, 59, 59, 999);
+      return ref.getTime() >= cutoff;
     })
     .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 }
@@ -309,27 +314,6 @@ async function HomeSermonsSection({ slug, url }: { slug: string; url: (p: string
   );
 }
 
-async function HomeEventsSection({ slug, url }: { slug: string; url: (p: string) => string }) {
-  const data = await fetchJson<{ events: PublicEvent[] }>(`/onchurch/sites/${slug}/events`, { events: [] });
-  if (data.events.length === 0) return null;
-  return (
-    <section className="section">
-      <div className="container">
-        <div className="section-head">
-          <div>
-            <span className="eyebrow">Calendar & Events</span>
-            <h2>이번 달 교회 일정</h2>
-          </div>
-          <div className="section-head-action">
-            <Link href={url("/schedule")}>전체 일정 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
-          </div>
-        </div>
-        <Calendar events={data.events} />
-      </div>
-    </section>
-  );
-}
-
 async function PastorSection({ slug, url }: { slug: string; url: (p: string) => string }) {
   const data = await fetchJson<{ pastor: PublicPastor }>(`/onchurch/sites/${slug}/about`, { pastor: null });
   const pastor = data.pastor;
@@ -458,12 +442,6 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
       {isPageEnabled("sermons") && (
         <Suspense fallback={<SectionSkeleton height={320} />}>
           <HomeSermonsSection slug={slug} url={url} />
-        </Suspense>
-      )}
-
-      {isPageEnabled("schedule") && (
-        <Suspense fallback={<SectionSkeleton height={420} />}>
-          <HomeEventsSection slug={slug} url={url} />
         </Suspense>
       )}
 
