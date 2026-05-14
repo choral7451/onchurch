@@ -50,7 +50,7 @@ export function brandFromChurch(church: PublicChurch): Brand {
 export const PUBLIC_NAV: NavItem[] = [
   { id: "about", label: "교회 소개", href: "/about" },
   { id: "worship", label: "예배 안내", href: "/worship" },
-  { id: "sermons", label: "말씀과 주보", href: "/sermons" },
+  { id: "sermons", label: "말씀", href: "/sermons" },
   { id: "notices", label: "교회 소식", href: "/notices" },
   { id: "schedule", label: "일정", href: "/schedule" },
   { id: "gallery", label: "갤러리", href: "/gallery" },

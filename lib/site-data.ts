@@ -15,7 +15,7 @@ export const SITE_DATA: SiteData = {
   nav: [
     { id: "about", label: "교회 소개", href: "/about", children: ["담임목사 인사", "교회 연혁", "비전과 사명"] },
     { id: "worship", label: "예배 안내", href: "/worship", children: ["주일예배", "수요예배", "새벽기도회"] },
-    { id: "sermons", label: "말씀과 주보", href: "/sermons", children: ["설교 영상", "주보 다운로드", "큐티"] },
+    { id: "sermons", label: "말씀", href: "/sermons", children: ["설교 영상", "주보 다운로드", "큐티"] },
     { id: "notices", label: "교회 소식", href: "/notices", children: ["공지사항", "행사 캘린더"] },
     { id: "schedule", label: "일정", href: "/schedule" },
     // { id: "departments", label: "교회학교", href: "/departments" },

@@ -10,10 +10,10 @@ import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
-  if (!church) return { title: "말씀과 주보", robots: { index: false, follow: false } };
+  if (!church) return { title: "말씀", robots: { index: false, follow: false } };
   const pastor = await fetchPublicPastor(tenant);
   return buildChurchMetadata(church, pastor, {
-    pageTitle: "말씀과 주보",
+    pageTitle: "말씀",
     path: "/sermons",
     pageDescription: `${church.name}의 설교 영상과 주보를 시리즈별로 모아 보실 수 있습니다.${pastor?.name ? ` 담임목사 ${pastor.name}의 말씀.` : ""}`,
     extraKeywords: ["설교", "설교 영상", "주보", "말씀", "묵상", ...(pastor?.name ? [`${pastor.name} 설교`] : [])],

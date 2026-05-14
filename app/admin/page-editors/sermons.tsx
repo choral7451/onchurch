@@ -51,7 +51,7 @@ export function SermonsEditor() {
     <section className="admin-section">
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">SERMONS</div>
-        <h2>말씀과 주보</h2>
+        <h2>말씀</h2>
         <p>설교 영상 · 주보 PDF · 시리즈 필터를 관리합니다. 시리즈를 먼저 만든 뒤 설교에서 선택할 수 있습니다.</p>
       </div>
 
@@ -183,10 +183,6 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
               <input value={draft.date ?? ""} onChange={(e) => setDraft({ ...draft, date: e.target.value })} placeholder="2026.03.22" />
             </div>
             <div className="form-row">
-              <label>재생 시간</label>
-              <input value={draft.duration ?? ""} onChange={(e) => setDraft({ ...draft, duration: e.target.value })} placeholder="42:18" />
-            </div>
-            <div className="form-row">
               <label>정렬</label>
               <input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
             </div>
@@ -195,27 +191,13 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
               <input value={draft.videoUrl ?? ""} onChange={(e) => setDraft({ ...draft, videoUrl: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." />
             </div>
             <div className="form-row full">
-              <label>썸네일 이미지 URL</label>
-              <input value={draft.thumbnailUrl ?? ""} onChange={(e) => setDraft({ ...draft, thumbnailUrl: e.target.value })} placeholder="https://..." />
-            </div>
-            <div className="form-row full">
               <label>주보 PDF URL</label>
               <input value={draft.bulletinUrl ?? ""} onChange={(e) => setDraft({ ...draft, bulletinUrl: e.target.value })} placeholder="https://...pdf" />
-            </div>
-            <div className="form-row full">
-              <label>요약</label>
-              <textarea rows={3} value={draft.summary ?? ""} onChange={(e) => setDraft({ ...draft, summary: e.target.value })} />
             </div>
             <div className="form-row">
               <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
                 <input type="checkbox" checked={draft.isFeatured} onChange={(e) => setDraft({ ...draft, isFeatured: e.target.checked })} />
                 <span>대표 설교</span>
-              </label>
-            </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
               </label>
             </div>
           </div>
