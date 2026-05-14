@@ -53,8 +53,19 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
   }, [events, view]);
 
   const upcoming = useMemo(() => {
-    const now = Date.now();
-    return events.filter((e) => new Date(e.startAt).getTime() >= now).slice(0, 6);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const cutoff = startOfToday.getTime();
+    return events
+      .filter((e) => e.isActive !== false)
+      .filter((e) => {
+        const ref = new Date(e.endAt ?? e.startAt);
+        if (Number.isNaN(ref.getTime())) return false;
+        if (!e.endAt || e.isAllDay) ref.setHours(23, 59, 59, 999);
+        return ref.getTime() >= cutoff;
+      })
+      .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+      .slice(0, 6);
   }, [events]);
 
   function shiftMonth(delta: number) {
