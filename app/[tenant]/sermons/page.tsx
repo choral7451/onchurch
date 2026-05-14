@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { SermonsList } from "./list";
-import { SermonCard } from "@/components/sermon-card";
 import type { Sermon } from "@/lib/types";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
@@ -63,21 +62,13 @@ async function SermonsContent({ tenant }: { tenant: string }) {
     pastor: s.pastor ?? "",
     date: s.date ?? "",
     duration: s.duration ?? "",
+    videoUrl: s.videoUrl,
     feat: s.isFeatured,
     grad: GRAD_CYCLE[i % GRAD_CYCLE.length],
   }));
   const filters: string[] = ["전체", ...data.series.map((s) => s.name)];
 
-  return (
-    <>
-      <div className="sermon-grid" style={{ marginBottom: 56 }}>
-        {sermons[0] && <SermonCard sermon={sermons[0]} feat />}
-        {sermons[1] && <SermonCard sermon={sermons[1]} />}
-        {sermons[2] && <SermonCard sermon={sermons[2]} />}
-      </div>
-      <SermonsList sermons={sermons} filters={filters} />
-    </>
-  );
+  return <SermonsList sermons={sermons} filters={filters} />;
 }
 
 function SermonsSkeleton() {
