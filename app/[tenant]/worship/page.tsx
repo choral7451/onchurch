@@ -61,20 +61,22 @@ async function WorshipContent({ tenant }: { tenant: string }) {
   const data = await fetchWorship(tenant);
   const services = data.services;
   const orders = data.orders;
+  const weekServices = services.filter((s) => s.tag === "WEEK");
+  const dailyServices = services.filter((s) => s.tag === "DAILY");
 
   return (
     <>
-      <div className="worship-grid">
-        {services.map((w) => (
-          <div key={w.id} className={`worship-card ${w.isFeatured ? "feat" : ""}`}>
-            <span className="worship-cat">{w.tag}</span>
-            <div className="worship-name">{w.name}</div>
-            <div className="worship-time">{w.time}</div>
-            {w.meta && <div className="worship-meta">{w.meta}</div>}
-            {w.isFeatured && <span className="worship-pill">대표 예배</span>}
-          </div>
-        ))}
-      </div>
+      {weekServices.length > 0 && (
+        <WorshipTable heading="주일·주중 예배" services={weekServices} />
+      )}
+      {dailyServices.length > 0 && (
+        <WorshipTable heading="매일 예배" services={dailyServices} style={{ marginTop: weekServices.length > 0 ? 40 : 0 }} />
+      )}
+      {services.length === 0 && (
+        <p style={{ color: "var(--muted)", textAlign: "center", padding: "40px 0" }}>
+          등록된 예배가 없습니다.
+        </p>
+      )}
 
       {orders.length > 0 && (
         <div style={{ marginTop: 64 }}>
@@ -108,18 +110,41 @@ async function WorshipContent({ tenant }: { tenant: string }) {
   );
 }
 
+function WorshipTable({ heading, services, style }: { heading: string; services: WorshipServiceItem[]; style?: React.CSSProperties }) {
+  return (
+    <div style={style}>
+      <h2 className="worship-table-heading">{heading}</h2>
+      <div className="worship-table" role="table">
+        <div className="worship-table-head" role="row">
+          <div role="columnheader">예배</div>
+          <div role="columnheader">시간</div>
+          <div role="columnheader">안내</div>
+        </div>
+        {services.map((w) => (
+          <div key={w.id} className={`worship-table-row ${w.isFeatured ? "feat" : ""}`} role="row">
+            <div className="worship-table-cell name" role="cell">
+              <div className="worship-table-name">{w.name}</div>
+              {w.isFeatured && <span className="worship-pill">대표</span>}
+            </div>
+            <div className="worship-table-cell time" role="cell">{w.time}</div>
+            <div className="worship-table-cell meta" role="cell">{w.meta || "—"}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function WorshipSkeleton() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-        <span className="skel" style={{ height: 160 }} />
-        <span className="skel" style={{ height: 160 }} />
-        <span className="skel" style={{ height: 160 }} />
-      </div>
-      <span className="skel" style={{ width: 220, height: 32, marginTop: 32 }} />
-      <span className="skel" style={{ width: "100%", height: 60 }} />
-      <span className="skel" style={{ width: "100%", height: 60 }} />
-      <span className="skel" style={{ width: "100%", height: 60 }} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <span className="skel" style={{ width: 200, height: 28 }} />
+      <span className="skel" style={{ width: "100%", height: 56 }} />
+      <span className="skel" style={{ width: "100%", height: 56 }} />
+      <span className="skel" style={{ width: "100%", height: 56 }} />
+      <span className="skel" style={{ width: 200, height: 28, marginTop: 24 }} />
+      <span className="skel" style={{ width: "100%", height: 56 }} />
+      <span className="skel" style={{ width: "100%", height: 56 }} />
     </div>
   );
 }
