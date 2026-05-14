@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/icons";
 
 type Notice = {
@@ -28,6 +28,18 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
   const [cat, setCat] = useState<string>(categories[0] ?? "전체");
   const [query, setQuery] = useState<string>("");
   const [page, setPage] = useState<number>(1);
+  const [active, setActive] = useState<Notice | null>(null);
+
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setActive(null); };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [active]);
 
   const filtered = useMemo(() => {
     let list = cat === "전체" ? notices : notices.filter((n) => n.category === cat);
@@ -102,7 +114,16 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
             <div style={{ textAlign: "right" }}>작성일</div>
           </div>
           {visible.map((n) => (
-            <div key={n.id} className="notice-row">
+            <div
+              key={n.id}
+              className="notice-row clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => setActive(n)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActive(n); }
+              }}
+            >
               <div className="notice-num">{n.isPinned ? "📌" : n.id}</div>
               <div>{n.category ? <span className="notice-cat">{n.category}</span> : null}</div>
               <div className="notice-title">{n.title}</div>
@@ -156,6 +177,44 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
           >
             <Icon.chevR />
           </button>
+        </div>
+      )}
+
+      {active && (
+        <div
+          className="notice-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label={active.title}
+          onClick={() => setActive(null)}
+        >
+          <div className="notice-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="notice-modal-close"
+              aria-label="닫기"
+              onClick={() => setActive(null)}
+            >
+              ×
+            </button>
+            <div className="notice-modal-body">
+              <div className="notice-modal-head">
+                {active.isPinned && <span className="notice-modal-pin">📌 고정</span>}
+                {active.category && <span className="notice-modal-cat">{active.category}</span>}
+              </div>
+              <h3 className="notice-modal-title">{active.title}</h3>
+              <div className="notice-modal-meta">
+                {active.author && <span>{active.author}</span>}
+                {active.author && <span className="dot" />}
+                <span>{formatDate(active.publishedAt ?? active.createdAt)}</span>
+              </div>
+              {active.content ? (
+                <div className="notice-modal-content">{active.content}</div>
+              ) : (
+                <div className="notice-modal-content empty">내용이 없습니다.</div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </>
