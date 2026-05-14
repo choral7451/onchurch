@@ -81,6 +81,10 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   const [errMsg, setErrMsg] = useState("");
   const [uploading, setUploading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const bulkInputRef = useRef<HTMLInputElement>(null);
+  const [bulkCategoryId, setBulkCategoryId] = useState<number | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
 
   useEffect(() => { void load(); }, []);
 
@@ -93,7 +97,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
 
   function startNew() {
     setEditing(0);
-    setDraft({ ...EMPTY_GALLERY, sortOrder: items.length, grad: GRADS[items.length % GRADS.length] });
+    setDraft({ ...EMPTY_GALLERY, grad: GRADS[items.length % GRADS.length] });
   }
   function startEdit(it: GalleryItemRow) {
     setEditing(it.id);
@@ -157,6 +161,46 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     finally { setStatus("idle"); }
   }
 
+  async function onBulkPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []).filter((f) => f.type.startsWith("image/"));
+    if (files.length === 0) {
+      if (bulkInputRef.current) bulkInputRef.current.value = "";
+      return;
+    }
+    setErrMsg("");
+    setBulkBusy(true);
+    setBulkProgress({ done: 0, total: files.length });
+    let failed = 0;
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const [uploaded] = await uploadImages([file]);
+          if (!uploaded?.url) { failed++; continue; }
+          const baseName = file.name.replace(/\.[^.]+$/, "") || "사진";
+          await onchurchGallery.create({
+            categoryId: bulkCategoryId,
+            title: baseName,
+            date: null,
+            photoUrl: uploaded.url,
+            grad: GRADS[i % GRADS.length],
+            sortOrder: 0,
+            isActive: true,
+          });
+        } catch {
+          failed++;
+        }
+        setBulkProgress({ done: i + 1, total: files.length });
+      }
+      await load();
+      if (failed > 0) setErrMsg(`${failed}개 파일 업로드에 실패했습니다.`);
+    } finally {
+      setBulkBusy(false);
+      setBulkProgress(null);
+      if (bulkInputRef.current) bulkInputRef.current.value = "";
+    }
+  }
+
   function categoryName(id: number | null): string {
     if (id == null) return "미분류";
     return categories.find((c) => c.id === id)?.name ?? "(삭제된 카테고리)";
@@ -165,8 +209,31 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 사진 추가</button>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <select
+          value={bulkCategoryId ?? ""}
+          onChange={(e) => setBulkCategoryId(e.target.value === "" ? null : Number(e.target.value))}
+          disabled={bulkBusy || editing !== null}
+          style={{ height: 34 }}
+          aria-label="여러 장 업로드 카테고리"
+        >
+          <option value="">— 미분류로 업로드 —</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}{!c.isActive ? " (비공개)" : ""}</option>
+          ))}
+        </select>
+        <input ref={bulkInputRef} type="file" accept="image/*" multiple onChange={onBulkPick} style={{ display: "none" }} />
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => bulkInputRef.current?.click()}
+          disabled={bulkBusy || editing !== null}
+        >
+          {bulkBusy && bulkProgress
+            ? `업로드 중 ${bulkProgress.done}/${bulkProgress.total}`
+            : "+ 여러 장 업로드"}
+        </button>
+        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null || bulkBusy}>+ 사진 추가</button>
       </div>
       {editing !== null && (
         <div className="admin-banner-card editing">
@@ -229,22 +296,6 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
               <label>날짜 표시</label>
               <input value={draft.date ?? ""} onChange={(e) => setDraft({ ...draft, date: e.target.value })} placeholder="JAN 01" />
             </div>
-            <div className="form-row">
-              <label>그라디언트 (사진 없을 때)</label>
-              <select value={draft.grad ?? ""} onChange={(e) => setDraft({ ...draft, grad: e.target.value })}>
-                {GRADS.map((g) => <option key={g} value={g}>{g.replace("ph-grad-", "색상 ")}</option>)}
-              </select>
-            </div>
-            <div className="form-row">
-              <label>정렬</label>
-              <input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
-            </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
-              </label>
-            </div>
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
@@ -277,7 +328,6 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <span style={{ color: "var(--muted)", fontSize: 12 }}>순서 {it.sortOrder}</span>
               </div>
               {it.date && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.date}</div>}
             </div>
@@ -308,7 +358,7 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
     finally { setStatus("idle"); }
   }
 
-  function startNew() { setEditing(0); setDraft({ ...EMPTY_CATEGORY, sortOrder: items.length }); }
+  function startNew() { setEditing(0); setDraft({ ...EMPTY_CATEGORY }); }
   function startEdit(it: GalleryCategoryItem) {
     setEditing(it.id);
     setDraft({ name: it.name, sortOrder: it.sortOrder, isActive: it.isActive });
@@ -352,16 +402,6 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
               <label>이름 <span className="required-mark" aria-hidden="true">*</span></label>
               <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="예배" required />
             </div>
-            <div className="form-row">
-              <label>정렬</label>
-              <input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
-            </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
-              </label>
-            </div>
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
@@ -384,7 +424,6 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <span style={{ color: "var(--muted)", fontSize: 12 }}>순서 {it.sortOrder}</span>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
