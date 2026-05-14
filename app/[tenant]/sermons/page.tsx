@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   return buildChurchMetadata(church, pastor, {
     pageTitle: "말씀",
     path: "/sermons",
-    pageDescription: `${church.name}의 설교 영상과 주보를 시리즈별로 모아 보실 수 있습니다.${pastor?.name ? ` 담임목사 ${pastor.name}의 말씀.` : ""}`,
-    extraKeywords: ["설교", "설교 영상", "주보", "말씀", "묵상", ...(pastor?.name ? [`${pastor.name} 설교`] : [])],
+    pageDescription: `${church.name}의 설교 영상을 시리즈별로 모아 보실 수 있습니다.${pastor?.name ? ` 담임목사 ${pastor.name}의 말씀.` : ""}`,
+    extraKeywords: ["설교", "설교 영상", "말씀", "묵상", ...(pastor?.name ? [`${pastor.name} 설교`] : [])],
   });
 }
 
@@ -92,8 +92,8 @@ export default async function SermonsPage({ params }: { params: Promise<{ tenant
     <div>
       <PageHeader
         eyebrow="SERMONS"
-        title="설교 영상 · 주보"
-        sub="지난 설교를 언제든 다시 듣고, 주보를 받아보세요. 매주 화요일에 새 영상이 업로드됩니다."
+        title="설교 영상"
+        sub="지난 설교를 언제든 다시 들으세요. 매주 화요일에 새 영상이 업로드됩니다."
       />
       <section className="section">
         <div className="container">

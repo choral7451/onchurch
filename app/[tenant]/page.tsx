@@ -7,7 +7,7 @@ import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { getPathPrefix } from "@/lib/path-prefix";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
-import { SermonCard } from "@/components/sermon-card";
+import { SermonFeatureGrid } from "@/components/sermon-feature-grid";
 import { Calendar } from "@/components/calendar";
 import { TopBanner } from "@/components/top-banner";
 import type { Sermon } from "@/lib/types";
@@ -65,6 +65,7 @@ type PublicSermon = {
   pastor: string | null;
   date: string | null;
   duration: string | null;
+  videoUrl: string | null;
   isFeatured: boolean;
 };
 
@@ -205,6 +206,7 @@ async function HomeSermonsSection({ slug, url }: { slug: string; url: (p: string
     pastor: s.pastor ?? "",
     date: s.date ?? "",
     duration: s.duration ?? "",
+    videoUrl: s.videoUrl,
     feat: s.isFeatured,
     grad: GRAD_CYCLE[i % GRAD_CYCLE.length],
   }));
@@ -221,11 +223,7 @@ async function HomeSermonsSection({ slug, url }: { slug: string; url: (p: string
             <Link href={url("/sermons")}>설교 아카이브 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
           </div>
         </div>
-        <div className="sermon-grid">
-          {sermons[0] && <SermonCard sermon={sermons[0]} feat />}
-          {sermons[1] && <SermonCard sermon={sermons[1]} />}
-          {sermons[2] && <SermonCard sermon={sermons[2]} />}
-        </div>
+        <SermonFeatureGrid sermons={sermons} />
       </div>
     </section>
   );

@@ -7,13 +7,10 @@ import { parseYouTubeId, youtubeEmbedUrl } from "@/lib/youtube";
 
 type Props = {
   sermons: Sermon[];
-  filters: string[];
 };
 
-export function SermonsList({ sermons, filters }: Props) {
-  const [filter, setFilter] = useState<string>(filters[0] ?? "전체");
+export function SermonFeatureGrid({ sermons }: Props) {
   const [active, setActive] = useState<Sermon | null>(null);
-  const filtered = filter === "전체" ? sermons : sermons.filter((s) => s.series === filter);
   const activeId = parseYouTubeId(active?.videoUrl);
 
   useEffect(() => {
@@ -29,20 +26,10 @@ export function SermonsList({ sermons, filters }: Props) {
 
   return (
     <>
-      <div className="sermon-grid" style={{ marginBottom: 56 }}>
+      <div className="sermon-grid">
         {sermons[0] && <SermonCard sermon={sermons[0]} feat onPlay={setActive} />}
         {sermons[1] && <SermonCard sermon={sermons[1]} onPlay={setActive} />}
         {sermons[2] && <SermonCard sermon={sermons[2]} onPlay={setActive} />}
-      </div>
-
-      <div className="chips" style={{ marginBottom: 24 }}>
-        {filters.map((f) => (
-          <div key={f} className={`chip ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>{f}</div>
-        ))}
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-        {filtered.map((s) => <SermonCard key={s.title} sermon={s} onPlay={setActive} />)}
       </div>
 
       {active && activeId && (

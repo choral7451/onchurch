@@ -52,7 +52,7 @@ export function SermonsEditor() {
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">SERMONS</div>
         <h2>말씀</h2>
-        <p>설교 영상 · 주보 PDF · 시리즈 필터를 관리합니다. 시리즈를 먼저 만든 뒤 설교에서 선택할 수 있습니다.</p>
+        <p>설교 영상 · 시리즈 필터를 관리합니다. 시리즈를 먼저 만든 뒤 설교에서 선택할 수 있습니다.</p>
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -189,10 +189,6 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
             <div className="form-row full">
               <label>영상 URL</label>
               <input value={draft.videoUrl ?? ""} onChange={(e) => setDraft({ ...draft, videoUrl: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." />
-            </div>
-            <div className="form-row full">
-              <label>주보 PDF URL</label>
-              <input value={draft.bulletinUrl ?? ""} onChange={(e) => setDraft({ ...draft, bulletinUrl: e.target.value })} placeholder="https://...pdf" />
             </div>
             <div className="form-row">
               <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
