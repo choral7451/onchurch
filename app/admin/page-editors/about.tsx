@@ -254,7 +254,7 @@ function PastorEditor({ onChanged }: { onChanged?: () => void }) {
         role: (draft.role ?? "").trim() || null,
         eng: (draft.eng ?? "").trim() || null,
         message: draft.message ?? null,
-        longMessage: draft.longMessage ?? null,
+        longMessage: null,
         photoUrl: (draft.photoUrl ?? "").trim() || null,
       });
       setPastor(updated);
@@ -293,12 +293,8 @@ function PastorEditor({ onChanged }: { onChanged?: () => void }) {
           onChange={(url) => setDraft({ ...draft, photoUrl: url ?? "" })}
         />
         <div className="form-row full">
-          <label>인사말 (요약)</label>
-          <textarea rows={4} value={draft.message ?? ""} onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
-        </div>
-        <div className="form-row full">
-          <label>인사말 (상세)</label>
-          <textarea rows={8} value={draft.longMessage ?? ""} onChange={(e) => setDraft({ ...draft, longMessage: e.target.value })} />
+          <label>인사말</label>
+          <textarea rows={8} value={draft.message ?? ""} onChange={(e) => setDraft({ ...draft, message: e.target.value })} placeholder="성도들과 방문자에게 전하고 싶은 인사말을 적어주세요." />
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
