@@ -80,11 +80,9 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [pendingUrls, setPendingUrls] = useState<string[]>([]);
   const photoInputRef = useRef<HTMLInputElement>(null);
-  const bulkInputRef = useRef<HTMLInputElement>(null);
-  const [bulkCategoryId, setBulkCategoryId] = useState<number | null>(null);
-  const [bulkBusy, setBulkBusy] = useState(false);
-  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
+  const isNew = editing === 0 || editing === null;
 
   useEffect(() => { void load(); }, []);
 
@@ -98,6 +96,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   function startNew() {
     setEditing(0);
     setDraft({ ...EMPTY_GALLERY, grad: GRADS[items.length % GRADS.length] });
+    setPendingUrls([]);
   }
   function startEdit(it: GalleryItemRow) {
     setEditing(it.id);
@@ -110,21 +109,27 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
       sortOrder: it.sortOrder,
       isActive: it.isActive,
     });
+    setPendingUrls([]);
   }
-  function cancel() { setEditing(null); setDraft(EMPTY_GALLERY); setErrMsg(""); }
+  function cancel() { setEditing(null); setDraft(EMPTY_GALLERY); setPendingUrls([]); setErrMsg(""); }
 
   async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setErrMsg("이미지 파일만 업로드할 수 있습니다.");
+    const files = Array.from(e.target.files ?? []).filter((f) => f.type.startsWith("image/"));
+    if (files.length === 0) {
+      if (photoInputRef.current) photoInputRef.current.value = "";
       return;
     }
     setErrMsg("");
     setUploading(true);
     try {
-      const [uploaded] = await uploadImages([file]);
-      if (uploaded?.url) setDraft((d) => ({ ...d, photoUrl: uploaded.url }));
+      if (isNew) {
+        const uploaded = await uploadImages(files);
+        const urls = uploaded.map((u) => u?.url).filter((u): u is string => !!u);
+        setPendingUrls((prev) => [...prev, ...urls]);
+      } else {
+        const [uploaded] = await uploadImages([files[0]]);
+        if (uploaded?.url) setDraft((d) => ({ ...d, photoUrl: uploaded.url }));
+      }
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "사진 업로드에 실패했습니다.");
     } finally {
@@ -137,17 +142,32 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     if (!draft.title.trim()) { setErrMsg("제목은 필수입니다."); return; }
     setStatus("saving"); setErrMsg("");
     try {
-      const payload: GalleryWriteInput = {
-        categoryId: draft.categoryId ?? null,
-        title: draft.title.trim(),
-        date: (draft.date ?? "").trim() || null,
-        photoUrl: (draft.photoUrl ?? "").trim() || null,
-        grad: (draft.grad ?? "").trim() || null,
-        sortOrder: Number(draft.sortOrder) || 0,
-        isActive: !!draft.isActive,
-      };
-      if (editing === 0 || editing === null) await onchurchGallery.create(payload);
-      else await onchurchGallery.update(editing, payload);
+      const title = draft.title.trim();
+      const categoryId = draft.categoryId ?? null;
+      if (isNew) {
+        if (pendingUrls.length === 0) { setErrMsg("사진을 1장 이상 업로드해주세요."); return; }
+        for (let i = 0; i < pendingUrls.length; i++) {
+          await onchurchGallery.create({
+            categoryId,
+            title,
+            date: null,
+            photoUrl: pendingUrls[i],
+            grad: GRADS[(items.length + i) % GRADS.length],
+            sortOrder: 0,
+            isActive: true,
+          });
+        }
+      } else {
+        await onchurchGallery.update(editing!, {
+          categoryId,
+          title,
+          date: null,
+          photoUrl: (draft.photoUrl ?? "").trim() || null,
+          grad: (draft.grad ?? "").trim() || null,
+          sortOrder: Number(draft.sortOrder) || 0,
+          isActive: !!draft.isActive,
+        });
+      }
       cancel(); await load();
     } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "저장에 실패했습니다."); }
     finally { setStatus("idle"); }
@@ -161,46 +181,6 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     finally { setStatus("idle"); }
   }
 
-  async function onBulkPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []).filter((f) => f.type.startsWith("image/"));
-    if (files.length === 0) {
-      if (bulkInputRef.current) bulkInputRef.current.value = "";
-      return;
-    }
-    setErrMsg("");
-    setBulkBusy(true);
-    setBulkProgress({ done: 0, total: files.length });
-    let failed = 0;
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        try {
-          const [uploaded] = await uploadImages([file]);
-          if (!uploaded?.url) { failed++; continue; }
-          const baseName = file.name.replace(/\.[^.]+$/, "") || "사진";
-          await onchurchGallery.create({
-            categoryId: bulkCategoryId,
-            title: baseName,
-            date: null,
-            photoUrl: uploaded.url,
-            grad: GRADS[i % GRADS.length],
-            sortOrder: 0,
-            isActive: true,
-          });
-        } catch {
-          failed++;
-        }
-        setBulkProgress({ done: i + 1, total: files.length });
-      }
-      await load();
-      if (failed > 0) setErrMsg(`${failed}개 파일 업로드에 실패했습니다.`);
-    } finally {
-      setBulkBusy(false);
-      setBulkProgress(null);
-      if (bulkInputRef.current) bulkInputRef.current.value = "";
-    }
-  }
-
   function categoryName(id: number | null): string {
     if (id == null) return "미분류";
     return categories.find((c) => c.id === id)?.name ?? "(삭제된 카테고리)";
@@ -209,70 +189,74 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <select
-          value={bulkCategoryId ?? ""}
-          onChange={(e) => setBulkCategoryId(e.target.value === "" ? null : Number(e.target.value))}
-          disabled={bulkBusy || editing !== null}
-          style={{ height: 34 }}
-          aria-label="여러 장 업로드 카테고리"
-        >
-          <option value="">— 미분류로 업로드 —</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}{!c.isActive ? " (비공개)" : ""}</option>
-          ))}
-        </select>
-        <input ref={bulkInputRef} type="file" accept="image/*" multiple onChange={onBulkPick} style={{ display: "none" }} />
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => bulkInputRef.current?.click()}
-          disabled={bulkBusy || editing !== null}
-        >
-          {bulkBusy && bulkProgress
-            ? `업로드 중 ${bulkProgress.done}/${bulkProgress.total}`
-            : "+ 여러 장 업로드"}
-        </button>
-        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null || bulkBusy}>+ 사진 추가</button>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 사진 추가</button>
       </div>
       {editing !== null && (
         <div className="admin-banner-card editing">
           <div className="form-grid">
             <div className="form-row full">
-              <label>사진</label>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-                <div
-                  style={{
-                    width: 120,
-                    height: 90,
-                    borderRadius: "var(--r-md)",
-                    border: "1px dashed var(--muted-2)",
-                    background: "var(--surface-2)",
-                    overflow: "hidden",
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
-                  className={!draft.photoUrl ? draft.grad ?? "" : ""}
-                >
-                  {draft.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={draft.photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  ) : (
-                    <span style={{ color: "var(--muted)", fontSize: 11 }}>그라디언트</span>
-                  )}
-                </div>
+              <label>사진 {isNew && <span className="required-mark" aria-hidden="true">*</span>}</label>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                {isNew ? (
+                  pendingUrls.length > 0 && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 90px)", gap: 8, flex: 1, minWidth: 0 }}>
+                      {pendingUrls.map((u, i) => (
+                        <div key={`${u}-${i}`} style={{ position: "relative", width: 90, height: 68, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={u} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <button
+                            type="button"
+                            aria-label="제거"
+                            onClick={() => setPendingUrls((prev) => prev.filter((_, idx) => idx !== i))}
+                            style={{ position: "absolute", top: 2, right: 2, width: 20, height: 20, borderRadius: "50%", background: "oklch(0 0 0 / 0.6)", color: "white", border: "none", cursor: "pointer", fontSize: 12, lineHeight: 1, display: "grid", placeItems: "center" }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <div
+                    style={{
+                      width: 120,
+                      height: 90,
+                      borderRadius: "var(--r-md)",
+                      border: "1px dashed var(--muted-2)",
+                      background: "var(--surface-2)",
+                      overflow: "hidden",
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                    className={!draft.photoUrl ? draft.grad ?? "" : ""}
+                  >
+                    {draft.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={draft.photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <span style={{ color: "var(--muted)", fontSize: 11 }}>그라디언트</span>
+                    )}
+                  </div>
+                )}
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
-                  <input ref={photoInputRef} type="file" accept="image/*" onChange={onPickPhoto} style={{ display: "none" }} />
+                  <input ref={photoInputRef} type="file" accept="image/*" multiple={isNew} onChange={onPickPhoto} style={{ display: "none" }} />
                   <button type="button" className="btn btn-secondary" onClick={() => photoInputRef.current?.click()} disabled={uploading}>
-                    {uploading ? "업로드 중..." : draft.photoUrl ? "사진 변경" : "사진 업로드"}
+                    {uploading
+                      ? "업로드 중..."
+                      : isNew
+                        ? pendingUrls.length > 0 ? "사진 더 추가" : "사진 업로드 (여러 장 가능)"
+                        : draft.photoUrl ? "사진 변경" : "사진 업로드"}
                   </button>
-                  {draft.photoUrl && (
+                  {!isNew && draft.photoUrl && (
                     <button type="button" className="btn btn-ghost" onClick={() => setDraft({ ...draft, photoUrl: "" })}>
                       사진 제거 (그라디언트로)
                     </button>
                   )}
-                  <span className="form-hint" style={{ fontSize: 12 }}>JPG/PNG · 최대 32MB</span>
+                  <span className="form-hint" style={{ fontSize: 12 }}>
+                    JPG/PNG · 최대 32MB{isNew && pendingUrls.length > 0 ? ` · ${pendingUrls.length}장 선택됨` : ""}
+                  </span>
                 </div>
               </div>
             </div>
@@ -291,16 +275,26 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
             <div className="form-row">
               <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
               <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="2026 신년 감사예배" required />
-            </div>
-            <div className="form-row">
-              <label>날짜 표시</label>
-              <input value={draft.date ?? ""} onChange={(e) => setDraft({ ...draft, date: e.target.value })} placeholder="JAN 01" />
+              {isNew && pendingUrls.length > 1 && (
+                <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
+                  선택한 {pendingUrls.length}장 모두에 동일한 제목으로 저장됩니다.
+                </span>
+              )}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
-            <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.title.trim()}>
-              {status === "saving" ? "저장 중..." : "저장"}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={save}
+              disabled={status === "saving" || !draft.title.trim() || (isNew && pendingUrls.length === 0)}
+            >
+              {status === "saving"
+                ? "저장 중..."
+                : isNew && pendingUrls.length > 1
+                  ? `${pendingUrls.length}장 저장`
+                  : "저장"}
             </button>
           </div>
         </div>
@@ -329,7 +323,6 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                   {it.isActive ? "공개" : "비공개"}
                 </span>
               </div>
-              {it.date && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.date}</div>}
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
               <button type="button" className="btn btn-ghost" onClick={() => startEdit(it)} disabled={editing !== null}>편집</button>
