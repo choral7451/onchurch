@@ -255,6 +255,28 @@ main { flex: 1; }
 .sermon-modal-meta { padding: 18px 22px 20px; display: flex; flex-direction: column; gap: 6px; }
 .sermon-modal-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
 
+/* Gallery lightbox */
+.gallery-lightbox-backdrop { position: fixed; inset: 0; background: oklch(0 0 0 / 0.9); z-index: 1100; display: grid; place-items: center; padding: 24px; animation: nav-fade-in 0.18s ease; }
+.gallery-lightbox-content { max-width: min(1200px, 100%); max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.gallery-lightbox-img { max-width: 100%; max-height: calc(100vh - 120px); object-fit: contain; border-radius: var(--r-md); box-shadow: 0 20px 60px -10px oklch(0 0 0 / 0.6); }
+.gallery-lightbox-meta { display: flex; align-items: center; gap: 14px; color: oklch(0.92 0.01 250); font-size: 14px; }
+.gallery-lightbox-title { font-weight: 600; }
+.gallery-lightbox-count { font-family: var(--font-mono); opacity: 0.6; font-size: 12.5px; }
+.gallery-lightbox-close { position: fixed; top: 20px; right: 24px; width: 44px; height: 44px; border-radius: 50%; background: oklch(0 0 0 / 0.55); color: white; border: none; cursor: pointer; font-size: 24px; line-height: 1; display: grid; place-items: center; transition: background 0.15s ease; }
+.gallery-lightbox-close:hover { background: oklch(0 0 0 / 0.85); }
+.gallery-lightbox-nav { position: fixed; top: 50%; transform: translateY(-50%); width: 52px; height: 52px; border-radius: 50%; background: oklch(0 0 0 / 0.45); color: white; border: none; cursor: pointer; font-size: 36px; line-height: 1; display: grid; place-items: center; transition: background 0.15s ease, transform 0.15s ease; }
+.gallery-lightbox-nav:hover { background: oklch(0 0 0 / 0.8); }
+.gallery-lightbox-nav.prev { left: 24px; }
+.gallery-lightbox-nav.next { right: 24px; }
+@media (max-width: 640px) {
+  .gallery-lightbox-backdrop { padding: 12px; }
+  .gallery-lightbox-img { max-height: calc(100vh - 96px); }
+  .gallery-lightbox-nav { width: 40px; height: 40px; font-size: 26px; }
+  .gallery-lightbox-nav.prev { left: 8px; }
+  .gallery-lightbox-nav.next { right: 8px; }
+  .gallery-lightbox-close { top: 10px; right: 12px; width: 36px; height: 36px; font-size: 20px; }
+}
+
 /* Verse banner */
 .verse-banner { background: linear-gradient(160deg, var(--primary-deep) 0%, oklch(0.18 0.06 252) 100%); color: white; padding: 96px 0; position: relative; overflow: hidden; }
 .verse-banner-inner { max-width: 920px; margin: 0 auto; padding: 0 32px; text-align: center; position: relative; z-index: 1; }
