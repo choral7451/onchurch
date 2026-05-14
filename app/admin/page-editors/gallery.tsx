@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ApiError,
   onchurchGallery,
   onchurchGalleryCategory,
   uploadImages,
   type GalleryItemRow,
-  type GalleryWriteInput,
   type GalleryCategoryItem,
   type GalleryCategoryWriteInput,
 } from "@/lib/api-client";
@@ -15,16 +14,6 @@ import {
 type Status = "idle" | "loading" | "saving" | "deleting";
 
 const GRADS = ["ph-grad-1", "ph-grad-2", "ph-grad-3", "ph-grad-4"] as const;
-
-const EMPTY_GALLERY: GalleryWriteInput = {
-  categoryId: null,
-  title: "",
-  date: "",
-  photoUrl: "",
-  grad: "ph-grad-1",
-  sortOrder: 0,
-  isActive: true,
-};
 
 const EMPTY_CATEGORY: GalleryCategoryWriteInput = {
   name: "",
@@ -73,16 +62,53 @@ export function GalleryEditor() {
   );
 }
 
+type GalleryGroup = {
+  key: string;
+  batchId: string | null;
+  items: GalleryItemRow[];
+};
+
+function groupGalleries(rows: GalleryItemRow[]): GalleryGroup[] {
+  const out: GalleryGroup[] = [];
+  const byBatch = new Map<string, GalleryGroup>();
+  for (const it of rows) {
+    const bid = (it.batchId ?? "").trim();
+    if (bid) {
+      let g = byBatch.get(bid);
+      if (!g) {
+        g = { key: `batch-${bid}`, batchId: bid, items: [] };
+        byBatch.set(bid, g);
+        out.push(g);
+      }
+      g.items.push(it);
+    } else {
+      out.push({ key: `single-${it.id}`, batchId: null, items: [it] });
+    }
+  }
+  return out;
+}
+
+type DraftPhoto = { id: number | null; url: string; grad: string | null };
+
+function makeBatchId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `b-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] }) {
   const [items, setItems] = useState<GalleryItemRow[]>([]);
-  const [editing, setEditing] = useState<number | null>(null);
-  const [draft, setDraft] = useState<GalleryWriteInput>(EMPTY_GALLERY);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftCategoryId, setDraftCategoryId] = useState<number | null>(null);
+  const [draftPhotos, setDraftPhotos] = useState<DraftPhoto[]>([]);
+  const [removedIds, setRemovedIds] = useState<number[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [pendingUrls, setPendingUrls] = useState<string[]>([]);
   const photoInputRef = useRef<HTMLInputElement>(null);
-  const isNew = editing === 0 || editing === null;
+  const isNew = editingKey === "new";
+
+  const groups = useMemo(() => groupGalleries(items), [items]);
 
   useEffect(() => { void load(); }, []);
 
@@ -94,24 +120,25 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   }
 
   function startNew() {
-    setEditing(0);
-    setDraft({ ...EMPTY_GALLERY, grad: GRADS[items.length % GRADS.length] });
-    setPendingUrls([]);
+    setEditingKey("new");
+    setDraftTitle("");
+    setDraftCategoryId(null);
+    setDraftPhotos([]);
+    setRemovedIds([]);
+    setErrMsg("");
   }
-  function startEdit(it: GalleryItemRow) {
-    setEditing(it.id);
-    setDraft({
-      categoryId: it.categoryId,
-      title: it.title,
-      date: it.date ?? "",
-      photoUrl: it.photoUrl ?? "",
-      grad: it.grad ?? "ph-grad-1",
-      sortOrder: it.sortOrder,
-      isActive: it.isActive,
-    });
-    setPendingUrls([]);
+  function startEdit(g: GalleryGroup) {
+    setEditingKey(g.key);
+    setDraftTitle(g.items[0].title);
+    setDraftCategoryId(g.items[0].categoryId);
+    setDraftPhotos(g.items.map((it) => ({ id: it.id, url: it.photoUrl ?? "", grad: it.grad })));
+    setRemovedIds([]);
+    setErrMsg("");
   }
-  function cancel() { setEditing(null); setDraft(EMPTY_GALLERY); setPendingUrls([]); setErrMsg(""); }
+  function cancel() {
+    setEditingKey(null);
+    setDraftTitle(""); setDraftCategoryId(null); setDraftPhotos([]); setRemovedIds([]); setErrMsg("");
+  }
 
   async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).filter((f) => f.type.startsWith("image/"));
@@ -122,14 +149,13 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     setErrMsg("");
     setUploading(true);
     try {
-      if (isNew) {
-        const uploaded = await uploadImages(files);
-        const urls = uploaded.map((u) => u?.url).filter((u): u is string => !!u);
-        setPendingUrls((prev) => [...prev, ...urls]);
-      } else {
-        const [uploaded] = await uploadImages([files[0]]);
-        if (uploaded?.url) setDraft((d) => ({ ...d, photoUrl: uploaded.url }));
-      }
+      const uploaded = await uploadImages(files);
+      const baseIdx = items.length + draftPhotos.length;
+      const additions: DraftPhoto[] = [];
+      uploaded.forEach((u, i) => {
+        if (u?.url) additions.push({ id: null, url: u.url, grad: GRADS[(baseIdx + i) % GRADS.length] });
+      });
+      setDraftPhotos((prev) => [...prev, ...additions]);
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "사진 업로드에 실패했습니다.");
     } finally {
@@ -138,46 +164,69 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     }
   }
 
+  function removePhotoAt(idx: number) {
+    setDraftPhotos((prev) => {
+      const target = prev[idx];
+      if (target?.id != null) setRemovedIds((r) => [...r, target.id!]);
+      return prev.filter((_, i) => i !== idx);
+    });
+  }
+
   async function save() {
-    if (!draft.title.trim()) { setErrMsg("제목은 필수입니다."); return; }
+    if (!draftTitle.trim()) { setErrMsg("제목은 필수입니다."); return; }
+    const remaining = draftPhotos.filter((p) => p.url);
+    if (remaining.length === 0) { setErrMsg("사진을 1장 이상 업로드해주세요."); return; }
     setStatus("saving"); setErrMsg("");
     try {
-      const title = draft.title.trim();
-      const categoryId = draft.categoryId ?? null;
-      if (isNew) {
-        if (pendingUrls.length === 0) { setErrMsg("사진을 1장 이상 업로드해주세요."); return; }
-        for (let i = 0; i < pendingUrls.length; i++) {
-          await onchurchGallery.create({
+      const title = draftTitle.trim();
+      const categoryId = draftCategoryId ?? null;
+      const editingGroup = !isNew ? groups.find((g) => g.key === editingKey) : null;
+      const batchId =
+        isNew || !editingGroup ? makeBatchId() : (editingGroup.batchId ?? makeBatchId());
+
+      for (const removedId of removedIds) {
+        await onchurchGallery.remove(removedId);
+      }
+      for (const p of remaining) {
+        if (p.id != null) {
+          await onchurchGallery.update(p.id, {
             categoryId,
+            batchId,
             title,
             date: null,
-            photoUrl: pendingUrls[i],
-            grad: GRADS[(items.length + i) % GRADS.length],
+            photoUrl: p.url,
+            grad: p.grad,
+            sortOrder: 0,
+            isActive: true,
+          });
+        } else {
+          await onchurchGallery.create({
+            categoryId,
+            batchId,
+            title,
+            date: null,
+            photoUrl: p.url,
+            grad: p.grad,
             sortOrder: 0,
             isActive: true,
           });
         }
-      } else {
-        await onchurchGallery.update(editing!, {
-          categoryId,
-          title,
-          date: null,
-          photoUrl: (draft.photoUrl ?? "").trim() || null,
-          grad: (draft.grad ?? "").trim() || null,
-          sortOrder: Number(draft.sortOrder) || 0,
-          isActive: !!draft.isActive,
-        });
       }
       cancel(); await load();
     } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "저장에 실패했습니다."); }
     finally { setStatus("idle"); }
   }
 
-  async function remove(id: number) {
-    if (!confirm("이 사진을 삭제할까요?")) return;
+  async function removeGroup(g: GalleryGroup) {
+    const msg = g.items.length > 1
+      ? `이 묶음의 사진 ${g.items.length}장을 모두 삭제할까요?`
+      : "이 사진을 삭제할까요?";
+    if (!confirm(msg)) return;
     setStatus("deleting"); setErrMsg("");
-    try { await onchurchGallery.remove(id); await load(); }
-    catch (err) { setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다."); }
+    try {
+      for (const it of g.items) await onchurchGallery.remove(it.id);
+      await load();
+    } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다."); }
     finally { setStatus("idle"); }
   }
 
@@ -190,72 +239,43 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 사진 추가</button>
+        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editingKey !== null}>+ 사진 추가</button>
       </div>
-      {editing !== null && (
+      {editingKey !== null && (
         <div className="admin-banner-card editing">
           <div className="form-grid">
             <div className="form-row full">
-              <label>사진 {isNew && <span className="required-mark" aria-hidden="true">*</span>}</label>
+              <label>사진 <span className="required-mark" aria-hidden="true">*</span></label>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-                {isNew ? (
-                  pendingUrls.length > 0 && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 90px)", gap: 8, flex: 1, minWidth: 0 }}>
-                      {pendingUrls.map((u, i) => (
-                        <div key={`${u}-${i}`} style={{ position: "relative", width: 90, height: 68, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={u} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          <button
-                            type="button"
-                            aria-label="제거"
-                            onClick={() => setPendingUrls((prev) => prev.filter((_, idx) => idx !== i))}
-                            style={{ position: "absolute", top: 2, right: 2, width: 20, height: 20, borderRadius: "50%", background: "oklch(0 0 0 / 0.6)", color: "white", border: "none", cursor: "pointer", fontSize: 12, lineHeight: 1, display: "grid", placeItems: "center" }}
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )
-                ) : (
-                  <div
-                    style={{
-                      width: 120,
-                      height: 90,
-                      borderRadius: "var(--r-md)",
-                      border: "1px dashed var(--muted-2)",
-                      background: "var(--surface-2)",
-                      overflow: "hidden",
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
-                    }}
-                    className={!draft.photoUrl ? draft.grad ?? "" : ""}
-                  >
-                    {draft.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={draft.photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      <span style={{ color: "var(--muted)", fontSize: 11 }}>그라디언트</span>
-                    )}
+                {draftPhotos.length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 90px)", gap: 8, flex: 1, minWidth: 0 }}>
+                    {draftPhotos.map((p, i) => (
+                      <div key={`${p.id ?? "n"}-${p.url}-${i}`} style={{ position: "relative", width: 90, height: 68, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={p.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <button
+                          type="button"
+                          aria-label="제거"
+                          onClick={() => removePhotoAt(i)}
+                          style={{ position: "absolute", top: 2, right: 2, width: 20, height: 20, borderRadius: "50%", background: "oklch(0 0 0 / 0.6)", color: "white", border: "none", cursor: "pointer", fontSize: 12, lineHeight: 1, display: "grid", placeItems: "center" }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
-                  <input ref={photoInputRef} type="file" accept="image/*" multiple={isNew} onChange={onPickPhoto} style={{ display: "none" }} />
+                  <input ref={photoInputRef} type="file" accept="image/*" multiple onChange={onPickPhoto} style={{ display: "none" }} />
                   <button type="button" className="btn btn-secondary" onClick={() => photoInputRef.current?.click()} disabled={uploading}>
                     {uploading
                       ? "업로드 중..."
-                      : isNew
-                        ? pendingUrls.length > 0 ? "사진 더 추가" : "사진 업로드 (여러 장 가능)"
-                        : draft.photoUrl ? "사진 변경" : "사진 업로드"}
+                      : draftPhotos.length > 0
+                        ? "사진 더 추가"
+                        : "사진 업로드 (여러 장 가능)"}
                   </button>
-                  {!isNew && draft.photoUrl && (
-                    <button type="button" className="btn btn-ghost" onClick={() => setDraft({ ...draft, photoUrl: "" })}>
-                      사진 제거 (그라디언트로)
-                    </button>
-                  )}
                   <span className="form-hint" style={{ fontSize: 12 }}>
-                    JPG/PNG · 최대 32MB{isNew && pendingUrls.length > 0 ? ` · ${pendingUrls.length}장 선택됨` : ""}
+                    JPG/PNG · 최대 32MB{draftPhotos.length > 0 ? ` · ${draftPhotos.length}장` : ""}
                   </span>
                 </div>
               </div>
@@ -263,8 +283,8 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
             <div className="form-row">
               <label>카테고리</label>
               <select
-                value={draft.categoryId ?? ""}
-                onChange={(e) => setDraft({ ...draft, categoryId: e.target.value === "" ? null : Number(e.target.value) })}
+                value={draftCategoryId ?? ""}
+                onChange={(e) => setDraftCategoryId(e.target.value === "" ? null : Number(e.target.value))}
               >
                 <option value="">— 미분류 —</option>
                 {categories.map((c) => (
@@ -274,10 +294,10 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
             </div>
             <div className="form-row">
               <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
-              <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="2026 신년 감사예배" required />
-              {isNew && pendingUrls.length > 1 && (
+              <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder="2026 신년 감사예배" required />
+              {draftPhotos.length > 1 && (
                 <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
-                  선택한 {pendingUrls.length}장 모두에 동일한 제목으로 저장됩니다.
+                  묶음 안 {draftPhotos.length}장 모두에 동일한 제목으로 적용됩니다.
                 </span>
               )}
             </div>
@@ -288,12 +308,12 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
               type="button"
               className="btn btn-primary"
               onClick={save}
-              disabled={status === "saving" || !draft.title.trim() || (isNew && pendingUrls.length === 0)}
+              disabled={status === "saving" || !draftTitle.trim() || draftPhotos.length === 0}
             >
               {status === "saving"
                 ? "저장 중..."
-                : isNew && pendingUrls.length > 1
-                  ? `${pendingUrls.length}장 저장`
+                : draftPhotos.length > 1
+                  ? `${draftPhotos.length}장 저장`
                   : "저장"}
             </button>
           </div>
@@ -301,35 +321,61 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {status === "loading" && <p style={{ color: "var(--muted)" }}>불러오는 중...</p>}
-        {status !== "loading" && items.length === 0 && editing === null && (
+        {status !== "loading" && groups.length === 0 && editingKey === null && (
           <p style={{ color: "var(--muted)" }}>등록된 사진이 없습니다.</p>
         )}
-        {items.map((it) => (
-          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
-            <div
-              style={{ width: 80, height: 60, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: "var(--surface-2)" }}
-              className={!it.photoUrl ? it.grad ?? "" : ""}
-            >
-              {it.photoUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={it.photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              )}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
-                <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{categoryName(it.categoryId)}</span>
-                <strong>{it.title}</strong>
-                <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {it.isActive ? "공개" : "비공개"}
-                </span>
+        {groups.map((g) => {
+          const head = g.items[0];
+          const more = g.items.length - 1;
+          const allActive = g.items.every((it) => it.isActive);
+          return (
+            <div key={g.key} className={`admin-banner-card ${allActive ? "" : "inactive"}`}>
+              <div
+                style={{ position: "relative", width: 80, height: 60, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: "var(--surface-2)" }}
+                className={!head.photoUrl ? head.grad ?? "" : ""}
+              >
+                {head.photoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={head.photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                )}
+                {more > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      right: 4,
+                      bottom: 4,
+                      background: "oklch(0 0 0 / 0.65)",
+                      color: "white",
+                      fontSize: 10,
+                      fontWeight: 600,
+                      padding: "2px 6px",
+                      borderRadius: 10,
+                    }}
+                    aria-label={`이 묶음에 ${g.items.length}장`}
+                  >
+                    +{more}
+                  </span>
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                  <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{categoryName(head.categoryId)}</span>
+                  <strong>{head.title}</strong>
+                  <span className={`admin-sidebar-pill ${allActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
+                    {allActive ? "공개" : "비공개"}
+                  </span>
+                  {g.items.length > 1 && (
+                    <span style={{ color: "var(--muted)", fontSize: 12 }}>사진 {g.items.length}장</span>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
+                <button type="button" className="btn btn-ghost" onClick={() => startEdit(g)} disabled={editingKey !== null}>편집</button>
+                <button type="button" className="btn btn-ghost" onClick={() => removeGroup(g)} disabled={status === "deleting"}>삭제</button>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
-              <button type="button" className="btn btn-ghost" onClick={() => startEdit(it)} disabled={editing !== null}>편집</button>
-              <button type="button" className="btn btn-ghost" onClick={() => remove(it.id)} disabled={status === "deleting"}>삭제</button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

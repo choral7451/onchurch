@@ -825,6 +825,7 @@ export type GalleryCategoryWriteInput = {
 export type GalleryItemRow = {
   id: number;
   categoryId: number | null;
+  batchId: string | null;
   title: string;
   date: string | null;
   photoUrl: string | null;
@@ -835,6 +836,7 @@ export type GalleryItemRow = {
 
 export type GalleryWriteInput = {
   categoryId: number | null;
+  batchId?: string | null;
   title: string;
   date?: string | null;
   photoUrl?: string | null;
