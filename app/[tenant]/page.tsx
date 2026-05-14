@@ -274,14 +274,16 @@ async function PastorSection({ slug, url }: { slug: string; url: (p: string) => 
               )}
             </h2>
             {pastor.message && (
-              <p className="pastor-msg">
-                {pastor.message.split("\n\n").map((para, i, arr) => (
-                  <span key={i}>
-                    {para}
-                    {i < arr.length - 1 && <><br /><br /></>}
-                  </span>
-                ))}
-              </p>
+              <div className="pastor-msg-wrap">
+                <p className="pastor-msg pastor-msg-clamp">
+                  {pastor.message.split("\n\n").map((para, i, arr) => (
+                    <span key={i}>
+                      {para}
+                      {i < arr.length - 1 && <><br /><br /></>}
+                    </span>
+                  ))}
+                </p>
+              </div>
             )}
             <div className="pastor-sign">담임목사 <strong>{pastor.name.replace(/\s/g, "")}</strong></div>
             <div style={{ marginTop: 28 }}>
