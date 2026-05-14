@@ -342,6 +342,28 @@ main { flex: 1; }
 .upcoming-date { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
 .upcoming-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -0.02em; margin: 4px 0 4px; color: var(--ink); }
 .upcoming-meta { font-size: 12.5px; color: var(--muted); }
+.upcoming-item-btn { display: block; width: 100%; text-align: left; font-family: inherit; }
+.upcoming-item-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cal-day.clickable:hover { background: oklch(0.62 0.14 245 / 0.08); }
+.cal-day.today.clickable:hover { background: var(--primary); }
+
+/* Event modal */
+.event-modal-backdrop { position: fixed; inset: 0; background: oklch(0 0 0 / 0.6); z-index: 1100; display: grid; place-items: center; padding: 20px; animation: nav-fade-in 0.18s ease; }
+.event-modal { background: var(--surface); border-radius: var(--r-lg); width: 100%; max-width: 520px; max-height: calc(100vh - 40px); overflow: hidden; position: relative; box-shadow: 0 20px 60px -10px oklch(0 0 0 / 0.4); display: flex; flex-direction: column; }
+.event-modal-close { position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border-radius: 50%; background: var(--surface-2); color: var(--ink); border: none; cursor: pointer; font-size: 22px; line-height: 1; display: grid; place-items: center; z-index: 2; transition: background 0.12s ease; }
+.event-modal-close:hover { background: var(--line); }
+.event-modal-body { padding: 28px 28px 26px; overflow-y: auto; }
+.event-modal-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.event-modal-tab { padding: 6px 12px; border-radius: 999px; background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); font-size: 12.5px; cursor: pointer; }
+.event-modal-tab.active { background: var(--primary); color: white; border-color: transparent; }
+.event-modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0 0 8px; padding-right: 36px; }
+.event-modal-meta { font-family: var(--font-mono); font-size: 13px; color: var(--accent); margin-bottom: 14px; font-variant-numeric: tabular-nums; }
+.event-modal-loc { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--ink-2); background: var(--surface-2); padding: 6px 12px; border-radius: 999px; margin-bottom: 16px; }
+.event-modal-desc { font-size: 14.5px; color: var(--ink-2); line-height: 1.7; white-space: pre-wrap; margin: 0; }
+@media (max-width: 640px) {
+  .event-modal-body { padding: 22px 20px 20px; }
+  .event-modal-title { font-size: 19px; }
+}
 
 /* Pastor */
 .pastor-section { display: grid; grid-template-columns: 1fr 1.3fr; gap: 56px; align-items: center; }
