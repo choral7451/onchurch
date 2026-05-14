@@ -398,6 +398,32 @@ export type NoticeWriteInput = {
   publishedAt?: string | null;
 };
 
+export type NoticeCategoryItem = {
+  id: number;
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type NoticeCategoryWriteInput = {
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export const onchurchNoticeCategory = {
+  listMine: () =>
+    request<{ categories: NoticeCategoryItem[] }>("/onchurch/notice-categories/me", { method: "GET", auth: true }).then(
+      (r) => r.categories ?? [],
+    ),
+  create: (input: NoticeCategoryWriteInput) =>
+    request<NoticeCategoryItem>("/onchurch/notice-categories/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: NoticeCategoryWriteInput) =>
+    request<NoticeCategoryItem>(`/onchurch/notice-categories/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/notice-categories/me/${id}`, { method: "DELETE", auth: true }),
+};
+
 export const onchurchNotice = {
   listMine: () =>
     request<{ notices: Notice[] }>("/onchurch/notices/me", { method: "GET", auth: true }),
