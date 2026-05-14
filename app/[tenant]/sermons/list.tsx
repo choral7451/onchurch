@@ -39,12 +39,6 @@ export function SermonsList({ sermons, filters }: Props) {
 
   return (
     <>
-      <div className="sermon-grid" style={{ marginBottom: 56 }}>
-        {sermons[0] && <SermonCard sermon={sermons[0]} feat onPlay={setActive} />}
-        {sermons[1] && <SermonCard sermon={sermons[1]} onPlay={setActive} />}
-        {sermons[2] && <SermonCard sermon={sermons[2]} onPlay={setActive} />}
-      </div>
-
       <div className="sermon-toolbar">
         <div className="chips" style={{ marginBottom: 0 }}>
           {filters.map((f) => (
