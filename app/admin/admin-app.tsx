@@ -79,6 +79,21 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
 
 type SectionKey = "site" | "logo" | "contact" | "banners" | `page:${string}`;
 
+const DENOMINATION_LOGOS: { url: string; label: string }[] = [
+  {
+    url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260514/original/vRdPYqpdur3.1778733691840.png",
+    label: "대한예수교장로회(통합)",
+  },
+  {
+    url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260514/original/OKJGqefGvX-.1778733732780.png",
+    label: "대한예수교장로회(합동)",
+  },
+  {
+    url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260514/original/LoQ8Kn7xb6T.1778733771412.png",
+    label: "기독교대한감리회",
+  },
+];
+
 export function AdminApp({ initial }: { initial: Initial }) {
   const router = useRouter();
 
@@ -665,6 +680,30 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         )}
                         {logoErr && <p className="form-hint" style={{ marginTop: 4, color: "oklch(0.55 0.18 28)" }}>{logoErr}</p>}
                         <p className="form-hint" style={{ marginTop: 4 }}>JPG/PNG/SVG. 정사각형 권장 (256×256 이상).</p>
+                      </div>
+                    </div>
+                    <div className="logo-presets">
+                      <div className="logo-presets-label">또는 교단 로고에서 선택</div>
+                      <div className="logo-presets-grid">
+                        {DENOMINATION_LOGOS.map((p) => {
+                          const selected = logoPreview === p.url;
+                          return (
+                            <button
+                              type="button"
+                              key={p.url}
+                              className={`logo-preset ${selected ? "selected" : ""}`}
+                              onClick={() => { setLogoPreview(p.url); setLogoErr(""); }}
+                              aria-pressed={selected}
+                              aria-label={p.label}
+                            >
+                              <div className="logo-preset-img">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={p.url} alt="" />
+                              </div>
+                              <span className="logo-preset-name">{p.label}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
