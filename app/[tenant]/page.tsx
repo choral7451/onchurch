@@ -107,28 +107,97 @@ async function TopBannerSection({ slug }: { slug: string }) {
   return <TopBanner banners={data.banners} />;
 }
 
-async function RecentNoticesSection({ slug, url }: { slug: string; url: (p: string) => string }) {
-  const data = await fetchJson<{ notices: PublicNotice[] }>(`/onchurch/sites/${slug}/notices?size=5`, { notices: [] });
-  const recentNotices = data.notices;
+function pickUpcoming(events: PublicEvent[]): PublicEvent[] {
+  const now = Date.now();
+  return events
+    .filter((e) => e.isActive !== false)
+    .filter((e) => {
+      const t = new Date(e.endAt ?? e.startAt).getTime();
+      return Number.isFinite(t) && t >= now;
+    })
+    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+}
+
+async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: string; url: (p: string) => string; churchName: string }) {
+  const data = await fetchJson<{ events: PublicEvent[] }>(`/onchurch/sites/${slug}/events`, { events: [] });
+  const upcoming = pickUpcoming(data.events);
+  const head = upcoming[0];
+
+  if (!head) {
+    return (
+      <div className="news-feature">
+        <LightRays className="news-feature-bg" style={{ width: "100%", height: "100%", position: "absolute", inset: 0, color: "white" }} />
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+          <div>
+            <div className="news-feature-tag"><span className="pulse" />다가오는 일정</div>
+            <h2 className="news-feature-title">예정된 일정이 없습니다</h2>
+            <p className="news-feature-desc">{churchName}의 새로운 일정을 곧 알려드릴게요.</p>
+          </div>
+          <div>
+            <Link href={url("/schedule")} className="news-feature-cta">
+              전체 일정 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const start = new Date(head.startAt);
+  const { day, mon } = dateParts(head.startAt, head.startAt);
+  const dateStr = `${start.getFullYear()}.${String(start.getMonth() + 1).padStart(2, "0")}.${String(start.getDate()).padStart(2, "0")}`;
+  const timeStr = head.isAllDay
+    ? "종일"
+    : `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
+
+  return (
+    <div className="news-feature">
+      <LightRays className="news-feature-bg" style={{ width: "100%", height: "100%", position: "absolute", inset: 0, color: "white" }} />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+        <div>
+          <div className="news-feature-tag"><span className="pulse" />다가오는 일정 · {mon} {day}</div>
+          <h2 className="news-feature-title">{head.title}</h2>
+          <p className="news-feature-desc">
+            {dateStr} · {timeStr}
+            {head.location ? ` · ${head.location}` : ""}
+          </p>
+        </div>
+        <div>
+          <Link href={url("/schedule")} className="news-feature-cta">
+            전체 일정 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+async function UpcomingEventsListSection({ slug, url }: { slug: string; url: (p: string) => string }) {
+  const data = await fetchJson<{ events: PublicEvent[] }>(`/onchurch/sites/${slug}/events`, { events: [] });
+  const upcoming = pickUpcoming(data.events).slice(0, 5);
   return (
     <ul className="news-list">
-      {recentNotices.length === 0 ? (
+      {upcoming.length === 0 ? (
         <li className="news-item" style={{ color: "var(--muted)", fontSize: 13, padding: "12px 0" }}>
-          등록된 공지가 없습니다.
+          예정된 일정이 없습니다.
         </li>
       ) : (
-        recentNotices.map((item) => {
-          const { day, mon } = dateParts(item.publishedAt, item.createdAt);
+        upcoming.map((item) => {
+          const { day, mon } = dateParts(item.startAt, item.startAt);
+          const start = new Date(item.startAt);
+          const timeStr = item.isAllDay
+            ? "종일"
+            : `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
           return (
             <li key={item.id} className="news-item">
-              <Link href={url("/notices")} style={{ display: "contents" }}>
+              <Link href={url("/schedule")} style={{ display: "contents" }}>
                 <div className="news-item-date">
                   <span className="day">{day}</span>
                   <span className="mon">{mon}</span>
                 </div>
                 <div className="news-item-body">
                   <div className="news-item-title">{item.title}</div>
-                  <div className="news-item-cat">{item.category ?? "공지"}</div>
+                  <div className="news-item-cat">{timeStr}{item.location ? ` · ${item.location}` : ""}</div>
                 </div>
                 <div className="news-item-pin"><Icon.arrow style={{ width: 12, height: 12 }} /></div>
               </Link>
@@ -137,6 +206,18 @@ async function RecentNoticesSection({ slug, url }: { slug: string; url: (p: stri
         })
       )}
     </ul>
+  );
+}
+
+function FeaturedEventSkeleton() {
+  return (
+    <div className="news-feature" aria-hidden>
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between", gap: 16 }}>
+        <span className="skel" style={{ width: 160, height: 18 }} />
+        <span className="skel" style={{ width: "80%", height: 36 }} />
+        <span className="skel" style={{ width: "60%", height: 16 }} />
+      </div>
+    </div>
   );
 }
 
@@ -318,7 +399,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const slug = encodeURIComponent(tenant);
   const enabled = church.enabledPages ?? [];
   const isPageEnabled = (id: string) => enabled.length === 0 || enabled.includes(id);
-  const showHomeNews = isPageEnabled("notices");
+  const showHomeEvents = isPageEnabled("schedule");
   const visibleQuickLinks = QUICK_LINKS.filter((q) => isPageEnabled(q.path.replace(/^\//, "")));
 
   return (
@@ -331,34 +412,19 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         <div className="hero-bg">
           <Mesh style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }} />
         </div>
-        {showHomeNews && (
+        {showHomeEvents && (
         <div className="hero-inner">
-          <div className="news-feature">
-            <LightRays className="news-feature-bg" style={{ width: "100%", height: "100%", position: "absolute", inset: 0, color: "white" }} />
-            <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
-              <div>
-                <div className="news-feature-tag">
-                  <span className="pulse" />
-                  {church.tagline ?? "환영합니다"}
-                </div>
-                <h2 className="news-feature-title">{church.name}</h2>
-                {church.eng && <p className="news-feature-desc">{church.eng}</p>}
-              </div>
-              <div>
-                <Link href={url("/about")} className="news-feature-cta">
-                  교회 소개 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
-                </Link>
-              </div>
-            </div>
-          </div>
+          <Suspense fallback={<FeaturedEventSkeleton />}>
+            <HeroFeaturedEventSection slug={slug} url={url} churchName={church.name} />
+          </Suspense>
 
           <div className="news-list-card">
             <div className="news-list-head">
-              <h3>최근 소식</h3>
-              <Link href={url("/notices")}>전체보기 →</Link>
+              <h3>다가오는 일정</h3>
+              <Link href={url("/schedule")}>전체보기 →</Link>
             </div>
             <Suspense fallback={<NoticesListSkeleton />}>
-              <RecentNoticesSection slug={slug} url={url} />
+              <UpcomingEventsListSection slug={slug} url={url} />
             </Suspense>
           </div>
         </div>
