@@ -381,17 +381,23 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         )}
       </section>
 
-      <Suspense fallback={<SectionSkeleton tinted height={200} />}>
-        <WorshipScheduleSection slug={slug} url={url} />
-      </Suspense>
+      {isPageEnabled("worship") && (
+        <Suspense fallback={<SectionSkeleton tinted height={200} />}>
+          <WorshipScheduleSection slug={slug} url={url} />
+        </Suspense>
+      )}
 
-      <Suspense fallback={<SectionSkeleton height={320} />}>
-        <HomeSermonsSection slug={slug} url={url} />
-      </Suspense>
+      {isPageEnabled("sermons") && (
+        <Suspense fallback={<SectionSkeleton height={320} />}>
+          <HomeSermonsSection slug={slug} url={url} />
+        </Suspense>
+      )}
 
-      <Suspense fallback={<SectionSkeleton height={420} />}>
-        <HomeEventsSection slug={slug} url={url} />
-      </Suspense>
+      {isPageEnabled("schedule") && (
+        <Suspense fallback={<SectionSkeleton height={420} />}>
+          <HomeEventsSection slug={slug} url={url} />
+        </Suspense>
+      )}
 
       <section className="section section-tinted">
         <div className="container">
