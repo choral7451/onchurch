@@ -920,6 +920,28 @@ export type PrayerItem = {
   createdAt: string;
 };
 
+export type InquiryItem = {
+  id: number;
+  question: string;
+  answer: string | null;
+  answeredAt: string | null;
+  status: "pending" | "answered";
+  createdAt: string;
+};
+
+export const onchurchInquiry = {
+  listMine: () =>
+    request<{ inquiries: InquiryItem[] }>("/onchurch/inquiries/me", { method: "GET", auth: true }).then(
+      (r) => r.inquiries ?? [],
+    ),
+  create: (question: string) =>
+    request<InquiryItem>("/onchurch/inquiries/me", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ question }),
+    }),
+};
+
 export const onchurchPrayer = {
   submitPublic: (slug: string, input: PrayerSubmitInput) =>
     request<PrayerItem>(`/onchurch/sites/${encodeURIComponent(slug)}/prayers`, {

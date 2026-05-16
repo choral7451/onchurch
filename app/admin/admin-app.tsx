@@ -34,6 +34,7 @@ import { GalleryEditor } from "./page-editors/gallery";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
+import { InquiryEditor } from "./page-editors/inquiry";
 
 type Initial = {
   slug: string;
@@ -78,7 +79,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "site" | "logo" | "contact" | "banners" | `page:${string}`;
+type SectionKey = "site" | "logo" | "contact" | "banners" | "inquiry" | `page:${string}`;
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -578,6 +579,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
 
             <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">도움말</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "inquiry" ? "active" : ""}`}
+                onClick={() => setActiveSection("inquiry")}
+              >
+                <span className="admin-sidebar-item-label">문의</span>
+                <span className="admin-sidebar-pill optional">지원</span>
+              </button>
+            </div>
+
+            <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">페이지</div>
               {initial.nav.filter((n) => n.id !== "directions").map((n) => {
                 const on = boards[n.id] ?? true;
@@ -815,6 +828,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
               )}
 
               {activeSection === "banners" && <BannersEditor />}
+
+              {activeSection === "inquiry" && <InquiryEditor />}
 
               {activePage && activePageItem && (
                 <div className="admin-page-editor">
