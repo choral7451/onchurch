@@ -79,6 +79,55 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
 
 type SectionKey = "site" | "logo" | "contact" | "banners" | `page:${string}`;
 
+function formatYMD(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function daysLeft(iso: string): number {
+  const end = new Date(iso).getTime();
+  if (Number.isNaN(end)) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.ceil((end - today.getTime()) / (24 * 60 * 60 * 1000)));
+}
+
+function SubscriptionBadge({ subscription }: { subscription: Subscription | null }) {
+  if (!subscription) return null;
+  const now = Date.now();
+  const paidActive = subscription.paidUntil && new Date(subscription.paidUntil).getTime() > now;
+  const trialActive = subscription.freeTrialUntil && new Date(subscription.freeTrialUntil).getTime() > now;
+
+  if (paidActive && subscription.paidUntil) {
+    return (
+      <div className="admin-sub-badge paid" title="유료 결제 유효 기간">
+        <span className="admin-sub-badge-label">유효기간</span>
+        <span className="admin-sub-badge-date">~{formatYMD(subscription.paidUntil)}</span>
+        <span className="admin-sub-badge-rem">D-{daysLeft(subscription.paidUntil)}</span>
+      </div>
+    );
+  }
+  if (trialActive && subscription.freeTrialUntil) {
+    return (
+      <div className="admin-sub-badge trial" title="무료 체험 유효 기간">
+        <span className="admin-sub-badge-label">무료체험</span>
+        <span className="admin-sub-badge-date">~{formatYMD(subscription.freeTrialUntil)}</span>
+        <span className="admin-sub-badge-rem">D-{daysLeft(subscription.freeTrialUntil)}</span>
+      </div>
+    );
+  }
+  if (subscription.freeTrialUntil || subscription.paidUntil) {
+    return (
+      <div className="admin-sub-badge expired" title="구독 만료">
+        <span className="admin-sub-badge-label">만료</span>
+        <span className="admin-sub-badge-rem">결제 필요</span>
+      </div>
+    );
+  }
+  return null;
+}
+
 const DENOMINATION_LOGOS: { url: string; label: string }[] = [
   {
     url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260514/original/vRdPYqpdur3.1778733691840.png",
@@ -449,6 +498,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
           </Link>
           <div className="admin-topbar-actions">
+            <SubscriptionBadge subscription={subscription} />
             <div className="admin-publish-toggle" aria-live="polite">
               <span className="admin-publish-toggle-label">
                 <span className="admin-action-label">사이트 운영</span>
