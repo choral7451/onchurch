@@ -35,6 +35,7 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
   const visibleNav = enabledPages && enabledPages.length > 0
     ? nav.filter((item) => enabledPages.includes(item.id))
     : nav;
+  const prayerEnabled = !enabledPages || enabledPages.length === 0 || enabledPages.includes("prayer");
 
   useEffect(() => {
     setOpen(false);
@@ -70,12 +71,14 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
             </Link>
           ))}
         </div>
-        <div className="nav-cta">
-          <Link href={link("/prayer")} className="btn btn-primary">
-            <Icon.pray style={{ width: 16, height: 16 }} />
-            기도 요청
-          </Link>
-        </div>
+        {prayerEnabled && (
+          <div className="nav-cta">
+            <Link href={link("/prayer")} className="btn btn-primary">
+              <Icon.pray style={{ width: 16, height: 16 }} />
+              기도 요청
+            </Link>
+          </div>
+        )}
         <button
           type="button"
           className="nav-toggle"
@@ -123,12 +126,14 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
               </Link>
             ))}
           </div>
-          <div className="nav-drawer-cta">
-            <Link href={link("/prayer")} className="btn btn-primary">
-              <Icon.pray style={{ width: 16, height: 16 }} />
-              기도 요청
-            </Link>
-          </div>
+          {prayerEnabled && (
+            <div className="nav-drawer-cta">
+              <Link href={link("/prayer")} className="btn btn-primary">
+                <Icon.pray style={{ width: 16, height: 16 }} />
+                기도 요청
+              </Link>
+            </div>
+          )}
         </aside>
       </>
     )}
