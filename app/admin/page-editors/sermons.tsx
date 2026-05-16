@@ -10,6 +10,9 @@ import {
   type SermonSeriesItem,
   type SermonSeriesWriteInput,
 } from "@/lib/api-client";
+import { DragHandle } from "@/components/admin/drag-handle";
+import { useDragSort } from "@/lib/use-drag-sort";
+import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -235,6 +238,8 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
   const [draft, setDraft] = useState<SermonSeriesWriteInput>(EMPTY_SERIES);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
+  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -276,6 +281,21 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
     finally { setStatus("idle"); }
   }
 
+  async function move(fromIndex: number, toIndex: number) {
+    setStatus("saving"); setErrMsg("");
+    try {
+      await applyReorder(items, fromIndex, toIndex, (it, next) =>
+        onchurchSermonSeries.update(it.id, {
+          name: it.name,
+          sortOrder: next,
+          isActive: it.isActive,
+        }),
+      );
+      await load(); onChanged();
+    } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "순서 변경에 실패했습니다."); }
+    finally { setStatus("idle"); }
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
@@ -303,8 +323,13 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
         {status !== "loading" && items.length === 0 && editing === null && (
           <p style={{ color: "var(--muted)" }}>등록된 카테고리가 없습니다.</p>
         )}
-        {items.map((it) => (
-          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
+        {items.map((it, idx) => (
+          <div
+            key={it.id}
+            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            {...(dragDisabled ? {} : getItemProps(idx))}
+          >
+            <DragHandle disabled={dragDisabled} />
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
