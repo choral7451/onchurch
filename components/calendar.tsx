@@ -54,11 +54,14 @@ function fmtRange(ev: CalendarEvent): string {
   return `${sLabel} ${fmtTime(s)} – ${fmtDateLabel(ev.endAt)} ${fmtTime(e)}`;
 }
 
+const UPCOMING_PREVIEW_LIMIT = 8;
+
 export function Calendar({ events }: { events: CalendarEvent[] }) {
   const today = new Date();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() + 1 });
   const [activeEvents, setActiveEvents] = useState<CalendarEvent[] | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
 
   const firstDay = new Date(view.year, view.month - 1, 1).getDay();
   const daysInMonth = new Date(view.year, view.month, 0).getDate();
@@ -101,9 +104,16 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
         if (e.isAllDay) ref.setHours(23, 59, 59, 999);
         return ref.getTime() >= todayMs;
       })
-      .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
-      .slice(0, 8);
+      .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
   }, [events, view]);
+
+  // 달이 바뀌면 펼친 상태를 닫는다 (새 달 기준으로 다시 프리뷰부터).
+  useEffect(() => {
+    setExpanded(false);
+  }, [view.year, view.month]);
+
+  const visibleUpcoming = expanded ? upcoming : upcoming.slice(0, UPCOMING_PREVIEW_LIMIT);
+  const hiddenCount = upcoming.length - UPCOMING_PREVIEW_LIMIT;
 
   function shiftMonth(delta: number) {
     setView((v) => {
@@ -217,19 +227,31 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
               : `${view.month}월 일정이 없습니다.`}
           </div>
         ) : (
-          upcoming.map((e) => (
-            <button
-              type="button"
-              key={e.id}
-              className="upcoming-item upcoming-item-btn"
-              onClick={() => openEvent(e)}
-              aria-label={`${e.title} 상세 보기`}
-            >
-              <div className="upcoming-date">{fmtUpcomingDate(e.startAt)}</div>
-              <div className="upcoming-title">{e.title}</div>
-              <div className="upcoming-meta">{fmtMeta(e)}</div>
-            </button>
-          ))
+          <>
+            {visibleUpcoming.map((e) => (
+              <button
+                type="button"
+                key={e.id}
+                className="upcoming-item upcoming-item-btn"
+                onClick={() => openEvent(e)}
+                aria-label={`${e.title} 상세 보기`}
+              >
+                <div className="upcoming-date">{fmtUpcomingDate(e.startAt)}</div>
+                <div className="upcoming-title">{e.title}</div>
+                <div className="upcoming-meta">{fmtMeta(e)}</div>
+              </button>
+            ))}
+            {hiddenCount > 0 && (
+              <button
+                type="button"
+                className="upcoming-more"
+                onClick={() => setExpanded((v) => !v)}
+                aria-expanded={expanded}
+              >
+                {expanded ? "접기" : `+${hiddenCount}개 더 보기`}
+              </button>
+            )}
+          </>
         )}
       </div>
 
