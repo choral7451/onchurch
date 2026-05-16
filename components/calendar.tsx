@@ -83,21 +83,27 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
   }, [events, view]);
 
   const upcoming = useMemo(() => {
+    // 캘린더에서 보고 있는 달의 일정만 (startAt 기준).
+    // 현재 달을 보는 경우엔 오늘 이후 일정만으로 좁혀, 지나간 일정은 제외.
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
-    const cutoff = startOfToday.getTime();
+    const todayMs = startOfToday.getTime();
+    const isViewingCurrentMonth =
+      view.year === startOfToday.getFullYear() && view.month === startOfToday.getMonth() + 1;
     return events
       .filter((e) => e.isActive !== false)
       .filter((e) => {
-        // 시작일이 오늘 이후(오늘 포함)인 일정만. 이미 시작된 진행 중 일정은 제외.
-        const ref = new Date(e.startAt);
-        if (Number.isNaN(ref.getTime())) return false;
+        const d = new Date(e.startAt);
+        if (Number.isNaN(d.getTime())) return false;
+        if (d.getFullYear() !== view.year || d.getMonth() + 1 !== view.month) return false;
+        if (!isViewingCurrentMonth) return true;
+        const ref = new Date(d);
         if (e.isAllDay) ref.setHours(23, 59, 59, 999);
-        return ref.getTime() >= cutoff;
+        return ref.getTime() >= todayMs;
       })
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
-      .slice(0, 6);
-  }, [events]);
+      .slice(0, 8);
+  }, [events, view]);
 
   function shiftMonth(delta: number) {
     setView((v) => {
@@ -205,7 +211,11 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
       </div>
       <div className="upcoming-list">
         {upcoming.length === 0 ? (
-          <div style={{ padding: 24, color: "var(--muted)", fontSize: 13 }}>다가오는 일정이 없습니다.</div>
+          <div style={{ padding: 24, color: "var(--muted)", fontSize: 13 }}>
+            {view.year === today.getFullYear() && view.month === today.getMonth() + 1
+              ? "다가오는 일정이 없습니다."
+              : `${view.month}월 일정이 없습니다.`}
+          </div>
         ) : (
           upcoming.map((e) => (
             <button
