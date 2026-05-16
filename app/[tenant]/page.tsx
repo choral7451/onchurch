@@ -179,12 +179,13 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
 
 async function UpcomingEventsListSection({ slug, url }: { slug: string; url: (p: string) => string }) {
   const data = await fetchJson<{ events: PublicEvent[] }>(`/onchurch/sites/${slug}/events`, { events: [] });
-  const upcoming = pickUpcoming(data.events).slice(0, 5);
+  // 왼쪽 hero 카드가 첫 번째(가장 가까운) 일정을 보여주므로, 리스트는 그 이후 5개만.
+  const upcoming = pickUpcoming(data.events).slice(1, 6);
   return (
     <ul className="news-list">
       {upcoming.length === 0 ? (
         <li className="news-item" style={{ color: "var(--muted)", fontSize: 13, padding: "12px 0" }}>
-          예정된 일정이 없습니다.
+          이후 예정된 일정이 없습니다.
         </li>
       ) : (
         upcoming.map((item) => {
