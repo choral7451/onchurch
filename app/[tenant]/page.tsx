@@ -113,11 +113,11 @@ function pickUpcoming(events: PublicEvent[]): PublicEvent[] {
   return events
     .filter((e) => e.isActive !== false)
     .filter((e) => {
-      // 비교 기준: endAt 이 있으면 endAt, 없으면 startAt.
-      // 종일 일정·endAt 없는 일정은 그 날 23:59 까지 유효한 것으로 본다.
-      const ref = new Date(e.endAt ?? e.startAt);
+      // "오늘로부터 가장 가까운 일정" = 시작일이 오늘 이후(오늘 포함)인 일정만.
+      // (이미 시작해서 진행 중인 다일 일정은 hero 후보에서 제외)
+      const ref = new Date(e.startAt);
       if (Number.isNaN(ref.getTime())) return false;
-      if (!e.endAt || e.isAllDay) ref.setHours(23, 59, 59, 999);
+      if (e.isAllDay) ref.setHours(23, 59, 59, 999);
       return ref.getTime() >= cutoff;
     })
     .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());

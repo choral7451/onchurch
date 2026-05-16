@@ -89,9 +89,10 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
     return events
       .filter((e) => e.isActive !== false)
       .filter((e) => {
-        const ref = new Date(e.endAt ?? e.startAt);
+        // 시작일이 오늘 이후(오늘 포함)인 일정만. 이미 시작된 진행 중 일정은 제외.
+        const ref = new Date(e.startAt);
         if (Number.isNaN(ref.getTime())) return false;
-        if (!e.endAt || e.isAllDay) ref.setHours(23, 59, 59, 999);
+        if (e.isAllDay) ref.setHours(23, 59, 59, 999);
         return ref.getTime() >= cutoff;
       })
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
