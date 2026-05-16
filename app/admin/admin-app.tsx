@@ -33,6 +33,7 @@ import { DirectionsEditor } from "./page-editors/directions";
 import { GalleryEditor } from "./page-editors/gallery";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
+import { PrayerEditor } from "./page-editors/prayer";
 
 type Initial = {
   slug: string;
@@ -856,12 +857,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
                   {activePage === "gallery" && <GalleryEditor />}
 
+                  {activePage === "prayer" && <PrayerEditor />}
+
                   {activePage !== "worship" &&
                     activePage !== "notices" &&
                     activePage !== "schedule" &&
                     activePage !== "about" &&
                     activePage !== "sermons" &&
-                    activePage !== "gallery" && (
+                    activePage !== "gallery" &&
+                    activePage !== "prayer" && (
                       <section className="admin-section admin-section-empty">
                         <div className="admin-section-head">
                           <h2>설정 준비 중</h2>

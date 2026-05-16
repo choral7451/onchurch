@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+import { PrayerForm } from "@/app/[tenant]/prayer/form";
+
+const CATEGORIES = ["가정", "건강", "직장/학업", "신앙", "관계", "기타"];
+const SCOPES = ["중보기도팀", "담임 목사님", "전체 공개"];
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
@@ -16,7 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   });
 }
 
-export default function PrayerPage() {
+export default async function PrayerPage({ params }: { params: Promise<{ tenant: string }> }) {
+  const { tenant } = await params;
   return (
     <div>
       <PageHeader
@@ -25,10 +30,8 @@ export default function PrayerPage() {
         sub="혼자 감당하기 어려운 일들이 있으신가요? 함께 마음을 모아 기도해드립니다."
       />
       <section className="section">
-        <div className="container">
-          <div className="card" style={{ padding: 60, textAlign: "center", color: "var(--muted)" }}>
-            <p style={{ fontSize: 16 }}>이 섹션은 곧 제공됩니다.</p>
-          </div>
+        <div className="container" style={{ maxWidth: 760 }}>
+          <PrayerForm slug={tenant} categories={CATEGORIES} scopes={SCOPES} />
         </div>
       </section>
     </div>
