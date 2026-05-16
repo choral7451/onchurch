@@ -173,8 +173,9 @@ main { flex: 1; }
 }
 .skel { background: linear-gradient(90deg, var(--line-2) 0%, var(--line) 50%, var(--line-2) 100%); background-size: 800px 100%; animation: skeleton-shimmer 1.4s ease-in-out infinite; border-radius: 8px; display: block; }
 .news-feature-meta { font-size: 13px; font-family: var(--font-display); letter-spacing: 0.04em; opacity: 0.75; text-transform: uppercase; margin-top: 28px; }
-.news-feature-title { font-family: var(--font-display); font-size: 38px; font-weight: 700; line-height: 1.18; letter-spacing: -0.03em; margin: 14px 0 18px; text-wrap: balance; }
-.news-feature-desc { font-size: 15px; opacity: 0.82; max-width: 460px; line-height: 1.6; }
+.news-feature-title { font-family: var(--font-display); font-size: 38px; font-weight: 700; line-height: 1.18; letter-spacing: -0.03em; margin: 14px 0 12px; text-wrap: balance; }
+.news-feature-meta-line { font-size: 13.5px; font-weight: 500; opacity: 0.78; letter-spacing: 0.01em; margin: 0 0 14px; }
+.news-feature-desc { font-size: 15px; opacity: 0.82; max-width: 520px; line-height: 1.7; margin: 0; display: -webkit-box; -webkit-line-clamp: 5; line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
 .news-feature-cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; font-size: 14px; font-weight: 600; background: oklch(1 0 0 / 0.12); backdrop-filter: blur(10px); padding: 12px 18px; border-radius: 999px; border: 1px solid oklch(1 0 0 / 0.2); align-self: flex-start; transition: background 0.15s ease; cursor: pointer; }
 .news-feature-cta:hover { background: oklch(1 0 0 / 0.2); }
 

@@ -162,10 +162,13 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
         <div>
           <div className="news-feature-tag"><span className="pulse" />다가오는 일정 · {mon} {day}</div>
           <h2 className="news-feature-title">{head.title}</h2>
-          <p className="news-feature-desc">
+          <p className="news-feature-meta-line">
             {dateStr} · {timeStr}
             {head.location ? ` · ${head.location}` : ""}
           </p>
+          {head.description && (
+            <p className="news-feature-desc">{head.description}</p>
+          )}
         </div>
         <div>
           <Link href={url("/schedule")} className="news-feature-cta">
