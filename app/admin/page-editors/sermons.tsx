@@ -10,9 +10,6 @@ import {
   type SermonSeriesItem,
   type SermonSeriesWriteInput,
 } from "@/lib/api-client";
-import { DragHandle } from "@/components/admin/drag-handle";
-import { useDragSort } from "@/lib/use-drag-sort";
-import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -84,8 +81,6 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
   const [draft, setDraft] = useState<SermonWriteInput>(EMPTY_SERMON);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
-  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
-  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -149,30 +144,6 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
     finally { setStatus("idle"); }
   }
 
-  async function move(fromIndex: number, toIndex: number) {
-    setStatus("saving"); setErrMsg("");
-    try {
-      await applyReorder(items, fromIndex, toIndex, (it, next) =>
-        onchurchSermon.update(it.id, {
-          seriesId: it.seriesId,
-          title: it.title,
-          pastor: it.pastor ?? null,
-          date: it.date ?? null,
-          duration: it.duration ?? null,
-          videoUrl: it.videoUrl ?? null,
-          thumbnailUrl: it.thumbnailUrl ?? null,
-          bulletinUrl: it.bulletinUrl ?? null,
-          summary: it.summary ?? null,
-          isFeatured: it.isFeatured,
-          sortOrder: next,
-          isActive: it.isActive,
-        }),
-      );
-      await load();
-    } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "순서 변경에 실패했습니다."); }
-    finally { setStatus("idle"); }
-  }
-
   function seriesName(id: number | null): string {
     if (id == null) return "미분류";
     return seriesList.find((s) => s.id === id)?.name ?? "(삭제된 카테고리)";
@@ -229,13 +200,8 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
         {status !== "loading" && items.length === 0 && editing === null && (
           <p style={{ color: "var(--muted)" }}>등록된 설교가 없습니다.</p>
         )}
-        {items.map((it, idx) => (
-          <div
-            key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
-            {...(dragDisabled ? {} : getItemProps(idx))}
-          >
-            <DragHandle disabled={dragDisabled} />
+        {items.map((it) => (
+          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{seriesName(it.seriesId)}</span>
@@ -269,8 +235,6 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
   const [draft, setDraft] = useState<SermonSeriesWriteInput>(EMPTY_SERIES);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
-  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
-  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -312,21 +276,6 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
     finally { setStatus("idle"); }
   }
 
-  async function move(fromIndex: number, toIndex: number) {
-    setStatus("saving"); setErrMsg("");
-    try {
-      await applyReorder(items, fromIndex, toIndex, (it, next) =>
-        onchurchSermonSeries.update(it.id, {
-          name: it.name,
-          sortOrder: next,
-          isActive: it.isActive,
-        }),
-      );
-      await load(); onChanged();
-    } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "순서 변경에 실패했습니다."); }
-    finally { setStatus("idle"); }
-  }
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
@@ -354,13 +303,8 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
         {status !== "loading" && items.length === 0 && editing === null && (
           <p style={{ color: "var(--muted)" }}>등록된 카테고리가 없습니다.</p>
         )}
-        {items.map((it, idx) => (
-          <div
-            key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
-            {...(dragDisabled ? {} : getItemProps(idx))}
-          >
-            <DragHandle disabled={dragDisabled} />
+        {items.map((it) => (
+          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
