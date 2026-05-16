@@ -10,6 +10,8 @@ import {
   type NoticeCategoryItem,
   type NoticeCategoryWriteInput,
 } from "@/lib/api-client";
+import { SortPositionSelect } from "@/components/admin/sort-position-select";
+import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -346,6 +348,21 @@ function NoticeCategoriesEditor({ onChanged }: { onChanged: () => void }) {
     finally { setStatus("idle"); }
   }
 
+  async function move(fromIndex: number, toIndex: number) {
+    setStatus("saving"); setErrMsg("");
+    try {
+      await applyReorder(items, fromIndex, toIndex, (it, next) =>
+        onchurchNoticeCategory.update(it.id, {
+          name: it.name,
+          sortOrder: next,
+          isActive: it.isActive,
+        }),
+      );
+      await load(); onChanged();
+    } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "순서 변경에 실패했습니다."); }
+    finally { setStatus("idle"); }
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
@@ -373,14 +390,20 @@ function NoticeCategoriesEditor({ onChanged }: { onChanged: () => void }) {
         {status !== "loading" && items.length === 0 && editing === null && (
           <p style={{ color: "var(--muted)" }}>등록된 카테고리가 없습니다.</p>
         )}
-        {items.map((it) => (
+        {items.map((it, idx) => (
           <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
+                <SortPositionSelect
+                  index={idx}
+                  total={items.length}
+                  onMove={(next) => void move(idx, next)}
+                  disabled={editing !== null || status === "saving"}
+                />
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>

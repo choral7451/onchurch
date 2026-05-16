@@ -11,6 +11,8 @@ import {
   type WorshipOrderItem,
   type WorshipOrderWriteInput,
 } from "@/lib/api-client";
+import { SortPositionSelect } from "@/components/admin/sort-position-select";
+import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -182,6 +184,26 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
     finally { setStatus("idle"); }
   }
 
+  async function move(fromIndex: number, toIndex: number) {
+    setStatus("saving"); setErrMsg("");
+    try {
+      await applyReorder(items, fromIndex, toIndex, (it, next) =>
+        onchurchWorshipService.update(it.id, {
+          tag: it.tag,
+          name: it.name,
+          time: it.time,
+          meta: it.meta ?? null,
+          isFeatured: it.isFeatured,
+          sortOrder: next,
+          isActive: it.isActive,
+        }),
+      );
+      await load();
+      onChanged?.();
+    } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "순서 변경에 실패했습니다."); }
+    finally { setStatus("idle"); }
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
@@ -213,10 +235,6 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
               <input value={draft.meta ?? ""} onChange={(e) => setDraft({ ...draft, meta: e.target.value })} placeholder="본당 · 1시간 30분" />
             </div>
             <div className="form-row">
-              <label>정렬</label>
-              <input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
-            </div>
-            <div className="form-row">
               <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
                 <input type="checkbox" checked={draft.isFeatured} onChange={(e) => setDraft({ ...draft, isFeatured: e.target.checked })} />
                 <span>대표 예배</span>
@@ -242,17 +260,22 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
         {status !== "loading" && items.length === 0 && editing === null && (
           <p style={{ color: "var(--muted)" }}>등록된 예배가 없습니다.</p>
         )}
-        {items.map((it) => (
+        {items.map((it, idx) => (
           <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{it.tag}</span>
                 <strong>{it.name}</strong>
                 {it.isFeatured && <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>대표</span>}
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <span style={{ color: "var(--muted)", fontSize: 12 }}>순서 {it.sortOrder}</span>
+                <SortPositionSelect
+                  index={idx}
+                  total={items.length}
+                  onMove={(next) => void move(idx, next)}
+                  disabled={editing !== null || status === "saving"}
+                />
               </div>
               <div style={{ color: "var(--muted)", fontSize: 13 }}>
                 {it.time}
@@ -326,6 +349,23 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
     finally { setStatus("idle"); }
   }
 
+  async function move(fromIndex: number, toIndex: number) {
+    setStatus("saving"); setErrMsg("");
+    try {
+      await applyReorder(items, fromIndex, toIndex, (it, next) =>
+        onchurchWorshipOrder.update(it.id, {
+          no: it.no,
+          item: it.item,
+          leader: it.leader ?? null,
+          sortOrder: next,
+          isActive: it.isActive,
+        }),
+      );
+      await load();
+    } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "순서 변경에 실패했습니다."); }
+    finally { setStatus("idle"); }
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <SectionVisibilityToggle label="예배 순서" visible={visible} onToggle={onToggleVisible} />
@@ -349,10 +389,6 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
               <input value={draft.leader ?? ""} onChange={(e) => setDraft({ ...draft, leader: e.target.value })} placeholder="사회자" />
             </div>
             <div className="form-row">
-              <label>정렬</label>
-              <input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })} />
-            </div>
-            <div className="form-row">
               <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
                 <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
                 <span>활성</span>
@@ -372,15 +408,21 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
         {status !== "loading" && items.length === 0 && editing === null && (
           <p style={{ color: "var(--muted)" }}>등록된 순서가 없습니다.</p>
         )}
-        {items.map((it) => (
+        {items.map((it, idx) => (
           <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.no}</strong>
                 <span>· {it.item}</span>
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
+                <SortPositionSelect
+                  index={idx}
+                  total={items.length}
+                  onMove={(next) => void move(idx, next)}
+                  disabled={editing !== null || status === "saving"}
+                />
               </div>
               {it.leader && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.leader}</div>}
             </div>

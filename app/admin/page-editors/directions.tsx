@@ -7,6 +7,8 @@ import {
   type TransportationItem,
   type TransportationWriteInput,
 } from "@/lib/api-client";
+import { SortPositionSelect } from "@/components/admin/sort-position-select";
+import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -120,6 +122,24 @@ export function DirectionsEditor() {
     }
   }
 
+  async function move(fromIndex: number, toIndex: number) {
+    setStatus("saving"); setErrMsg("");
+    try {
+      await applyReorder(items, fromIndex, toIndex, (it, next) =>
+        onchurchTransportation.update(it.id, {
+          icon: it.icon ?? null,
+          tag: it.tag,
+          title: it.title,
+          description: it.description ?? null,
+          sortOrder: next,
+          isActive: it.isActive,
+        }),
+      );
+      await load();
+    } catch (err) { setErrMsg(err instanceof ApiError ? err.message : "순서 변경에 실패했습니다."); }
+    finally { setStatus("idle"); }
+  }
+
   return (
     <section className="admin-section">
       <div className="admin-section-head">
@@ -173,14 +193,6 @@ export function DirectionsEditor() {
                 />
               </div>
               <div className="form-row">
-                <label>정렬</label>
-                <input
-                  type="number"
-                  value={draft.sortOrder}
-                  onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) || 0 })}
-                />
-              </div>
-              <div className="form-row">
                 <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
                   <input
                     type="checkbox"
@@ -211,17 +223,22 @@ export function DirectionsEditor() {
           {status !== "loading" && items.length === 0 && editing === null && (
             <p style={{ color: "var(--muted)" }}>등록된 교통편이 없습니다.</p>
           )}
-          {items.map((it) => (
+          {items.map((it, idx) => (
             <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
               <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                   {it.icon && <span style={{ fontSize: 18 }}>{it.icon}</span>}
                   <strong>{it.tag}</strong>
                   <span>· {it.title}</span>
                   <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                     {it.isActive ? "공개" : "비공개"}
                   </span>
-                  <span style={{ color: "var(--muted)", fontSize: 12 }}>순서 {it.sortOrder}</span>
+                  <SortPositionSelect
+                    index={idx}
+                    total={items.length}
+                    onMove={(next) => void move(idx, next)}
+                    disabled={editing !== null || status === "saving"}
+                  />
                 </div>
                 {it.description && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.description}</div>}
               </div>
