@@ -536,6 +536,21 @@ main { flex: 1; }
 .demo-card-empty-inner { text-align: center; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .demo-card-empty-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--primary-deep); line-height: 1.3; }
 
+/* Live sites — Hero 아래 작은 소셜 프루프 그리드 */
+.live-sites { padding: 40px 0 48px; background: var(--surface-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.live-sites-head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 28px; text-align: center; }
+.live-sites-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink-2); margin: 0; }
+.live-sites-count { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; }
+.live-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.live-card { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); transition: all 0.15s ease; min-width: 0; }
+.live-card:hover { border-color: oklch(0.62 0.14 245 / 0.4); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.live-card-logo { flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, var(--primary), var(--accent)); display: grid; place-items: center; color: white; font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+.live-card-logo img { width: 100%; height: 100%; object-fit: cover; }
+.live-card-logo-fallback { line-height: 1; }
+.live-card-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.live-card-name { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; color: var(--primary-deep); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.live-card-slug { font-family: var(--font-mono); font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 /* Features */
 .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .feature-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px 28px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s ease; }
@@ -923,14 +938,14 @@ main { flex: 1; }
   .landing-trust { gap: 10px; padding: 10px 16px; font-size: 12px; }
   .landing-trust-divider { display: none; }
 
-  /* Live sites / Demo */
-  .demo-grid { grid-template-columns: 1fr; gap: 14px; }
-  .demo-card-thumb { aspect-ratio: 16 / 10; }
-  .demo-card-name { font-size: 24px; }
-  .demo-card-mark { width: 52px; height: 52px; margin: 0 auto 12px; }
-  .demo-card-body { padding: 18px 20px; gap: 8px; }
-  .demo-card-tag { font-size: 13.5px; }
-  .demo-card-url { font-size: 11.5px; padding: 6px 10px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Live sites */
+  .live-sites { padding: 28px 0 32px; }
+  .live-sites-head { margin-bottom: 20px; }
+  .live-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; }
+  .live-card { padding: 8px 12px; gap: 10px; }
+  .live-card-logo { width: 32px; height: 32px; border-radius: 8px; font-size: 14px; }
+  .live-card-name { font-size: 13px; }
+  .live-card-slug { font-size: 10.5px; }
 
   /* Features */
   .feature-grid { gap: 12px; }

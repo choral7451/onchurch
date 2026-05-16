@@ -32,6 +32,29 @@ export const fetchPublicChurch = cache(async (slug: string): Promise<PublicChurc
   }
 });
 
+export type PublicChurchSummary = {
+  id: number;
+  slug: string;
+  name: string;
+  eng: string | null;
+  tagline: string | null;
+  logoUrl: string | null;
+};
+
+export const fetchPublicChurchList = cache(async (): Promise<PublicChurchSummary[]> => {
+  try {
+    const res = await fetch(`${API_BASE}/onchurch/sites`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    const churches = body?.item?.churches;
+    return Array.isArray(churches) ? (churches as PublicChurchSummary[]) : [];
+  } catch {
+    return [];
+  }
+});
+
 export function brandFromChurch(church: PublicChurch): Brand {
   return {
     name: church.name ?? "",

@@ -5,6 +5,7 @@ import { LandingFooter } from "@/components/marketing/landing-footer";
 import { HideWhenAuthed } from "@/components/marketing/hide-when-authed";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
+import { fetchPublicChurchList } from "@/lib/public-site";
 
 export const metadata: Metadata = {
   title: "교회 홈페이지 제작·만들기 · 5분이면 완성 | 온교회",
@@ -110,33 +111,12 @@ const FAQ: { q: string; a: string }[] = [
   { q: "가격은 어떻게 되나요?", a: "교회 규모와 무관하게 월 단돈 1만원입니다. 모든 기능이 포함되어 있으며 추가 결제는 없습니다. 사이트 운영을 시작하면 7일 무료 체험이 자동으로 시작되어 자유롭게 둘러보실 수 있습니다." },
 ];
 
-type PublicChurchListItem = {
-  id: number;
-  slug: string;
-  name: string;
-  eng: string | null;
-  tagline: string | null;
-  logoUrl: string | null;
-};
-
-async function fetchPublicChurches(): Promise<PublicChurchListItem[]> {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
-  try {
-    const res = await fetch(`${base}/onchurch/sites`, { cache: "no-store" });
-    if (!res.ok) return [];
-    const body = await res.json();
-    return (body?.item?.churches ?? []) as PublicChurchListItem[];
-  } catch {
-    return [];
-  }
-}
-
 function churchUrl(slug: string): string {
   return `https://${slug}.everychurch.co.kr`;
 }
 
 export default async function LandingPage() {
-  const churches = await fetchPublicChurches();
+  const churches = await fetchPublicChurchList();
 
   return (
     <div className="landing">
@@ -182,46 +162,34 @@ export default async function LandingPage() {
       </section>
 
       {churches.length > 0 && (
-        <section id="demo" className="section section-tinted">
+        <section id="demo" className="live-sites">
           <div className="container">
-            <div className="section-head">
-              <div>
-                <span className="eyebrow">Live Sites</span>
-                <h2>지금 운영 중인 교회 홈페이지</h2>
-              </div>
-              <div className="section-head-action">
-                <span style={{ fontSize: 13, color: "var(--muted)" }}>{churches.length}개 운영 중</span>
-              </div>
+            <div className="live-sites-head">
+              <span className="eyebrow">Live Sites</span>
+              <h3 className="live-sites-title">
+                지금 운영 중인 교회 <span className="live-sites-count">{churches.length}</span>
+              </h3>
             </div>
-            <div className="demo-grid">
+            <div className="live-grid">
               {churches.map((c) => (
                 <a
                   key={c.id}
                   href={churchUrl(c.slug)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="demo-card"
+                  className="live-card"
                 >
-                  <div className="demo-card-thumb">
-                    <div className="demo-card-thumb-inner">
-                      {c.logoUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.logoUrl} alt="" style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover", margin: "0 auto 18px", border: "1px solid oklch(1 0 0 / 0.3)" }} />
-                      ) : (
-                        <div className="demo-card-mark" />
-                      )}
-                      <div className="demo-card-name">{c.name}</div>
-                      {c.eng && <div className="demo-card-eng">{c.eng}</div>}
-                    </div>
+                  <div className="live-card-logo">
+                    {c.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.logoUrl} alt="" />
+                    ) : (
+                      <span className="live-card-logo-fallback">{c.name.slice(0, 1)}</span>
+                    )}
                   </div>
-                  <div className="demo-card-body">
-                    {c.tagline && <div className="demo-card-tag">{c.tagline}</div>}
-                    <div className="demo-card-url">
-                      <span className="demo-card-url-prefix">{c.slug}</span>.everychurch.co.kr
-                    </div>
-                    <div className="demo-card-cta">
-                      바로 둘러보기 <Icon.arrow style={{ width: 12, height: 12 }} />
-                    </div>
+                  <div className="live-card-body">
+                    <div className="live-card-name">{c.name}</div>
+                    <div className="live-card-slug">{c.slug}.everychurch.co.kr</div>
                   </div>
                 </a>
               ))}
