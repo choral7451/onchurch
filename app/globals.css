@@ -537,19 +537,19 @@ main { flex: 1; }
 .demo-card-empty-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--primary-deep); line-height: 1.3; }
 
 /* Live sites — Hero 아래 작은 소셜 프루프 그리드 */
-.live-sites { padding: 40px 0 48px; background: var(--surface-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.live-sites-head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 28px; text-align: center; }
-.live-sites-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink-2); margin: 0; }
+.live-sites { padding: 52px 0 60px; background: var(--surface-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.live-sites-head { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 36px; text-align: center; }
+.live-sites-title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink-2); margin: 0; }
 .live-sites-count { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; }
-.live-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
-.live-card { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); transition: all 0.15s ease; min-width: 0; }
+.live-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.live-card { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); transition: all 0.15s ease; min-width: 0; }
 .live-card:hover { border-color: oklch(0.62 0.14 245 / 0.4); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
-.live-card-logo { flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, var(--primary), var(--accent)); display: grid; place-items: center; color: white; font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+.live-card-logo { flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, var(--primary), var(--accent)); display: grid; place-items: center; color: white; font-family: var(--font-display); font-weight: 700; font-size: 20px; }
 .live-card-logo img { width: 100%; height: 100%; object-fit: cover; }
 .live-card-logo-fallback { line-height: 1; }
-.live-card-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-.live-card-name { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; color: var(--primary-deep); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.live-card-slug { font-family: var(--font-mono); font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.live-card-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.live-card-name { font-family: var(--font-display); font-size: 15.5px; font-weight: 600; color: var(--primary-deep); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.live-card-slug { font-family: var(--font-mono); font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Features */
 .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -939,13 +939,14 @@ main { flex: 1; }
   .landing-trust-divider { display: none; }
 
   /* Live sites */
-  .live-sites { padding: 28px 0 32px; }
-  .live-sites-head { margin-bottom: 20px; }
-  .live-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; }
-  .live-card { padding: 8px 12px; gap: 10px; }
-  .live-card-logo { width: 32px; height: 32px; border-radius: 8px; font-size: 14px; }
-  .live-card-name { font-size: 13px; }
-  .live-card-slug { font-size: 10.5px; }
+  .live-sites { padding: 36px 0 40px; }
+  .live-sites-head { margin-bottom: 24px; }
+  .live-sites-title { font-size: 18px; }
+  .live-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .live-card { padding: 12px 14px; gap: 12px; }
+  .live-card-logo { width: 42px; height: 42px; border-radius: 10px; font-size: 17px; }
+  .live-card-name { font-size: 14.5px; }
+  .live-card-slug { font-size: 11.5px; }
 
   /* Features */
   .feature-grid { gap: 12px; }
