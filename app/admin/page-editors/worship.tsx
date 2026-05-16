@@ -11,7 +11,8 @@ import {
   type WorshipOrderItem,
   type WorshipOrderWriteInput,
 } from "@/lib/api-client";
-import { SortPositionSelect } from "@/components/admin/sort-position-select";
+import { DragHandle } from "@/components/admin/drag-handle";
+import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
@@ -127,6 +128,8 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
   const [draft, setDraft] = useState<WorshipServiceWriteInput>(EMPTY_SERVICE);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
+  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -261,7 +264,12 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
           <p style={{ color: "var(--muted)" }}>등록된 예배가 없습니다.</p>
         )}
         {items.map((it, idx) => (
-          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
+          <div
+            key={it.id}
+            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            {...(dragDisabled ? {} : getItemProps(idx))}
+          >
+            <DragHandle disabled={dragDisabled} />
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{it.tag}</span>
@@ -270,12 +278,6 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <SortPositionSelect
-                  index={idx}
-                  total={items.length}
-                  onMove={(next) => void move(idx, next)}
-                  disabled={editing !== null || status === "saving"}
-                />
               </div>
               <div style={{ color: "var(--muted)", fontSize: 13 }}>
                 {it.time}
@@ -299,6 +301,8 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
   const [draft, setDraft] = useState<WorshipOrderWriteInput>(EMPTY_ORDER);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
+  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -409,7 +413,12 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
           <p style={{ color: "var(--muted)" }}>등록된 순서가 없습니다.</p>
         )}
         {items.map((it, idx) => (
-          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
+          <div
+            key={it.id}
+            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            {...(dragDisabled ? {} : getItemProps(idx))}
+          >
+            <DragHandle disabled={dragDisabled} />
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.no}</strong>
@@ -417,12 +426,6 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <SortPositionSelect
-                  index={idx}
-                  total={items.length}
-                  onMove={(next) => void move(idx, next)}
-                  disabled={editing !== null || status === "saving"}
-                />
               </div>
               {it.leader && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.leader}</div>}
             </div>

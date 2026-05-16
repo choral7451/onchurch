@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { ApiError, onchurchBanner, type Banner, type BannerWriteInput } from "@/lib/api-client";
-import { SortPositionSelect } from "@/components/admin/sort-position-select";
+import { DragHandle } from "@/components/admin/drag-handle";
+import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
@@ -22,6 +23,8 @@ export function BannersEditor() {
   const [errMsg, setErrMsg] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<BannerWriteInput>(EMPTY_INPUT);
+  const dragDisabled = editingId !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(banners.length, (f, t) => void move(f, t));
 
   useEffect(() => {
     void load();
@@ -215,19 +218,18 @@ export function BannersEditor() {
             <p style={{ color: "var(--muted)" }}>등록된 배너가 없습니다. 새 배너를 추가해보세요. 등록 전까지는 기본 환영 배너가 노출됩니다.</p>
           )}
           {banners.map((b, idx) => (
-            <div key={b.id} className={`admin-banner-card ${b.isActive ? "" : "inactive"}`}>
+            <div
+              key={b.id}
+              className={`admin-banner-card ${b.isActive ? "" : "inactive"}`}
+              {...(dragDisabled ? {} : getItemProps(idx))}
+            >
+              <DragHandle disabled={dragDisabled} />
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                   <strong>{b.title}</strong>
                   <span className={`admin-sidebar-pill ${b.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                     {b.isActive ? "활성" : "비활성"}
                   </span>
-                  <SortPositionSelect
-                    index={idx}
-                    total={banners.length}
-                    onMove={(next) => void move(idx, next)}
-                    disabled={editingId !== null || status === "saving"}
-                  />
                 </div>
                 {b.description && <div style={{ color: "var(--muted)", fontSize: 13 }}>{b.description}</div>}
                 {b.linkUrl && <div style={{ color: "var(--muted)", fontSize: 12, marginTop: 2 }}>→ {b.linkUrl}</div>}

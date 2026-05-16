@@ -7,7 +7,8 @@ import {
   type TransportationItem,
   type TransportationWriteInput,
 } from "@/lib/api-client";
-import { SortPositionSelect } from "@/components/admin/sort-position-select";
+import { DragHandle } from "@/components/admin/drag-handle";
+import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
@@ -38,6 +39,8 @@ export function DirectionsEditor() {
   const [draft, setDraft] = useState<TransportationWriteInput>(EMPTY);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState<string>("");
+  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => {
     void load();
@@ -224,7 +227,12 @@ export function DirectionsEditor() {
             <p style={{ color: "var(--muted)" }}>등록된 교통편이 없습니다.</p>
           )}
           {items.map((it, idx) => (
-            <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
+            <div
+              key={it.id}
+              className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+              {...(dragDisabled ? {} : getItemProps(idx))}
+            >
+              <DragHandle disabled={dragDisabled} />
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                   {it.icon && <span style={{ fontSize: 18 }}>{it.icon}</span>}
@@ -233,12 +241,6 @@ export function DirectionsEditor() {
                   <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                     {it.isActive ? "공개" : "비공개"}
                   </span>
-                  <SortPositionSelect
-                    index={idx}
-                    total={items.length}
-                    onMove={(next) => void move(idx, next)}
-                    disabled={editing !== null || status === "saving"}
-                  />
                 </div>
                 {it.description && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.description}</div>}
               </div>

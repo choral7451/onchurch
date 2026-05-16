@@ -10,7 +10,8 @@ import {
   type NoticeCategoryItem,
   type NoticeCategoryWriteInput,
 } from "@/lib/api-client";
-import { SortPositionSelect } from "@/components/admin/sort-position-select";
+import { DragHandle } from "@/components/admin/drag-handle";
+import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
@@ -307,6 +308,8 @@ function NoticeCategoriesEditor({ onChanged }: { onChanged: () => void }) {
   const [draft, setDraft] = useState<NoticeCategoryWriteInput>(EMPTY_CATEGORY);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
+  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -391,19 +394,18 @@ function NoticeCategoriesEditor({ onChanged }: { onChanged: () => void }) {
           <p style={{ color: "var(--muted)" }}>등록된 카테고리가 없습니다.</p>
         )}
         {items.map((it, idx) => (
-          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
+          <div
+            key={it.id}
+            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            {...(dragDisabled ? {} : getItemProps(idx))}
+          >
+            <DragHandle disabled={dragDisabled} />
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <SortPositionSelect
-                  index={idx}
-                  total={items.length}
-                  onMove={(next) => void move(idx, next)}
-                  disabled={editing !== null || status === "saving"}
-                />
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>

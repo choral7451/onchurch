@@ -17,7 +17,8 @@ import {
   type StaffMember,
   type StaffWriteInput,
 } from "@/lib/api-client";
-import { SortPositionSelect } from "@/components/admin/sort-position-select";
+import { DragHandle } from "@/components/admin/drag-handle";
+import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
 
 type SectionKey = "pastor" | "vision" | "history" | "staff";
@@ -314,6 +315,8 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
   const [draft, setDraft] = useState<VisionWriteInput>(EMPTY_VISION);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState<string>("");
+  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -417,7 +420,12 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
           <p style={{ color: "var(--muted)" }}>등록된 비전이 없습니다.</p>
         )}
         {items.map((it, idx) => (
-          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
+          <div
+            key={it.id}
+            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            {...(dragDisabled ? {} : getItemProps(idx))}
+          >
+            <DragHandle disabled={dragDisabled} />
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.ko}</strong>
@@ -425,12 +433,6 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <SortPositionSelect
-                  index={idx}
-                  total={items.length}
-                  onMove={(next) => void move(idx, next)}
-                  disabled={editing !== null || status === "saving"}
-                />
               </div>
               {it.description && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.description}</div>}
             </div>
@@ -451,6 +453,8 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
   const [draft, setDraft] = useState<HistoryWriteInput>(EMPTY_HISTORY);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState<string>("");
+  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -554,7 +558,12 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
           <p style={{ color: "var(--muted)" }}>등록된 연혁이 없습니다.</p>
         )}
         {items.map((it, idx) => (
-          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
+          <div
+            key={it.id}
+            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            {...(dragDisabled ? {} : getItemProps(idx))}
+          >
+            <DragHandle disabled={dragDisabled} />
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.year}</strong>
@@ -562,12 +571,6 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <SortPositionSelect
-                  index={idx}
-                  total={items.length}
-                  onMove={(next) => void move(idx, next)}
-                  disabled={editing !== null || status === "saving"}
-                />
               </div>
               {it.description && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.description}</div>}
             </div>
@@ -588,6 +591,8 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
   const [draft, setDraft] = useState<StaffWriteInput>(EMPTY_STAFF);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState<string>("");
+  const dragDisabled = editing !== null || status === "saving" || status === "deleting";
+  const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
   useEffect(() => { void load(); }, []);
 
@@ -698,7 +703,12 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
           <p style={{ color: "var(--muted)" }}>등록된 교역자가 없습니다.</p>
         )}
         {items.map((it, idx) => (
-          <div key={it.id} className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}>
+          <div
+            key={it.id}
+            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            {...(dragDisabled ? {} : getItemProps(idx))}
+          >
+            <DragHandle disabled={dragDisabled} />
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
@@ -706,12 +716,6 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
-                <SortPositionSelect
-                  index={idx}
-                  total={items.length}
-                  onMove={(next) => void move(idx, next)}
-                  disabled={editing !== null || status === "saving"}
-                />
               </div>
               {it.area && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.area}</div>}
             </div>

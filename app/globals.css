@@ -683,14 +683,14 @@ main { flex: 1; }
 .admin-banner-card.editing { flex-direction: column; background: var(--bg-tinted); }
 .admin-banner-card.inactive { opacity: 0.55; }
 
-/* 관리자 - 순서 변경 select */
-.sort-pos-select { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 2px 4px 2px 8px; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s ease; }
-.sort-pos-select:hover { border-color: var(--accent); color: var(--ink); }
-.sort-pos-select-label { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.sort-pos-select select { font-family: inherit; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink); background: transparent; border: 0; padding: 2px 4px; cursor: pointer; outline: none; }
-.sort-pos-select select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 4px; }
-.sort-pos-select:has(select:disabled) { opacity: 0.5; cursor: not-allowed; }
-.sort-pos-static { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* 관리자 - 행 드래그 핸들 */
+.drag-handle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--r-sm); color: var(--muted); cursor: grab; flex-shrink: 0; transition: all 0.15s ease; user-select: none; }
+.drag-handle:hover { background: var(--bg-tinted); color: var(--ink); }
+.drag-handle:active { cursor: grabbing; }
+.drag-handle.disabled { opacity: 0.3; cursor: not-allowed; }
+.admin-banner-card[data-dragging] { opacity: 0.4; }
+.admin-banner-card[data-drag-over] { box-shadow: inset 0 3px 0 0 var(--accent); border-color: var(--accent); }
+.admin-banner-card[draggable="true"] { transition: box-shadow 0.15s ease, opacity 0.15s ease, border-color 0.15s ease; }
 .admin-sub-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 12px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); font-size: 12px; font-weight: 600; color: var(--ink-2); line-height: 1; }
 .admin-sub-badge-label { font-family: var(--font-display); font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 .admin-sub-badge-date { font-variant-numeric: tabular-nums; color: var(--ink); }
