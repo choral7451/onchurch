@@ -20,6 +20,7 @@ export const SITE_DATA: SiteData = {
     { id: "schedule", label: "일정", href: "/schedule" },
     // { id: "departments", label: "교회학교", href: "/departments" },
     { id: "gallery", label: "갤러리", href: "/gallery" },
+    { id: "prayer", label: "기도 요청", href: "/prayer" },
     { id: "directions", label: "찾아오시는 길", href: "/directions" },
   ],
   hero: {
