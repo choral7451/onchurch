@@ -58,13 +58,24 @@ export const metadata: Metadata = {
     siteName: "온교회",
     title: "온교회 — 교회 홈페이지 제작·만들기 5분 빌더",
     description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료 체험.",
+    images: [
+      { url: "/everychurch-logo.jpeg", width: 2048, height: 2048, alt: "온교회" },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "온교회 — 교회 홈페이지 제작 빌더",
     description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료.",
+    images: ["/everychurch-logo.jpeg"],
   },
-  icons: { icon: "/favicon.ico" },
+  icons: {
+    icon: [
+      { url: "/everychurch-logo.jpeg", type: "image/jpeg" },
+      { url: "/favicon.ico" },
+    ],
+    apple: [{ url: "/everychurch-logo.jpeg", type: "image/jpeg" }],
+    shortcut: ["/everychurch-logo.jpeg"],
+  },
   verification: {
     other: {
       "naver-site-verification": "3d0a8523edc2dafbb1a456be187f29abb9184714",

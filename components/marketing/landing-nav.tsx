@@ -21,7 +21,8 @@ export function LandingNav() {
     <nav className="landing-nav">
       <div className="landing-nav-inner">
         <Link href="/" className="brand">
-          <div className="brand-mark" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/everychurch-logo.jpeg" alt="온교회" className="brand-logo" />
           <div className="brand-text">
             <div className="brand-name">온교회</div>
             <div className="brand-eng">ONCHURCH BUILDER</div>

@@ -492,7 +492,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
       <header className="admin-topbar">
         <div className="admin-topbar-inner">
           <Link href="/admin" className="brand">
-            <div className="brand-mark" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/everychurch-logo.jpeg" alt="온교회" className="brand-logo" />
             <div className="brand-text">
               <div className="brand-name">관리자 콘솔</div>
               <div className="brand-eng">ONCHURCH ADMIN</div>
