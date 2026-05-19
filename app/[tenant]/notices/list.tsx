@@ -108,10 +108,10 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
         <div className="notice-list">
           <div className="notice-row head">
             <div>번호</div>
-            <div>분류</div>
+            <div style={{ textAlign: "center" }}>분류</div>
             <div style={{ textAlign: "center" }}>제목</div>
             <div>작성자</div>
-            <div style={{ textAlign: "right" }}>작성일</div>
+            <div style={{ textAlign: "center" }}>작성일</div>
           </div>
           {visible.map((n) => (
             <div
