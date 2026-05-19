@@ -55,7 +55,7 @@ export function SermonsList({ sermons, filters }: Props) {
         />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+      <div className="sermons-list-grid">
         {filtered.length === 0 ? (
           <p style={{ gridColumn: "1 / -1", color: "var(--muted)", textAlign: "center", padding: "32px 0" }}>
             검색 결과가 없습니다.

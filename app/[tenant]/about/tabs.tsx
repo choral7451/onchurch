@@ -110,12 +110,12 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
         vision.length === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 비전이 등록되지 않았습니다.</div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div className="vision-grid">
             {vision.map((v) => (
-              <div key={v.id} className="card">
-                {v.en && <div style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 600, letterSpacing: "0.2em", color: "var(--accent)" }}>{v.en}</div>}
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em", color: "var(--primary-deep)", margin: "12px 0 14px" }}>{v.ko}</div>
-                {v.description && <p style={{ fontSize: 14.5, color: "var(--muted)", margin: 0, lineHeight: 1.7 }}>{v.description}</p>}
+              <div key={v.id} className="card vision-card">
+                {v.en && <div className="vision-en">{v.en}</div>}
+                <div className="vision-ko">{v.ko}</div>
+                {v.description && <p className="vision-desc">{v.description}</p>}
               </div>
             ))}
           </div>
@@ -126,14 +126,14 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
         history.length === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 교회 연혁이 등록되지 않았습니다.</div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 0, position: "relative", paddingLeft: 24 }}>
-            <div style={{ position: "absolute", left: 6, top: 12, bottom: 12, width: 2, background: "var(--line)" }} />
+          <div className="history-timeline">
+            <div className="history-rail" />
             {history.map((e) => (
-              <div key={e.id} style={{ position: "relative", padding: "18px 0 18px 32px" }}>
-                <div style={{ position: "absolute", left: -3, top: 24, width: 14, height: 14, borderRadius: "50%", background: "var(--accent)", border: "3px solid var(--bg)" }} />
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em" }}>{e.year}</div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, color: "var(--primary-deep)", margin: "4px 0 6px", letterSpacing: "-0.02em" }}>{e.title}</div>
-                {e.description && <p style={{ margin: 0, color: "var(--muted)", fontSize: 14 }}>{e.description}</p>}
+              <div key={e.id} className="history-item">
+                <div className="history-dot" />
+                <div className="history-year">{e.year}</div>
+                <div className="history-title">{e.title}</div>
+                {e.description && <p className="history-desc">{e.description}</p>}
               </div>
             ))}
           </div>
@@ -144,17 +144,18 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
         staff.length === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 교역자 정보가 등록되지 않았습니다.</div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+          <div className="staff-grid">
             {staff.map((s) => (
-              <div key={s.id} className="card card-hover" style={{ textAlign: "center", padding: 24 }}>
-                <div style={{ width: 96, height: 96, margin: "0 auto 16px", borderRadius: "50%", background: s.photoUrl ? `center/cover no-repeat url("${s.photoUrl}")` : "repeating-linear-gradient(45deg, oklch(0.94 0.01 245) 0 6px, oklch(0.92 0.012 245) 6px 12px)", display: "grid", placeItems: "center", border: "1px solid var(--line)" }}>
-                  {!s.photoUrl && (
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--muted)", letterSpacing: "0.1em" }}>PHOTO</span>
-                  )}
+              <div key={s.id} className="card card-hover staff-card">
+                <div
+                  className="staff-photo"
+                  style={s.photoUrl ? { background: `center/cover no-repeat url("${s.photoUrl}")` } : undefined}
+                >
+                  {!s.photoUrl && <span className="staff-photo-label">PHOTO</span>}
                 </div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--primary-deep)" }}>{s.name}</div>
-                {s.role && <div style={{ fontSize: 12, color: "var(--accent)", fontWeight: 600, margin: "4px 0", letterSpacing: "0.05em" }}>{s.role}</div>}
-                {s.area && <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{s.area}</div>}
+                <div className="staff-name">{s.name}</div>
+                {s.role && <div className="staff-role">{s.role}</div>}
+                {s.area && <div className="staff-area">{s.area}</div>}
               </div>
             ))}
           </div>

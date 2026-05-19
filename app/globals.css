@@ -1021,3 +1021,103 @@ main { flex: 1; }
   .landing-footer-inner { padding: 0 16px; flex-direction: column; align-items: flex-start; gap: 10px; }
   .landing-footer-meta { font-size: 12px; }
 }
+
+/* =====================================================
+   Sermons list page
+   ===================================================== */
+.sermons-list-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+/* =====================================================
+   About — vision / history / staff
+   ===================================================== */
+.vision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.vision-en { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: 0.2em; color: var(--accent); }
+.vision-ko { font-family: var(--font-display); font-size: 32px; font-weight: 700; letter-spacing: -0.03em; color: var(--primary-deep); margin: 12px 0 14px; line-height: 1.15; }
+.vision-desc { font-size: 14.5px; color: var(--muted); margin: 0; line-height: 1.7; }
+
+.history-timeline { display: flex; flex-direction: column; position: relative; padding-left: 24px; }
+.history-rail { position: absolute; left: 6px; top: 12px; bottom: 12px; width: 2px; background: var(--line); }
+.history-item { position: relative; padding: 18px 0 18px 32px; }
+.history-dot { position: absolute; left: -3px; top: 24px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 3px solid var(--bg); }
+.history-year { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; }
+.history-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--primary-deep); margin: 4px 0 6px; letter-spacing: -0.02em; }
+.history-desc { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
+
+.staff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.staff-card { text-align: center; padding: 24px; }
+.staff-photo { width: 96px; height: 96px; margin: 0 auto 16px; border-radius: 50%; background: repeating-linear-gradient(45deg, oklch(0.94 0.01 245) 0 6px, oklch(0.92 0.012 245) 6px 12px); display: grid; place-items: center; border: 1px solid var(--line); }
+.staff-photo-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+.staff-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--primary-deep); }
+.staff-role { font-size: 12px; color: var(--accent); font-weight: 600; margin: 4px 0; letter-spacing: 0.05em; }
+.staff-area { font-size: 12.5px; color: var(--muted); }
+
+/* =====================================================
+   Mobile — sermons / gallery / notices / about
+   ===================================================== */
+@media (max-width: 960px) {
+  .sermons-list-grid { grid-template-columns: repeat(2, 1fr); }
+  .vision-grid { grid-template-columns: repeat(2, 1fr); }
+  .staff-grid { grid-template-columns: repeat(3, 1fr); }
+  .gallery-grid { grid-auto-rows: 110px; gap: 10px; }
+}
+
+@media (max-width: 640px) {
+  /* Sermons list */
+  .sermons-list-grid { grid-template-columns: 1fr; gap: 14px; }
+  .sermon-toolbar { gap: 12px; margin-bottom: 18px; }
+  .sermon-toolbar .chips { width: 100%; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+  .sermon-toolbar .chips::-webkit-scrollbar { display: none; }
+  .sermon-toolbar .chip { flex-shrink: 0; }
+  .sermon-search { width: 100%; min-width: 0; max-width: none; }
+  .sermon-modal { max-height: calc(100vh - 24px); border-radius: var(--r-md); }
+  .sermon-modal-meta { padding: 14px 18px 18px; }
+  .sermon-modal-title { font-size: 16px; }
+  .sermon-modal-backdrop { padding: 12px; }
+
+  /* Gallery */
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 140px; gap: 8px; }
+  .gallery-item { grid-column: span 1 !important; grid-row: span 1 !important; }
+  .gallery-item:first-child { grid-column: span 2 !important; grid-row: span 2 !important; }
+  .gallery-overlay { opacity: 1; background: linear-gradient(180deg, transparent 55%, oklch(0 0 0 / 0.7)); padding: 10px; }
+  .gallery-cap-title { font-size: 13px; }
+  .gallery-cap-meta { font-size: 11px; }
+  .placeholder-img-tag { font-size: 9.5px; padding: 3px 6px; }
+
+  /* Notices */
+  .notice-list { border-radius: var(--r-md); }
+  .notice-row { grid-template-columns: auto 1fr auto; gap: 10px; padding: 14px 16px; column-gap: 10px; row-gap: 4px; }
+  .notice-row.head { padding: 10px 16px; }
+  .notice-row > *:nth-child(1) { display: none; }
+  .notice-row > *:nth-child(4) { display: none; }
+  .notice-row.head > *:nth-child(2) { font-size: 11px; }
+  .notice-row.head > *:nth-child(3) { font-size: 11px; }
+  .notice-row.head > *:nth-child(5) { font-size: 11px; }
+  .notice-title { font-size: 14px; white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.4; }
+  .notice-date { font-size: 11.5px; }
+  .notice-cat { font-size: 10.5px; padding: 2px 6px; }
+  .notices-toolbar { flex-direction: column; align-items: stretch !important; gap: 12px !important; }
+  .notices-toolbar .chips { width: 100%; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+  .notices-toolbar .chips::-webkit-scrollbar { display: none; }
+  .notices-toolbar .chip { flex-shrink: 0; }
+  .notices-search-wrap { width: 100%; }
+  .notices-search-wrap input { width: 100% !important; }
+
+  /* About */
+  .tabs { gap: 0; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin-bottom: 24px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex-shrink: 0; padding: 12px 16px; font-size: 13.5px; }
+  .vision-grid { grid-template-columns: 1fr; gap: 12px; }
+  .vision-card { padding: 20px; }
+  .vision-ko { font-size: 26px; margin: 8px 0 10px; }
+  .vision-desc { font-size: 13.5px; }
+  .history-timeline { padding-left: 16px; }
+  .history-rail { left: 4px; }
+  .history-item { padding: 14px 0 14px 24px; }
+  .history-dot { left: -5px; top: 20px; width: 12px; height: 12px; }
+  .history-title { font-size: 17px; }
+  .history-desc { font-size: 13.5px; }
+  .staff-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .staff-card { padding: 18px 12px; }
+  .staff-photo { width: 76px; height: 76px; margin-bottom: 12px; }
+  .staff-name { font-size: 16px; }
+}

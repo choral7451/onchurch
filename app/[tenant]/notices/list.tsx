@@ -61,7 +61,7 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 16, flexWrap: "wrap" }}>
+      <div className="notices-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 16, flexWrap: "wrap" }}>
         <div className="chips" style={{ marginBottom: 0 }}>
           {categories.map((c) => (
             <div
@@ -76,8 +76,8 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
             </div>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ position: "relative" }}>
+        <div className="notices-search-wrap" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ position: "relative", width: "100%" }}>
             <input
               value={query}
               onChange={(e) => {
