@@ -44,7 +44,7 @@ export type PublicChurchSummary = {
 export const fetchPublicChurchList = cache(async (): Promise<PublicChurchSummary[]> => {
   try {
     const res = await fetch(`${API_BASE}/onchurch/sites`, {
-      next: { revalidate: 300 },
+      cache: "no-store",
     });
     if (!res.ok) return [];
     const body = await res.json();
