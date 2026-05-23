@@ -187,7 +187,7 @@ async function UpcomingEventsListSection({ slug, url }: { slug: string; url: (p:
   return (
     <ul className="news-list">
       {upcoming.length === 0 ? (
-        <li className="news-item" style={{ color: "var(--muted)", fontSize: 13, padding: "12px 0" }}>
+        <li style={{ color: "var(--muted)", fontSize: 13, padding: "24px 0", textAlign: "center" }}>
           이후 예정된 일정이 없습니다.
         </li>
       ) : (
