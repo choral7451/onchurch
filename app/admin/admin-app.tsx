@@ -168,11 +168,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const [boards, setBoards] = useState<Record<string, boolean>>(
     () => {
-      const base = Object.fromEntries(initial.nav.map((n) => [n.id, true]));
+      const base = Object.fromEntries(initial.nav.map((n) => [n.id, false]));
       base["about"] = true;
       base["worship"] = true;
-      for (const k of ABOUT_SUB_KEYS) base[k] = true;
-      for (const k of WORSHIP_SUB_KEYS) base[k] = true;
+      for (const k of ABOUT_SUB_KEYS) base[k] = false;
+      for (const k of WORSHIP_SUB_KEYS) base[k] = false;
       return base;
     },
   );
