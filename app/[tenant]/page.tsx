@@ -398,12 +398,11 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         <TopBannerSection slug={slug} />
       </Suspense>
     ),
-    hero: (showHomeEvents || visibleQuickLinks.length > 0) ? (
+    events: showHomeEvents ? (
       <section className="hero">
         <div className="hero-bg">
           <Mesh style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }} />
         </div>
-        {showHomeEvents && (
         <div className="hero-inner">
           <Suspense fallback={<FeaturedEventSkeleton />}>
             <HeroFeaturedEventSection slug={slug} url={url} churchName={church.name} />
@@ -419,9 +418,10 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
             </Suspense>
           </div>
         </div>
-        )}
-
-        {visibleQuickLinks.length > 0 && (
+      </section>
+    ) : null,
+    quick: visibleQuickLinks.length > 0 ? (
+      <section className="hero hero-quick-only">
         <div className="container">
           <div className="quick-strip">
             {visibleQuickLinks.map((q) => {
@@ -437,7 +437,6 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
             })}
           </div>
         </div>
-        )}
       </section>
     ) : null,
     worship: isPageEnabled("worship") ? (

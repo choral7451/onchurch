@@ -872,7 +872,19 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {activeSection === "banners" && <BannersEditor />}
 
               {activeSection === "home-order" && (
-                <HomeOrderEditor order={homeSectionOrder} onChange={(next) => void persistHomeSectionOrder(next)} />
+                <HomeOrderEditor
+                  order={homeSectionOrder}
+                  activeKeys={(() => {
+                    const keys: HomeSectionKey[] = ["banner"];
+                    if (boards["schedule"]) keys.push("events");
+                    if (boards["worship"] || boards["sermons"] || boards["gallery"] || boards["directions"]) keys.push("quick");
+                    if (boards["worship"]) keys.push("worship");
+                    if (boards["sermons"]) keys.push("sermons");
+                    keys.push("visit", "pastor");
+                    return keys;
+                  })()}
+                  onChange={(next) => void persistHomeSectionOrder(next)}
+                />
               )}
 
               {activeSection === "inquiry" && <InquiryEditor />}

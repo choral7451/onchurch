@@ -1,8 +1,9 @@
-export type HomeSectionKey = "banner" | "hero" | "worship" | "sermons" | "visit" | "pastor";
+export type HomeSectionKey = "banner" | "events" | "quick" | "worship" | "sermons" | "visit" | "pastor";
 
 export const HOME_SECTION_KEYS: readonly HomeSectionKey[] = [
   "banner",
-  "hero",
+  "events",
+  "quick",
   "worship",
   "sermons",
   "visit",
@@ -11,7 +12,8 @@ export const HOME_SECTION_KEYS: readonly HomeSectionKey[] = [
 
 export const HOME_SECTION_LABELS: Record<HomeSectionKey, { title: string; desc: string }> = {
   banner: { title: "상단 배너", desc: "홈 최상단에 노출되는 배너 슬라이드" },
-  hero: { title: "다가오는 일정 · 빠른 이동", desc: "메인 히어로 영역 (이벤트 카드 + 퀵 링크)" },
+  events: { title: "다가오는 일정", desc: "다음 일정 카드 + 이후 일정 리스트" },
+  quick: { title: "빠른 이동", desc: "예배 안내·설교·갤러리·찾아오시는 길 퀵 링크" },
   worship: { title: "예배 안내", desc: "주요 예배 일정 카드 묶음" },
   sermons: { title: "이번 주 말씀", desc: "최근 설교 영상 카드" },
   visit: { title: "방문 안내", desc: "처음 오시는 분들을 위한 CTA" },
@@ -22,10 +24,14 @@ export function normalizeHomeSectionOrder(input: string[] | null | undefined): H
   const valid = new Set<string>(HOME_SECTION_KEYS);
   const seen = new Set<HomeSectionKey>();
   const result: HomeSectionKey[] = [];
-  for (const key of input ?? []) {
-    if (valid.has(key) && !seen.has(key as HomeSectionKey)) {
-      result.push(key as HomeSectionKey);
-      seen.add(key as HomeSectionKey);
+  for (const raw of input ?? []) {
+    // 과거 `hero` 단일 키로 저장된 값은 events + quick 두 개로 펼침
+    const keys = raw === "hero" ? (["events", "quick"] as HomeSectionKey[]) : ([raw] as HomeSectionKey[]);
+    for (const key of keys) {
+      if (valid.has(key) && !seen.has(key)) {
+        result.push(key);
+        seen.add(key);
+      }
     }
   }
   for (const key of HOME_SECTION_KEYS) {
