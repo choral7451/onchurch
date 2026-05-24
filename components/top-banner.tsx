@@ -96,16 +96,19 @@ export function TopBanner({ banners }: { banners: PublicBanner[] }) {
 }
 
 function BannerCard({ banner }: { banner: PublicBanner }) {
+  const hasText = Boolean(banner.title || banner.description);
   const inner = (
     <div
-      className={`top-banner ${banner.isDefault ? "top-banner-default" : ""}`}
+      className={`top-banner ${banner.isDefault ? "top-banner-default" : ""} ${hasText ? "" : "top-banner-plain"}`}
       style={
         banner.imageUrl
-          ? { backgroundImage: `linear-gradient(180deg, oklch(0 0 0 / 0.35), oklch(0 0 0 / 0.55)), url("${banner.imageUrl}")` }
+          ? hasText
+            ? { backgroundImage: `linear-gradient(180deg, oklch(0 0 0 / 0.35), oklch(0 0 0 / 0.55)), url("${banner.imageUrl}")` }
+            : { backgroundImage: `url("${banner.imageUrl}")` }
           : undefined
       }
     >
-      {(banner.title || banner.description) && (
+      {hasText && (
         <div className="top-banner-inner">
           {banner.title && <h2 className="top-banner-title">{banner.title}</h2>}
           {banner.description && <p className="top-banner-desc">{banner.description}</p>}
