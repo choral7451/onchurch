@@ -247,11 +247,10 @@ main { flex: 1; }
 .worship-table .worship-pill { margin: 0; padding: 3px 9px; font-size: 11px; }
 
 /* Sermons */
-.sermon-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 16px; }
+.sermon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .sermon-card { background: var(--surface); border-radius: var(--r-lg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.2s ease; }
 .sermon-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .sermon-thumb { aspect-ratio: 16 / 9; background: linear-gradient(135deg, var(--primary-deep), var(--accent)); position: relative; overflow: hidden; }
-.sermon-card.feat .sermon-thumb { aspect-ratio: 16 / 10; }
 .sermon-thumb-overlay { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: space-between; padding: 16px; color: white; background: linear-gradient(180deg, transparent 40%, oklch(0 0 0 / 0.5) 100%); }
 .play-btn { width: 48px; height: 48px; border-radius: 50%; background: oklch(1 0 0 / 0.95); color: var(--primary); display: grid; place-items: center; position: absolute; inset: 0; margin: auto; box-shadow: 0 8px 24px oklch(0 0 0 / 0.2); transition: transform 0.18s ease; }
 .sermon-card:hover .play-btn { transform: scale(1.08); }
@@ -259,7 +258,6 @@ main { flex: 1; }
 .sermon-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .sermon-series { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 .sermon-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; text-wrap: balance; }
-.sermon-card.feat .sermon-title { font-size: 22px; line-height: 1.25; }
 .sermon-meta { display: flex; gap: 10px; font-size: 12.5px; color: var(--muted); margin-top: 4px; }
 .sermon-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted-2); align-self: center; }
 .sermon-thumb-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -924,7 +922,6 @@ main { flex: 1; }
   .worship-table-cell.meta { font-size: 13px; }
   .worship-table-heading { font-size: 19px; }
   .sermon-grid { grid-template-columns: 1fr; }
-  .sermon-card.feat .sermon-title { font-size: 18px; }
   .verse-banner { padding: 56px 0; }
   .verse-text { font-size: 24px; line-height: 1.5; margin: 18px 0; }
   .pastor-section { gap: 28px; }
