@@ -10,6 +10,7 @@ import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { SermonFeatureGrid } from "@/components/sermon-feature-grid";
 import { TopBanner } from "@/components/top-banner";
 import type { Sermon } from "@/lib/types";
+import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 
 const QUICK_LINKS: { ic: IconKey; title: string; desc: string; path: string }[] = [
   { ic: "calendar", title: "예배 안내", desc: "주일/수요/새벽 모든 예배 시간을 확인하세요", path: "/worship" },
@@ -389,13 +390,15 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const isPageEnabled = (id: string) => enabled.length === 0 || enabled.includes(id);
   const showHomeEvents = isPageEnabled("schedule");
   const visibleQuickLinks = QUICK_LINKS.filter((q) => isPageEnabled(q.path.replace(/^\//, "")));
+  const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder);
 
-  return (
-    <div>
+  const sections: Record<HomeSectionKey, React.ReactNode> = {
+    banner: (
       <Suspense fallback={null}>
         <TopBannerSection slug={slug} />
       </Suspense>
-
+    ),
+    hero: (showHomeEvents || visibleQuickLinks.length > 0) ? (
       <section className="hero">
         <div className="hero-bg">
           <Mesh style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }} />
@@ -436,19 +439,18 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         </div>
         )}
       </section>
-
-      {isPageEnabled("worship") && (
-        <Suspense fallback={<SectionSkeleton tinted height={200} />}>
-          <WorshipScheduleSection slug={slug} url={url} />
-        </Suspense>
-      )}
-
-      {isPageEnabled("sermons") && (
-        <Suspense fallback={<SectionSkeleton height={320} />}>
-          <HomeSermonsSection slug={slug} url={url} />
-        </Suspense>
-      )}
-
+    ) : null,
+    worship: isPageEnabled("worship") ? (
+      <Suspense fallback={<SectionSkeleton tinted height={200} />}>
+        <WorshipScheduleSection slug={slug} url={url} />
+      </Suspense>
+    ) : null,
+    sermons: isPageEnabled("sermons") ? (
+      <Suspense fallback={<SectionSkeleton height={320} />}>
+        <HomeSermonsSection slug={slug} url={url} />
+      </Suspense>
+    ) : null,
+    visit: (
       <section className="section section-tinted">
         <div className="container">
           <div className="pray-cta">
@@ -467,10 +469,13 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
           </div>
         </div>
       </section>
-
+    ),
+    pastor: (
       <Suspense fallback={<SectionSkeleton height={280} />}>
         <PastorSection slug={slug} url={url} />
       </Suspense>
-    </div>
-  );
+    ),
+  };
+
+  return <div>{sectionOrder.map((key) => <div key={key}>{sections[key]}</div>)}</div>;
 }

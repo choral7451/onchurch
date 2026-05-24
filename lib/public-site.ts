@@ -16,6 +16,7 @@ export type PublicChurch = {
   businessNo: string | null;
   logoUrl: string | null;
   enabledPages: string[];
+  homeSectionOrder: string[];
   isPublished: boolean;
 };
 

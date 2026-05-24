@@ -1,0 +1,35 @@
+export type HomeSectionKey = "banner" | "hero" | "worship" | "sermons" | "visit" | "pastor";
+
+export const HOME_SECTION_KEYS: readonly HomeSectionKey[] = [
+  "banner",
+  "hero",
+  "worship",
+  "sermons",
+  "visit",
+  "pastor",
+] as const;
+
+export const HOME_SECTION_LABELS: Record<HomeSectionKey, { title: string; desc: string }> = {
+  banner: { title: "상단 배너", desc: "홈 최상단에 노출되는 배너 슬라이드" },
+  hero: { title: "다가오는 일정 · 빠른 이동", desc: "메인 히어로 영역 (이벤트 카드 + 퀵 링크)" },
+  worship: { title: "예배 안내", desc: "주요 예배 일정 카드 묶음" },
+  sermons: { title: "이번 주 말씀", desc: "최근 설교 영상 카드" },
+  visit: { title: "방문 안내", desc: "처음 오시는 분들을 위한 CTA" },
+  pastor: { title: "담임목사 인사", desc: "담임목사 사진과 인사말" },
+};
+
+export function normalizeHomeSectionOrder(input: string[] | null | undefined): HomeSectionKey[] {
+  const valid = new Set<string>(HOME_SECTION_KEYS);
+  const seen = new Set<HomeSectionKey>();
+  const result: HomeSectionKey[] = [];
+  for (const key of input ?? []) {
+    if (valid.has(key) && !seen.has(key as HomeSectionKey)) {
+      result.push(key as HomeSectionKey);
+      seen.add(key as HomeSectionKey);
+    }
+  }
+  for (const key of HOME_SECTION_KEYS) {
+    if (!seen.has(key)) result.push(key);
+  }
+  return result;
+}

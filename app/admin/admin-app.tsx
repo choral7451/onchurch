@@ -35,6 +35,8 @@ import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
 import { InquiryEditor } from "./page-editors/inquiry";
+import { HomeOrderEditor } from "./page-editors/home-order";
+import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 
 type Initial = {
   slug: string;
@@ -79,7 +81,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "site" | "logo" | "contact" | "banners" | "inquiry" | `page:${string}`;
+type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "inquiry" | `page:${string}`;
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -177,6 +179,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
     },
   );
 
+  const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
+
   const [notices, setNotices] = useState<Notice[]>(initial.notices);
   const [noticeCategories, setNoticeCategories] = useState<string[]>(initial.noticeCategories);
   const [events, setEvents] = useState<EventItem[]>(initial.events);
@@ -245,6 +249,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
             for (const k of WORSHIP_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);
           }
+          setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? []));
           setIsPublished(c.isPublished);
           setChurchExistsOnServer(true);
         }
@@ -346,6 +351,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         enabledPages,
+        homeSectionOrder,
       });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -353,6 +359,33 @@ export function AdminApp({ initial }: { initial: Initial }) {
         router.push("/login");
       }
       // 다른 오류는 조용히 무시 — 다음 명시적 저장 시 재시도
+    }
+  }
+
+  async function persistHomeSectionOrder(nextOrder: HomeSectionKey[]) {
+    setHomeSectionOrder(nextOrder);
+    if (!churchExistsOnServer || !slug.trim() || !name.trim()) return;
+    const enabledPages = Object.entries(boards).filter(([, on]) => on).map(([id]) => id);
+    try {
+      await onchurchChurch.upsertMine({
+        slug,
+        name,
+        eng: eng || null,
+        tagline: tagline || null,
+        phone: phone || null,
+        email: email || null,
+        address: address || null,
+        representative: null,
+        businessNo: null,
+        logoUrl: logoPreview || null,
+        enabledPages,
+        homeSectionOrder: nextOrder,
+      });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        clearTokens();
+        router.push("/login");
+      }
     }
   }
 
@@ -406,6 +439,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         enabledPages,
+        homeSectionOrder,
       });
       setIsPublished(updated.isPublished);
       setChurchExistsOnServer(true);
@@ -574,6 +608,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 onClick={() => setActiveSection("banners")}
               >
                 <span className="admin-sidebar-item-label">홈 배너</span>
+                <span className="admin-sidebar-pill optional">선택</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "home-order" ? "active" : ""}`}
+                onClick={() => setActiveSection("home-order")}
+              >
+                <span className="admin-sidebar-item-label">홈 섹션 순서</span>
                 <span className="admin-sidebar-pill optional">선택</span>
               </button>
             </div>
@@ -828,6 +870,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
               )}
 
               {activeSection === "banners" && <BannersEditor />}
+
+              {activeSection === "home-order" && (
+                <HomeOrderEditor order={homeSectionOrder} onChange={(next) => void persistHomeSectionOrder(next)} />
+              )}
 
               {activeSection === "inquiry" && <InquiryEditor />}
 

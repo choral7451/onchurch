@@ -20,6 +20,7 @@ export type Church = {
   businessNo: string | null;
   logoUrl: string | null;
   enabledPages: string[];
+  homeSectionOrder: string[];
   isPublished: boolean;
 };
 
@@ -42,6 +43,7 @@ export type UpsertChurchInput = {
   businessNo?: string | null;
   logoUrl?: string | null;
   enabledPages: string[];
+  homeSectionOrder?: string[];
 };
 
 export class ApiError extends Error {
@@ -296,6 +298,7 @@ export const onchurchChurch = {
         businessNo: input.businessNo ?? null,
         logoUrl: input.logoUrl ?? null,
         enabledPages: input.enabledPages,
+        homeSectionOrder: input.homeSectionOrder ?? [],
       }),
     }),
   publish: (isPublished: boolean) =>
