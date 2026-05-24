@@ -450,7 +450,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
       </Suspense>
     ) : null,
     visit: (
-      <section className="section section-tinted">
+      <section className="section section-tinted section-compact">
         <div className="container">
           <div className="pray-cta">
             <Rings className="pray-cta-bg" style={{ color: "var(--primary)" }} />
