@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ApiError, onchurchBanner, type Banner, type BannerWriteInput } from "@/lib/api-client";
+import { useEffect, useRef, useState } from "react";
+import { ApiError, onchurchBanner, uploadImages, type Banner, type BannerWriteInput } from "@/lib/api-client";
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
@@ -9,12 +9,9 @@ import { applyReorder } from "@/lib/admin-reorder";
 type Status = "idle" | "loading" | "saving" | "deleting";
 
 const EMPTY_INPUT: BannerWriteInput = {
-  title: "",
-  description: "",
   imageUrl: "",
   linkUrl: "",
   sortOrder: 0,
-  isActive: true,
 };
 
 export function BannersEditor() {
@@ -23,6 +20,8 @@ export function BannersEditor() {
   const [errMsg, setErrMsg] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<BannerWriteInput>(EMPTY_INPUT);
+  const [uploading, setUploading] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
   const dragDisabled = editingId !== null || status === "saving" || status === "deleting";
   const { getItemProps } = useDragSort(banners.length, (f, t) => void move(f, t));
 
@@ -51,12 +50,9 @@ export function BannersEditor() {
   function startEdit(banner: Banner) {
     setEditingId(banner.id);
     setDraft({
-      title: banner.title,
-      description: banner.description ?? "",
       imageUrl: banner.imageUrl ?? "",
       linkUrl: banner.linkUrl ?? "",
       sortOrder: banner.sortOrder,
-      isActive: banner.isActive,
     });
   }
 
@@ -64,23 +60,42 @@ export function BannersEditor() {
     setEditingId(null);
     setDraft(EMPTY_INPUT);
     setErrMsg("");
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  }
+
+  async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = Array.from(e.target.files ?? []).find((f) => f.type.startsWith("image/"));
+    if (!file) {
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+    setErrMsg("");
+    setUploading(true);
+    try {
+      const [uploaded] = await uploadImages([file]);
+      if (uploaded?.url) {
+        setDraft((d) => ({ ...d, imageUrl: uploaded.url }));
+      }
+    } catch (err) {
+      setErrMsg(err instanceof ApiError ? err.message : "이미지 업로드에 실패했습니다.");
+    } finally {
+      setUploading(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
   }
 
   async function save() {
-    if (!draft.title.trim()) {
-      setErrMsg("배너 제목은 필수입니다.");
+    if (!draft.imageUrl.trim()) {
+      setErrMsg("배너 이미지는 필수입니다.");
       return;
     }
     setStatus("saving");
     setErrMsg("");
     try {
       const payload: BannerWriteInput = {
-        title: draft.title.trim(),
-        description: draft.description?.trim() || null,
-        imageUrl: draft.imageUrl?.trim() || null,
+        imageUrl: draft.imageUrl.trim(),
         linkUrl: draft.linkUrl?.trim() || null,
         sortOrder: Number(draft.sortOrder) || 0,
-        isActive: !!draft.isActive,
       };
       if (editingId === 0 || editingId === null) {
         await onchurchBanner.create(payload);
@@ -115,12 +130,9 @@ export function BannersEditor() {
     try {
       await applyReorder(banners, fromIndex, toIndex, (it, next) =>
         onchurchBanner.update(it.id, {
-          title: it.title,
-          description: it.description ?? null,
-          imageUrl: it.imageUrl ?? null,
+          imageUrl: it.imageUrl ?? "",
           linkUrl: it.linkUrl ?? null,
           sortOrder: next,
-          isActive: it.isActive,
         }),
       );
       await load();
@@ -149,55 +161,40 @@ export function BannersEditor() {
           <div className="admin-banner-card editing">
             <div className="form-grid">
               <div className="form-row full">
-                <label htmlFor="bn-title">제목 <span className="required-mark" aria-hidden="true">*</span></label>
-                <input
-                  id="bn-title"
-                  type="text"
-                  value={draft.title}
-                  onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-                  placeholder="봄 부흥회 안내"
-                  required
-                />
+                <label>배너 이미지 <span className="required-mark" aria-hidden="true">*</span></label>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                  {draft.imageUrl && (
+                    <div style={{ position: "relative", width: 180, height: 100, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={draft.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <button
+                        type="button"
+                        aria-label="제거"
+                        onClick={() => setDraft((d) => ({ ...d, imageUrl: "" }))}
+                        style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "oklch(0 0 0 / 0.6)", color: "white", border: "none", cursor: "pointer", fontSize: 13, lineHeight: 1, display: "grid", placeItems: "center" }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+                    <input ref={imageInputRef} type="file" accept="image/*" onChange={onPickImage} style={{ display: "none" }} />
+                    <button type="button" className="btn btn-secondary" onClick={() => imageInputRef.current?.click()} disabled={uploading}>
+                      {uploading ? "업로드 중..." : draft.imageUrl ? "이미지 교체" : "이미지 업로드"}
+                    </button>
+                    <span className="form-hint" style={{ fontSize: 12 }}>JPG/PNG · 최대 32MB</span>
+                  </div>
+                </div>
               </div>
               <div className="form-row full">
-                <label htmlFor="bn-desc">설명</label>
-                <input
-                  id="bn-desc"
-                  type="text"
-                  value={draft.description ?? ""}
-                  onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
-                  placeholder="3월 15일 오후 7시 본당"
-                />
-              </div>
-              <div className="form-row">
-                <label htmlFor="bn-image">배경 이미지 URL</label>
-                <input
-                  id="bn-image"
-                  type="url"
-                  value={draft.imageUrl ?? ""}
-                  onChange={(e) => setDraft((d) => ({ ...d, imageUrl: e.target.value }))}
-                  placeholder="https://..."
-                />
-              </div>
-              <div className="form-row">
                 <label htmlFor="bn-link">클릭 시 이동할 URL</label>
                 <input
                   id="bn-link"
                   type="url"
                   value={draft.linkUrl ?? ""}
                   onChange={(e) => setDraft((d) => ({ ...d, linkUrl: e.target.value }))}
-                  placeholder="https://..."
+                  placeholder="https://... (선택)"
                 />
-              </div>
-              <div className="form-row">
-                <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28 }}>
-                  <input
-                    type="checkbox"
-                    checked={draft.isActive}
-                    onChange={(e) => setDraft((d) => ({ ...d, isActive: e.target.checked }))}
-                  />
-                  <span>활성</span>
-                </label>
               </div>
             </div>
 
@@ -205,7 +202,7 @@ export function BannersEditor() {
               <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>
                 취소
               </button>
-              <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.title.trim()}>
+              <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || uploading || !draft.imageUrl.trim()}>
                 {status === "saving" ? "저장 중..." : "저장"}
               </button>
             </div>
@@ -220,19 +217,22 @@ export function BannersEditor() {
           {banners.map((b, idx) => (
             <div
               key={b.id}
-              className={`admin-banner-card ${b.isActive ? "" : "inactive"}`}
+              className="admin-banner-card"
               {...(dragDisabled ? {} : getItemProps(idx))}
             >
               <DragHandle disabled={dragDisabled} />
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
-                  <strong>{b.title}</strong>
-                  <span className={`admin-sidebar-pill ${b.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                    {b.isActive ? "활성" : "비활성"}
-                  </span>
+              {b.imageUrl && (
+                <div style={{ width: 120, height: 68, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)", flexShrink: 0 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={b.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
-                {b.description && <div style={{ color: "var(--muted)", fontSize: 13 }}>{b.description}</div>}
-                {b.linkUrl && <div style={{ color: "var(--muted)", fontSize: 12, marginTop: 2 }}>→ {b.linkUrl}</div>}
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {b.linkUrl ? (
+                  <div style={{ color: "var(--muted)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>→ {b.linkUrl}</div>
+                ) : (
+                  <div style={{ color: "var(--muted)", fontSize: 12 }}>이동 링크 없음</div>
+                )}
               </div>
               <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
                 <button type="button" className="btn btn-ghost" onClick={() => startEdit(b)} disabled={editingId !== null}>

@@ -322,12 +322,9 @@ export type Banner = {
 };
 
 export type BannerWriteInput = {
-  title: string;
-  description?: string | null;
-  imageUrl?: string | null;
+  imageUrl: string;
   linkUrl?: string | null;
   sortOrder: number;
-  isActive: boolean;
 };
 
 export type PublicBanner = {
@@ -347,12 +344,9 @@ export const onchurchBanner = {
       method: "POST",
       auth: true,
       body: JSON.stringify({
-        title: input.title,
-        description: input.description ?? null,
-        imageUrl: input.imageUrl ?? null,
+        imageUrl: input.imageUrl,
         linkUrl: input.linkUrl ?? null,
         sortOrder: input.sortOrder,
-        isActive: input.isActive,
       }),
     }),
   update: (id: number, input: BannerWriteInput) =>
@@ -360,12 +354,9 @@ export const onchurchBanner = {
       method: "PUT",
       auth: true,
       body: JSON.stringify({
-        title: input.title,
-        description: input.description ?? null,
-        imageUrl: input.imageUrl ?? null,
+        imageUrl: input.imageUrl,
         linkUrl: input.linkUrl ?? null,
         sortOrder: input.sortOrder,
-        isActive: input.isActive,
       }),
     }),
   remove: (id: number) =>

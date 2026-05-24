@@ -22,10 +22,12 @@ export function TopBanner({ banners }: { banners: PublicBanner[] }) {
                 : undefined
             }
           >
-            <div className="top-banner-inner">
-              <h2 className="top-banner-title">{b.title}</h2>
-              {b.description && <p className="top-banner-desc">{b.description}</p>}
-            </div>
+            {(b.title || b.description) && (
+              <div className="top-banner-inner">
+                {b.title && <h2 className="top-banner-title">{b.title}</h2>}
+                {b.description && <p className="top-banner-desc">{b.description}</p>}
+              </div>
+            )}
           </div>
         );
         return (
