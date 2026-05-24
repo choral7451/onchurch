@@ -615,7 +615,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 className={`admin-sidebar-item ${activeSection === "home-order" ? "active" : ""}`}
                 onClick={() => setActiveSection("home-order")}
               >
-                <span className="admin-sidebar-item-label">홈 섹션 순서</span>
+                <span className="admin-sidebar-item-label">홈화면 순서</span>
                 <span className="admin-sidebar-pill optional">선택</span>
               </button>
             </div>

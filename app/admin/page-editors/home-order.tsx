@@ -38,7 +38,7 @@ export function HomeOrderEditor({ order, activeKeys, onChange }: Props) {
     <section className="admin-section">
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">HOME ORDER</div>
-        <h2>홈 섹션 순서</h2>
+        <h2>홈화면 순서</h2>
         <p>교회 홈페이지 메인에 노출되는 섹션의 순서를 드래그하여 바꿀 수 있습니다. 사이드바에서 OFF로 꺼둔 섹션은 여기 표시되지 않습니다.</p>
       </div>
 
