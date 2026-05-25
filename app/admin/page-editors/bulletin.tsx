@@ -789,6 +789,7 @@ function BulletinPageNewsVolunteers({ church, draft, qrDataUrl }: { church: Chur
 
 const BULLETIN_CSS = `
 .bulletin-portal {
+  --accent: #57818c; --accent-weak: rgba(87,129,140,.13);
   position: fixed; inset: 0; z-index: 9999;
   background: #5b5e66; overflow: auto;
   display: flex; flex-direction: column; align-items: center;
@@ -830,11 +831,11 @@ const BULLETIN_CSS = `
 /* 면 공통 */
 .bf { width: 100%; height: 100%; display: flex; flex-direction: column; }
 .bf-eyebrow {
-  font-size: 9pt; letter-spacing: .18em; color: #8a8d94;
+  font-size: 9pt; letter-spacing: .18em; color: var(--accent); font-weight: 700;
   text-transform: uppercase; margin-bottom: 4mm;
-  border-bottom: 1px solid #e3e5e9; padding-bottom: 2mm;
+  border-bottom: 1.4px solid var(--accent); padding-bottom: 2mm;
 }
-.bf-title { font-size: 15pt; font-weight: 700; margin: 0 0 4mm; letter-spacing: -.01em; }
+.bf-title { font-size: 15pt; font-weight: 700; margin: 0 0 4mm; letter-spacing: -.01em; color: var(--accent); }
 .bf-empty { color: #aaadb4; font-size: 10pt; }
 
 /* 표지 */
@@ -849,10 +850,11 @@ const BULLETIN_CSS = `
 .bf-cover-card {
   position: relative; z-index: 1; width: 112mm; max-width: 82%;
   background: #fff; border-radius: 4mm; padding: 13mm 11mm;
+  border-top: 2.2mm solid var(--accent);
   display: flex; flex-direction: column; align-items: center; gap: 3.5mm; text-align: center;
   box-shadow: 0 4mm 14mm rgba(0,0,0,.30);
 }
-.bf-cover-issue { font-size: 8.5pt; font-weight: 600; letter-spacing: .12em; color: #8a8d94; }
+.bf-cover-issue { font-size: 8.5pt; font-weight: 600; letter-spacing: .12em; color: var(--accent); }
 .bf-cover-title { display: flex; align-items: center; justify-content: center; gap: 4mm; }
 .bf-cover-logo { width: 16mm; height: 16mm; object-fit: contain; flex-shrink: 0; }
 .bf-cover-titletext { text-align: left; }
@@ -860,23 +862,23 @@ const BULLETIN_CSS = `
 .bf-church-eng { font-size: 8pt; letter-spacing: .2em; color: #8a8d94; text-transform: uppercase; margin-top: 1mm; }
 .bf-cover-tagline { font-size: 9.5pt; color: #4a4d54; line-height: 1.45; }
 .bf-date {
-  font-size: 10.5pt; font-weight: 600; color: #2f3137;
-  border: 1px solid #d7dade; border-radius: 999px; padding: 1.4mm 6mm;
+  font-size: 10.5pt; font-weight: 600; color: #fff; background: var(--accent);
+  border: 1px solid var(--accent); border-radius: 999px; padding: 1.4mm 6mm;
 }
-.bf-cover-divider { width: 16mm; height: 1px; background: #e0e2e6; margin: 1mm 0; }
+.bf-cover-divider { width: 18mm; height: 1.2px; background: var(--accent); margin: 1mm 0; }
 .bf-cover-verse { text-align: center; }
 .bf-cover-verse-text { font-size: 10.5pt; line-height: 1.6; color: #2f3137; font-weight: 500; white-space: pre-wrap; }
-.bf-cover-verse-ref { margin-top: 2mm; font-size: 8.5pt; color: #8a8d94; font-weight: 600; }
+.bf-cover-verse-ref { margin-top: 2mm; font-size: 8.5pt; color: var(--accent); font-weight: 600; }
 /* 예배 순서 (3컬럼: 순서 | 찬송·본문 | 인도자) */
 .bf-order { width: 100%; border-collapse: collapse; margin-top: 2mm; }
-.bf-order td { padding: 2mm 1.5mm; font-size: 10.5pt; vertical-align: top; border-bottom: 1px solid #ebedf0; }
+.bf-order td { padding: 2mm 1.5mm; font-size: 10.5pt; vertical-align: top; border-bottom: 1px solid var(--accent-weak); }
 .bf-order-c1 { font-weight: 600; color: #1c1d21; width: 40%; }
 .bf-order-c2 { color: #4a4d54; text-align: center; }
 .bf-order-c3 { color: #4a4d54; text-align: right; width: 26%; white-space: nowrap; }
 
 /* key-value 표 (예배시간/섬기는분들) */
 .bf-kv { width: 100%; border-collapse: collapse; }
-.bf-kv td { padding: 1.6mm 0; font-size: 10pt; vertical-align: top; border-bottom: 1px dotted #e3e5e9; }
+.bf-kv td { padding: 1.6mm 0; font-size: 10pt; vertical-align: top; border-bottom: 1px solid var(--accent-weak); }
 .bf-kv-k { font-weight: 600; width: 45%; }
 .bf-kv-v { text-align: right; color: #4a4d54; }
 .bf-kv-meta { color: #8a8d94; }
@@ -884,19 +886,19 @@ const BULLETIN_CSS = `
 /* 소식 */
 .bf-news { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3mm; }
 .bf-news-title { font-weight: 600; font-size: 10.5pt; }
-.bf-news-title::before { content: "• "; color: #8a8d94; }
+.bf-news-title::before { content: "• "; color: var(--accent); }
 .bf-news-body { font-size: 9.5pt; color: #4a4d54; line-height: 1.5; margin-top: .5mm; white-space: pre-wrap; }
 
 /* 봉사위원 표 */
 .bf-vol { width: 100%; border-collapse: collapse; }
-.bf-vol td { padding: 1.8mm 2mm; font-size: 10pt; border: 1px solid #e3e5e9; }
-.bf-vol-k { font-weight: 600; width: 38%; background: #f6f7f9; }
+.bf-vol td { padding: 1.8mm 2mm; font-size: 10pt; border: 1px solid var(--accent-weak); }
+.bf-vol-k { font-weight: 600; width: 38%; background: var(--accent-weak); color: var(--accent); }
 
 /* 4면 하단 — 오시는 길/연락처/위치이미지/QR */
 .bf-info { margin-top: auto; border-top: 1px solid #e3e5e9; padding-top: 3mm; display: flex; gap: 3.5mm; align-items: center; }
 .bf-info-loc { width: 30mm; height: 22mm; object-fit: cover; border-radius: 1.5mm; border: 1px solid #e3e5e9; flex-shrink: 0; }
 .bf-info-text { flex: 1; font-size: 8pt; line-height: 1.6; color: #4a4d54; }
-.bf-info-title { font-size: 9pt; font-weight: 700; color: #1c1d21; margin-bottom: 1mm; }
+.bf-info-title { font-size: 9pt; font-weight: 700; color: var(--accent); margin-bottom: 1mm; }
 .bf-info-qr { display: flex; flex-direction: column; align-items: center; gap: .5mm; flex-shrink: 0; }
 .bf-info-qr img { width: 19mm; height: 19mm; }
 .bf-info-qr span { font-size: 6.5pt; color: #8a8d94; }
