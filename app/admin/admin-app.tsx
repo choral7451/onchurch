@@ -36,6 +36,7 @@ import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
 import { InquiryEditor } from "./page-editors/inquiry";
 import { HomeOrderEditor } from "./page-editors/home-order";
+import { BulletinEditor } from "./page-editors/bulletin";
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 
 type Initial = {
@@ -81,7 +82,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "inquiry" | `page:${string}`;
+type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "inquiry" | `page:${string}`;
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -621,6 +622,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
 
             <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">도구</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "bulletin" ? "active" : ""}`}
+                onClick={() => setActiveSection("bulletin")}
+              >
+                <span className="admin-sidebar-item-label">주보 만들기</span>
+                <span className="admin-sidebar-pill optional">PDF</span>
+              </button>
+            </div>
+
+            <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">도움말</div>
               <button
                 type="button"
@@ -886,6 +899,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   onChange={(next) => void persistHomeSectionOrder(next)}
                 />
               )}
+
+              {activeSection === "bulletin" && <BulletinEditor />}
 
               {activeSection === "inquiry" && <InquiryEditor />}
 

@@ -759,6 +759,45 @@ export const onchurchWorshipOrder = {
     request<unknown>(`/onchurch/worship-orders/me/${id}`, { method: "DELETE", auth: true }),
 };
 
+// ── 주보 (Bulletin) ─────────────────────────────────────────────
+export type BulletinWorshipOrderItem = { no: string; item: string; leader: string | null };
+export type BulletinWorshipServiceItem = { name: string; time: string; meta: string | null };
+export type BulletinStaffItem = { name: string; role: string | null; area: string | null };
+export type BulletinNewsItem = { title: string; content: string | null };
+export type BulletinVolunteerItem = { key: string; value: string };
+
+export type Bulletin = {
+  id: number;
+  templateId: string;
+  serviceDate: string | null;
+  locationImageUrl: string | null;
+  worshipOrder: BulletinWorshipOrderItem[];
+  worshipServices: BulletinWorshipServiceItem[];
+  staff: BulletinStaffItem[];
+  news: BulletinNewsItem[];
+  volunteers: BulletinVolunteerItem[];
+};
+
+export type BulletinWriteInput = {
+  templateId?: string;
+  serviceDate: string | null;
+  locationImageUrl: string | null;
+  worshipOrder: BulletinWorshipOrderItem[];
+  worshipServices: BulletinWorshipServiceItem[];
+  staff: BulletinStaffItem[];
+  news: BulletinNewsItem[];
+  volunteers: BulletinVolunteerItem[];
+};
+
+export const onchurchBulletin = {
+  getMine: () =>
+    request<{ bulletin: Bulletin | null }>("/onchurch/bulletins/me", { method: "GET", auth: true }).then(
+      (r) => r.bulletin,
+    ),
+  upsertMine: (input: BulletinWriteInput) =>
+    request<Bulletin>("/onchurch/bulletins/me", { method: "PUT", auth: true, body: JSON.stringify(input) }),
+};
+
 export type SermonSeriesItem = {
   id: number;
   name: string;
