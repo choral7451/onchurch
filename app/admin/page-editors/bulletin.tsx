@@ -131,7 +131,7 @@ export function BulletinEditor() {
           .map((s) => ({ name: s.name, time: s.time, meta: s.meta })),
         worshipOrder: orders
           .filter((o) => o.isActive)
-          .map((o) => ({ no: o.no, item: o.item, leader: o.leader })),
+          .map((o) => ({ item: o.item, detail: "", leader: o.leader })),
         staff: staff
           .filter((s) => s.isActive)
           .map((s) => ({ name: s.name, role: s.role, area: s.area })),
@@ -269,14 +269,14 @@ export function BulletinEditor() {
         {/* 예배 순서 */}
         <ListBlock
           title="예배 순서"
-          hint="순서·항목·맡은 분 (예: 1 · 묵도 · 다같이)"
+          hint="순서 · 찬송/본문 · 인도자"
           items={draft.worshipOrder}
           onChange={(next) => setDraft({ ...draft, worshipOrder: next })}
-          empty={{ no: "", item: "", leader: "" }}
+          empty={{ item: "", detail: "", leader: "" }}
           columns={[
-            { key: "no", label: "순서", placeholder: "1", width: 70 },
-            { key: "item", label: "항목", placeholder: "묵도", flex: 1 },
-            { key: "leader", label: "맡은 분", placeholder: "다같이", flex: 1 },
+            { key: "item", label: "순서", placeholder: "예배의 부름", flex: 1 },
+            { key: "detail", label: "찬송·본문", placeholder: "찬송가 1장", flex: 1 },
+            { key: "leader", label: "인도자", placeholder: "인도자", width: 120 },
           ]}
         />
 
@@ -604,16 +604,20 @@ function BulletinPreviewOverlay({
       {/* 인쇄 영역 */}
       <div className="bulletin-print-root">
         {/* 종이 바깥면: [면4 뒷표지 | 면1 표지] */}
-        <div className="bulletin-sheet">
-          <div className="bulletin-face">{newsVolunteers}</div>
-          <div className="bulletin-fold" />
-          <div className="bulletin-face">{front}</div>
+        <div className="bulletin-sheet-wrap">
+          <div className="bulletin-sheet">
+            <div className="bulletin-face">{newsVolunteers}</div>
+            <div className="bulletin-fold" />
+            <div className="bulletin-face">{front}</div>
+          </div>
         </div>
         {/* 종이 안쪽면: [면2 | 면3] */}
-        <div className="bulletin-sheet">
-          <div className="bulletin-face">{order}</div>
-          <div className="bulletin-fold" />
-          <div className="bulletin-face">{worshipStaff}</div>
+        <div className="bulletin-sheet-wrap">
+          <div className="bulletin-sheet">
+            <div className="bulletin-face">{order}</div>
+            <div className="bulletin-fold" />
+            <div className="bulletin-face">{worshipStaff}</div>
+          </div>
         </div>
       </div>
     </div>,
@@ -642,14 +646,16 @@ function BulletinPageFront({ church, draft }: { church: Church; draft: Draft }) 
         </div>
         {church.tagline && <div className="bf-cover-tagline">{church.tagline}</div>}
         {draft.serviceDate && <div className="bf-date">{draft.serviceDate}</div>}
+        {(draft.coverVerse || draft.coverVerseRef) && (
+          <>
+            <div className="bf-cover-divider" />
+            <div className="bf-cover-verse">
+              {draft.coverVerse && <div className="bf-cover-verse-text">{draft.coverVerse}</div>}
+              {draft.coverVerseRef && <div className="bf-cover-verse-ref">— {draft.coverVerseRef}</div>}
+            </div>
+          </>
+        )}
       </div>
-
-      {(draft.coverVerse || draft.coverVerseRef) && (
-        <div className="bf-cover-verse">
-          {draft.coverVerse && <div className="bf-cover-verse-text">{draft.coverVerse}</div>}
-          {draft.coverVerseRef && <div className="bf-cover-verse-ref">— {draft.coverVerseRef}</div>}
-        </div>
-      )}
     </div>
   );
 }
@@ -666,9 +672,25 @@ function BulletinPageOrder({ draft }: { draft: Draft }) {
           <tbody>
             {draft.worshipOrder.map((o, i) => (
               <tr key={i}>
-                <td className="bf-order-no">{o.no}</td>
-                <td className="bf-order-item">{o.item}</td>
-                <td className="bf-order-leader">{o.leader}</td>
+                <td className="bf-order-c1">{o.item}</td>
+                <td className="bf-order-c2">{o.detail}</td>
+                <td className="bf-order-c3">{o.leader}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <h2 className="bf-title" style={{ marginTop: "8mm" }}>봉사위원</h2>
+      {draft.volunteers.length === 0 ? (
+        <p className="bf-empty">봉사위원이 입력되지 않았습니다.</p>
+      ) : (
+        <table className="bf-vol">
+          <tbody>
+            {draft.volunteers.map((v, i) => (
+              <tr key={i}>
+                <td className="bf-vol-k">{v.key}</td>
+                <td className="bf-vol-v">{v.value}</td>
               </tr>
             ))}
           </tbody>
@@ -741,24 +763,6 @@ function BulletinPageNewsVolunteers({ church, draft, qrDataUrl }: { church: Chur
         </ul>
       )}
 
-      <h2 className="bf-title" style={{ marginTop: "8mm" }}>
-        봉사위원
-      </h2>
-      {draft.volunteers.length === 0 ? (
-        <p className="bf-empty">봉사위원이 입력되지 않았습니다.</p>
-      ) : (
-        <table className="bf-vol">
-          <tbody>
-            {draft.volunteers.map((v, i) => (
-              <tr key={i}>
-                <td className="bf-vol-k">{v.key}</td>
-                <td className="bf-vol-v">{v.value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
       <div className="bf-info">
         {draft.locationImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -799,16 +803,18 @@ const BULLETIN_CSS = `
 .bulletin-toolbar-actions { margin-left: auto; display: flex; gap: 8px; flex-shrink: 0; }
 
 .bulletin-print-root {
-  display: flex; flex-direction: column; align-items: center; gap: 24px;
-  padding: 28px 12px 60px;
+  display: flex; flex-direction: column; align-items: center; gap: 22px;
+  padding: 26px 12px 60px;
+}
+/* 화면 미리보기: 래퍼를 축소된 크기로 잡고 시트를 scale → 레이아웃 깨짐 없음 */
+.bulletin-sheet-wrap {
+  width: 184.14mm; height: 130.2mm; overflow: hidden; flex-shrink: 0;
+  background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 .bulletin-sheet {
   width: 297mm; height: 210mm; flex-shrink: 0;
   display: flex; background: #fff;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-  /* 화면 미리보기에서 A4가 크므로 축소 */
-  transform: scale(0.66); transform-origin: top center;
-  margin-bottom: -68mm; /* scale로 생긴 빈 공간 보정 */
+  transform: scale(0.62); transform-origin: top left;
 }
 .bulletin-fold {
   width: 0; border-left: 1px dashed #c9ccd2; flex-shrink: 0;
@@ -832,40 +838,41 @@ const BULLETIN_CSS = `
 .bf-empty { color: #aaadb4; font-size: 10pt; }
 
 /* 표지 */
-/* 표지(1면) — 배경 이미지 풀블리드 + 하단 스크림에 로고·교회명 가로 배치 */
+/* 표지(1면) — 배경 이미지 풀블리드 + 어두운 오버레이 위 가운데 흰 카드 */
 .bf-cover {
   position: absolute; inset: 0; padding: 0;
   background-size: cover; background-position: center; background-repeat: no-repeat;
-  background-color: #1c1d21; color: #1c1d21; justify-content: flex-start; align-items: stretch; text-align: center;
+  background-color: #1c1d21; color: #1c1d21;
+  display: flex; align-items: center; justify-content: center;
 }
+.bf-cover::before { content: ""; position: absolute; inset: 0; background: rgba(16,17,21,.34); }
 .bf-cover-card {
-  margin: 12mm 11mm 0; background: #fff; border-radius: 3mm; padding: 8mm 7mm;
-  display: flex; flex-direction: column; align-items: center; gap: 4mm;
-  box-shadow: 0 2mm 7mm rgba(0,0,0,.20);
+  position: relative; z-index: 1; width: 112mm; max-width: 82%;
+  background: #fff; border-radius: 4mm; padding: 13mm 11mm;
+  display: flex; flex-direction: column; align-items: center; gap: 3.5mm; text-align: center;
+  box-shadow: 0 4mm 14mm rgba(0,0,0,.30);
 }
-.bf-cover-issue { font-size: 8.5pt; font-weight: 600; letter-spacing: .08em; color: #8a8d94; }
-.bf-cover-title { display: flex; align-items: center; gap: 4mm; }
-.bf-cover-logo { width: 17mm; height: 17mm; object-fit: contain; flex-shrink: 0; }
+.bf-cover-issue { font-size: 8.5pt; font-weight: 600; letter-spacing: .12em; color: #8a8d94; }
+.bf-cover-title { display: flex; align-items: center; justify-content: center; gap: 4mm; }
+.bf-cover-logo { width: 16mm; height: 16mm; object-fit: contain; flex-shrink: 0; }
 .bf-cover-titletext { text-align: left; }
 .bf-church-name { font-size: 21pt; font-weight: 800; margin: 0; letter-spacing: -.02em; color: #1c1d21; line-height: 1.12; }
 .bf-church-eng { font-size: 8pt; letter-spacing: .2em; color: #8a8d94; text-transform: uppercase; margin-top: 1mm; }
-.bf-cover-tagline { font-size: 9.5pt; color: #4a4d54; line-height: 1.45; max-width: 105mm; }
+.bf-cover-tagline { font-size: 9.5pt; color: #4a4d54; line-height: 1.45; }
 .bf-date {
-  font-size: 11pt; font-weight: 600; color: #2f3137;
+  font-size: 10.5pt; font-weight: 600; color: #2f3137;
   border: 1px solid #d7dade; border-radius: 999px; padding: 1.4mm 6mm;
 }
-.bf-cover-verse {
-  margin: auto 11mm 13mm; background: rgba(255,255,255,.93); border-radius: 3mm;
-  padding: 6mm 7mm; box-shadow: 0 2mm 7mm rgba(0,0,0,.18); text-align: center;
-}
-.bf-cover-verse-text { font-size: 11pt; line-height: 1.6; color: #1c1d21; font-weight: 500; white-space: pre-wrap; }
-.bf-cover-verse-ref { margin-top: 2.5mm; font-size: 9pt; color: #8a8d94; font-weight: 600; }
-/* 예배 순서 */
-.bf-order { width: 100%; border-collapse: collapse; }
-.bf-order td { padding: 1.8mm 0; font-size: 10.5pt; vertical-align: top; border-bottom: 1px dotted #e3e5e9; }
-.bf-order-no { width: 10mm; color: #8a8d94; font-variant-numeric: tabular-nums; }
-.bf-order-item { font-weight: 600; }
-.bf-order-leader { text-align: right; color: #4a4d54; font-size: 9.5pt; }
+.bf-cover-divider { width: 16mm; height: 1px; background: #e0e2e6; margin: 1mm 0; }
+.bf-cover-verse { text-align: center; }
+.bf-cover-verse-text { font-size: 10.5pt; line-height: 1.6; color: #2f3137; font-weight: 500; white-space: pre-wrap; }
+.bf-cover-verse-ref { margin-top: 2mm; font-size: 8.5pt; color: #8a8d94; font-weight: 600; }
+/* 예배 순서 (3컬럼: 순서 | 찬송·본문 | 인도자) */
+.bf-order { width: 100%; border-collapse: collapse; margin-top: 2mm; }
+.bf-order td { padding: 2mm 1.5mm; font-size: 10.5pt; vertical-align: top; border-bottom: 1px solid #ebedf0; }
+.bf-order-c1 { font-weight: 600; color: #1c1d21; width: 40%; }
+.bf-order-c2 { color: #4a4d54; text-align: center; }
+.bf-order-c3 { color: #4a4d54; text-align: right; width: 26%; white-space: nowrap; }
 
 /* key-value 표 (예배시간/섬기는분들) */
 .bf-kv { width: 100%; border-collapse: collapse; }
@@ -898,11 +905,12 @@ const BULLETIN_CSS = `
   .bulletin-portal { position: static; background: #fff; overflow: visible; display: block; }
   .bulletin-toolbar { display: none; }
   .bulletin-print-root { display: block; padding: 0; gap: 0; }
-  .bulletin-sheet {
-    transform: none; margin: 0; box-shadow: none;
+  .bulletin-sheet-wrap {
+    width: auto; height: auto; overflow: visible; box-shadow: none;
     page-break-after: always; break-after: page;
   }
-  .bulletin-sheet:last-child { page-break-after: auto; break-after: auto; }
+  .bulletin-sheet-wrap:last-child { page-break-after: auto; break-after: auto; }
+  .bulletin-sheet { transform: none; margin: 0; box-shadow: none; }
   .bulletin-fold { border-left: none; }
   /* 인쇄 시 주보 외 화면 요소 숨김 */
   body > *:not(.bulletin-portal) { display: none !important; }

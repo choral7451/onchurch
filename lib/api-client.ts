@@ -760,7 +760,7 @@ export const onchurchWorshipOrder = {
 };
 
 // ── 주보 (Bulletin) ─────────────────────────────────────────────
-export type BulletinWorshipOrderItem = { no: string; item: string; leader: string | null };
+export type BulletinWorshipOrderItem = { item: string; detail: string | null; leader: string | null };
 export type BulletinWorshipServiceItem = { name: string; time: string; meta: string | null };
 export type BulletinStaffItem = { name: string; role: string | null; area: string | null };
 export type BulletinNewsItem = { title: string; content: string | null };
