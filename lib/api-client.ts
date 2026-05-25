@@ -771,6 +771,9 @@ export type Bulletin = {
   templateId: string;
   serviceDate: string | null;
   locationImageUrl: string | null;
+  issueNo: string | null;
+  coverVerse: string | null;
+  coverVerseRef: string | null;
   worshipOrder: BulletinWorshipOrderItem[];
   worshipServices: BulletinWorshipServiceItem[];
   staff: BulletinStaffItem[];
@@ -782,6 +785,9 @@ export type BulletinWriteInput = {
   templateId?: string;
   serviceDate: string | null;
   locationImageUrl: string | null;
+  issueNo: string | null;
+  coverVerse: string | null;
+  coverVerseRef: string | null;
   worshipOrder: BulletinWorshipOrderItem[];
   worshipServices: BulletinWorshipServiceItem[];
   staff: BulletinStaffItem[];

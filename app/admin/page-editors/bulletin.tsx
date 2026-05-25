@@ -25,6 +25,9 @@ type Status = "loading" | "idle" | "saving";
 type Draft = {
   serviceDate: string;
   locationImageUrl: string | null;
+  issueNo: string;
+  coverVerse: string;
+  coverVerseRef: string;
   worshipOrder: BulletinWorshipOrderItem[];
   worshipServices: BulletinWorshipServiceItem[];
   staff: BulletinStaffItem[];
@@ -35,6 +38,9 @@ type Draft = {
 const EMPTY_DRAFT: Draft = {
   serviceDate: "",
   locationImageUrl: null,
+  issueNo: "",
+  coverVerse: "",
+  coverVerseRef: "",
   worshipOrder: [],
   worshipServices: [],
   staff: [],
@@ -88,6 +94,9 @@ export function BulletinEditor() {
         setDraft({
           serviceDate: bulletin.serviceDate ?? "",
           locationImageUrl: bulletin.locationImageUrl,
+          issueNo: bulletin.issueNo ?? "",
+          coverVerse: bulletin.coverVerse ?? "",
+          coverVerseRef: bulletin.coverVerseRef ?? "",
           worshipOrder: bulletin.worshipOrder ?? [],
           worshipServices: bulletin.worshipServices ?? [],
           staff: bulletin.staff ?? [],
@@ -149,6 +158,9 @@ export function BulletinEditor() {
         templateId: "classic",
         serviceDate: draft.serviceDate.trim() || null,
         locationImageUrl: draft.locationImageUrl,
+        issueNo: draft.issueNo.trim() || null,
+        coverVerse: draft.coverVerse.trim() || null,
+        coverVerseRef: draft.coverVerseRef.trim() || null,
         worshipOrder: draft.worshipOrder,
         worshipServices: draft.worshipServices,
         staff: draft.staff,
@@ -201,7 +213,7 @@ export function BulletinEditor() {
           }}
         >
           <span>
-            표지의 <strong>로고·교회명·연락처·홈페이지 QR</strong>은 기본 정보에 저장된 값을 그대로 사용합니다.
+            표지의 <strong>로고·교회명·교회 표어</strong>는 기본 정보에 저장된 값을 사용합니다. <strong>연락처·위치·홈페이지 QR</strong>은 마지막 면에 표시됩니다.
           </span>
           <button type="button" className="btn btn-secondary" style={{ marginLeft: "auto" }} onClick={() => void fillFromSite()}>
             현재 사이트 정보로 다시 채우기
@@ -215,6 +227,36 @@ export function BulletinEditor() {
               value={draft.serviceDate}
               onChange={(e) => setDraft({ ...draft, serviceDate: e.target.value })}
               placeholder="예: 2026년 5월 31일 주일"
+            />
+          </div>
+        </FieldBlock>
+
+        {/* 주보 호수 */}
+        <FieldBlock title="주보 호수" hint="표지에 표시됩니다. 예: 제 1234 호">
+          <div className="form-row">
+            <input
+              value={draft.issueNo}
+              onChange={(e) => setDraft({ ...draft, issueNo: e.target.value })}
+              placeholder="제 1234 호"
+            />
+          </div>
+        </FieldBlock>
+
+        {/* 금주의 말씀 */}
+        <FieldBlock title="금주의 말씀" hint="표지에 들어갈 성경 구절과 출처">
+          <div className="form-row full">
+            <textarea
+              rows={2}
+              value={draft.coverVerse}
+              onChange={(e) => setDraft({ ...draft, coverVerse: e.target.value })}
+              placeholder="태초에 하나님이 천지를 창조하시니라"
+            />
+          </div>
+          <div className="form-row">
+            <input
+              value={draft.coverVerseRef}
+              onChange={(e) => setDraft({ ...draft, coverVerseRef: e.target.value })}
+              placeholder="창세기 1:1"
             />
           </div>
         </FieldBlock>
@@ -587,6 +629,7 @@ function BulletinPageFront({ church, draft }: { church: Church; draft: Draft }) 
   return (
     <div className="bf bf-cover" style={{ backgroundImage: `url("${COVER_BG_URL}")` }}>
       <div className="bf-cover-card">
+        {draft.issueNo && <div className="bf-cover-issue">{draft.issueNo}</div>}
         <div className="bf-cover-title">
           {church.logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -597,8 +640,16 @@ function BulletinPageFront({ church, draft }: { church: Church; draft: Draft }) 
             {church.eng && <div className="bf-church-eng">{church.eng}</div>}
           </div>
         </div>
+        {church.tagline && <div className="bf-cover-tagline">{church.tagline}</div>}
         {draft.serviceDate && <div className="bf-date">{draft.serviceDate}</div>}
       </div>
+
+      {(draft.coverVerse || draft.coverVerseRef) && (
+        <div className="bf-cover-verse">
+          {draft.coverVerse && <div className="bf-cover-verse-text">{draft.coverVerse}</div>}
+          {draft.coverVerseRef && <div className="bf-cover-verse-ref">— {draft.coverVerseRef}</div>}
+        </div>
+      )}
     </div>
   );
 }
@@ -792,15 +843,23 @@ const BULLETIN_CSS = `
   display: flex; flex-direction: column; align-items: center; gap: 4mm;
   box-shadow: 0 2mm 7mm rgba(0,0,0,.20);
 }
+.bf-cover-issue { font-size: 8.5pt; font-weight: 600; letter-spacing: .08em; color: #8a8d94; }
 .bf-cover-title { display: flex; align-items: center; gap: 4mm; }
 .bf-cover-logo { width: 17mm; height: 17mm; object-fit: contain; flex-shrink: 0; }
 .bf-cover-titletext { text-align: left; }
 .bf-church-name { font-size: 21pt; font-weight: 800; margin: 0; letter-spacing: -.02em; color: #1c1d21; line-height: 1.12; }
 .bf-church-eng { font-size: 8pt; letter-spacing: .2em; color: #8a8d94; text-transform: uppercase; margin-top: 1mm; }
+.bf-cover-tagline { font-size: 9.5pt; color: #4a4d54; line-height: 1.45; max-width: 105mm; }
 .bf-date {
   font-size: 11pt; font-weight: 600; color: #2f3137;
   border: 1px solid #d7dade; border-radius: 999px; padding: 1.4mm 6mm;
 }
+.bf-cover-verse {
+  margin: auto 11mm 13mm; background: rgba(255,255,255,.93); border-radius: 3mm;
+  padding: 6mm 7mm; box-shadow: 0 2mm 7mm rgba(0,0,0,.18); text-align: center;
+}
+.bf-cover-verse-text { font-size: 11pt; line-height: 1.6; color: #1c1d21; font-weight: 500; white-space: pre-wrap; }
+.bf-cover-verse-ref { margin-top: 2.5mm; font-size: 9pt; color: #8a8d94; font-weight: 600; }
 /* 예배 순서 */
 .bf-order { width: 100%; border-collapse: collapse; }
 .bf-order td { padding: 1.8mm 0; font-size: 10.5pt; vertical-align: top; border-bottom: 1px dotted #e3e5e9; }
