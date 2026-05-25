@@ -44,6 +44,10 @@ const EMPTY_DRAFT: Draft = {
 
 const ROOT_DOMAIN = "everychurch.co.kr";
 
+// 표지(1면) 배경 이미지
+const COVER_BG_URL =
+  "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260525/original/_AwGPQPG4Cz.1779695879547.jpeg";
+
 function homepageUrl(slug: string): string {
   return `https://${slug}.${ROOT_DOMAIN}`;
 }
@@ -531,10 +535,10 @@ function BulletinPreviewOverlay({
     };
   }, []);
 
-  const front = <BulletinPageFront church={church} draft={draft} qrDataUrl={qrDataUrl} />;
+  const front = <BulletinPageFront church={church} draft={draft} />;
   const order = <BulletinPageOrder draft={draft} />;
   const worshipStaff = <BulletinPageWorshipStaff draft={draft} />;
-  const newsVolunteers = <BulletinPageNewsVolunteers draft={draft} />;
+  const newsVolunteers = <BulletinPageNewsVolunteers church={church} draft={draft} qrDataUrl={qrDataUrl} />;
 
   return createPortal(
     <div className="bulletin-portal">
@@ -579,105 +583,21 @@ function FaceHeader({ label }: { label: string }) {
   return <div className="bf-eyebrow">{label}</div>;
 }
 
-// 표지용 기독교/교회 라인아트 일러스트 (첨두아치 창 + 십자가). 인쇄/PDF용 벡터.
-function CoverArtwork() {
+function BulletinPageFront({ church, draft }: { church: Church; draft: Draft }) {
   return (
-    <svg
-      className="bf-cover-art"
-      viewBox="0 0 200 282"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-label="교회 일러스트"
-    >
-      {/* 빛줄기 */}
-      <g stroke="#c7cbd1" strokeWidth="1.4" strokeLinecap="round">
-        <line x1="100" y1="4" x2="100" y2="18" />
-        <line x1="68" y1="10" x2="79" y2="22" />
-        <line x1="132" y1="10" x2="121" y2="22" />
-        <line x1="44" y1="24" x2="60" y2="33" />
-        <line x1="156" y1="24" x2="140" y2="33" />
-      </g>
-
-      {/* 창 안쪽 채움 */}
-      <path d="M30,250 L30,116 Q30,48 100,30 Q170,48 170,116 L170,250 Z" fill="#eef0f3" />
-
-      {/* 창 외곽 프레임 */}
-      <path
-        d="M24,252 L24,114 Q24,40 100,24 Q176,40 176,114 L176,252 Z"
-        stroke="#3a3d44"
-        strokeWidth="3"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M34,250 L34,116 Q34,50 100,33 Q166,50 166,116 L166,250 Z"
-        stroke="#3a3d44"
-        strokeWidth="1.3"
-        strokeLinejoin="round"
-      />
-
-      {/* 트레이서리(창살) */}
-      <g stroke="#9aa0a8" strokeWidth="1.2">
-        <line x1="100" y1="150" x2="100" y2="250" />
-        <line x1="38" y1="158" x2="162" y2="158" />
-        <line x1="38" y1="206" x2="162" y2="206" />
-        <line x1="69" y1="158" x2="69" y2="250" />
-        <line x1="131" y1="158" x2="131" y2="250" />
-      </g>
-
-      {/* 십자가 */}
-      <g fill="#3a3d44">
-        <rect x="94" y="62" width="12" height="66" rx="1.5" />
-        <rect x="77" y="84" width="46" height="12" rx="1.5" />
-      </g>
-
-      {/* 받침 단 */}
-      <g stroke="#3a3d44" strokeWidth="2.2" strokeLinejoin="round">
-        <rect x="16" y="252" width="168" height="9" fill="#eef0f3" />
-        <rect x="8" y="261" width="184" height="10" fill="#ffffff" />
-      </g>
-    </svg>
-  );
-}
-
-function BulletinPageFront({ church, draft, qrDataUrl }: { church: Church; draft: Draft; qrDataUrl: string }) {
-  const url = `${church.slug}.${ROOT_DOMAIN}`;
-  return (
-    <div className="bf bf-cover">
-      <div className="bf-cover-top">
-        {church.logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="bf-logo" src={church.logoUrl} alt="" />
-        )}
-        <h1 className="bf-church-name">{church.name}</h1>
-        {church.eng && <div className="bf-church-eng">{church.eng}</div>}
-        {draft.serviceDate && <div className="bf-date">{draft.serviceDate}</div>}
-      </div>
-
-      <div className="bf-cover-hero">
-        <CoverArtwork />
-      </div>
-
-      {draft.locationImageUrl && (
-        <div className="bf-loc">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={draft.locationImageUrl} alt="교회 위치" />
-        </div>
-      )}
-
-      <div className="bf-cover-bottom">
-        <div className="bf-contact">
-          {church.address && <div>{church.address}</div>}
-          {church.phone && <div>Tel. {church.phone}</div>}
-          {church.email && <div>{church.email}</div>}
-        </div>
-        <div className="bf-qr">
-          {qrDataUrl && (
+    <div className="bf bf-cover" style={{ backgroundImage: `url("${COVER_BG_URL}")` }}>
+      <div className="bf-cover-scrim">
+        <div className="bf-cover-title">
+          {church.logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={qrDataUrl} alt="홈페이지 QR" />
+            <img className="bf-cover-logo" src={church.logoUrl} alt="" />
           )}
-          <div className="bf-qr-url">{url}</div>
+          <div className="bf-cover-titletext">
+            <h1 className="bf-church-name">{church.name}</h1>
+            {church.eng && <div className="bf-church-eng">{church.eng}</div>}
+          </div>
         </div>
+        {draft.serviceDate && <div className="bf-date">{draft.serviceDate}</div>}
       </div>
     </div>
   );
@@ -751,10 +671,11 @@ function BulletinPageWorshipStaff({ draft }: { draft: Draft }) {
   );
 }
 
-function BulletinPageNewsVolunteers({ draft }: { draft: Draft }) {
+function BulletinPageNewsVolunteers({ church, draft, qrDataUrl }: { church: Church; draft: Draft; qrDataUrl: string }) {
+  const url = `${church.slug}.${ROOT_DOMAIN}`;
   return (
     <div className="bf">
-      <FaceHeader label="소식 · 봉사" />
+      <FaceHeader label="소식 · 안내" />
       <h2 className="bf-title">교회 소식</h2>
       {draft.news.length === 0 ? (
         <p className="bf-empty">교회 소식이 입력되지 않았습니다.</p>
@@ -786,6 +707,27 @@ function BulletinPageNewsVolunteers({ draft }: { draft: Draft }) {
           </tbody>
         </table>
       )}
+
+      <div className="bf-info">
+        {draft.locationImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="bf-info-loc" src={draft.locationImageUrl} alt="교회 위치" />
+        )}
+        <div className="bf-info-text">
+          <div className="bf-info-title">오시는 길 · 연락처</div>
+          {church.address && <div>{church.address}</div>}
+          {church.phone && <div>Tel. {church.phone}</div>}
+          {church.email && <div>{church.email}</div>}
+          <div>{url}</div>
+        </div>
+        {qrDataUrl && (
+          <div className="bf-info-qr">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={qrDataUrl} alt="홈페이지 QR" />
+            <span>홈페이지</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -822,7 +764,7 @@ const BULLETIN_CSS = `
 }
 .bulletin-face {
   width: 148.5mm; height: 210mm; box-sizing: border-box;
-  padding: 12mm 11mm; overflow: hidden;
+  padding: 12mm 11mm; overflow: hidden; position: relative;
   font-family: var(--font-inter-tight), "Pretendard", system-ui, sans-serif;
   color: #1c1d21;
 }
@@ -838,23 +780,29 @@ const BULLETIN_CSS = `
 .bf-empty { color: #aaadb4; font-size: 10pt; }
 
 /* 표지 */
-.bf-cover { justify-content: space-between; text-align: center; }
-.bf-cover-top { display: flex; flex-direction: column; align-items: center; gap: 2mm; padding-top: 4mm; }
-.bf-logo { width: 22mm; height: 22mm; object-fit: contain; margin-bottom: 1mm; }
-.bf-church-name { font-size: 21pt; font-weight: 800; margin: 0; letter-spacing: -.02em; }
-.bf-church-eng { font-size: 9pt; letter-spacing: .22em; color: #8a8d94; text-transform: uppercase; }
-.bf-date { margin-top: 3mm; font-size: 11.5pt; font-weight: 600; color: #2f3137;
-  border: 1px solid #d7dade; border-radius: 999px; padding: 1.6mm 5mm; }
-.bf-cover-hero { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3mm 0; min-height: 0; }
-.bf-cover-art { width: 46mm; height: auto; }
-.bf-loc { margin: 2mm 0; }
-.bf-loc img { width: 100%; max-height: 36mm; object-fit: cover; border-radius: 2mm; border: 1px solid #e3e5e9; }
-.bf-cover-bottom { border-top: 1px solid #e3e5e9; padding-top: 4mm; display: flex; gap: 5mm; align-items: center; text-align: left; }
-.bf-contact { flex: 1; font-size: 9pt; line-height: 1.7; color: #4a4d54; }
-.bf-qr { display: flex; flex-direction: column; align-items: center; gap: 1mm; flex-shrink: 0; }
-.bf-qr img { width: 24mm; height: 24mm; }
-.bf-qr-url { font-size: 7pt; color: #8a8d94; }
-
+/* 표지(1면) — 배경 이미지 풀블리드 + 하단 스크림에 로고·교회명 가로 배치 */
+.bf-cover {
+  position: absolute; inset: 0; padding: 0;
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+  background-color: #1c1d21; color: #fff; justify-content: flex-end; text-align: center;
+}
+.bf-cover-scrim {
+  width: 100%; padding: 18mm 12mm 14mm;
+  display: flex; flex-direction: column; align-items: center; gap: 4mm;
+  background: linear-gradient(to top, rgba(16,17,21,.88) 0%, rgba(16,17,21,.55) 50%, rgba(16,17,21,0) 100%);
+}
+.bf-cover-title { display: flex; align-items: center; gap: 4mm; }
+.bf-cover-logo {
+  width: 17mm; height: 17mm; object-fit: contain; flex-shrink: 0;
+  background: rgba(255,255,255,.94); border-radius: 2.5mm; padding: 1.5mm; box-sizing: border-box;
+}
+.bf-cover-titletext { text-align: left; }
+.bf-church-name { font-size: 21pt; font-weight: 800; margin: 0; letter-spacing: -.02em; color: #fff; line-height: 1.12; }
+.bf-church-eng { font-size: 8pt; letter-spacing: .2em; color: rgba(255,255,255,.82); text-transform: uppercase; margin-top: 1mm; }
+.bf-date {
+  font-size: 11pt; font-weight: 600; color: #fff;
+  border: 1px solid rgba(255,255,255,.55); border-radius: 999px; padding: 1.4mm 6mm;
+}
 /* 예배 순서 */
 .bf-order { width: 100%; border-collapse: collapse; }
 .bf-order td { padding: 1.8mm 0; font-size: 10.5pt; vertical-align: top; border-bottom: 1px dotted #e3e5e9; }
@@ -879,6 +827,15 @@ const BULLETIN_CSS = `
 .bf-vol { width: 100%; border-collapse: collapse; }
 .bf-vol td { padding: 1.8mm 2mm; font-size: 10pt; border: 1px solid #e3e5e9; }
 .bf-vol-k { font-weight: 600; width: 38%; background: #f6f7f9; }
+
+/* 4면 하단 — 오시는 길/연락처/위치이미지/QR */
+.bf-info { margin-top: auto; border-top: 1px solid #e3e5e9; padding-top: 3mm; display: flex; gap: 3.5mm; align-items: center; }
+.bf-info-loc { width: 30mm; height: 22mm; object-fit: cover; border-radius: 1.5mm; border: 1px solid #e3e5e9; flex-shrink: 0; }
+.bf-info-text { flex: 1; font-size: 8pt; line-height: 1.6; color: #4a4d54; }
+.bf-info-title { font-size: 9pt; font-weight: 700; color: #1c1d21; margin-bottom: 1mm; }
+.bf-info-qr { display: flex; flex-direction: column; align-items: center; gap: .5mm; flex-shrink: 0; }
+.bf-info-qr img { width: 19mm; height: 19mm; }
+.bf-info-qr span { font-size: 6.5pt; color: #8a8d94; }
 
 @media print {
   .bulletin-portal { position: static; background: #fff; overflow: visible; display: block; }
