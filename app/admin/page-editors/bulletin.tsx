@@ -579,6 +579,67 @@ function FaceHeader({ label }: { label: string }) {
   return <div className="bf-eyebrow">{label}</div>;
 }
 
+// 표지용 기독교/교회 라인아트 일러스트 (첨두아치 창 + 십자가). 인쇄/PDF용 벡터.
+function CoverArtwork() {
+  return (
+    <svg
+      className="bf-cover-art"
+      viewBox="0 0 200 282"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="교회 일러스트"
+    >
+      {/* 빛줄기 */}
+      <g stroke="#c7cbd1" strokeWidth="1.4" strokeLinecap="round">
+        <line x1="100" y1="4" x2="100" y2="18" />
+        <line x1="68" y1="10" x2="79" y2="22" />
+        <line x1="132" y1="10" x2="121" y2="22" />
+        <line x1="44" y1="24" x2="60" y2="33" />
+        <line x1="156" y1="24" x2="140" y2="33" />
+      </g>
+
+      {/* 창 안쪽 채움 */}
+      <path d="M30,250 L30,116 Q30,48 100,30 Q170,48 170,116 L170,250 Z" fill="#eef0f3" />
+
+      {/* 창 외곽 프레임 */}
+      <path
+        d="M24,252 L24,114 Q24,40 100,24 Q176,40 176,114 L176,252 Z"
+        stroke="#3a3d44"
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M34,250 L34,116 Q34,50 100,33 Q166,50 166,116 L166,250 Z"
+        stroke="#3a3d44"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+
+      {/* 트레이서리(창살) */}
+      <g stroke="#9aa0a8" strokeWidth="1.2">
+        <line x1="100" y1="150" x2="100" y2="250" />
+        <line x1="38" y1="158" x2="162" y2="158" />
+        <line x1="38" y1="206" x2="162" y2="206" />
+        <line x1="69" y1="158" x2="69" y2="250" />
+        <line x1="131" y1="158" x2="131" y2="250" />
+      </g>
+
+      {/* 십자가 */}
+      <g fill="#3a3d44">
+        <rect x="94" y="62" width="12" height="66" rx="1.5" />
+        <rect x="77" y="84" width="46" height="12" rx="1.5" />
+      </g>
+
+      {/* 받침 단 */}
+      <g stroke="#3a3d44" strokeWidth="2.2" strokeLinejoin="round">
+        <rect x="16" y="252" width="168" height="9" fill="#eef0f3" />
+        <rect x="8" y="261" width="184" height="10" fill="#ffffff" />
+      </g>
+    </svg>
+  );
+}
+
 function BulletinPageFront({ church, draft, qrDataUrl }: { church: Church; draft: Draft; qrDataUrl: string }) {
   const url = `${church.slug}.${ROOT_DOMAIN}`;
   return (
@@ -591,6 +652,10 @@ function BulletinPageFront({ church, draft, qrDataUrl }: { church: Church; draft
         <h1 className="bf-church-name">{church.name}</h1>
         {church.eng && <div className="bf-church-eng">{church.eng}</div>}
         {draft.serviceDate && <div className="bf-date">{draft.serviceDate}</div>}
+      </div>
+
+      <div className="bf-cover-hero">
+        <CoverArtwork />
       </div>
 
       {draft.locationImageUrl && (
@@ -774,14 +839,16 @@ const BULLETIN_CSS = `
 
 /* 표지 */
 .bf-cover { justify-content: space-between; text-align: center; }
-.bf-cover-top { display: flex; flex-direction: column; align-items: center; gap: 2mm; padding-top: 6mm; }
-.bf-logo { width: 26mm; height: 26mm; object-fit: contain; margin-bottom: 2mm; }
-.bf-church-name { font-size: 22pt; font-weight: 800; margin: 0; letter-spacing: -.02em; }
+.bf-cover-top { display: flex; flex-direction: column; align-items: center; gap: 2mm; padding-top: 4mm; }
+.bf-logo { width: 22mm; height: 22mm; object-fit: contain; margin-bottom: 1mm; }
+.bf-church-name { font-size: 21pt; font-weight: 800; margin: 0; letter-spacing: -.02em; }
 .bf-church-eng { font-size: 9pt; letter-spacing: .22em; color: #8a8d94; text-transform: uppercase; }
-.bf-date { margin-top: 4mm; font-size: 12pt; font-weight: 600; color: #2f3137;
-  border: 1px solid #d7dade; border-radius: 999px; padding: 2mm 6mm; }
-.bf-loc { margin: 5mm 0; }
-.bf-loc img { width: 100%; max-height: 70mm; object-fit: cover; border-radius: 2mm; border: 1px solid #e3e5e9; }
+.bf-date { margin-top: 3mm; font-size: 11.5pt; font-weight: 600; color: #2f3137;
+  border: 1px solid #d7dade; border-radius: 999px; padding: 1.6mm 5mm; }
+.bf-cover-hero { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3mm 0; min-height: 0; }
+.bf-cover-art { width: 46mm; height: auto; }
+.bf-loc { margin: 2mm 0; }
+.bf-loc img { width: 100%; max-height: 36mm; object-fit: cover; border-radius: 2mm; border: 1px solid #e3e5e9; }
 .bf-cover-bottom { border-top: 1px solid #e3e5e9; padding-top: 4mm; display: flex; gap: 5mm; align-items: center; text-align: left; }
 .bf-contact { flex: 1; font-size: 9pt; line-height: 1.7; color: #4a4d54; }
 .bf-qr { display: flex; flex-direction: column; align-items: center; gap: 1mm; flex-shrink: 0; }
