@@ -272,9 +272,9 @@ export function BulletinEditor() {
           ]}
         />
 
-        {/* 다음주 봉사위원 */}
+        {/* 봉사위원 */}
         <ListBlock
-          title="다음주 봉사위원"
+          title="봉사위원"
           hint="항목과 이름을 표 형태로 입력합니다. (예: 안내위원 · 김집사)"
           items={draft.volunteers}
           onChange={(next) => setDraft({ ...draft, volunteers: next })}
@@ -705,7 +705,7 @@ function BulletinPageNewsVolunteers({ draft }: { draft: Draft }) {
       )}
 
       <h2 className="bf-title" style={{ marginTop: "8mm" }}>
-        다음주 봉사위원
+        봉사위원
       </h2>
       {draft.volunteers.length === 0 ? (
         <p className="bf-empty">봉사위원이 입력되지 않았습니다.</p>
