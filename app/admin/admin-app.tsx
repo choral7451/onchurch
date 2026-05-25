@@ -965,29 +965,32 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </div>
               )}
 
-              <div className="admin-savebar">
-                <div className="admin-savebar-msg">
-                  {save === "saved" && <span className="phone-msg phone-msg-success">변경사항이 저장되었습니다.</span>}
-                  {save === "error" && saveMsg && <span className="phone-msg phone-msg-error">{saveMsg}</span>}
-                  {save === "idle" && (
-                    <span style={{ color: "var(--muted)", fontSize: 13 }}>
-                      {loaded ? "변경사항은 저장 후 적용됩니다." : "교회 정보를 불러오는 중..."}
-                    </span>
-                  )}
+              {/* 주보 만들기는 자체 '주보 내용 저장' 버튼을 쓰므로 폼 전체 저장바를 숨김 */}
+              {activeSection !== "bulletin" && (
+                <div className="admin-savebar">
+                  <div className="admin-savebar-msg">
+                    {save === "saved" && <span className="phone-msg phone-msg-success">변경사항이 저장되었습니다.</span>}
+                    {save === "error" && saveMsg && <span className="phone-msg phone-msg-error">{saveMsg}</span>}
+                    {save === "idle" && (
+                      <span style={{ color: "var(--muted)", fontSize: 13 }}>
+                        {loaded ? "변경사항은 저장 후 적용됩니다." : "교회 정보를 불러오는 중..."}
+                      </span>
+                    )}
+                  </div>
+                  <div className="admin-savebar-actions">
+                    <button type="button" className="btn btn-secondary" onClick={() => router.refresh()}>
+                      변경 취소
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-lg"
+                      disabled={save === "saving" || !loaded || !trimmedSlug || !name.trim() || slugCheck === "taken" || slugCheck === "checking"}
+                    >
+                      {save === "saving" ? "저장 중..." : "변경사항 저장"}
+                    </button>
+                  </div>
                 </div>
-                <div className="admin-savebar-actions">
-                  <button type="button" className="btn btn-secondary" onClick={() => router.refresh()}>
-                    변경 취소
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-lg"
-                    disabled={save === "saving" || !loaded || !trimmedSlug || !name.trim() || slugCheck === "taken" || slugCheck === "checking"}
-                  >
-                    {save === "saving" ? "저장 중..." : "변경사항 저장"}
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </form>
