@@ -586,7 +586,7 @@ function FaceHeader({ label }: { label: string }) {
 function BulletinPageFront({ church, draft }: { church: Church; draft: Draft }) {
   return (
     <div className="bf bf-cover" style={{ backgroundImage: `url("${COVER_BG_URL}")` }}>
-      <div className="bf-cover-scrim">
+      <div className="bf-cover-card">
         <div className="bf-cover-title">
           {church.logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -767,6 +767,7 @@ const BULLETIN_CSS = `
   padding: 12mm 11mm; overflow: hidden; position: relative;
   font-family: var(--font-inter-tight), "Pretendard", system-ui, sans-serif;
   color: #1c1d21;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 
 /* 면 공통 */
@@ -784,24 +785,21 @@ const BULLETIN_CSS = `
 .bf-cover {
   position: absolute; inset: 0; padding: 0;
   background-size: cover; background-position: center; background-repeat: no-repeat;
-  background-color: #1c1d21; color: #fff; justify-content: flex-end; text-align: center;
+  background-color: #1c1d21; color: #1c1d21; justify-content: flex-start; align-items: stretch; text-align: center;
 }
-.bf-cover-scrim {
-  width: 100%; padding: 18mm 12mm 14mm;
+.bf-cover-card {
+  margin: 12mm 11mm 0; background: #fff; border-radius: 3mm; padding: 8mm 7mm;
   display: flex; flex-direction: column; align-items: center; gap: 4mm;
-  background: linear-gradient(to top, rgba(16,17,21,.88) 0%, rgba(16,17,21,.55) 50%, rgba(16,17,21,0) 100%);
+  box-shadow: 0 2mm 7mm rgba(0,0,0,.20);
 }
 .bf-cover-title { display: flex; align-items: center; gap: 4mm; }
-.bf-cover-logo {
-  width: 17mm; height: 17mm; object-fit: contain; flex-shrink: 0;
-  background: rgba(255,255,255,.94); border-radius: 2.5mm; padding: 1.5mm; box-sizing: border-box;
-}
+.bf-cover-logo { width: 17mm; height: 17mm; object-fit: contain; flex-shrink: 0; }
 .bf-cover-titletext { text-align: left; }
-.bf-church-name { font-size: 21pt; font-weight: 800; margin: 0; letter-spacing: -.02em; color: #fff; line-height: 1.12; }
-.bf-church-eng { font-size: 8pt; letter-spacing: .2em; color: rgba(255,255,255,.82); text-transform: uppercase; margin-top: 1mm; }
+.bf-church-name { font-size: 21pt; font-weight: 800; margin: 0; letter-spacing: -.02em; color: #1c1d21; line-height: 1.12; }
+.bf-church-eng { font-size: 8pt; letter-spacing: .2em; color: #8a8d94; text-transform: uppercase; margin-top: 1mm; }
 .bf-date {
-  font-size: 11pt; font-weight: 600; color: #fff;
-  border: 1px solid rgba(255,255,255,.55); border-radius: 999px; padding: 1.4mm 6mm;
+  font-size: 11pt; font-weight: 600; color: #2f3137;
+  border: 1px solid #d7dade; border-radius: 999px; padding: 1.4mm 6mm;
 }
 /* 예배 순서 */
 .bf-order { width: 100%; border-collapse: collapse; }
