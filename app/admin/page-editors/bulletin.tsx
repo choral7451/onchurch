@@ -578,8 +578,8 @@ function BulletinPreviewOverlay({
   }, []);
 
   const front = <BulletinPageFront church={church} draft={draft} />;
-  const order = <BulletinPageOrder draft={draft} />;
-  const worshipStaff = <BulletinPageWorshipStaff draft={draft} />;
+  const order = <BulletinPageOrder church={church} draft={draft} />;
+  const worshipStaff = <BulletinPageWorshipStaff church={church} draft={draft} />;
   const newsVolunteers = <BulletinPageNewsVolunteers church={church} draft={draft} qrDataUrl={qrDataUrl} />;
 
   return createPortal(
@@ -625,8 +625,29 @@ function BulletinPreviewOverlay({
   );
 }
 
-function FaceHeader({ label }: { label: string }) {
-  return <div className="bf-eyebrow">{label}</div>;
+function SectionHead({ title, eng }: { title: string; eng?: string }) {
+  return (
+    <div className="bf-sec">
+      <span className="bf-sec-bar" />
+      <span className="bf-sec-text">
+        <span className="bf-sec-title">{title}</span>
+        {eng && <span className="bf-sec-eng">{eng}</span>}
+      </span>
+    </div>
+  );
+}
+
+function PageWatermark() {
+  return (
+    <svg className="bf-wm" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+      <rect x="44" y="8" width="12" height="84" rx="2" />
+      <rect x="18" y="34" width="64" height="12" rx="2" />
+    </svg>
+  );
+}
+
+function PageFooter({ church }: { church: Church }) {
+  return <div className="bf-foot">{church.name}</div>;
 }
 
 function BulletinPageFront({ church, draft }: { church: Church; draft: Draft }) {
@@ -660,86 +681,115 @@ function BulletinPageFront({ church, draft }: { church: Church; draft: Draft }) 
   );
 }
 
-function BulletinPageOrder({ draft }: { draft: Draft }) {
+function BulletinPageOrder({ church, draft }: { church: Church; draft: Draft }) {
   return (
     <div className="bf">
-      <FaceHeader label="예배 순서" />
-      <h2 className="bf-title">예배 순서</h2>
-      {draft.worshipOrder.length === 0 ? (
-        <p className="bf-empty">예배 순서가 입력되지 않았습니다.</p>
-      ) : (
-        <table className="bf-order">
-          <tbody>
-            {draft.worshipOrder.map((o, i) => (
-              <tr key={i}>
-                <td className="bf-order-c1">{o.item}</td>
-                <td className="bf-order-c2">{o.detail}</td>
-                <td className="bf-order-c3">{o.leader}</td>
+      <PageWatermark />
+      <div className="bf-block">
+        <SectionHead title="예배 순서" eng="Order of Worship" />
+        {draft.worshipOrder.length === 0 ? (
+          <p className="bf-empty">예배 순서가 입력되지 않았습니다.</p>
+        ) : (
+          <table className="bf-order">
+            <thead>
+              <tr className="bf-hd">
+                <td className="bf-order-c1">순서</td>
+                <td className="bf-order-c2">찬송·본문</td>
+                <td className="bf-order-c3">인도자</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {draft.worshipOrder.map((o, i) => (
+                <tr key={i}>
+                  <td className="bf-order-c1">{o.item}</td>
+                  <td className="bf-order-c2">{o.detail}</td>
+                  <td className="bf-order-c3">{o.leader}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
-      <h2 className="bf-title" style={{ marginTop: "8mm" }}>봉사위원</h2>
-      {draft.volunteers.length === 0 ? (
-        <p className="bf-empty">봉사위원이 입력되지 않았습니다.</p>
-      ) : (
-        <table className="bf-vol">
-          <tbody>
-            {draft.volunteers.map((v, i) => (
-              <tr key={i}>
-                <td className="bf-vol-k">{v.key}</td>
-                <td className="bf-vol-v">{v.value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <div className="bf-block">
+        <SectionHead title="봉사위원" eng="Volunteers" />
+        {draft.volunteers.length === 0 ? (
+          <p className="bf-empty">봉사위원이 입력되지 않았습니다.</p>
+        ) : (
+          <table className="bf-vol">
+            <tbody>
+              {draft.volunteers.map((v, i) => (
+                <tr key={i}>
+                  <td className="bf-vol-k">{v.key}</td>
+                  <td className="bf-vol-v">{v.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <PageFooter church={church} />
     </div>
   );
 }
 
-function BulletinPageWorshipStaff({ draft }: { draft: Draft }) {
+function BulletinPageWorshipStaff({ church, draft }: { church: Church; draft: Draft }) {
   return (
     <div className="bf">
-      <FaceHeader label="예배 안내" />
-      <h2 className="bf-title">예배 시간</h2>
-      {draft.worshipServices.length === 0 ? (
-        <p className="bf-empty">예배 시간이 입력되지 않았습니다.</p>
-      ) : (
-        <table className="bf-kv">
-          <tbody>
-            {draft.worshipServices.map((s, i) => (
-              <tr key={i}>
-                <td className="bf-kv-k">{s.name}</td>
-                <td className="bf-kv-v">
-                  {s.time}
-                  {s.meta ? <span className="bf-kv-meta"> · {s.meta}</span> : null}
-                </td>
+      <PageWatermark />
+      <div className="bf-block">
+        <SectionHead title="예배 시간" eng="Worship" />
+        {draft.worshipServices.length === 0 ? (
+          <p className="bf-empty">예배 시간이 입력되지 않았습니다.</p>
+        ) : (
+          <table className="bf-kv">
+            <thead>
+              <tr className="bf-hd">
+                <td>예배</td>
+                <td className="bf-kv-v">시간</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {draft.worshipServices.map((s, i) => (
+                <tr key={i}>
+                  <td className="bf-kv-k">{s.name}</td>
+                  <td className="bf-kv-v">
+                    {s.time}
+                    {s.meta ? <span className="bf-kv-meta"> · {s.meta}</span> : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
-      <h2 className="bf-title" style={{ marginTop: "8mm" }}>
-        섬기는 분들
-      </h2>
-      {draft.staff.length === 0 ? (
-        <p className="bf-empty">섬기는 분들이 입력되지 않았습니다.</p>
-      ) : (
-        <table className="bf-kv">
-          <tbody>
-            {draft.staff.map((s, i) => (
-              <tr key={i}>
-                <td className="bf-kv-k">{[s.role, s.name].filter(Boolean).join(" ")}</td>
-                <td className="bf-kv-v">{s.area}</td>
+      <div className="bf-block">
+        <SectionHead title="섬기는 분들" eng="Our Team" />
+        {draft.staff.length === 0 ? (
+          <p className="bf-empty">섬기는 분들이 입력되지 않았습니다.</p>
+        ) : (
+          <table className="bf-kv">
+            <thead>
+              <tr className="bf-hd">
+                <td>섬기는 이</td>
+                <td className="bf-kv-v">담당</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {draft.staff.map((s, i) => (
+                <tr key={i}>
+                  <td className="bf-kv-k">{[s.role, s.name].filter(Boolean).join(" ")}</td>
+                  <td className="bf-kv-v">{s.area}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <PageFooter church={church} />
     </div>
   );
 }
@@ -748,20 +798,22 @@ function BulletinPageNewsVolunteers({ church, draft, qrDataUrl }: { church: Chur
   const url = `${church.slug}.${ROOT_DOMAIN}`;
   return (
     <div className="bf">
-      <FaceHeader label="소식 · 안내" />
-      <h2 className="bf-title">교회 소식</h2>
-      {draft.news.length === 0 ? (
-        <p className="bf-empty">교회 소식이 입력되지 않았습니다.</p>
-      ) : (
-        <ul className="bf-news">
-          {draft.news.map((n, i) => (
-            <li key={i}>
-              <div className="bf-news-title">{n.title}</div>
-              {n.content && <div className="bf-news-body">{n.content}</div>}
-            </li>
-          ))}
-        </ul>
-      )}
+      <PageWatermark />
+      <div className="bf-block">
+        <SectionHead title="교회 소식" eng="Church News" />
+        {draft.news.length === 0 ? (
+          <p className="bf-empty">교회 소식이 입력되지 않았습니다.</p>
+        ) : (
+          <ul className="bf-news">
+            {draft.news.map((n, i) => (
+              <li key={i}>
+                <div className="bf-news-title">{n.title}</div>
+                {n.content && <div className="bf-news-body">{n.content}</div>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <div className="bf-info">
         {draft.locationImageUrl && (
@@ -789,7 +841,7 @@ function BulletinPageNewsVolunteers({ church, draft, qrDataUrl }: { church: Chur
 
 const BULLETIN_CSS = `
 .bulletin-portal {
-  --accent: #57818c; --accent-weak: rgba(87,129,140,.13);
+  --accent: #57818c; --accent-weak: rgba(87,129,140,.13); --accent-faint: rgba(87,129,140,.06);
   position: fixed; inset: 0; z-index: 9999;
   background: #5b5e66; overflow: auto;
   display: flex; flex-direction: column; align-items: center;
@@ -830,12 +882,20 @@ const BULLETIN_CSS = `
 
 /* 면 공통 */
 .bf { width: 100%; height: 100%; display: flex; flex-direction: column; }
-.bf-eyebrow {
-  font-size: 9pt; letter-spacing: .18em; color: var(--accent); font-weight: 700;
-  text-transform: uppercase; margin-bottom: 4mm;
-  border-bottom: 1.4px solid var(--accent); padding-bottom: 2mm;
+.bf-block { margin-bottom: 7mm; }
+.bf-sec { display: flex; align-items: stretch; gap: 3mm; margin: 0 0 3.5mm; }
+.bf-sec-bar { width: 1.6mm; background: var(--accent); border-radius: 1mm; flex-shrink: 0; }
+.bf-sec-text { display: flex; flex-direction: column; justify-content: center; }
+.bf-sec-title { font-size: 14pt; font-weight: 800; color: #1c1d21; letter-spacing: -.01em; line-height: 1.1; }
+.bf-sec-eng { font-size: 7.5pt; letter-spacing: .22em; color: var(--accent); text-transform: uppercase; font-weight: 600; margin-top: .5mm; }
+.bf-foot { margin-top: auto; padding-top: 3mm; border-top: 1px solid var(--accent-weak); text-align: center; font-size: 7.5pt; letter-spacing: .18em; color: var(--accent); font-weight: 600; }
+.bf-wm { position: absolute; right: 5mm; bottom: 8mm; width: 42mm; height: 42mm; color: var(--accent); opacity: .05; pointer-events: none; }
+/* 표 헤더행 + 줄무늬 */
+.bf-order thead .bf-hd td, .bf-kv thead .bf-hd td {
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 8.5pt;
+  letter-spacing: .03em; padding: 1.8mm 1.5mm; border-bottom: none;
 }
-.bf-title { font-size: 15pt; font-weight: 700; margin: 0 0 4mm; letter-spacing: -.01em; color: var(--accent); }
+.bf-order tbody tr:nth-child(even) td, .bf-kv tbody tr:nth-child(even) td { background: var(--accent-faint); }
 .bf-empty { color: #aaadb4; font-size: 10pt; }
 
 /* 표지 */
@@ -884,10 +944,10 @@ const BULLETIN_CSS = `
 .bf-kv-meta { color: #8a8d94; }
 
 /* 소식 */
-.bf-news { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3mm; }
-.bf-news-title { font-weight: 600; font-size: 10.5pt; }
-.bf-news-title::before { content: "• "; color: var(--accent); }
-.bf-news-body { font-size: 9.5pt; color: #4a4d54; line-height: 1.5; margin-top: .5mm; white-space: pre-wrap; }
+.bf-news { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2.5mm; }
+.bf-news li { border-left: 1.6mm solid var(--accent); background: var(--accent-faint); border-radius: 0 1.5mm 1.5mm 0; padding: 2mm 3mm; }
+.bf-news-title { font-weight: 700; font-size: 10pt; color: #1c1d21; }
+.bf-news-body { font-size: 9pt; color: #4a4d54; line-height: 1.5; margin-top: .5mm; white-space: pre-wrap; }
 
 /* 봉사위원 표 */
 .bf-vol { width: 100%; border-collapse: collapse; }
