@@ -387,7 +387,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const url = (path: string) => `${pathPrefix}${path}`;
   const slug = encodeURIComponent(tenant);
   const enabled = church.enabledPages ?? [];
-  const isPageEnabled = (id: string) => enabled.length === 0 || enabled.includes(id);
+  const isPageEnabled = (id: string) => id === "directions" || enabled.length === 0 || enabled.includes(id);
   const showHomeEvents = isPageEnabled("schedule");
   const visibleQuickLinks = QUICK_LINKS.filter((q) => isPageEnabled(q.path.replace(/^\//, "")));
   const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder);

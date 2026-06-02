@@ -33,7 +33,7 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
   };
 
   const visibleNav = enabledPages && enabledPages.length > 0
-    ? nav.filter((item) => enabledPages.includes(item.id))
+    ? nav.filter((item) => item.id === "directions" || enabledPages.includes(item.id))
     : nav;
   const prayerEnabled = !enabledPages || enabledPages.length === 0 || enabledPages.includes("prayer");
 

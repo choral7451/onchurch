@@ -174,6 +174,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       const base = Object.fromEntries(initial.nav.map((n) => [n.id, false]));
       base["about"] = true;
       base["worship"] = true;
+      base["directions"] = true;
       for (const k of ABOUT_SUB_KEYS) base[k] = false;
       for (const k of WORSHIP_SUB_KEYS) base[k] = false;
       return base;
@@ -246,6 +247,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
             for (const n of initial.nav) next[n.id] = c.enabledPages.includes(n.id);
             next["about"] = true;
             next["worship"] = true;
+            next["directions"] = true;
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             for (const k of WORSHIP_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);

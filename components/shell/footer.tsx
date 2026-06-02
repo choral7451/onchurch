@@ -16,7 +16,7 @@ export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages }: Prop
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const navById = new Map(nav.map((n) => [n.id, n] as const));
   const isEnabled = (id: string) =>
-    !enabledPages || enabledPages.length === 0 || enabledPages.includes(id);
+    id === "directions" || !enabledPages || enabledPages.length === 0 || enabledPages.includes(id);
 
   const groups = footerNav
     .map((g) => ({
