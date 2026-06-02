@@ -24,7 +24,7 @@ function formatDate(iso: string | null): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export function NoticesList({ notices, categories }: { notices: Notice[]; categories: string[] }) {
+export function NoticesList({ notices, categories, churchName }: { notices: Notice[]; categories: string[]; churchName: string }) {
   const [cat, setCat] = useState<string>(categories[0] ?? "전체");
   const [query, setQuery] = useState<string>("");
   const [page, setPage] = useState<number>(1);
@@ -42,7 +42,7 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
   }, [active]);
 
   const filtered = useMemo(() => {
-    let list = cat === "전체" ? notices : notices.filter((n) => n.category === cat);
+    let list = cat === "전체" ? notices : notices.filter((n) => (n.category ?? "일반") === cat);
     const q = query.trim().toLowerCase();
     if (q) {
       list = list.filter((n) =>
@@ -125,9 +125,9 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
               }}
             >
               <div className="notice-num">{n.isPinned ? "📌" : n.id}</div>
-              <div>{n.category ? <span className="notice-cat">{n.category}</span> : null}</div>
+              <div><span className="notice-cat">{n.category ?? "일반"}</span></div>
               <div className="notice-title">{n.title}</div>
-              <div className="notice-author">{n.author ?? "—"}</div>
+              <div className="notice-author">{n.author ?? churchName}</div>
               <div className="notice-date">{formatDate(n.publishedAt ?? n.createdAt)}</div>
             </div>
           ))}
@@ -200,12 +200,12 @@ export function NoticesList({ notices, categories }: { notices: Notice[]; catego
             <div className="notice-modal-body">
               <div className="notice-modal-head">
                 {active.isPinned && <span className="notice-modal-pin">📌 고정</span>}
-                {active.category && <span className="notice-modal-cat">{active.category}</span>}
+                <span className="notice-modal-cat">{active.category ?? "일반"}</span>
               </div>
               <h3 className="notice-modal-title">{active.title}</h3>
               <div className="notice-modal-meta">
-                {active.author && <span>{active.author}</span>}
-                {active.author && <span className="dot" />}
+                <span>{active.author ?? churchName}</span>
+                <span className="dot" />
                 <span>{formatDate(active.publishedAt ?? active.createdAt)}</span>
               </div>
               {active.content ? (

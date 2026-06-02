@@ -48,10 +48,10 @@ async function fetchNotices(slug: string): Promise<{ notices: Notice[]; totalCou
 }
 
 async function NoticesContent({ tenant }: { tenant: string }) {
-  const { notices } = await fetchNotices(tenant);
-  const categories = Array.from(new Set(notices.map((n) => n.category).filter((c): c is string => !!c)));
+  const [{ notices }, church] = await Promise.all([fetchNotices(tenant), fetchPublicChurch(tenant)]);
+  const categories = Array.from(new Set(notices.map((n) => n.category ?? "일반")));
   categories.unshift("전체");
-  return <NoticesList notices={notices} categories={categories} />;
+  return <NoticesList notices={notices} categories={categories} churchName={church?.name ?? ""} />;
 }
 
 function NoticesSkeleton() {
