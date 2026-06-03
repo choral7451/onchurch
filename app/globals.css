@@ -421,7 +421,7 @@ main { flex: 1; }
 .notice-row:last-child { border-bottom: none; }
 .notice-row.head { background: var(--bg-tinted); font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; font-family: var(--font-display); cursor: default; padding: 14px 24px; }
 .notice-row.head:hover { background: var(--bg-tinted); }
-.notice-num { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.notice-num { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-align: center; }
 .notice-cat { display: inline-flex; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; background: oklch(0.62 0.14 245 / 0.1); color: var(--primary); width: max-content; }
 .notice-title { font-size: 14.5px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .notice-author { font-size: 13px; color: var(--muted); }
