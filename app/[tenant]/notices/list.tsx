@@ -108,7 +108,7 @@ export function NoticesList({ notices, categories, churchName }: { notices: Noti
         <div className="notice-list">
           <div className="notice-row head">
             <div style={{ textAlign: "center" }}>번호</div>
-            <div style={{ textAlign: "center" }}>분류</div>
+            <div className="notice-col-cat">분류</div>
             <div style={{ textAlign: "center" }}>제목</div>
             <div>작성자</div>
             <div style={{ textAlign: "right" }}>작성일</div>
@@ -125,7 +125,7 @@ export function NoticesList({ notices, categories, churchName }: { notices: Noti
               }}
             >
               <div className="notice-num">{n.isPinned ? "📌" : n.id}</div>
-              <div style={{ textAlign: "center" }}><span className="notice-cat">{n.category ?? "일반"}</span></div>
+              <div className="notice-col-cat"><span className="notice-cat">{n.category ?? "일반"}</span></div>
               <div className="notice-title">{n.title}</div>
               <div className="notice-author">{n.author ?? churchName}</div>
               <div className="notice-date">{formatDate(n.publishedAt ?? n.createdAt)}</div>
