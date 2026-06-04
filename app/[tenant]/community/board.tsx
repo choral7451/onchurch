@@ -11,7 +11,7 @@ import {
   uploadImages,
   type CommunityPost,
 } from "@/lib/api-client";
-import { toEmbedUrl } from "@/lib/video-embed";
+import { toEmbedUrl, toVideoThumbnailUrl } from "@/lib/video-embed";
 
 type Props = {
   slug: string;
@@ -293,8 +293,9 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
       ) : (
         <div className="community-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
           {visible.map((p) => {
-            const thumb = p.photoUrls[0] ?? null;
             const hasVideo = !!p.videoUrl;
+            const videoThumb = hasVideo ? toVideoThumbnailUrl(p.videoUrl) : null;
+            const thumb = p.photoUrls[0] ?? videoThumb;
             const hasMedia = !!thumb || hasVideo;
             return (
               <button
@@ -310,9 +311,15 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
-                      // 영상만 있는 글: 깨진 이미지 대신 그라데이션 + 플레이 표시
+                      // 영상만 있고 썸네일을 못 만든 경우: 그라데이션 + 플레이 표시
                       <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center", background: "linear-gradient(135deg, var(--primary), var(--primary-deep, #1f2937))", color: "rgba(255,255,255,0.92)" }}>
                         <span style={{ fontSize: 34, lineHeight: 1 }}>▶</span>
+                      </div>
+                    )}
+                    {hasVideo && thumb && (
+                      // 썸네일 위 중앙 플레이 버튼
+                      <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none" }}>
+                        <span style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(0,0,0,0.55)", color: "#fff", display: "grid", placeItems: "center", fontSize: 20, paddingLeft: 4 }}>▶</span>
                       </div>
                     )}
                     {hasVideo && (

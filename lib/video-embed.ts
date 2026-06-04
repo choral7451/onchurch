@@ -15,3 +15,13 @@ export function toEmbedUrl(raw: string | null | undefined): string | null {
 
   return null;
 }
+
+// 동영상 링크에서 썸네일 이미지 URL을 만든다. (YouTube만 URL로 도출 가능, 그 외는 null)
+export function toVideoThumbnailUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const url = raw.trim();
+  if (!url) return null;
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{6,})/);
+  if (yt?.[1]) return `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`;
+  return null;
+}
