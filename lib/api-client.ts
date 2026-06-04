@@ -151,21 +151,34 @@ export function isLoggedIn(): boolean {
   return !!getAccessToken();
 }
 
-// 액세스 토큰(JWT) 페이로드에서 현재 로그인 사용자 id를 추출한다. (본인 글 판별용)
-export function getCurrentUserId(): number | null {
+function decodeTokenPayload(): Record<string, unknown> | null {
   const token = getAccessToken();
   if (!token) return null;
   try {
     const part = token.split(".")[1];
     if (!part) return null;
     const json = atob(part.replace(/-/g, "+").replace(/_/g, "/"));
-    const payload = JSON.parse(json) as Record<string, unknown>;
-    const cand = payload.id ?? payload.sub ?? payload.userId;
-    const n = Number(cand);
-    return Number.isFinite(n) ? n : null;
+    return JSON.parse(json) as Record<string, unknown>;
   } catch {
     return null;
   }
+}
+
+// 액세스 토큰(JWT) 페이로드에서 현재 로그인 사용자 id를 추출한다. (본인 글 판별용)
+export function getCurrentUserId(): number | null {
+  const payload = decodeTokenPayload();
+  if (!payload) return null;
+  const cand = payload.id ?? payload.sub ?? payload.userId;
+  const n = Number(cand);
+  return Number.isFinite(n) ? n : null;
+}
+
+// 토큰 페이로드에서 사용자 이름을 추출한다. (없으면 null)
+export function getCurrentUserName(): string | null {
+  const payload = decodeTokenPayload();
+  if (!payload) return null;
+  const name = payload.name;
+  return typeof name === "string" && name.trim() ? name : null;
 }
 
 async function rawRequest<T>(path: string, opts: RequestOpts, accessToken: string | null): Promise<{ ok: true; data: T } | { ok: false; status: number; code: string; message: string }> {

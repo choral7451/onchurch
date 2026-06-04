@@ -15,10 +15,17 @@ function formatPhone(raw: string) {
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
-export function CommunityAuth({ slug, churchName }: { slug: string; churchName: string }) {
+/**
+ * 교회 공개 사이트의 성도 로그인/가입 UI.
+ * slug 종속 가입(churchId 자동 연결). 완료 후 redirectTo로 이동.
+ */
+export function MemberAuth({ slug, churchName, redirectTo }: { slug: string; churchName: string; redirectTo: string }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("login");
-  const backToBoard = () => router.push(`/${slug}/community`);
+  const done = () => {
+    router.push(redirectTo);
+    router.refresh();
+  };
 
   return (
     <div className="card" style={{ padding: 32 }}>
@@ -27,9 +34,9 @@ export function CommunityAuth({ slug, churchName }: { slug: string; churchName: 
         <div className={`chip ${tab === "join" ? "active" : ""}`} onClick={() => setTab("join")}>성도 가입</div>
       </div>
       {tab === "login" ? (
-        <LoginPane onDone={backToBoard} />
+        <LoginPane onDone={done} />
       ) : (
-        <JoinPane slug={slug} churchName={churchName} onDone={backToBoard} />
+        <JoinPane slug={slug} churchName={churchName} onDone={done} />
       )}
     </div>
   );

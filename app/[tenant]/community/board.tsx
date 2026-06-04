@@ -17,6 +17,7 @@ type Props = {
   slug: string;
   initialPosts: CommunityPost[];
   categories: string[];
+  loginHref: string;
 };
 
 const PAGE_SIZE = 12;
@@ -38,7 +39,7 @@ type Draft = {
 
 const EMPTY_DRAFT: Draft = { id: null, category: "", title: "", content: "", photoUrls: [], videoUrl: "" };
 
-export function CommunityBoard({ slug, initialPosts, categories }: Props) {
+export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Props) {
   const [posts, setPosts] = useState<CommunityPost[]>(initialPosts);
   const [cat, setCat] = useState<string>("전체");
   const [page, setPage] = useState(1);
@@ -198,7 +199,7 @@ export function CommunityBoard({ slug, initialPosts, categories }: Props) {
             + 글쓰기
           </button>
         ) : (
-          <Link href={`/${slug}/community/join`} className="btn btn-primary">
+          <Link href={loginHref} className="btn btn-primary">
             로그인하고 글쓰기
           </Link>
         )}

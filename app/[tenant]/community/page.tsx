@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { fetchPublicChurch } from "@/lib/public-site";
+import { getPathPrefix } from "@/lib/path-prefix";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import type { CommunityPost, CommunityCategoryItem } from "@/lib/api-client";
 import { DEFAULT_COMMUNITY_CATEGORIES } from "@/lib/community-defaults";
@@ -55,6 +56,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ tena
   if (!isCommunityEnabled(church.enabledPages)) notFound();
 
   const { posts, categories } = await fetchInitial(tenant);
+  const prefix = await getPathPrefix(tenant);
   // 교회가 카테고리를 정의하지 않았으면 기본 카테고리를 노출한다.
   const categoryNames = categories.length > 0 ? categories.map((c) => c.name) : [...DEFAULT_COMMUNITY_CATEGORIES];
 
@@ -71,6 +73,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ tena
             slug={tenant}
             initialPosts={posts}
             categories={categoryNames}
+            loginHref={`${prefix}/login`}
           />
         </div>
       </section>
