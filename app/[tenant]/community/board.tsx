@@ -55,10 +55,20 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
   const [formErr, setFormErr] = useState("");
   const photoInputRef = useRef<HTMLInputElement>(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     setLoggedIn(isLoggedInForChurch(slug));
     setMyId(getCurrentUserId());
   }, [slug]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   const allCats = useMemo(() => ["전체", ...categories], [categories]);
 
@@ -186,14 +196,25 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
   return (
     <>
       {/* 툴바: 카테고리 필터 + 글쓰기 */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 16, flexWrap: "wrap" }}>
-        <div className="chips" style={{ marginBottom: 0 }}>
-          {allCats.map((c) => (
-            <div key={c} className={`chip ${cat === c ? "active" : ""}`} onClick={() => { setCat(c); setPage(1); }}>
-              {c}
-            </div>
-          ))}
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 12, flexWrap: "nowrap" }}>
+        {isMobile ? (
+          <select
+            value={cat}
+            onChange={(e) => { setCat(e.target.value); setPage(1); }}
+            aria-label="카테고리 선택"
+            style={{ flex: 1, minWidth: 0, padding: "10px 12px", fontSize: 14, border: "1px solid var(--line)", borderRadius: 10, background: "var(--surface)", fontFamily: "inherit" }}
+          >
+            {allCats.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        ) : (
+          <div className="chips" style={{ marginBottom: 0 }}>
+            {allCats.map((c) => (
+              <div key={c} className={`chip ${cat === c ? "active" : ""}`} onClick={() => { setCat(c); setPage(1); }}>
+                {c}
+              </div>
+            ))}
+          </div>
+        )}
         {loggedIn ? (
           <button type="button" className="btn btn-primary" onClick={startNew} disabled={writing}>
             + 글쓰기
