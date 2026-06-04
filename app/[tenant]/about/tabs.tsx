@@ -38,7 +38,7 @@ const TABS = [
   { id: "greeting", label: "담임목사 인사" },
   { id: "vision", label: "비전과 사명" },
   { id: "history", label: "교회 연혁" },
-  { id: "staff", label: "교역자 소개" },
+  { id: "staff", label: "섬김의 사람들" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
