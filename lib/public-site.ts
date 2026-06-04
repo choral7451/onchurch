@@ -78,12 +78,13 @@ export const PUBLIC_NAV: NavItem[] = [
   { id: "notices", label: "교회 소식", href: "/notices" },
   { id: "schedule", label: "일정", href: "/schedule" },
   { id: "gallery", label: "갤러리", href: "/gallery" },
+  { id: "community", label: "교제", href: "/community" },
   { id: "prayer", label: "기도 요청", href: "/prayer" },
   { id: "directions", label: "찾아오시는 길", href: "/directions" },
 ];
 
 export const PUBLIC_FOOTER_NAV: { heading: string; ids: string[] }[] = [
   { heading: "교회", ids: ["about", "worship", "directions"] },
-  { heading: "콘텐츠", ids: ["sermons", "notices", "gallery"] },
+  { heading: "콘텐츠", ids: ["sermons", "notices", "gallery", "community"] },
   { heading: "기타", ids: ["schedule", "prayer"] },
 ];

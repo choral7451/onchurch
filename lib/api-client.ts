@@ -147,6 +147,27 @@ export function getRefreshToken(): string | null {
   return getCookie(TOKEN_KEYS.refreshToken) ?? localStorage.getItem(TOKEN_KEYS.refreshToken);
 }
 
+export function isLoggedIn(): boolean {
+  return !!getAccessToken();
+}
+
+// 액세스 토큰(JWT) 페이로드에서 현재 로그인 사용자 id를 추출한다. (본인 글 판별용)
+export function getCurrentUserId(): number | null {
+  const token = getAccessToken();
+  if (!token) return null;
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const json = atob(part.replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(json) as Record<string, unknown>;
+    const cand = payload.id ?? payload.sub ?? payload.userId;
+    const n = Number(cand);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
 async function rawRequest<T>(path: string, opts: RequestOpts, accessToken: string | null): Promise<{ ok: true; data: T } | { ok: false; status: number; code: string; message: string }> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -259,6 +280,7 @@ export const onchurchAuth = {
     name: string;
     phone: string;
     marketingConsent?: boolean;
+    churchSlug?: string | null;
   }) =>
     request<AuthTokens>("/onchurch/auths/sign-up", {
       method: "POST",
@@ -999,4 +1021,115 @@ export const onchurchPrayer = {
     }),
   remove: (id: number) =>
     request<unknown>(`/onchurch/prayers/me/${id}`, { method: "DELETE", auth: true }),
+};
+
+// ── 교제 게시판 (Community) ─────────────────────────────
+export type CommunityPost = {
+  id: number;
+  category: string | null;
+  authorName: string;
+  authorId: number;
+  title: string;
+  content: string | null;
+  photoUrls: string[];
+  videoUrl: string | null;
+  createdAt: string;
+};
+
+export type CommunityManagePost = CommunityPost & {
+  isHidden: boolean;
+  reportCount: number;
+};
+
+export type CommunityPostWriteInput = {
+  category?: string | null;
+  title: string;
+  content?: string | null;
+  photoUrls?: string[];
+  videoUrl?: string | null;
+};
+
+export type CommunityCategoryItem = {
+  id: number;
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type CommunityCategoryWriteInput = {
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export const onchurchCommunity = {
+  listPublic: (slug: string, opts?: { category?: string; page?: number; size?: number }) => {
+    const qs = new URLSearchParams();
+    if (opts?.category && opts.category !== "전체") qs.set("category", opts.category);
+    if (opts?.page) qs.set("page", String(opts.page));
+    if (opts?.size) qs.set("size", String(opts.size));
+    const query = qs.toString();
+    const path = `/onchurch/sites/${encodeURIComponent(slug)}/community-posts${query ? `?${query}` : ""}`;
+    return request<{ posts: CommunityPost[]; totalCount: number }>(path, { method: "GET" });
+  },
+  getPublic: (slug: string, id: number) =>
+    request<CommunityPost>(`/onchurch/sites/${encodeURIComponent(slug)}/community-posts/${id}`, { method: "GET" }),
+  report: (slug: string, id: number) =>
+    request<unknown>(`/onchurch/sites/${encodeURIComponent(slug)}/community-posts/${id}/report`, { method: "POST" }),
+  create: (input: CommunityPostWriteInput) =>
+    request<CommunityPost>("/onchurch/community-posts/me", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({
+        category: input.category ?? null,
+        title: input.title,
+        content: input.content ?? null,
+        photoUrls: input.photoUrls ?? [],
+        videoUrl: input.videoUrl ?? null,
+      }),
+    }),
+  update: (id: number, input: CommunityPostWriteInput) =>
+    request<CommunityPost>(`/onchurch/community-posts/me/${id}`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({
+        category: input.category ?? null,
+        title: input.title,
+        content: input.content ?? null,
+        photoUrls: input.photoUrls ?? [],
+        videoUrl: input.videoUrl ?? null,
+      }),
+    }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/community-posts/me/${id}`, { method: "DELETE", auth: true }),
+  // 관리자 사후 관리
+  listManage: () =>
+    request<{ posts: CommunityManagePost[] }>("/onchurch/community-posts/manage", { method: "GET", auth: true }).then(
+      (r) => r.posts ?? [],
+    ),
+  setHidden: (id: number, isHidden: boolean) =>
+    request<CommunityManagePost>(`/onchurch/community-posts/manage/${id}/hide`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ isHidden }),
+    }),
+  removeManage: (id: number) =>
+    request<unknown>(`/onchurch/community-posts/manage/${id}`, { method: "DELETE", auth: true }),
+};
+
+export const onchurchCommunityCategory = {
+  listMine: () =>
+    request<{ categories: CommunityCategoryItem[] }>("/onchurch/community-categories/me", { method: "GET", auth: true }).then(
+      (r) => r.categories ?? [],
+    ),
+  listPublic: (slug: string) =>
+    request<{ categories: CommunityCategoryItem[] }>(`/onchurch/sites/${encodeURIComponent(slug)}/community-categories`, {
+      method: "GET",
+    }).then((r) => r.categories ?? []),
+  create: (input: CommunityCategoryWriteInput) =>
+    request<CommunityCategoryItem>("/onchurch/community-categories/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: CommunityCategoryWriteInput) =>
+    request<CommunityCategoryItem>(`/onchurch/community-categories/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/community-categories/me/${id}`, { method: "DELETE", auth: true }),
 };

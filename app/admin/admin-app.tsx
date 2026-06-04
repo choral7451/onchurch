@@ -31,6 +31,7 @@ import { ScheduleEditor } from "./page-editors/schedule";
 import { AboutEditor } from "./page-editors/about";
 import { DirectionsEditor } from "./page-editors/directions";
 import { GalleryEditor } from "./page-editors/gallery";
+import { CommunityEditor } from "./page-editors/community";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
@@ -79,6 +80,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   departments: "유아부부터 청년부까지 · 소그룹",
   prayer: "기도 요청 폼 · 익명 옵션",
   gallery: "사진 갤러리",
+  community: "성도 교제 게시판 · 글/사진/영상 · 사후 관리",
   bible: "성경 통독 · QT 가이드",
 };
 
@@ -1021,6 +1023,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
                   {activePage === "gallery" && <GalleryEditor />}
 
+                  {activePage === "community" && <CommunityEditor />}
+
                   {activePage === "prayer" && <PrayerEditor />}
 
                   {activePage !== "worship" &&
@@ -1029,6 +1033,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     activePage !== "about" &&
                     activePage !== "sermons" &&
                     activePage !== "gallery" &&
+                    activePage !== "community" &&
                     activePage !== "prayer" && (
                       <section className="admin-section admin-section-empty">
                         <div className="admin-section-head">
