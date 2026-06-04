@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
+import { ApiError, onchurchAuth, saveSessionChurch, saveTokens } from "@/lib/api-client";
 
 type Tab = "login" | "join";
 type PhoneStatus = "idle" | "code-sent" | "verifying" | "verified";
@@ -34,7 +34,7 @@ export function MemberAuth({ slug, churchName, redirectTo }: { slug: string; chu
         <div className={`chip ${tab === "join" ? "active" : ""}`} onClick={() => setTab("join")}>성도 가입</div>
       </div>
       {tab === "login" ? (
-        <LoginPane onDone={done} />
+        <LoginPane slug={slug} onDone={done} />
       ) : (
         <JoinPane slug={slug} churchName={churchName} onDone={done} />
       )}
@@ -42,7 +42,7 @@ export function MemberAuth({ slug, churchName, redirectTo }: { slug: string; chu
   );
 }
 
-function LoginPane({ onDone }: { onDone: () => void }) {
+function LoginPane({ slug, onDone }: { slug: string; onDone: () => void }) {
   const [userId, setUserId] = useState("");
   const [pw, setPw] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -54,8 +54,9 @@ function LoginPane({ onDone }: { onDone: () => void }) {
     setSubmitting(true);
     setErrMsg("");
     try {
-      const tokens = await onchurchAuth.login(userId, pw);
+      const tokens = await onchurchAuth.login(userId, pw, slug);
       saveTokens(tokens);
+      saveSessionChurch(slug);
       onDone();
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "로그인에 실패했습니다.");
@@ -147,6 +148,7 @@ function JoinPane({ slug, churchName, onDone }: { slug: string; churchName: stri
     try {
       const tokens = await onchurchAuth.signup({ userId, password: pw, name, phone, marketingConsent: false, churchSlug: slug });
       saveTokens(tokens);
+      saveSessionChurch(slug);
       onDone();
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "회원가입에 실패했습니다.");

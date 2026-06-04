@@ -6,7 +6,7 @@ import { Icon } from "@/components/icons";
 import {
   ApiError,
   getCurrentUserId,
-  isLoggedIn,
+  isLoggedInForChurch,
   onchurchCommunity,
   uploadImages,
   type CommunityPost,
@@ -56,9 +56,9 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setLoggedIn(isLoggedIn());
+    setLoggedIn(isLoggedInForChurch(slug));
     setMyId(getCurrentUserId());
-  }, []);
+  }, [slug]);
 
   const allCats = useMemo(() => ["전체", ...categories], [categories]);
 

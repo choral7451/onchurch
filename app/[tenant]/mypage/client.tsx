@@ -8,7 +8,7 @@ import {
   clearTokens,
   getCurrentUserId,
   getCurrentUserName,
-  isLoggedIn,
+  isLoggedInForChurch,
   onchurchAuth,
   onchurchCommunity,
   onchurchUser,
@@ -111,7 +111,7 @@ export function MyPageClient({ slug, loginHref, communityHref }: { slug: string;
   const [pwMsg, setPwMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    const ok = isLoggedIn();
+    const ok = isLoggedInForChurch(slug);
     setLoggedIn(ok);
     if (!ok) { setReady(true); return; }
     setName(getCurrentUserName() ?? "성도");

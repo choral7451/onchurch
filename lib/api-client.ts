@@ -72,6 +72,9 @@ const TOKEN_KEYS = {
   refreshTokenExpiresIn: "onchurch.refreshTokenExpiresIn",
 } as const;
 
+// 이 세션이 어느 교회 사이트에서 로그인했는지(성도 로그인 스코프). "admin"이면 관리 콘솔(루트) 로그인.
+const SESSION_CHURCH_KEY = "onchurch.sessionChurch";
+
 const COOKIE_ROOTS = ["everychurch.co.kr", "onchurch.kr"];
 
 function getCookieDomain(): string | null {
@@ -143,7 +146,28 @@ export function clearTokens() {
     deleteCookie(k);
     localStorage.removeItem(k);
   });
+  deleteCookie(SESSION_CHURCH_KEY);
+  localStorage.removeItem(SESSION_CHURCH_KEY);
   emitAuthChange();
+}
+
+// 로그인한 교회 slug를 세션에 기록한다. (관리 콘솔 로그인은 "admin")
+export function saveSessionChurch(slug: string) {
+  if (typeof window === "undefined") return;
+  setCookie(SESSION_CHURCH_KEY, slug);
+  localStorage.removeItem(SESSION_CHURCH_KEY);
+  emitAuthChange();
+}
+
+export function getSessionChurch(): string | null {
+  if (typeof window === "undefined") return null;
+  return getCookie(SESSION_CHURCH_KEY) ?? localStorage.getItem(SESSION_CHURCH_KEY);
+}
+
+// 현재 교회 사이트에 대해 로그인된 상태인가?
+// 토큰이 있고, 세션이 이 교회(slug)에서 로그인된 경우에만 true.
+export function isLoggedInForChurch(slug: string): boolean {
+  return isLoggedIn() && getSessionChurch() === slug;
 }
 
 export function getAccessToken(): string | null {
@@ -308,10 +332,10 @@ export const onchurchAuth = {
       method: "POST",
       body: JSON.stringify(params),
     }),
-  login: (userId: string, password: string) =>
+  login: (userId: string, password: string, churchSlug?: string | null) =>
     request<AuthTokens>("/onchurch/auths/login", {
       method: "POST",
-      body: JSON.stringify({ userId, password }),
+      body: JSON.stringify({ userId, password, churchSlug: churchSlug ?? null }),
     }),
   refresh: (accessToken: string, refreshToken: string) =>
     request<AuthTokens>("/onchurch/auths/refresh", {
@@ -335,6 +359,24 @@ export const onchurchUser = {
     request<UserProfile>("/onchurch/users/me", { method: "PUT", auth: true, body: JSON.stringify(input) }),
   changePassword: (input: { currentPassword: string; newPassword: string }) =>
     request<unknown>("/onchurch/users/me/password", { method: "PUT", auth: true, body: JSON.stringify(input) }),
+};
+
+export type ChurchMember = {
+  id: number;
+  loginId: string;
+  name: string;
+  phone: string;
+  role: string;
+  createdAt: string;
+};
+
+export const onchurchChurchMember = {
+  listMine: () =>
+    request<{ members: ChurchMember[] }>("/onchurch/church-members/me", { method: "GET", auth: true }).then(
+      (r) => r.members ?? [],
+    ),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/church-members/me/${id}`, { method: "DELETE", auth: true }),
 };
 
 export const onchurchChurch = {

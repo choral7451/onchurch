@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { AUTH_CHANGE_EVENT, clearTokens, isLoggedIn, onchurchChurch } from "@/lib/api-client";
+import { AUTH_CHANGE_EVENT, clearTokens, isLoggedInForChurch, onchurchChurch } from "@/lib/api-client";
 import { buildAdminUrl } from "@/lib/site-host";
 
 type Props = {
   tagline: string;
   pathPrefix: string;
+  slug: string;
 };
 
 const menuItemStyle: React.CSSProperties = {
@@ -25,7 +26,7 @@ const menuItemStyle: React.CSSProperties = {
   whiteSpace: "nowrap",
 };
 
-export function UtilBar({ tagline, pathPrefix }: Props) {
+export function UtilBar({ tagline, pathPrefix, slug }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -37,8 +38,9 @@ export function UtilBar({ tagline, pathPrefix }: Props) {
   const mypageHref = `${pathPrefix}/mypage` || "/mypage";
 
   // 로그인/로그아웃(같은 탭), 다른 탭(storage), 페이지 이동 시 모두 로그인 상태를 다시 읽는다.
+  // 이 교회(slug)에서 로그인한 세션만 로그인으로 간주한다.
   useEffect(() => {
-    const sync = () => setAuthed(isLoggedIn());
+    const sync = () => setAuthed(isLoggedInForChurch(slug));
     sync();
     window.addEventListener(AUTH_CHANGE_EVENT, sync);
     const onStorage = (e: StorageEvent) => {
@@ -49,7 +51,7 @@ export function UtilBar({ tagline, pathPrefix }: Props) {
       window.removeEventListener(AUTH_CHANGE_EVENT, sync);
       window.removeEventListener("storage", onStorage);
     };
-  }, [pathname]);
+  }, [pathname, slug]);
 
   useEffect(() => {
     if (!authed) { setIsAdmin(false); return; }

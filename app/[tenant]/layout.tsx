@@ -50,7 +50,7 @@ export default async function TenantLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd }}
       />
-      <UtilBar tagline={brand.tagline} pathPrefix={pathPrefix} />
+      <UtilBar tagline={brand.tagline} pathPrefix={pathPrefix} slug={tenant} />
       <Nav tenant={tenant} brand={brand} nav={PUBLIC_NAV} pathPrefix={pathPrefix} enabledPages={church.enabledPages} />
       <main>{children}</main>
       <Footer brand={brand} nav={PUBLIC_NAV} footerNav={PUBLIC_FOOTER_NAV} pathPrefix={pathPrefix} enabledPages={church.enabledPages} />

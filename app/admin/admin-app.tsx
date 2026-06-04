@@ -21,6 +21,7 @@ import {
   clearTokens,
   onchurchChurch,
   onchurchPastor,
+  onchurchUser,
   onchurchWorshipService,
   uploadImages,
   type Subscription,
@@ -32,6 +33,7 @@ import { AboutEditor } from "./page-editors/about";
 import { DirectionsEditor } from "./page-editors/directions";
 import { GalleryEditor } from "./page-editors/gallery";
 import { CommunityEditor } from "./page-editors/community";
+import { MembersEditor } from "./page-editors/members";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
@@ -84,7 +86,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "inquiry" | "billing" | `page:${string}`;
+type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "inquiry" | "billing" | "members" | `page:${string}`;
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -282,6 +284,21 @@ export function AdminApp({ initial }: { initial: Initial }) {
       try {
         const res = await onchurchChurch.getMine();
         if (cancelled) return;
+        // 교회를 소유하지 않은 순수 성도(MEMBER)는 관리 콘솔 접근 불가.
+        // (교회 소유자는 role과 무관하게 허용 — 기존 데이터 보호)
+        if (!res?.church) {
+          try {
+            const profile = await onchurchUser.getMe();
+            if (cancelled) return;
+            if (profile.role !== "admin") {
+              alert("교회 관리자 계정만 접근할 수 있습니다.");
+              router.push("/");
+              return;
+            }
+          } catch {
+            /* 프로필 조회 실패 시 일단 통과 (아래 로직에서 처리) */
+          }
+        }
         if (res?.church) {
           const c = res.church;
           setSlug(c.slug);
@@ -698,6 +715,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
 
             <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">회원</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "members" ? "active" : ""}`}
+                onClick={() => setActiveSection("members")}
+              >
+                <span className="admin-sidebar-item-label">회원 관리</span>
+                <span className="admin-sidebar-pill optional">성도</span>
+              </button>
+            </div>
+
+            <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">도움말</div>
               <button
                 type="button"
@@ -980,6 +1009,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {activeSection === "bulletin" && <BulletinEditor />}
 
               {activeSection === "inquiry" && <InquiryEditor />}
+
+              {activeSection === "members" && <MembersEditor />}
 
               {activePage && activePageItem && (
                 <div className="admin-page-editor">
