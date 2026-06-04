@@ -120,6 +120,13 @@ function getCookie(name: string): string | null {
   return null;
 }
 
+export const AUTH_CHANGE_EVENT = "onchurch-auth-change";
+
+function emitAuthChange() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+}
+
 export function saveTokens(tokens: AuthTokens) {
   if (typeof window === "undefined") return;
   setCookie(TOKEN_KEYS.accessToken, tokens.accessToken);
@@ -127,6 +134,7 @@ export function saveTokens(tokens: AuthTokens) {
   setCookie(TOKEN_KEYS.refreshToken, tokens.refreshToken);
   setCookie(TOKEN_KEYS.refreshTokenExpiresIn, tokens.refreshTokenExpiresIn);
   Object.values(TOKEN_KEYS).forEach((k) => localStorage.removeItem(k));
+  emitAuthChange();
 }
 
 export function clearTokens() {
@@ -135,6 +143,7 @@ export function clearTokens() {
     deleteCookie(k);
     localStorage.removeItem(k);
   });
+  emitAuthChange();
 }
 
 export function getAccessToken(): string | null {

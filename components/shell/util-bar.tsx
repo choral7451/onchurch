@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { clearTokens, isLoggedIn, onchurchChurch } from "@/lib/api-client";
+import { usePathname, useRouter } from "next/navigation";
+import { AUTH_CHANGE_EVENT, clearTokens, isLoggedIn, onchurchChurch } from "@/lib/api-client";
 import { buildAdminUrl } from "@/lib/site-host";
 
 type Props = {
@@ -27,6 +27,7 @@ const menuItemStyle: React.CSSProperties = {
 
 export function UtilBar({ tagline, pathPrefix }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -35,15 +36,20 @@ export function UtilBar({ tagline, pathPrefix }: Props) {
   const loginHref = `${pathPrefix}/login` || "/login";
   const mypageHref = `${pathPrefix}/mypage` || "/mypage";
 
+  // 로그인/로그아웃(같은 탭), 다른 탭(storage), 페이지 이동 시 모두 로그인 상태를 다시 읽는다.
   useEffect(() => {
-    const ok = isLoggedIn();
-    setAuthed(ok);
+    const sync = () => setAuthed(isLoggedIn());
+    sync();
+    window.addEventListener(AUTH_CHANGE_EVENT, sync);
     const onStorage = (e: StorageEvent) => {
-      if (e.key && e.key.startsWith("onchurch.")) setAuthed(isLoggedIn());
+      if (!e.key || e.key.startsWith("onchurch.")) sync();
     };
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
+    return () => {
+      window.removeEventListener(AUTH_CHANGE_EVENT, sync);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if (!authed) { setIsAdmin(false); return; }
