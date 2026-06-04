@@ -52,7 +52,7 @@ export function AboutEditor({ visibility, onToggleVisibility, onChanged }: About
     pastor: "담임목사",
     vision: "비전",
     history: "연혁",
-    staff: "교역자",
+    staff: "섬김의 사람들",
   };
 
   return (
@@ -60,7 +60,7 @@ export function AboutEditor({ visibility, onToggleVisibility, onChanged }: About
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">ABOUT</div>
         <h2>교회 소개 <span className="admin-sidebar-pill complete" style={{ fontSize: 10, marginLeft: 8, verticalAlign: "middle" }}>필수</span></h2>
-        <p>담임목사 인사말은 필수입니다. 비전 · 연혁 · 교역자는 공개 여부를 선택할 수 있습니다.</p>
+        <p>담임목사 인사말은 필수입니다. 비전 · 연혁 · 섬김의 사람들은 공개 여부를 선택할 수 있습니다.</p>
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -599,7 +599,7 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
   async function load() {
     setStatus("loading"); setErrMsg("");
     try { setItems(await onchurchStaff.listMine()); }
-    catch (err) { setErrMsg(err instanceof ApiError ? err.message : "교역자 목록을 불러오지 못했습니다."); }
+    catch (err) { setErrMsg(err instanceof ApiError ? err.message : "섬김의 사람들 목록을 불러오지 못했습니다."); }
     finally { setStatus("idle"); }
   }
 
@@ -630,7 +630,7 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
   }
 
   async function remove(id: number) {
-    if (!confirm("이 교역자 항목을 삭제할까요?")) return;
+    if (!confirm("이 섬김의 사람들 항목을 삭제할까요?")) return;
     setStatus("deleting"); setErrMsg("");
     try { await onchurchStaff.remove(id); await load(); }
     catch (err) { setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다."); }
@@ -657,10 +657,10 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <SectionVisibilityToggle label="교역자" visible={visible} onToggle={onToggleVisible} />
+      <SectionVisibilityToggle label="섬김의 사람들" visible={visible} onToggle={onToggleVisible} />
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 교역자 추가</button>
+        <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 섬김의 사람들 추가</button>
       </div>
       {editing !== null && (
         <div className="admin-banner-card editing">
@@ -700,7 +700,7 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {status === "loading" && <p style={{ color: "var(--muted)" }}>불러오는 중...</p>}
         {status !== "loading" && items.length === 0 && editing === null && (
-          <p style={{ color: "var(--muted)" }}>등록된 교역자가 없습니다.</p>
+          <p style={{ color: "var(--muted)" }}>등록된 섬김의 사람들이 없습니다.</p>
         )}
         {items.map((it, idx) => (
           <div

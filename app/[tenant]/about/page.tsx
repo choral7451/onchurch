@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   return buildChurchMetadata(church, pastor, {
     pageTitle: "교회 소개",
     path: "/about",
-    pageDescription: `${pastorPhrase}${church.name}의 비전·연혁·교역자를 소개합니다.${church.address ? ` 위치: ${church.address}.` : ""}`,
-    extraKeywords: ["교회 소개", "비전", "연혁", "교역자", ...(pastor?.name ? [pastor.name, `${pastor.name} 담임목사`] : [])],
+    pageDescription: `${pastorPhrase}${church.name}의 비전·연혁·섬김의 사람들을 소개합니다.${church.address ? ` 위치: ${church.address}.` : ""}`,
+    extraKeywords: ["교회 소개", "비전", "연혁", "섬김의 사람들", ...(pastor?.name ? [pastor.name, `${pastor.name} 담임목사`] : [])],
   });
 }
 
@@ -120,7 +120,7 @@ export default async function AboutPage({ params }: { params: Promise<{ tenant: 
   const sections: string[] = ["담임목사 인사"];
   if (isOn("about-vision")) sections.push("비전");
   if (isOn("about-history")) sections.push("연혁");
-  if (isOn("about-staff")) sections.push("교역자 소개");
+  if (isOn("about-staff")) sections.push("섬김의 사람들");
   const last = sections[sections.length - 1];
   const sub = `우리 교회를 소개합니다. ${sections.join(" · ")}${josaUlReul(last)} 확인하세요.`;
 

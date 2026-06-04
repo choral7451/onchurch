@@ -142,7 +142,7 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
 
       {activeTab === "staff" && (
         staff.length === 0 ? (
-          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 교역자 정보가 등록되지 않았습니다.</div>
+          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 섬김의 사람들 정보가 등록되지 않았습니다.</div>
         ) : (
           <div className="staff-grid">
             {staff.map((s) => (
