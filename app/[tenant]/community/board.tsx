@@ -295,6 +295,7 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
           {visible.map((p) => {
             const thumb = p.photoUrls[0] ?? null;
             const hasVideo = !!p.videoUrl;
+            const hasMedia = !!thumb || hasVideo;
             return (
               <button
                 key={p.id}
@@ -303,25 +304,46 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
                 onClick={() => setActive(p)}
                 style={{ textAlign: "left", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", cursor: "pointer" }}
               >
-                <div style={{ position: "relative", aspectRatio: "4 / 3", background: "var(--surface-2, #f1f1f1)" }}>
-                  {thumb ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center", color: "var(--muted)" }}>
-                      <Icon.image style={{ width: 28, height: 28 }} />
-                    </div>
-                  )}
-                  {hasVideo && (
-                    <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.65)", color: "#fff", borderRadius: 999, padding: "3px 9px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      ▶ 영상
-                    </span>
-                  )}
-                </div>
-                <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+                {hasMedia && (
+                  <div style={{ position: "relative", aspectRatio: "4 / 3", background: "var(--surface-2, #f1f1f1)" }}>
+                    {thumb ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      // 영상만 있는 글: 깨진 이미지 대신 그라데이션 + 플레이 표시
+                      <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center", background: "linear-gradient(135deg, var(--primary), var(--primary-deep, #1f2937))", color: "rgba(255,255,255,0.92)" }}>
+                        <span style={{ fontSize: 34, lineHeight: 1 }}>▶</span>
+                      </div>
+                    )}
+                    {hasVideo && (
+                      <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.65)", color: "#fff", borderRadius: 999, padding: "3px 9px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        ▶ 영상
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 8, flex: 1, minHeight: hasMedia ? undefined : 168 }}>
                   {p.category && <span className="notice-cat" style={{ alignSelf: "flex-start" }}>{p.category}</span>}
                   <strong style={{ fontSize: 15, lineHeight: 1.4, color: "var(--ink)" }}>{p.title}</strong>
-                  <div style={{ marginTop: "auto", display: "flex", justifyContent: "space-between", color: "var(--muted)", fontSize: 12 }}>
+                  {/* 글만 있는 카드: 본문 미리보기로 빈 공간을 채운다 */}
+                  {!hasMedia && p.content && (
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "var(--muted)",
+                        fontSize: 13.5,
+                        lineHeight: 1.6,
+                        whiteSpace: "pre-wrap",
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 4,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                    >
+                      {p.content}
+                    </p>
+                  )}
+                  <div style={{ marginTop: "auto", paddingTop: 10, display: "flex", justifyContent: "space-between", color: "var(--muted)", fontSize: 12 }}>
                     <span>{p.authorName}</span>
                     <span>{formatDate(p.createdAt)}</span>
                   </div>
