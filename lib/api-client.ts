@@ -311,6 +311,23 @@ export const onchurchAuth = {
     }),
 };
 
+export type UserProfile = {
+  id: number;
+  loginId: string;
+  name: string;
+  phone: string;
+  role: string;
+  churchName: string | null;
+};
+
+export const onchurchUser = {
+  getMe: () => request<UserProfile>("/onchurch/users/me", { method: "GET", auth: true }),
+  updateProfile: (input: { name: string; phone: string }) =>
+    request<UserProfile>("/onchurch/users/me", { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  changePassword: (input: { currentPassword: string; newPassword: string }) =>
+    request<unknown>("/onchurch/users/me/password", { method: "PUT", auth: true, body: JSON.stringify(input) }),
+};
+
 export const onchurchChurch = {
   getMine: () =>
     request<{ church: Church | null; subscription: Subscription }>("/onchurch/churches/me", {
