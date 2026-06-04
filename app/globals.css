@@ -667,6 +667,22 @@ main { flex: 1; }
 .admin-sidebar-pill.complete { background: oklch(0.6 0.14 145 / 0.14); color: oklch(0.38 0.16 145); }
 .admin-sidebar-pill.incomplete { background: oklch(0.65 0.16 28 / 0.14); color: oklch(0.5 0.18 28); }
 .admin-sidebar-pill.optional { background: var(--bg-tinted); color: var(--muted); }
+.admin-sidebar-pill.billing { background: oklch(0.6 0.16 250 / 0.14); color: oklch(0.45 0.18 250); }
+.admin-sidebar-item-billing.active { border-color: oklch(0.6 0.16 250 / 0.5); }
+
+.payment-account-card { border: 1px solid var(--border); border-radius: var(--r-lg, 14px); background: linear-gradient(180deg, oklch(0.6 0.16 250 / 0.06), transparent); padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+.payment-account-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.payment-account-bank { font-size: 15px; font-weight: 700; color: var(--ink); }
+.payment-account-holder { font-size: 13px; color: var(--muted); }
+.payment-account-number-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-radius: var(--r-md); background: var(--bg-tinted); flex-wrap: wrap; }
+.payment-account-number { font-size: 22px; font-weight: 800; letter-spacing: 0.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.payment-account-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.payment-account-plan { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--r-md); }
+.payment-account-plan.highlight { border-color: oklch(0.6 0.16 250 / 0.5); background: oklch(0.6 0.16 250 / 0.06); }
+.payment-account-plan-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.payment-account-plan-price { font-size: 17px; font-weight: 800; color: var(--ink); }
+.payment-account-plan-badge { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: oklch(0.6 0.16 250); color: white; }
+.payment-account-note { margin: 0; font-size: 13px; font-weight: 600; color: oklch(0.45 0.18 250); }
 .admin-sidebar-item.is-incomplete:not(.active) { border-color: oklch(0.65 0.16 28 / 0.35); background: oklch(0.65 0.16 28 / 0.05); }
 .admin-sidebar-item.is-complete:not(.active) { border-color: oklch(0.6 0.14 145 / 0.3); }
 .admin-section-banner { display: flex; align-items: center; gap: 10px; padding: 12px 16px; margin-bottom: 20px; border-radius: var(--r-md); font-size: 13.5px; font-weight: 500; line-height: 1.5; border: 1px solid oklch(0.65 0.16 28 / 0.32); background: oklch(0.65 0.16 28 / 0.08); color: oklch(0.45 0.18 28); }

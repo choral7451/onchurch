@@ -82,7 +82,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "inquiry" | `page:${string}`;
+type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "inquiry" | "billing" | `page:${string}`;
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -131,6 +131,54 @@ function SubscriptionBadge({ subscription }: { subscription: Subscription | null
     );
   }
   return null;
+}
+
+const PAYMENT_INFO = {
+  bank: "국민은행",
+  account: "029302-04-342479",
+  holder: "임성준",
+  monthly: "월 10,000원",
+  yearly: "1년 100,000원",
+  note: "입금 후 1영업일 이내 적용됩니다.",
+};
+
+function PaymentAccountCard() {
+  const [copied, setCopied] = useState(false);
+  async function copyAccount() {
+    try {
+      await navigator.clipboard.writeText(PAYMENT_INFO.account);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // 클립보드 미지원 환경 — 무시
+    }
+  }
+  return (
+    <div className="payment-account-card">
+      <div className="payment-account-head">
+        <span className="payment-account-bank">{PAYMENT_INFO.bank}</span>
+        <span className="payment-account-holder">예금주 {PAYMENT_INFO.holder}</span>
+      </div>
+      <div className="payment-account-number-row">
+        <span className="payment-account-number">{PAYMENT_INFO.account}</span>
+        <button type="button" className="btn btn-secondary" onClick={copyAccount}>
+          {copied ? "복사됨 ✓" : "계좌 복사"}
+        </button>
+      </div>
+      <div className="payment-account-plans">
+        <div className="payment-account-plan">
+          <span className="payment-account-plan-label">월간</span>
+          <span className="payment-account-plan-price">{PAYMENT_INFO.monthly}</span>
+        </div>
+        <div className="payment-account-plan highlight">
+          <span className="payment-account-plan-label">연간</span>
+          <span className="payment-account-plan-price">{PAYMENT_INFO.yearly}</span>
+          <span className="payment-account-plan-badge">2개월 무료</span>
+        </div>
+      </div>
+      <p className="payment-account-note">{PAYMENT_INFO.note}</p>
+    </div>
+  );
 }
 
 const DENOMINATION_LOGOS: { url: string; label: string }[] = [
@@ -624,6 +672,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
 
             <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">결제</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item admin-sidebar-item-billing ${activeSection === "billing" ? "active" : ""}`}
+                onClick={() => setActiveSection("billing")}
+              >
+                <span className="admin-sidebar-item-label">결제 · 입금 계좌</span>
+                <span className="admin-sidebar-pill billing">계좌</span>
+              </button>
+            </div>
+
+            <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">도구</div>
               <button
                 type="button"
@@ -902,6 +962,19 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 />
               )}
 
+              {activeSection === "billing" && (
+                <section className="admin-section">
+                  <div className="admin-section-head">
+                    <div className="admin-section-eyebrow">BILLING</div>
+                    <h2>결제 · 입금 계좌</h2>
+                    <p>아래 계좌로 입금해주시면 사이트 운영이 연장됩니다.</p>
+                  </div>
+                  <div className="admin-section-body">
+                    <PaymentAccountCard />
+                  </div>
+                </section>
+              )}
+
               {activeSection === "bulletin" && <BulletinEditor />}
 
               {activeSection === "inquiry" && <InquiryEditor />}
@@ -1035,21 +1108,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <>
                 <h3 className="admin-modal-title">결제가 필요합니다</h3>
                 <p className="admin-modal-body">
-                  무료 체험이 종료되었거나 결제 정보가 없습니다. 사이트를 계속 운영하려면 결제를 진행해주세요.
+                  무료 체험이 종료되었거나 결제 정보가 없습니다. 아래 계좌로 입금해주시면 사이트 운영이 연장됩니다.
                 </p>
+                <PaymentAccountCard />
                 <div className="admin-modal-actions">
-                  <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>
-                    닫기
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => {
-                      setModal(null);
-                      router.push("/billing");
-                    }}
-                  >
-                    결제하기
+                  <button type="button" className="btn btn-primary" onClick={() => setModal(null)}>
+                    확인
                   </button>
                 </div>
               </>
