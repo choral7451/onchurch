@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,10 +9,14 @@ import {
   getCurrentUserId,
   getCurrentUserName,
   isLoggedIn,
+  onchurchAuth,
   onchurchCommunity,
   onchurchUser,
   type CommunityPost,
 } from "@/lib/api-client";
+
+const CODE_TTL_SECONDS = 300;
+type PhoneStatus = "idle" | "code-sent" | "verifying" | "verified";
 
 function formatPhone(raw: string) {
   const d = raw.replace(/[^0-9]/g, "").slice(0, 11);
@@ -38,8 +42,66 @@ export function MyPageClient({ slug, loginHref, communityHref }: { slug: string;
   const [loginId, setLoginId] = useState("");
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
+  const [origPhone, setOrigPhone] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+
+  // 휴대폰 재인증 (번호 변경 시)
+  const [phoneStatus, setPhoneStatus] = useState<PhoneStatus>("idle");
+  const [code, setCode] = useState("");
+  const [phoneSending, setPhoneSending] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [phoneMsg, setPhoneMsg] = useState<{ kind: "info" | "error" | "success"; text: string } | null>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  const phoneChanged = editPhone.trim() !== origPhone.trim();
+  const phoneVerified = !phoneChanged || phoneStatus === "verified";
+
+  useEffect(() => {
+    if (phoneStatus !== "code-sent" || secondsLeft <= 0) return;
+    const t = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(t);
+  }, [phoneStatus, secondsLeft]);
+
+  function onEditPhone(v: string) {
+    setEditPhone(formatPhone(v));
+    setPhoneStatus("idle");
+    setCode("");
+    setPhoneMsg(null);
+  }
+
+  const digitsOnly = (s: string) => s.replace(/[^0-9]/g, "");
+
+  async function sendPhoneCode() {
+    if (digitsOnly(editPhone).length < 10) { setPhoneMsg({ kind: "error", text: "올바른 휴대전화 번호를 입력해주세요." }); return; }
+    setPhoneSending(true);
+    setPhoneMsg(null);
+    try {
+      await onchurchAuth.sendVerification(editPhone);
+      setPhoneStatus("code-sent");
+      setSecondsLeft(CODE_TTL_SECONDS);
+      setPhoneMsg({ kind: "info", text: "인증번호가 발송되었습니다. 5분 안에 입력해주세요." });
+      setTimeout(() => codeInputRef.current?.focus(), 50);
+    } catch (err) {
+      setPhoneMsg({ kind: "error", text: err instanceof ApiError ? err.message : "인증번호 발송에 실패했습니다." });
+    } finally {
+      setPhoneSending(false);
+    }
+  }
+
+  async function verifyPhoneCode() {
+    if (!/^\d{6}$/.test(code)) { setPhoneMsg({ kind: "error", text: "6자리 숫자 인증번호를 입력해주세요." }); return; }
+    if (secondsLeft <= 0) { setPhoneMsg({ kind: "error", text: "인증번호가 만료되었습니다. 다시 발송해주세요." }); return; }
+    setPhoneStatus("verifying");
+    setPhoneMsg(null);
+    try {
+      await onchurchAuth.verifyCode(editPhone, code);
+      setPhoneStatus("verified");
+      setPhoneMsg({ kind: "success", text: "휴대폰 인증이 완료되었습니다." });
+    } catch (err) {
+      setPhoneStatus("code-sent");
+      setPhoneMsg({ kind: "error", text: err instanceof ApiError ? err.message : "인증번호 검증에 실패했습니다." });
+    }
+  }
 
   // 비밀번호 변경
   const [curPw, setCurPw] = useState("");
@@ -65,6 +127,7 @@ export function MyPageClient({ slug, loginHref, communityHref }: { slug: string;
           setLoginId(profile.loginId);
           setEditName(profile.name);
           setEditPhone(profile.phone);
+          setOrigPhone(profile.phone);
         }
         setMyPosts((postsRes.posts ?? []).filter((p) => myId != null && p.authorId === myId));
       } finally {
@@ -77,11 +140,16 @@ export function MyPageClient({ slug, loginHref, communityHref }: { slug: string;
     e.preventDefault();
     if (profileSaving) return;
     if (!editName.trim()) { setProfileMsg({ kind: "error", text: "이름을 입력해주세요." }); return; }
+    if (phoneChanged && !phoneVerified) { setProfileMsg({ kind: "error", text: "변경한 휴대폰 번호의 인증을 완료해주세요." }); return; }
     setProfileSaving(true);
     setProfileMsg(null);
     try {
       const updated = await onchurchUser.updateProfile({ name: editName.trim(), phone: editPhone.trim() });
       setName(updated.name);
+      setOrigPhone(updated.phone);
+      setPhoneStatus("idle");
+      setCode("");
+      setPhoneMsg(null);
       setProfileMsg({ kind: "success", text: "회원정보가 저장되었습니다." });
     } catch (err) {
       setProfileMsg({ kind: "error", text: err instanceof ApiError ? err.message : "저장에 실패했습니다." });
@@ -149,13 +217,37 @@ export function MyPageClient({ slug, loginHref, communityHref }: { slug: string;
               <label>이름 <span className="req">*</span></label>
               <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="이름" required />
             </div>
-            <div className="form-row">
-              <label>연락처</label>
-              <input type="tel" inputMode="numeric" value={editPhone} onChange={(e) => setEditPhone(formatPhone(e.target.value))} placeholder="010-0000-0000" />
+            <div className="form-row full">
+              <label>
+                연락처
+                {phoneChanged && phoneStatus === "verified" && <span style={{ marginLeft: 8, color: "oklch(0.5 0.13 145)", fontWeight: 600 }}>· 인증 완료</span>}
+              </label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                <input type="tel" inputMode="numeric" value={editPhone} onChange={(e) => onEditPhone(e.target.value)} placeholder="010-0000-0000" />
+                {phoneChanged && phoneStatus !== "verified" && (
+                  <button type="button" className="btn btn-secondary" onClick={sendPhoneCode} disabled={phoneSending || digitsOnly(editPhone).length < 10} style={{ whiteSpace: "nowrap" }}>
+                    {phoneSending ? "발송 중..." : phoneStatus === "idle" ? "인증번호 발송" : "재발송"}
+                  </button>
+                )}
+              </div>
+              {phoneChanged && (phoneStatus === "code-sent" || phoneStatus === "verifying") && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
+                  <div style={{ position: "relative" }}>
+                    <input ref={codeInputRef} type="text" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))} placeholder="6자리 인증번호" style={{ paddingRight: 64, width: "100%", letterSpacing: "0.2em" }} />
+                    <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: "var(--font-mono)", fontSize: 12, color: secondsLeft <= 30 ? "oklch(0.55 0.15 28)" : "var(--muted)" }}>
+                      {`${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`}
+                    </span>
+                  </div>
+                  <button type="button" className="btn btn-primary" onClick={verifyPhoneCode} disabled={code.length < 6 || secondsLeft <= 0 || phoneStatus === "verifying"} style={{ whiteSpace: "nowrap" }}>
+                    {phoneStatus === "verifying" ? "확인 중..." : "확인"}
+                  </button>
+                </div>
+              )}
+              {phoneMsg && <div className={`phone-msg phone-msg-${phoneMsg.kind}`} style={{ marginTop: 8 }}>{phoneMsg.text}</div>}
             </div>
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-            <button type="submit" className="btn btn-primary" disabled={profileSaving || !editName.trim()}>
+            <button type="submit" className="btn btn-primary" disabled={profileSaving || !editName.trim() || (phoneChanged && !phoneVerified)}>
               {profileSaving ? "저장 중..." : "회원정보 저장"}
             </button>
           </div>
