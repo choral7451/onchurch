@@ -77,6 +77,7 @@ export function UtilBar({ tagline, pathPrefix, slug }: Props) {
     setAuthed(false);
     setIsAdmin(false);
     setMenuOpen(false);
+    router.push(loginHref);
     router.refresh();
   }
 
