@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
+import { AccountRecoveryModal } from "@/components/shell/account-recovery";
 import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
 
 type Status = "idle" | "submitting" | "error";
@@ -14,6 +15,7 @@ export function LoginForm() {
   const [showPw, setShowPw] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [recovery, setRecovery] = useState<"find-id" | "reset-pw" | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,7 +58,7 @@ export function LoginForm() {
       <div className="form-row full">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <label htmlFor="auth-pw">비밀번호</label>
-          <a href="#" style={{ fontSize: 12, color: "var(--accent)", fontWeight: 600 }}>비밀번호 찾기</a>
+          <button type="button" className="auth-link" onClick={() => setRecovery("reset-pw")}>비밀번호 찾기</button>
         </div>
         <div style={{ position: "relative" }}>
           <input
@@ -108,6 +110,14 @@ export function LoginForm() {
       >
         {status === "submitting" ? "로그인 중..." : "로그인"}
       </button>
+
+      <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>
+        <button type="button" className="auth-link" onClick={() => setRecovery("find-id")}>아이디 찾기</button>
+        <span style={{ color: "var(--line)" }}>|</span>
+        <button type="button" className="auth-link" onClick={() => setRecovery("reset-pw")}>비밀번호 찾기</button>
+      </div>
+
+      {recovery && <AccountRecoveryModal initialMode={recovery} onClose={() => setRecovery(null)} />}
     </form>
   );
 }

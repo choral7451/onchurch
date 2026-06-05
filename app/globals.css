@@ -636,6 +636,14 @@ main { flex: 1; }
 .auth-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 16px; color: var(--muted-2); font-size: 12px; }
 .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
+.auth-link { background: none; border: none; padding: 0; font-size: 12px; color: var(--accent); font-weight: 600; cursor: pointer; }
+.auth-link:hover { text-decoration: underline; }
+
+.recovery-modal-backdrop { position: fixed; inset: 0; background: oklch(0 0 0 / 0.55); display: grid; place-items: center; z-index: 1100; padding: 20px; animation: nav-fade-in 0.18s ease; }
+.recovery-modal { position: relative; background: var(--surface); border-radius: var(--r-lg); width: 100%; max-width: 420px; max-height: calc(100vh - 40px); overflow-y: auto; padding: 32px; box-shadow: 0 20px 60px -10px oklch(0 0 0 / 0.4); }
+.recovery-modal-close { position: absolute; top: 12px; right: 14px; width: 32px; height: 32px; border-radius: 50%; background: transparent; color: var(--muted); border: none; cursor: pointer; font-size: 24px; line-height: 1; display: grid; place-items: center; transition: background 0.15s ease, color 0.15s ease; }
+.recovery-modal-close:hover { background: var(--line); color: var(--ink); }
+
 .auth-meta { max-width: 460px; width: 100%; font-size: 12.5px; color: var(--muted); text-align: center; }
 .auth-meta a { color: var(--accent); font-weight: 600; transition: opacity 0.15s ease; }
 .auth-meta a:hover { opacity: 0.85; }

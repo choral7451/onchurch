@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AccountRecoveryModal } from "@/components/shell/account-recovery";
 import { ApiError, onchurchAuth, saveSessionChurch, saveTokens } from "@/lib/api-client";
 
 type Tab = "login" | "join";
@@ -47,6 +48,7 @@ function LoginPane({ slug, onDone }: { slug: string; onDone: () => void }) {
   const [pw, setPw] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errMsg, setErrMsg] = useState("");
+  const [recovery, setRecovery] = useState<"find-id" | "reset-pw" | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -79,6 +81,12 @@ function LoginPane({ slug, onDone }: { slug: string; onDone: () => void }) {
       <button type="submit" className="btn btn-primary btn-lg" disabled={submitting || !userId || !pw} style={{ width: "100%", justifyContent: "center" }}>
         {submitting ? "로그인 중..." : "로그인"}
       </button>
+      <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>
+        <button type="button" className="auth-link" onClick={() => setRecovery("find-id")}>아이디 찾기</button>
+        <span style={{ color: "var(--line)" }}>|</span>
+        <button type="button" className="auth-link" onClick={() => setRecovery("reset-pw")}>비밀번호 찾기</button>
+      </div>
+      {recovery && <AccountRecoveryModal initialMode={recovery} onClose={() => setRecovery(null)} />}
     </form>
   );
 }

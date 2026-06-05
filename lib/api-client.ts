@@ -309,6 +309,12 @@ export async function uploadImages(files: File[]): Promise<UploadedImage[]> {
   return (body?.item?.images ?? []) as UploadedImage[];
 }
 
+export type FoundAccount = {
+  loginId: string;
+  name: string;
+  createdAt: string;
+};
+
 export const onchurchAuth = {
   sendVerification: (phone: string) =>
     request<{ sent: boolean }>("/onchurch/auths/verifications/mobile", {
@@ -336,6 +342,18 @@ export const onchurchAuth = {
     request<AuthTokens>("/onchurch/auths/login", {
       method: "POST",
       body: JSON.stringify({ userId, password, churchSlug: churchSlug ?? null }),
+    }),
+  // 아이디 찾기: 휴대폰 인증(sendVerification → verifyCode) 후 호출. 해당 연락처의 모든 아이디 반환.
+  findLoginIds: (phone: string) =>
+    request<{ accounts: FoundAccount[] }>("/onchurch/auths/find-id", {
+      method: "POST",
+      body: JSON.stringify({ phone }),
+    }),
+  // 비밀번호 재설정: 아이디+휴대폰 인증 후 호출. 새 비밀번호로 변경.
+  resetPassword: (loginId: string, phone: string, newPassword: string) =>
+    request<null>("/onchurch/auths/reset-password", {
+      method: "PUT",
+      body: JSON.stringify({ loginId, phone, newPassword }),
     }),
   refresh: (accessToken: string, refreshToken: string) =>
     request<AuthTokens>("/onchurch/auths/refresh", {
