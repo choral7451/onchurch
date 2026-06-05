@@ -344,16 +344,18 @@ export const onchurchAuth = {
       body: JSON.stringify({ userId, password, churchSlug: churchSlug ?? null }),
     }),
   // 아이디 찾기: 휴대폰 인증(sendVerification → verifyCode) 후 호출. 해당 연락처의 모든 아이디 반환.
-  findLoginIds: (phone: string) =>
+  // churchSlug를 넘기면 그 교회 소속 계정만 조회한다(교회 홈페이지).
+  findLoginIds: (phone: string, churchSlug?: string | null) =>
     request<{ accounts: FoundAccount[] }>("/onchurch/auths/find-id", {
       method: "POST",
-      body: JSON.stringify({ phone }),
+      body: JSON.stringify({ phone, churchSlug: churchSlug ?? null }),
     }),
   // 비밀번호 재설정: 아이디+휴대폰 인증 후 호출. 새 비밀번호로 변경.
-  resetPassword: (loginId: string, phone: string, newPassword: string) =>
+  // churchSlug를 넘기면 그 교회 소속 계정만 허용한다(교회 홈페이지).
+  resetPassword: (loginId: string, phone: string, newPassword: string, churchSlug?: string | null) =>
     request<null>("/onchurch/auths/reset-password", {
       method: "PUT",
-      body: JSON.stringify({ loginId, phone, newPassword }),
+      body: JSON.stringify({ loginId, phone, newPassword, churchSlug: churchSlug ?? null }),
     }),
   refresh: (accessToken: string, refreshToken: string) =>
     request<AuthTokens>("/onchurch/auths/refresh", {

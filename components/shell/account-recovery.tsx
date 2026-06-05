@@ -21,8 +21,17 @@ const digitsOnly = (s: string) => s.replace(/[^0-9]/g, "");
  * 연락처 인증(sendVerification → verifyCode) 후
  *  - 아이디 찾기: 해당 연락처의 모든 아이디 표시 (연락처 중복 허용)
  *  - 비밀번호 찾기: 아이디+연락처 일치 확인 후 새 비밀번호로 변경
+ * churchSlug를 넘기면(교회 홈페이지) 해당 교회 소속 계정만 찾을 수 있다.
  */
-export function AccountRecoveryModal({ initialMode = "find-id", onClose }: { initialMode?: Mode; onClose: () => void }) {
+export function AccountRecoveryModal({
+  initialMode = "find-id",
+  churchSlug = null,
+  onClose,
+}: {
+  initialMode?: Mode;
+  churchSlug?: string | null;
+  onClose: () => void;
+}) {
   const [mode, setMode] = useState<Mode>(initialMode);
 
   useEffect(() => {
@@ -47,7 +56,7 @@ export function AccountRecoveryModal({ initialMode = "find-id", onClose }: { ini
             비밀번호 찾기
           </div>
         </div>
-        {mode === "find-id" ? <FindIdPane /> : <ResetPwPane onClose={onClose} />}
+        {mode === "find-id" ? <FindIdPane churchSlug={churchSlug} /> : <ResetPwPane churchSlug={churchSlug} onClose={onClose} />}
       </div>
     </div>
   );
@@ -188,7 +197,7 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
   );
 }
 
-function FindIdPane() {
+function FindIdPane({ churchSlug }: { churchSlug: string | null }) {
   const [accounts, setAccounts] = useState<FoundAccount[] | null>(null);
   const [errMsg, setErrMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -197,7 +206,7 @@ function FindIdPane() {
     setLoading(true);
     setErrMsg("");
     try {
-      const { accounts } = await onchurchAuth.findLoginIds(phone);
+      const { accounts } = await onchurchAuth.findLoginIds(phone, churchSlug);
       setAccounts(accounts);
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "아이디 조회에 실패했습니다.");
@@ -245,7 +254,7 @@ function FindIdPane() {
   );
 }
 
-function ResetPwPane({ onClose }: { onClose: () => void }) {
+function ResetPwPane({ churchSlug, onClose }: { churchSlug: string | null; onClose: () => void }) {
   const [loginId, setLoginId] = useState("");
   const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null);
   const [pw, setPw] = useState("");
@@ -271,7 +280,7 @@ function ResetPwPane({ onClose }: { onClose: () => void }) {
     setSubmitting(true);
     setErrMsg("");
     try {
-      await onchurchAuth.resetPassword(loginId.trim(), verifiedPhone, pw);
+      await onchurchAuth.resetPassword(loginId.trim(), verifiedPhone, pw, churchSlug);
       setDone(true);
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "비밀번호 변경에 실패했습니다.");

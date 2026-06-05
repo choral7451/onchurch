@@ -86,7 +86,7 @@ function LoginPane({ slug, onDone }: { slug: string; onDone: () => void }) {
         <span style={{ color: "var(--line)" }}>|</span>
         <button type="button" className="auth-link" onClick={() => setRecovery("reset-pw")}>비밀번호 찾기</button>
       </div>
-      {recovery && <AccountRecoveryModal initialMode={recovery} onClose={() => setRecovery(null)} />}
+      {recovery && <AccountRecoveryModal initialMode={recovery} churchSlug={slug} onClose={() => setRecovery(null)} />}
     </form>
   );
 }
