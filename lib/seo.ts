@@ -78,18 +78,31 @@ function compact(s: string | null | undefined): string {
   return (s ?? "").replace(/\s+/g, " ").trim();
 }
 
-function buildBaseDescription(church: PublicChurch, extras: string[] = []): string {
+// 네이버 권장 길이로 자르기 (글자 수 기준, 초과 시 … 부여)
+function capLen(s: string, max: number): string {
+  const arr = [...s];
+  return arr.length <= max ? s : `${arr.slice(0, max - 1).join("").trimEnd()}…`;
+}
+
+// 주소에서 시·도 + 시·군·구까지만 추출 ("전라남도 여수시 충민로 179" → "전라남도 여수시")
+function shortLocality(address: string | null | undefined): string {
+  const tokens = compact(address).split(/\s+/).filter(Boolean);
+  if (!tokens.length) return "";
+  const out: string[] = [];
+  for (const t of tokens) {
+    out.push(t);
+    if (/(시|군|구)$/.test(t)) return out.join(" ");
+  }
+  return tokens.slice(0, 2).join(" ");
+}
+
+// 네이버 권장: 설명문 80자 이내. 태그라인 + 교회명 + 지역으로 간결하게.
+function buildBaseDescription(church: PublicChurch): string {
   const tagline = compact(church.tagline);
-  const address = compact(church.address);
-  const phone = compact(church.phone);
-  const parts = [
-    tagline,
-    address && `${church.name}은(는) ${address}에 위치한 교회입니다.`,
-    phone && `문의: ${phone}`,
-    ...extras.map(compact).filter(Boolean),
-  ].filter(Boolean);
-  const joined = parts.join(" ");
-  return joined.length > 160 ? `${joined.slice(0, 157)}...` : joined;
+  const locality = shortLocality(church.address);
+  const where = locality ? `${church.name}(${locality})` : church.name;
+  const desc = tagline ? `${tagline} | ${where}` : `${where} 공식 홈페이지`;
+  return capLen(desc, 80);
 }
 
 function buildKeywords(church: PublicChurch, extras: string[] = []): string[] {
@@ -127,12 +140,14 @@ export async function buildChurchMetadata(
   const url = `${origin}${pathPrefix}${path}`;
 
   const tagline = compact(church.tagline);
-  const baseTitle = tagline ? `${church.name} — ${tagline}` : church.name;
+  // 네이버 권장: 제목 40자 이내. 초과 시 태그라인 생략하고 교회명만.
+  const baseCandidate = tagline ? `${church.name} — ${tagline}` : church.name;
+  const baseTitle = [...baseCandidate].length <= 40 ? baseCandidate : church.name;
   const fullTitle = options.pageTitle ? `${options.pageTitle} | ${church.name}` : baseTitle;
 
   const description = options.pageDescription
-    ? compact(options.pageDescription)
-    : buildBaseDescription(church, pastor?.name ? [`담임목사 ${pastor.name}`] : []);
+    ? capLen(compact(options.pageDescription), 80)
+    : buildBaseDescription(church);
 
   const keywords = buildKeywords(church, [
     ...(pastor?.name ? [pastor.name, `${pastor.name} 목사`] : []),
@@ -143,8 +158,9 @@ export async function buildChurchMetadata(
 
   return {
     metadataBase: new URL(origin),
+    // absolute: 루트 레이아웃의 "%s | 온교회" template을 무시하고 교회 제목만 노출
     title: {
-      default: fullTitle,
+      absolute: fullTitle,
       template: `%s | ${church.name}`,
     },
     description,
