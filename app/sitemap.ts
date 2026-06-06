@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicChurch, fetchPublicChurchList } from "@/lib/public-site";
 import { getSiteOrigin, getTenantPathPrefix, resolveHost } from "@/lib/seo";
 
 type PageSpec = {
@@ -27,11 +27,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const origin = await getSiteOrigin();
   const now = new Date();
 
-  // 서비스 랜딩 도메인 (onchurch.kr 자체): 랜딩 페이지만
+  // 서비스 랜딩 도메인: 랜딩 + 공개된 모든 교회 홈페이지를 한곳에서 색인 유도
+  // (구글 서치콘솔 "도메인 속성" 인증 시 크로스-서브도메인 URL 정상 수집됨)
   if (resolved.kind === "root") {
-    return [
+    const entries: MetadataRoute.Sitemap = [
       { url: `${origin}/`, lastModified: now, changeFrequency: "weekly", priority: 1.0 },
     ];
+    const churches = await fetchPublicChurchList();
+    for (const c of churches) {
+      entries.push({
+        url: `${origin.replace("://", `://${c.slug}.`)}/`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.8,
+      });
+    }
+    return entries;
   }
 
   // 알 수 없는 호스트: 빈 sitemap
