@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { onchurchGallery } from "@/lib/api-client";
 
 type Category = { id: number; name: string };
 type Gallery = {
@@ -14,25 +15,88 @@ type Gallery = {
 type Layout = { col: number; row: number };
 
 type Props = {
+  slug: string;
   categories: Category[];
-  galleries: Gallery[];
+  initialGalleries: Gallery[];
+  totalCount: number;
+  pageSize: number;
   layout: Layout[];
 };
 
 const ALL_KEY = -1 as const;
 
-export function GalleryView({ categories, galleries, layout }: Props) {
+export function GalleryView({ slug, categories, initialGalleries, totalCount, pageSize, layout }: Props) {
+  const [items, setItems] = useState<Gallery[]>(initialGalleries);
+  const [total, setTotal] = useState<number>(totalCount);
+  const [page, setPage] = useState<number>(1);
   const [filter, setFilter] = useState<number>(ALL_KEY);
+  const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const filtered = useMemo(
-    () => (filter === ALL_KEY ? galleries : galleries.filter((g) => g.categoryId === filter)),
-    [filter, galleries],
+  const hasMore = items.length < total;
+
+  // 카테고리 칩 클릭 → 서버에서 해당 카테고리 1페이지부터 다시 조회.
+  const selectFilter = useCallback(
+    async (cat: number) => {
+      if (cat === filter || loading) return;
+      setFilter(cat);
+      setLoading(true);
+      try {
+        const res = await onchurchGallery.listPublic(slug, {
+          categoryId: cat === ALL_KEY ? null : cat,
+          page: 1,
+          size: pageSize,
+        });
+        setItems(res.galleries ?? []);
+        setTotal(res.totalCount ?? 0);
+        setPage(1);
+      } catch {
+        // 네트워크 오류 시 현재 목록 유지
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filter, loading, slug, pageSize],
   );
 
+  // 무한스크롤 → 다음 페이지를 이어서 append.
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    const nextPage = page + 1;
+    try {
+      const res = await onchurchGallery.listPublic(slug, {
+        categoryId: filter === ALL_KEY ? null : filter,
+        page: nextPage,
+        size: pageSize,
+      });
+      setItems((prev) => [...prev, ...(res.galleries ?? [])]);
+      setTotal(res.totalCount ?? total);
+      setPage(nextPage);
+    } catch {
+      // 실패 시 다음 교차 시점에 재시도됨
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMore, page, filter, slug, pageSize, total]);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void loadMore();
+      },
+      { rootMargin: "400px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [loadMore]);
+
   const lightboxItems = useMemo(
-    () => filtered.filter((g): g is Gallery & { photoUrl: string } => !!g.photoUrl),
-    [filtered],
+    () => items.filter((g): g is Gallery & { photoUrl: string } => !!g.photoUrl),
+    [items],
   );
 
   const close = useCallback(() => setActiveIndex(null), []);
@@ -74,7 +138,7 @@ export function GalleryView({ categories, galleries, layout }: Props) {
         <div className="chips">
           <div
             className={`chip ${filter === ALL_KEY ? "active" : ""}`}
-            onClick={() => setFilter(ALL_KEY)}
+            onClick={() => selectFilter(ALL_KEY)}
           >
             전체
           </div>
@@ -82,7 +146,7 @@ export function GalleryView({ categories, galleries, layout }: Props) {
             <div
               key={c.id}
               className={`chip ${filter === c.id ? "active" : ""}`}
-              onClick={() => setFilter(c.id)}
+              onClick={() => selectFilter(c.id)}
             >
               {c.name}
             </div>
@@ -90,8 +154,8 @@ export function GalleryView({ categories, galleries, layout }: Props) {
         </div>
       )}
       <div className="gallery-grid">
-        {filtered.map((g, i) => {
-          const l = layout[i] ?? { col: 4, row: 1 };
+        {items.map((g, i) => {
+          const l = layout[i % layout.length] ?? { col: 4, row: 1 };
           const clickable = !!g.photoUrl;
           return (
             <div
@@ -136,9 +200,19 @@ export function GalleryView({ categories, galleries, layout }: Props) {
           );
         })}
       </div>
-      {filtered.length === 0 && (
+
+      {items.length === 0 && !loading && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 40 }}>
           이 카테고리에 사진이 없습니다.
+        </div>
+      )}
+
+      {/* 무한스크롤 감지 지점 */}
+      {hasMore && <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />}
+
+      {loading && (
+        <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
+          불러오는 중...
         </div>
       )}
 

@@ -34,26 +34,40 @@ type ApiGallery = {
   grad: string | null;
 };
 
-async function fetchGallery(slug: string): Promise<{ categories: ApiCategory[]; galleries: ApiGallery[] }> {
+const PAGE_SIZE = 12;
+
+async function fetchGalleryFirstPage(
+  slug: string,
+): Promise<{ categories: ApiCategory[]; galleries: ApiGallery[]; totalCount: number }> {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
   try {
-    const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/galleries`, {
+    const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/galleries?page=1&size=${PAGE_SIZE}`, {
       cache: "no-store",
     });
-    if (!res.ok) return { categories: [], galleries: [] };
+    if (!res.ok) return { categories: [], galleries: [], totalCount: 0 };
     const body = await res.json();
     return {
       categories: (body?.item?.categories ?? []) as ApiCategory[],
       galleries: (body?.item?.galleries ?? []) as ApiGallery[],
+      totalCount: (body?.item?.totalCount ?? 0) as number,
     };
   } catch {
-    return { categories: [], galleries: [] };
+    return { categories: [], galleries: [], totalCount: 0 };
   }
 }
 
 async function GalleryContent({ tenant }: { tenant: string }) {
-  const data = await fetchGallery(tenant);
-  return <GalleryView categories={data.categories} galleries={data.galleries} layout={LAYOUT} />;
+  const data = await fetchGalleryFirstPage(tenant);
+  return (
+    <GalleryView
+      slug={tenant}
+      categories={data.categories}
+      initialGalleries={data.galleries}
+      totalCount={data.totalCount}
+      pageSize={PAGE_SIZE}
+      layout={LAYOUT}
+    />
+  );
 }
 
 function GallerySkeleton() {

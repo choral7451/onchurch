@@ -1057,6 +1057,17 @@ export const onchurchGallery = {
     request<GalleryItemRow>(`/onchurch/galleries/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
   remove: (id: number) =>
     request<unknown>(`/onchurch/galleries/me/${id}`, { method: "DELETE", auth: true }),
+  listPublic: (slug: string, opts?: { categoryId?: number | null; page?: number; size?: number }) => {
+    const qs = new URLSearchParams();
+    if (opts?.categoryId != null) qs.set("categoryId", String(opts.categoryId));
+    if (opts?.page) qs.set("page", String(opts.page));
+    if (opts?.size) qs.set("size", String(opts.size));
+    const query = qs.toString();
+    const path = `/onchurch/sites/${encodeURIComponent(slug)}/galleries${query ? `?${query}` : ""}`;
+    return request<{ categories: GalleryCategoryItem[]; galleries: GalleryItemRow[]; totalCount: number }>(path, {
+      method: "GET",
+    });
+  },
 };
 
 export type PrayerStatus = "pending" | "praying" | "answered";
