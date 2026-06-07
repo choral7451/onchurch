@@ -250,6 +250,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const [isPublished, setIsPublished] = useState(false);
   const [churchExistsOnServer, setChurchExistsOnServer] = useState(false);
+  const [slugLocked, setSlugLocked] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [publishLoading, setPublishLoading] = useState(false);
   const [modal, setModal] = useState<null | "required" | "payment" | "trial-started">(null);
@@ -302,6 +303,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         if (res?.church) {
           const c = res.church;
           setSlug(c.slug);
+          if (c.slug) setSlugLocked(true);
           setName(c.name);
           setEng(c.eng ?? "");
           setTagline(c.tagline ?? "");
@@ -807,30 +809,52 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <div className="form-row full">
                       <label htmlFor="ad-slug">
                         서브도메인 <span className="required-mark" aria-hidden="true">*</span>
+                        {slugLocked && (
+                          <a
+                            className="slug-locked-badge"
+                            href="mailto:hello@everychurch.co.kr?subject=서브도메인 변경 문의"
+                          >
+                            <span aria-hidden="true">🔒</span> 발급 완료 · 변경 시 문의 주세요
+                          </a>
+                        )}
                       </label>
-                      <div className="slug-input">
+                      <div className={`slug-input${slugLocked ? " slug-input-locked" : ""}`}>
                         <span className="slug-prefix">https://</span>
                         <input
                           id="ad-slug"
                           type="text"
                           value={slug}
-                          onChange={(e) => setSlug(e.target.value.replace(/[^a-z0-9-]/g, "").slice(0, 30))}
+                          onChange={(e) => {
+                            if (slugLocked) return;
+                            setSlug(e.target.value.replace(/[^a-z0-9-]/g, "").slice(0, 30));
+                          }}
                           placeholder="onchurch"
                           required
+                          readOnly={slugLocked}
+                          aria-readonly={slugLocked}
                         />
                         <span className="slug-suffix">.everychurch.co.kr</span>
                       </div>
-                      <span className="form-hint">영문 소문자, 숫자, 하이픈만 사용 가능 · 한 번 발급되면 변경에 제한이 있을 수 있습니다.</span>
-                      {trimmedSlug && (
-                        <span
-                          className={`form-hint slug-check slug-check-${slugCheck}`}
-                          aria-live="polite"
-                          style={{ marginTop: 2 }}
-                        >
-                          {slugCheck === "checking" && "확인 중..."}
-                          {slugCheck === "available" && "✓ 사용 가능한 서브도메인입니다."}
-                          {slugCheck === "taken" && "✕ 이미 사용 중인 서브도메인입니다."}
+                      {slugLocked ? (
+                        <span className="form-hint">
+                          서브도메인은 최초 1회만 발급되며 변경할 수 없습니다. 변경이 필요하면{" "}
+                          <a href="mailto:hello@everychurch.co.kr?subject=서브도메인 변경 문의">hello@everychurch.co.kr</a>로 문의해주세요.
                         </span>
+                      ) : (
+                        <>
+                          <span className="form-hint">영문 소문자, 숫자, 하이픈만 사용 가능 · 한 번 발급되면 변경할 수 없습니다.</span>
+                          {trimmedSlug && (
+                            <span
+                              className={`form-hint slug-check slug-check-${slugCheck}`}
+                              aria-live="polite"
+                              style={{ marginTop: 2 }}
+                            >
+                              {slugCheck === "checking" && "확인 중..."}
+                              {slugCheck === "available" && "✓ 사용 가능한 서브도메인입니다."}
+                              {slugCheck === "taken" && "✕ 이미 사용 중인 서브도메인입니다."}
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
 
