@@ -243,8 +243,14 @@ function NoticesListSkeleton() {
 
 async function WorshipScheduleSection({ slug, url }: { slug: string; url: (p: string) => string }) {
   const data = await fetchJson<{ services: PublicWorshipService[] }>(`/onchurch/sites/${slug}/worship`, { services: [] });
-  const worshipServices = data.services.slice(0, 6);
-  if (worshipServices.length === 0) return null;
+  const allServices = data.services;
+  if (allServices.length === 0) return null;
+  // 대표 예배를 중심으로 최대 3개만 노출 (대표 앞뒤로 채우되 목록 범위 안에서 클램프).
+  // 대표가 없으면 앞에서 3개.
+  const featuredIndex = allServices.findIndex((w) => w.isFeatured);
+  let start = featuredIndex < 0 ? 0 : featuredIndex - 1;
+  start = Math.max(0, Math.min(start, allServices.length - 3));
+  const worshipServices = allServices.slice(start, start + 3);
   return (
     <section className="section section-tinted">
       <div className="container">
