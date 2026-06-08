@@ -92,7 +92,7 @@ export default async function SermonsPage({ params }: { params: Promise<{ tenant
       <PageHeader
         eyebrow="SERMONS"
         title="설교 영상"
-        sub="지난 설교를 언제든 다시 들으세요. 매주 화요일에 새 영상이 업로드됩니다."
+        sub="지난 설교를 언제든 다시 들으세요. 새로운 설교 영상이 올라오면 이곳에서 만나보실 수 있습니다."
       />
       <section className="section">
         <div className="container">
