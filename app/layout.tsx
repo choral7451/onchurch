@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import { AuthBootstrap } from "@/components/shell/auth-bootstrap";
+import { resolveHost } from "@/lib/seo";
 import "./globals.css";
+
+// Google Analytics — 서비스 랜딩 도메인(everychurch.co.kr)에서만 로드. 교회 서브도메인 제외.
+const GA_MEASUREMENT_ID = "G-K9XZMTLYRB";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -88,7 +93,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { kind } = await resolveHost();
+  const isLanding = kind === "root";
   return (
     <html lang="ko" className={`${interTight.variable} ${jetbrainsMono.variable}`}>
       <head>
@@ -100,6 +107,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <AuthBootstrap />
         {children}
+        {isLanding && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');`}
+            </Script>
+          </>
+        )}
       </body>
     </html>
   );
