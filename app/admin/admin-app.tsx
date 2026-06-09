@@ -424,7 +424,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         representative: null,
         businessNo: null,
         logoUrl: logoPreview || null,
-        youtubeUrl,
+        youtubeUrl: youtubeUrl?.trim() || null,
         enabledPages,
         homeSectionOrder,
       });
@@ -453,7 +453,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         representative: null,
         businessNo: null,
         logoUrl: logoPreview || null,
-        youtubeUrl,
+        youtubeUrl: youtubeUrl?.trim() || null,
         enabledPages,
         homeSectionOrder: nextOrder,
       });
@@ -514,7 +514,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         representative: null,
         businessNo: null,
         logoUrl: logoPreview || null,
-        youtubeUrl,
+        youtubeUrl: youtubeUrl?.trim() || null,
         enabledPages,
         homeSectionOrder,
       });
@@ -997,6 +997,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           required
                           churchName={name}
                         />
+                      </div>
+                      <div className="form-row full">
+                        <label htmlFor="ad-youtube">유튜브 채널 주소</label>
+                        <input
+                          id="ad-youtube"
+                          type="url"
+                          value={youtubeUrl ?? ""}
+                          onChange={(e) => setYoutubeUrl(e.target.value)}
+                          placeholder="https://www.youtube.com/@yourchurch"
+                        />
+                        <p className="form-hint">입력하면 홈 메인의 빠른 이동에 &lsquo;유튜브&rsquo; 바로가기가 노출됩니다. 비워두면 숨겨집니다.</p>
                       </div>
                     </div>
                     <DirectionsEditor />

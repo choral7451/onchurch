@@ -16,7 +16,6 @@ const QUICK_LINKS: { ic: IconKey; title: string; desc: string; path: string }[] 
   { ic: "calendar", title: "예배 안내", desc: "주일/수요/새벽 모든 예배 시간을 확인하세요", path: "/worship" },
   { ic: "video", title: "설교 영상", desc: "지난 설교를 언제든 다시 듣고 묵상하세요", path: "/sermons" },
   { ic: "image", title: "갤러리", desc: "공동체의 사진과 추억을 모아두는 곳", path: "/gallery" },
-  { ic: "mapPin", title: "찾아오시는 길", desc: "처음 오시는 분도 어렵지 않게 안내합니다", path: "/directions" },
 ];
 
 const GRAD_CYCLE: Sermon["grad"][] = ["ph-grad-1", "ph-grad-2", "ph-grad-3", "ph-grad-4"];
@@ -396,6 +395,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const isPageEnabled = (id: string) => id === "directions" || enabled.length === 0 || enabled.includes(id);
   const showHomeEvents = isPageEnabled("schedule");
   const visibleQuickLinks = QUICK_LINKS.filter((q) => isPageEnabled(q.path.replace(/^\//, "")));
+  const youtubeUrl = church.youtubeUrl?.trim() || null;
   const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder);
 
   const sections: Record<HomeSectionKey, React.ReactNode> = {
@@ -426,7 +426,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         </div>
       </section>
     ) : null,
-    quick: visibleQuickLinks.length > 0 ? (
+    quick: (visibleQuickLinks.length > 0 || youtubeUrl) ? (
       <section className="hero hero-quick-only">
         <div className="container">
           <div className="quick-strip">
@@ -441,6 +441,14 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
                 </Link>
               );
             })}
+            {youtubeUrl && (
+              <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="quick-card">
+                <div className="quick-card-icon"><Icon.play width={22} height={22} /></div>
+                <div className="quick-card-title">유튜브</div>
+                <div className="quick-card-desc">예배와 설교 영상을 유튜브 채널에서 만나보세요</div>
+                <div className="quick-card-arrow">바로가기 <Icon.arrow style={{ width: 12, height: 12 }} /></div>
+              </a>
+            )}
           </div>
         </div>
       </section>

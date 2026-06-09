@@ -3,10 +3,8 @@
 import { useEffect, useState } from "react";
 import {
   ApiError,
-  onchurchChurch,
   onchurchSermon,
   onchurchSermonSeries,
-  type Church,
   type SermonItem,
   type SermonWriteInput,
   type SermonSeriesItem,
@@ -61,8 +59,6 @@ export function SermonsEditor() {
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <ChurchYoutubeEditor />
-
         <div className="chips">
           {(["sermons", "series"] as const).map((s) => (
             <div
@@ -79,84 +75,6 @@ export function SermonsEditor() {
         {section === "series" && <SermonSeriesEditor onChanged={loadSeries} />}
       </div>
     </section>
-  );
-}
-
-function ChurchYoutubeEditor() {
-  const [church, setChurch] = useState<Church | null>(null);
-  const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [status, setStatus] = useState<Status>("loading");
-  const [msg, setMsg] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
-
-  useEffect(() => { void load(); }, []);
-
-  async function load() {
-    setStatus("loading"); setMsg(null);
-    try {
-      const { church } = await onchurchChurch.getMine();
-      setChurch(church);
-      setYoutubeUrl(church?.youtubeUrl ?? "");
-    } catch (err) {
-      setMsg({ kind: "error", text: err instanceof ApiError ? err.message : "교회 정보를 불러오지 못했습니다." });
-    } finally { setStatus("idle"); }
-  }
-
-  async function save() {
-    if (!church) return;
-    setStatus("saving"); setMsg(null);
-    try {
-      const updated = await onchurchChurch.upsertMine({
-        slug: church.slug,
-        name: church.name,
-        eng: church.eng,
-        tagline: church.tagline,
-        phone: church.phone,
-        email: church.email,
-        address: church.address,
-        representative: church.representative,
-        businessNo: church.businessNo,
-        logoUrl: church.logoUrl,
-        youtubeUrl: youtubeUrl.trim() || null,
-        enabledPages: church.enabledPages,
-        homeSectionOrder: church.homeSectionOrder,
-      });
-      setChurch(updated);
-      setYoutubeUrl(updated.youtubeUrl ?? "");
-      setMsg({ kind: "ok", text: "유튜브 채널 주소를 저장했습니다." });
-    } catch (err) {
-      setMsg({ kind: "error", text: err instanceof ApiError ? err.message : "저장에 실패했습니다." });
-    } finally { setStatus("idle"); }
-  }
-
-  return (
-    <div className="admin-banner-card editing" style={{ flexDirection: "column", alignItems: "stretch" }}>
-      <div className="form-grid">
-        <div className="form-row full">
-          <label htmlFor="ad-youtube">유튜브 채널 주소</label>
-          <input
-            id="ad-youtube"
-            type="url"
-            value={youtubeUrl}
-            onChange={(e) => setYoutubeUrl(e.target.value)}
-            placeholder="https://www.youtube.com/@yourchurch"
-            disabled={status === "loading" || !church}
-          />
-          <p style={{ color: "var(--muted)", fontSize: 12, margin: "6px 0 0" }}>
-            입력하면 말씀 페이지에 &lsquo;유튜브 채널&rsquo; 바로가기 버튼이 노출됩니다. 비워두면 버튼이 숨겨집니다.
-          </p>
-        </div>
-      </div>
-      {msg && (
-        <div className={`phone-msg ${msg.kind === "error" ? "phone-msg-error" : "phone-msg-success"}`} style={{ marginTop: 8 }}>
-          {msg.text}
-        </div>
-      )}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
-        <button type="button" className="btn btn-primary" onClick={save} disabled={status !== "idle" || !church}>
-          {status === "saving" ? "저장 중..." : "유튜브 주소 저장"}
-        </button>
-      </div>
-    </div>
   );
 }
 

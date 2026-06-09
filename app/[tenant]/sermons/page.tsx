@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
-import { Icon } from "@/components/icons";
 import { SermonsList } from "./list";
 import type { Sermon } from "@/lib/types";
 import { fetchPublicChurch } from "@/lib/public-site";
@@ -88,8 +87,6 @@ function SermonsSkeleton() {
 
 export default async function SermonsPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const church = await fetchPublicChurch(tenant);
-  const youtubeUrl = church?.youtubeUrl?.trim() || null;
   return (
     <div>
       <PageHeader
@@ -99,19 +96,6 @@ export default async function SermonsPage({ params }: { params: Promise<{ tenant
       />
       <section className="section">
         <div className="container">
-          {youtubeUrl && (
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 24 }}>
-              <a
-                href={youtubeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-secondary"
-              >
-                <Icon.video style={{ width: 16, height: 16 }} />
-                유튜브 채널 바로가기
-              </a>
-            </div>
-          )}
           <Suspense fallback={<SermonsSkeleton />}>
             <SermonsContent tenant={tenant} />
           </Suspense>
