@@ -15,7 +15,7 @@ export const HOME_SECTION_LABELS: Record<HomeSectionKey, { title: string; desc: 
   events: { title: "다가오는 일정", desc: "다음 일정 카드 + 이후 일정 리스트" },
   quick: { title: "빠른 이동", desc: "예배 안내·설교·갤러리·찾아오시는 길 퀵 링크" },
   worship: { title: "예배 안내", desc: "주요 예배 일정 카드 묶음" },
-  sermons: { title: "이번 주 말씀", desc: "최근 설교 영상 카드" },
+  sermons: { title: "함께 드리는 예배", desc: "최근 설교 영상 카드" },
   visit: { title: "방문 안내", desc: "처음 오시는 분들을 위한 안내 배너" },
   pastor: { title: "담임목사 인사", desc: "담임목사 사진과 인사말" },
 };

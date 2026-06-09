@@ -313,10 +313,10 @@ async function HomeSermonsSection({ slug, url }: { slug: string; url: (p: string
         <div className="section-head">
           <div>
             <span className="eyebrow">Sermons</span>
-            <h2>이번 주 말씀</h2>
+            <h2>함께 드리는 예배</h2>
           </div>
           <div className="section-head-action">
-            <Link href={url("/sermons")}>설교 아카이브 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+            <Link href={url("/sermons")}>설교 전체 보기 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
           </div>
         </div>
         <SermonFeatureGrid sermons={sermons} />

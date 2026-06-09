@@ -45,9 +45,9 @@ export function SermonCard({ sermon, feat, onPlay }: Props) {
         <div className="sermon-series">{sermon.series}</div>
         <div className="sermon-title">{sermon.title}</div>
         <div className="sermon-meta">
-          <span>{sermon.pastor}</span>
-          <span className="dot" />
-          <span>{sermon.date}</span>
+          {sermon.pastor && <span>{sermon.pastor}</span>}
+          {sermon.pastor && sermon.date && <span className="dot" />}
+          {sermon.date && <span>{sermon.date}</span>}
         </div>
       </div>
     </div>
