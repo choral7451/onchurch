@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
+import { Icon } from "@/components/icons";
 import { SermonsList } from "./list";
 import type { Sermon } from "@/lib/types";
 import { fetchPublicChurch } from "@/lib/public-site";
@@ -87,15 +88,30 @@ function SermonsSkeleton() {
 
 export default async function SermonsPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  const youtubeUrl = church?.youtubeUrl?.trim() || null;
   return (
     <div>
       <PageHeader
         eyebrow="SERMONS"
-        title="설교 영상"
+        title="함께 드리는 예배"
         sub="지난 예배의 말씀을 언제든 다시 들으실 수 있습니다."
       />
       <section className="section">
         <div className="container">
+          {youtubeUrl && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 24 }}>
+              <a
+                href={youtubeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary"
+              >
+                <Icon.video style={{ width: 16, height: 16 }} />
+                유튜브 채널 바로가기
+              </a>
+            </div>
+          )}
           <Suspense fallback={<SermonsSkeleton />}>
             <SermonsContent tenant={tenant} />
           </Suspense>

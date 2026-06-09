@@ -19,6 +19,7 @@ export type Church = {
   representative: string | null;
   businessNo: string | null;
   logoUrl: string | null;
+  youtubeUrl: string | null;
   enabledPages: string[];
   homeSectionOrder: string[];
   isPublished: boolean;
@@ -42,6 +43,7 @@ export type UpsertChurchInput = {
   representative?: string | null;
   businessNo?: string | null;
   logoUrl?: string | null;
+  youtubeUrl?: string | null;
   enabledPages: string[];
   homeSectionOrder?: string[];
 };
@@ -420,6 +422,7 @@ export const onchurchChurch = {
         representative: input.representative ?? null,
         businessNo: input.businessNo ?? null,
         logoUrl: input.logoUrl ?? null,
+        youtubeUrl: input.youtubeUrl ?? null,
         enabledPages: input.enabledPages,
         homeSectionOrder: input.homeSectionOrder ?? [],
       }),

@@ -212,6 +212,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [phone, setPhone] = useState(initial.brand.phone);
   const [email, setEmail] = useState(initial.brand.email);
   const [address, setAddress] = useState(initial.brand.address);
+  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
@@ -311,6 +312,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           setEmail(c.email ?? "");
           setAddress(c.address ?? "");
           if (c.logoUrl) setLogoPreview(c.logoUrl);
+          setYoutubeUrl(c.youtubeUrl ?? null);
           if (c.enabledPages?.length) {
             const next: Record<string, boolean> = {};
             for (const n of initial.nav) next[n.id] = c.enabledPages.includes(n.id);
@@ -422,6 +424,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         representative: null,
         businessNo: null,
         logoUrl: logoPreview || null,
+        youtubeUrl,
         enabledPages,
         homeSectionOrder,
       });
@@ -450,6 +453,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         representative: null,
         businessNo: null,
         logoUrl: logoPreview || null,
+        youtubeUrl,
         enabledPages,
         homeSectionOrder: nextOrder,
       });
@@ -510,6 +514,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         representative: null,
         businessNo: null,
         logoUrl: logoPreview || null,
+        youtubeUrl,
         enabledPages,
         homeSectionOrder,
       });
