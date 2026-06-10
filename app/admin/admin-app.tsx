@@ -605,6 +605,25 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const activePage = activeSection.startsWith("page:") ? activeSection.slice(5) : null;
   const activePageItem = activePage ? initial.nav.find((n) => n.id === activePage) : null;
 
+  // 메인 교회 폼(기본정보·연락처·로고)을 편집하는 섹션에만 개별로 넣는 저장 버튼.
+  const sectionSaveBar = (
+    <div className="admin-savebar">
+      <div className="admin-savebar-msg">
+        {save === "saved" && <span className="phone-msg phone-msg-success">변경사항이 저장되었습니다.</span>}
+        {save === "error" && saveMsg && <span className="phone-msg phone-msg-error">{saveMsg}</span>}
+      </div>
+      <div className="admin-savebar-actions">
+        <button
+          type="submit"
+          className="btn btn-primary btn-lg"
+          disabled={save === "saving" || !loaded || !trimmedSlug || !name.trim() || slugCheck === "taken" || slugCheck === "checking"}
+        >
+          {save === "saving" ? "저장 중..." : "변경사항 저장"}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="admin-shell">
       <header className="admin-topbar">
@@ -885,6 +904,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <input id="ad-tagline" type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="은혜와 진리가 흐르는 공동체" />
                       </div>
                     </div>
+                    {sectionSaveBar}
                   </div>
                 </section>
               )}
@@ -954,6 +974,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         })}
                       </div>
                     </div>
+                    {sectionSaveBar}
                   </div>
                 </section>
               )}
@@ -1016,6 +1037,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <p className="form-hint">입력하면 홈 메인의 빠른 이동에 &lsquo;유튜브&rsquo; 바로가기가 노출됩니다. 비워두면 숨겨집니다.</p>
                       </div>
                     </div>
+                    {sectionSaveBar}
                     <DirectionsEditor />
                   </div>
                 </section>
@@ -1122,32 +1144,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </div>
               )}
 
-              {/* 주보 만들기는 자체 '주보 내용 저장' 버튼을 쓰므로 폼 전체 저장바를 숨김 */}
-              {activeSection !== "bulletin" && (
-                <div className="admin-savebar">
-                  <div className="admin-savebar-msg">
-                    {save === "saved" && <span className="phone-msg phone-msg-success">변경사항이 저장되었습니다.</span>}
-                    {save === "error" && saveMsg && <span className="phone-msg phone-msg-error">{saveMsg}</span>}
-                    {save === "idle" && (
-                      <span style={{ color: "var(--muted)", fontSize: 13 }}>
-                        {loaded ? "변경사항은 저장 후 적용됩니다." : "교회 정보를 불러오는 중..."}
-                      </span>
-                    )}
-                  </div>
-                  <div className="admin-savebar-actions">
-                    <button type="button" className="btn btn-secondary" onClick={() => router.refresh()}>
-                      변경 취소
-                    </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary btn-lg"
-                      disabled={save === "saving" || !loaded || !trimmedSlug || !name.trim() || slugCheck === "taken" || slugCheck === "checking"}
-                    >
-                      {save === "saving" ? "저장 중..." : "변경사항 저장"}
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </form>
