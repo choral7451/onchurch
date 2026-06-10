@@ -383,12 +383,15 @@ export const onchurchUser = {
     request<unknown>("/onchurch/users/me/password", { method: "PUT", auth: true, body: JSON.stringify(input) }),
 };
 
+export type ChurchRole = "owner" | "admin" | "member";
+
 export type ChurchMember = {
   id: number;
   loginId: string;
   name: string;
   phone: string;
   role: string;
+  churchRole: ChurchRole;
   createdAt: string;
 };
 
@@ -397,13 +400,19 @@ export const onchurchChurchMember = {
     request<{ members: ChurchMember[] }>("/onchurch/church-members/me", { method: "GET", auth: true }).then(
       (r) => r.members ?? [],
     ),
+  changeRole: (id: number, role: "admin" | "member") =>
+    request<unknown>(`/onchurch/church-members/me/${id}/role`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ role }),
+    }),
   remove: (id: number) =>
     request<unknown>(`/onchurch/church-members/me/${id}`, { method: "DELETE", auth: true }),
 };
 
 export const onchurchChurch = {
   getMine: () =>
-    request<{ church: Church | null; subscription: Subscription }>("/onchurch/churches/me", {
+    request<{ church: Church | null; subscription: Subscription; churchRole: ChurchRole | null }>("/onchurch/churches/me", {
       method: "GET",
       auth: true,
     }),

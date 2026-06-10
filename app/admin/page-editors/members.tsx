@@ -3,12 +3,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, onchurchChurchMember, type ChurchMember } from "@/lib/api-client";
 
-type Status = "idle" | "loading" | "deleting";
+type Status = "idle" | "loading" | "deleting" | "updating";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const ROLE_BADGE: Record<string, { label: string; bg: string; color: string }> = {
+  owner: { label: "오너", bg: "#fbeec1", color: "#8a6d00" },
+  admin: { label: "관리자", bg: "#dce8ff", color: "#1f49a6" },
+  member: { label: "맴버", bg: "var(--surface)", color: "var(--muted)" },
+};
+
+function RoleBadge({ role }: { role: string }) {
+  const b = ROLE_BADGE[role] ?? ROLE_BADGE.member;
+  return (
+    <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: b.bg, color: b.color, border: "1px solid var(--line)" }}>
+      {b.label}
+    </span>
+  );
 }
 
 export function MembersEditor() {
@@ -33,6 +48,16 @@ export function MembersEditor() {
     catch (err) { setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다."); setStatus("idle"); }
   }
 
+  async function changeRole(m: ChurchMember, role: "admin" | "member") {
+    const label = role === "admin" ? "관리자로 승급" : "맴버로 강등";
+    if (!confirm(`'${m.name}'(${m.loginId}) 회원을 ${label}할까요?${role === "admin" ? " 관리자는 관리자페이지에서 교회를 관리할 수 있습니다." : ""}`)) return;
+    setStatus("updating"); setErrMsg("");
+    try { await onchurchChurchMember.changeRole(m.id, role); await load(); }
+    catch (err) { setErrMsg(err instanceof ApiError ? err.message : "등급 변경에 실패했습니다."); setStatus("idle"); }
+  }
+
+  const busy = status === "deleting" || status === "updating";
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return members;
@@ -44,7 +69,7 @@ export function MembersEditor() {
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">MEMBERS</div>
         <h2>회원 관리</h2>
-        <p>우리 교회 홈페이지에서 가입한 성도(회원) 목록입니다. 교제 게시판에 글을 쓸 수 있는 사람들입니다.</p>
+        <p>우리 교회 홈페이지에서 가입한 성도(회원) 목록입니다. 회원을 <b>관리자</b>로 올리면 관리자페이지에 접근해 함께 교회를 관리할 수 있습니다. <b>오너</b> 등급은 변경할 수 없습니다.</p>
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -70,6 +95,7 @@ export function MembersEditor() {
               <div key={m.id} className="admin-banner-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <RoleBadge role={m.churchRole} />
                     <strong style={{ fontSize: 14 }}>{m.name}</strong>
                     <span style={{ color: "var(--muted)", fontSize: 12 }}>@{m.loginId}</span>
                   </div>
@@ -77,7 +103,18 @@ export function MembersEditor() {
                     {m.phone || "연락처 없음"} · 가입 {formatDate(m.createdAt)}
                   </div>
                 </div>
-                <button type="button" className="btn btn-ghost" onClick={() => remove(m)} disabled={status === "deleting"}>삭제</button>
+                {m.churchRole === "owner" ? (
+                  <span style={{ color: "var(--muted)", fontSize: 12 }}>교회 오너</span>
+                ) : (
+                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {m.churchRole === "admin" ? (
+                      <button type="button" className="btn btn-ghost" onClick={() => changeRole(m, "member")} disabled={busy}>맴버로 강등</button>
+                    ) : (
+                      <button type="button" className="btn btn-ghost" onClick={() => changeRole(m, "admin")} disabled={busy}>관리자로 승급</button>
+                    )}
+                    <button type="button" className="btn btn-ghost" onClick={() => remove(m)} disabled={busy}>삭제</button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
