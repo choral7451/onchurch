@@ -357,6 +357,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   useEffect(() => {
     if (!loaded) return;
+    if (slugLocked) {
+      // 이미 발급된 서브도메인은 변경 불가하므로 중복확인이 불필요하다.
+      // (관리자는 교회 소유자가 아니라 check-slug 가 'taken' 으로 떠 저장이 막히던 문제 방지)
+      setSlugCheck("available");
+      return;
+    }
     if (!trimmedSlug) {
       setSlugCheck("idle");
       return;
@@ -376,7 +382,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [trimmedSlug, loaded]);
+  }, [trimmedSlug, loaded, slugLocked]);
 
   function onPickFile() {
     fileRef.current?.click();
