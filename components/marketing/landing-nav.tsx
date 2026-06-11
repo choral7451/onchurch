@@ -29,7 +29,7 @@ export function LandingNav() {
           </div>
         </Link>
         <div className="landing-nav-links">
-          <a href="/#demo">데모</a>
+          <a href="/#demo">실제 사례</a>
           <a href="/#features">기능</a>
           <a href="/#pricing">가격</a>
         </div>
