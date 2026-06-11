@@ -81,7 +81,8 @@ export function MembersEditor() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="이름·아이디·연락처 검색"
-            style={{ padding: "9px 14px", fontSize: 13, border: "1px solid var(--line)", borderRadius: 999, background: "var(--surface)", width: 240, fontFamily: "inherit" }}
+            className="member-search"
+            style={{ padding: "9px 14px", fontSize: 13, border: "1px solid var(--line)", borderRadius: 999, background: "var(--surface)", fontFamily: "inherit" }}
           />
         </div>
 
@@ -92,7 +93,7 @@ export function MembersEditor() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {filtered.map((m) => (
-              <div key={m.id} className="admin-banner-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+              <div key={m.id} className="admin-banner-card member-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <RoleBadge role={m.churchRole} />

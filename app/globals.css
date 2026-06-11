@@ -720,6 +720,9 @@ main { flex: 1; }
 .admin-banner-card.editing { flex-direction: column; background: var(--bg-tinted); }
 .admin-banner-card.inactive { opacity: 0.55; }
 
+/* 회원 관리 */
+.member-search { width: 240px; max-width: 100%; }
+
 /* 관리자 - 행 드래그 핸들 */
 .drag-handle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--r-sm); color: var(--muted); cursor: grab; flex-shrink: 0; transition: all 0.15s ease; user-select: none; }
 .drag-handle:hover { background: var(--bg-tinted); color: var(--ink); }
@@ -1004,6 +1007,12 @@ main { flex: 1; }
   .editor-row-staff { grid-template-columns: 48px 1fr; }
   .editor-row-staff > *:nth-child(n+3) { grid-column: span 2; }
   .board-list { grid-template-columns: 1fr; }
+
+  /* 회원 관리 — 검색 입력은 한 줄 전체, 카드는 세로 스택 */
+  .member-search { flex: 1 1 100%; width: 100%; }
+  .member-row { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+  .member-row > div:last-child { justify-content: flex-end; }
+  .member-row .btn { flex: 1; }
 
   /* Landing page */
   .landing-nav-inner { padding: 0 16px; height: 64px; }

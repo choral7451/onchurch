@@ -963,6 +963,20 @@ const BULLETIN_CSS = `
 .bf-info-qr img { width: 19mm; height: 19mm; }
 .bf-info-qr span { font-size: 6.5pt; color: #8a8d94; }
 
+/* 모바일 화면 미리보기: 시트 전체를 더 축소해 가로 폭 안에 맞춤 */
+@media screen and (max-width: 640px) {
+  .bulletin-toolbar { flex-wrap: wrap; gap: 10px; padding: 10px 14px; }
+  .bulletin-toolbar-info { flex: 1 1 100%; order: 2; font-size: 11.5px; }
+  .bulletin-toolbar-actions { margin-left: auto; }
+  .bulletin-print-root { padding: 16px 10px 48px; gap: 16px; }
+  .bulletin-sheet-wrap { width: 124.74mm; height: 88.2mm; }
+  .bulletin-sheet { transform: scale(0.42); }
+}
+@media screen and (max-width: 430px) {
+  .bulletin-sheet-wrap { width: 89.1mm; height: 63mm; }
+  .bulletin-sheet { transform: scale(0.30); }
+}
+
 @media print {
   .bulletin-portal { position: static; background: #fff; overflow: visible; display: block; }
   .bulletin-toolbar { display: none; }
