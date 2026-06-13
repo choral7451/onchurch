@@ -141,8 +141,8 @@ export default async function LandingPage() {
             <span className="landing-h1-accent">5분 만에 시작</span>합니다
           </h1>
           <p className="landing-sub">
-            복잡한 디자인·코딩 없이, 우리 교회의 이름과 콘텐츠를 그대로 담은 홈페이지.<br />
-            필요한 페이지만 켜서 운영하는, 처음부터 교회를 위해 설계된 빌더.
+            <span className="landing-sub-line">복잡한 디자인·코딩 없이, 우리 교회의 이름과 콘텐츠를 그대로 담은 홈페이지.</span>
+            <span className="landing-sub-line">필요한 페이지만 켜서 운영하는, 처음부터 교회를 위해 설계된 빌더.</span>
           </p>
           <div className="landing-cta">
             <Link href="#demo" className="btn btn-primary btn-lg">
