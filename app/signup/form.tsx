@@ -291,7 +291,7 @@ export function SignupForm() {
           cursor: canSubmit ? "pointer" : "not-allowed",
         }}
       >
-        {status === "submitting" ? "신청 중..." : "14일 무료로 시작하기"}
+        {status === "submitting" ? "신청 중..." : "7일 무료로 시작하기"}
       </button>
     </form>
   );
