@@ -1,50 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoogleMap } from "@/components/google-map";
-
-type DaumPostcodeData = {
-  roadAddress?: string;
-  jibunAddress?: string;
-  zonecode?: string;
-  buildingName?: string;
-};
-
-type DaumPostcode = new (config: { oncomplete: (data: DaumPostcodeData) => void }) => {
-  open: () => void;
-};
-
-declare global {
-  interface Window {
-    daum?: { Postcode: DaumPostcode };
-  }
-}
-
-const SDK_SRC = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
-let sdkPromise: Promise<void> | null = null;
-
-function loadPostcodeSdk(): Promise<void> {
-  if (typeof window === "undefined") return Promise.reject(new Error("not in browser"));
-  if (window.daum?.Postcode) return Promise.resolve();
-  if (sdkPromise) return sdkPromise;
-
-  sdkPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>("script[data-daum-postcode='1']");
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("postcode sdk load error")));
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = SDK_SRC;
-    script.async = true;
-    script.dataset.daumPostcode = "1";
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("postcode sdk load error"));
-    document.head.appendChild(script);
-  });
-  return sdkPromise;
-}
+import { loadGoogleSdk } from "@/components/google-maps-loader";
 
 type Props = {
   id?: string;
@@ -65,54 +23,50 @@ export function AddressPicker({
   churchName,
   showPreview = true,
 }: Props) {
-  const [opening, setOpening] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
   const [err, setErr] = useState("");
 
-  async function openSearch() {
-    setOpening(true);
-    setErr("");
-    try {
-      await loadPostcodeSdk();
-      const Postcode = window.daum?.Postcode;
-      if (!Postcode) throw new Error("postcode unavailable");
-      new Postcode({
-        oncomplete: (data) => {
-          const road = (data.roadAddress ?? "").trim();
-          const jibun = (data.jibunAddress ?? "").trim();
-          const building = (data.buildingName ?? "").trim();
-          const base = road || jibun;
-          onChange(building ? `${base} (${building})` : base);
-        },
-      }).open();
-    } catch {
-      setErr("주소 검색을 불러오지 못했습니다.");
-    } finally {
-      setOpening(false);
-    }
-  }
+  // Google Places Autocomplete — 미국·한국 등 전 세계 주소를 입력하면 후보가 뜬다.
+  useEffect(() => {
+    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!key) { setErr("주소 검색 키가 설정되지 않았습니다."); return; }
+
+    let cancelled = false;
+    loadGoogleSdk(key)
+      .then((google) => {
+        if (cancelled || !inputRef.current) return;
+        const ac = new google.maps.places.Autocomplete(inputRef.current, {
+          fields: ["formatted_address", "name"],
+        });
+        ac.addListener("place_changed", () => {
+          const place = ac.getPlace();
+          const addr = (place.formatted_address ?? place.name ?? "").trim();
+          if (addr) onChangeRef.current(addr);
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setErr("주소 검색을 불러오지 못했습니다.");
+      });
+
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ display: "flex", gap: 8 }}>
-        <input
-          id={id}
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          required={required}
-          style={{ flex: 1 }}
-        />
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={openSearch}
-          disabled={opening}
-          style={{ flexShrink: 0, whiteSpace: "nowrap" }}
-        >
-          {opening ? "불러오는 중..." : "주소 검색"}
-        </button>
-      </div>
+      <input
+        ref={inputRef}
+        id={id}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        // 자동완성 후보에서 Enter 선택 시 폼이 제출되지 않도록 막는다.
+        onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
+        placeholder={placeholder}
+        required={required}
+        autoComplete="off"
+      />
       {err && <div className="phone-msg phone-msg-error" style={{ fontSize: 12 }}>{err}</div>}
       {showPreview && value.trim() && (
         <div style={{ borderRadius: "var(--r-md)", overflow: "hidden", border: "1px solid var(--line)" }}>
