@@ -198,6 +198,10 @@ const DENOMINATION_LOGOS: { url: string; label: string }[] = [
     url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260514/original/LoQ8Kn7xb6T.1778733771412.png",
     label: "기독교대한감리회",
   },
+  {
+    url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260614/original/nSfEMNgq3d1.1781431815506.png",
+    label: "성결교",
+  },
 ];
 
 export function AdminApp({ initial }: { initial: Initial }) {
