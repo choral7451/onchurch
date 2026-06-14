@@ -200,7 +200,7 @@ const DENOMINATION_LOGOS: { url: string; label: string }[] = [
   },
   {
     url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260614/original/nSfEMNgq3d1.1781431815506.png",
-    label: "성결교",
+    label: "기독교대한성결교회",
   },
 ];
 
