@@ -199,7 +199,7 @@ const DENOMINATION_LOGOS: { url: string; label: string }[] = [
     label: "기독교대한감리회",
   },
   {
-    url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260614/original/nSfEMNgq3d1.1781431815506.png",
+    url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260614/original/NIb1Gb24J3P.1781432921408.png",
     label: "기독교대한성결교회",
   },
 ];
