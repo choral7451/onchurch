@@ -16,7 +16,7 @@ export type PublicChurch = {
   businessNo: string | null;
   logoUrl: string | null;
   youtubeUrl: string | null;
-  liveChannelId: string | null;
+  liveUrl: string | null;
   isLive: boolean;
   liveStartedAt: string | null;
   enabledPages: string[];
@@ -24,18 +24,18 @@ export type PublicChurch = {
   isPublished: boolean;
 };
 
-export type LiveStatus = { isLive: boolean; channelId: string | null; videoId: string | null };
+export type LiveStatus = { isLive: boolean; videoId: string | null };
 
 export async function fetchLiveStatus(slug: string): Promise<LiveStatus> {
   try {
     const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/live-status`, {
       cache: "no-store",
     });
-    if (!res.ok) return { isLive: false, channelId: null, videoId: null };
+    if (!res.ok) return { isLive: false, videoId: null };
     const body = await res.json();
-    return (body?.item ?? { isLive: false, channelId: null, videoId: null }) as LiveStatus;
+    return (body?.item ?? { isLive: false, videoId: null }) as LiveStatus;
   } catch {
-    return { isLive: false, channelId: null, videoId: null };
+    return { isLive: false, videoId: null };
   }
 }
 

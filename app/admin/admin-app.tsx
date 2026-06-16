@@ -217,6 +217,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [email, setEmail] = useState(initial.brand.email);
   const [address, setAddress] = useState(initial.brand.address);
   const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
+  const [liveUrl, setLiveUrl] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [liveSaving, setLiveSaving] = useState(false);
 
@@ -319,6 +320,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           setAddress(c.address ?? "");
           if (c.logoUrl) setLogoPreview(c.logoUrl);
           setYoutubeUrl(c.youtubeUrl ?? null);
+          setLiveUrl(c.liveUrl ?? null);
           setIsLive(c.isLive ?? false);
           if (c.enabledPages?.length) {
             const next: Record<string, boolean> = {};
@@ -438,6 +440,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
+        liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
         homeSectionOrder,
@@ -451,9 +454,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
     }
   }
 
-  // 라이브 방송 설정(유튜브 채널 주소 + ON/OFF) 저장. 말씀 섹션에서 사용.
-  async function persistLive(nextYoutubeUrl: string | null, nextIsLive: boolean) {
-    setYoutubeUrl(nextYoutubeUrl);
+  // 라이브 방송 설정(라이브 영상 URL + ON/OFF) 저장. 말씀 섹션에서 사용.
+  async function persistLive(nextLiveUrl: string | null, nextIsLive: boolean) {
+    setLiveUrl(nextLiveUrl);
     setIsLive(nextIsLive);
     if (!churchExistsOnServer || !slug.trim() || !name.trim()) {
       setSaveMsg("먼저 교회 기본 정보를 저장해주세요.");
@@ -473,7 +476,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
         representative: null,
         businessNo: null,
         logoUrl: logoPreview || null,
-        youtubeUrl: nextYoutubeUrl?.trim() || null,
+        youtubeUrl: youtubeUrl?.trim() || null,
+        liveUrl: nextLiveUrl?.trim() || null,
         isLive: nextIsLive,
         enabledPages,
         homeSectionOrder,
@@ -505,6 +509,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
+        liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
         homeSectionOrder: nextOrder,
@@ -567,6 +572,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
+        liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
         homeSectionOrder,
@@ -1072,6 +1078,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           churchName={name}
                         />
                       </div>
+                      <div className="form-row full">
+                        <label htmlFor="ad-youtube-channel">유튜브 채널 주소</label>
+                        <input
+                          id="ad-youtube-channel"
+                          type="url"
+                          value={youtubeUrl ?? ""}
+                          onChange={(e) => setYoutubeUrl(e.target.value)}
+                          placeholder="https://www.youtube.com/@yourchurch"
+                        />
+                        <p className="form-hint">입력하면 홈 메인 빠른 이동에 &lsquo;유튜브&rsquo; 바로가기가 노출됩니다. 비워두면 숨겨집니다. (실시간 방송은 말씀 메뉴에서 설정)</p>
+                      </div>
                     </div>
                     {sectionSaveBar}
                     <DirectionsEditor />
@@ -1157,10 +1174,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   {activePage === "sermons" && (
                     <SermonsEditor
                       live={{
-                        youtubeUrl,
+                        liveUrl,
                         isLive,
                         saving: liveSaving,
-                        onChangeUrl: (u) => setYoutubeUrl(u),
+                        onChangeUrl: (u) => setLiveUrl(u),
                         onPersist: persistLive,
                       }}
                     />

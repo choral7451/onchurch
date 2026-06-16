@@ -20,7 +20,7 @@ export type Church = {
   businessNo: string | null;
   logoUrl: string | null;
   youtubeUrl: string | null;
-  liveChannelId: string | null;
+  liveUrl: string | null;
   isLive: boolean;
   liveStartedAt: string | null;
   enabledPages: string[];
@@ -47,6 +47,7 @@ export type UpsertChurchInput = {
   businessNo?: string | null;
   logoUrl?: string | null;
   youtubeUrl?: string | null;
+  liveUrl?: string | null;
   isLive?: boolean;
   enabledPages: string[];
   homeSectionOrder?: string[];
@@ -436,6 +437,7 @@ export const onchurchChurch = {
         businessNo: input.businessNo ?? null,
         logoUrl: input.logoUrl ?? null,
         youtubeUrl: input.youtubeUrl ?? null,
+        liveUrl: input.liveUrl ?? null,
         isLive: input.isLive ?? false,
         enabledPages: input.enabledPages,
         homeSectionOrder: input.homeSectionOrder ?? [],

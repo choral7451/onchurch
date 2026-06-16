@@ -40,7 +40,7 @@ const EMPTY_SERIES: SermonSeriesWriteInput = {
 type SubKey = "sermons" | "series";
 
 type LiveControl = {
-  youtubeUrl: string | null;
+  liveUrl: string | null;
   isLive: boolean;
   saving: boolean;
   onChangeUrl: (url: string) => void;
@@ -69,35 +69,35 @@ export function SermonsEditor({ live }: { live?: LiveControl }) {
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {live && (
           <div className="form-row full" style={{ margin: 0 }}>
-            <label htmlFor="ad-youtube">실시간 방송 (유튜브 채널)</label>
+            <label htmlFor="ad-live-url">실시간 방송 (라이브 영상 URL)</label>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <input
-                id="ad-youtube"
+                id="ad-live-url"
                 type="url"
-                value={live.youtubeUrl ?? ""}
+                value={live.liveUrl ?? ""}
                 onChange={(e) => live.onChangeUrl(e.target.value)}
-                placeholder="https://www.youtube.com/@교회채널"
+                placeholder="https://www.youtube.com/watch?v=..."
                 style={{ flex: 1, minWidth: 220 }}
               />
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() => live.onPersist(live.youtubeUrl, live.isLive)}
+                onClick={() => live.onPersist(live.liveUrl, live.isLive)}
                 disabled={live.saving}
               >
-                {live.saving ? "저장 중..." : "주소 저장"}
+                {live.saving ? "저장 중..." : "URL 저장"}
               </button>
               <button
                 type="button"
                 className={`btn ${live.isLive ? "btn-primary" : "btn-secondary"}`}
-                onClick={() => live.onPersist(live.youtubeUrl, !live.isLive)}
+                onClick={() => live.onPersist(live.liveUrl, !live.isLive)}
                 disabled={live.saving}
                 style={live.isLive ? { background: "#e11d48", borderColor: "#e11d48" } : undefined}
               >
                 {live.isLive ? "🔴 방송 끄기" : "방송 시작 (ON)"}
               </button>
             </div>
-            <p className="form-hint">방송 시작을 켜면 홈 메인에 ON AIR 배지가 떠 말씀 페이지에서 라이브를 볼 수 있습니다. 끄는 걸 깜빡해도 3시간 뒤 자동 종료됩니다.</p>
+            <p className="form-hint">예배 시작 시 유튜브 라이브 영상 주소(watch?v=...)를 붙여넣고 방송 시작을 켜면, 홈 메인에 ON AIR가 뜨고 말씀 페이지에서 바로 시청됩니다. 끄는 걸 깜빡해도 3시간 뒤 자동 종료됩니다.</p>
           </div>
         )}
 
