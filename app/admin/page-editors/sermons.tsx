@@ -97,7 +97,7 @@ export function SermonsEditor({ live }: { live?: LiveControl }) {
                 {live.isLive ? "🔴 방송 끄기" : "방송 시작 (ON)"}
               </button>
             </div>
-            <p className="form-hint">예배 시작 시 유튜브 라이브 영상 주소(watch?v=...)를 붙여넣고 방송 시작을 켜면, 홈 메인에 ON AIR가 뜨고 말씀 페이지에서 바로 시청됩니다. 끄는 걸 깜빡해도 3시간 뒤 자동 종료됩니다.</p>
+            <p className="form-hint">예배 시작 시 유튜브 라이브 영상 주소(watch?v=...)를 붙여넣고 방송 시작을 켜면, 홈 메인에 ON AIR가 뜨고 말씀 페이지에서 바로 시청됩니다. 끄는 걸 깜빡해도 2시간 뒤 자동 종료됩니다.</p>
           </div>
         )}
 
