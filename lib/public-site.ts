@@ -24,18 +24,18 @@ export type PublicChurch = {
   isPublished: boolean;
 };
 
-export type LiveStatus = { isLive: boolean; channelId: string | null };
+export type LiveStatus = { isLive: boolean; channelId: string | null; videoId: string | null };
 
 export async function fetchLiveStatus(slug: string): Promise<LiveStatus> {
   try {
     const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/live-status`, {
       cache: "no-store",
     });
-    if (!res.ok) return { isLive: false, channelId: null };
+    if (!res.ok) return { isLive: false, channelId: null, videoId: null };
     const body = await res.json();
-    return (body?.item ?? { isLive: false, channelId: null }) as LiveStatus;
+    return (body?.item ?? { isLive: false, channelId: null, videoId: null }) as LiveStatus;
   } catch {
-    return { isLive: false, channelId: null };
+    return { isLive: false, channelId: null, videoId: null };
   }
 }
 

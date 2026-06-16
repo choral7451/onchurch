@@ -14,15 +14,17 @@ type Props = {
   slug: string;
   initialLive: boolean;
   initialChannelId: string | null;
+  initialVideoId: string | null;
   youtubeUrl: string | null;
 };
 
 // 말씀 페이지 상단 실시간 방송 플레이어.
 // 채널ID가 있으면 채널 기준 라이브 임베드(주소가 방송마다 바뀌지 않음),
 // 없으면 유튜브로 이동하는 버튼으로 폴백. 라이브가 아니면 아무것도 렌더하지 않는다.
-export function SermonLive({ slug, initialLive, initialChannelId, youtubeUrl }: Props) {
+export function SermonLive({ slug, initialLive, initialChannelId, initialVideoId, youtubeUrl }: Props) {
   const [live, setLive] = useState(initialLive);
   const [channelId, setChannelId] = useState(initialChannelId);
+  const [videoId, setVideoId] = useState(initialVideoId);
 
   useEffect(() => {
     let stopped = false;
@@ -35,6 +37,7 @@ export function SermonLive({ slug, initialLive, initialChannelId, youtubeUrl }: 
         if (stopped) return;
         setLive(!!body?.item?.isLive);
         setChannelId(body?.item?.channelId ?? null);
+        setVideoId(body?.item?.videoId ?? null);
       } catch {
         /* 다음 주기에 재시도 */
       }
@@ -51,9 +54,14 @@ export function SermonLive({ slug, initialLive, initialChannelId, youtubeUrl }: 
 
   if (!live) return null;
 
-  // 서버가 해석한 채널ID 우선, 없으면 URL에서 직접 추출 → 유튜브로 이동 없이 페이지 내 임베드.
+  // 실제 라이브 영상ID로 임베드하는 게 가장 안정적. 없으면 채널 기준 임베드로 폴백.
   const cid = channelId ?? channelIdFromUrl(youtubeUrl);
-  if (!cid) return null;
+  const src = videoId
+    ? `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1`
+    : cid
+      ? `https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(cid)}&autoplay=1`
+      : null;
+  if (!src) return null;
 
   return (
     <div className="sermon-live">
@@ -63,7 +71,7 @@ export function SermonLive({ slug, initialLive, initialChannelId, youtubeUrl }: 
       </div>
       <div className="sermon-live-video">
         <iframe
-          src={`https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(cid)}&autoplay=1`}
+          src={src}
           title="실시간 예배"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen

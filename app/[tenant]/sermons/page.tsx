@@ -78,6 +78,7 @@ async function SermonsContent({ tenant }: { tenant: string }) {
         slug={tenant}
         initialLive={liveStatus.isLive}
         initialChannelId={liveStatus.channelId}
+        initialVideoId={liveStatus.videoId}
         youtubeUrl={church?.youtubeUrl ?? null}
       />
       <SermonsList sermons={sermons} filters={filters} />
