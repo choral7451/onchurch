@@ -1155,52 +1155,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   )}
 
                   {activePage === "sermons" && (
-                    <>
-                      <section className="admin-section">
-                        <div className="admin-section-head">
-                          <div className="admin-section-eyebrow">LIVE</div>
-                          <h2>실시간 방송</h2>
-                          <p>유튜브 채널 주소를 한 번 등록해두고, 예배 때 ON 하면 홈 메인에 ON AIR 배지가 떠 말씀 페이지에서 라이브를 볼 수 있습니다. 끄는 걸 깜빡해도 3시간 뒤 자동으로 종료됩니다.</p>
-                        </div>
-                        <div className="form-grid">
-                          <div className="form-row full">
-                            <label htmlFor="ad-youtube">유튜브 채널 주소</label>
-                            <input
-                              id="ad-youtube"
-                              type="url"
-                              value={youtubeUrl ?? ""}
-                              onChange={(e) => setYoutubeUrl(e.target.value)}
-                              placeholder="https://www.youtube.com/@yourchurch"
-                            />
-                            <p className="form-hint">예: https://www.youtube.com/@교회채널 또는 https://www.youtube.com/channel/UC... · 비워두면 홈의 유튜브 바로가기와 라이브가 숨겨집니다.</p>
-                          </div>
-                          <div className="form-row full">
-                            <label>실시간 방송 상태</label>
-                            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                              <button
-                                type="button"
-                                className={`btn ${isLive ? "btn-primary" : "btn-secondary"}`}
-                                onClick={() => persistLive(youtubeUrl, !isLive)}
-                                disabled={liveSaving}
-                                style={isLive ? { background: "#e11d48", borderColor: "#e11d48" } : undefined}
-                              >
-                                {isLive ? "🔴 방송 중 — 끄기" : "방송 시작 (ON)"}
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-ghost"
-                                onClick={() => persistLive(youtubeUrl, isLive)}
-                                disabled={liveSaving}
-                              >
-                                {liveSaving ? "저장 중..." : "채널 주소 저장"}
-                              </button>
-                              {isLive && <span style={{ color: "var(--muted)", fontSize: 13 }}>홈 메인에 ON AIR가 표시됩니다.</span>}
-                            </div>
-                          </div>
-                        </div>
-                      </section>
-                      <SermonsEditor />
-                    </>
+                    <SermonsEditor
+                      live={{
+                        youtubeUrl,
+                        isLive,
+                        saving: liveSaving,
+                        onChangeUrl: (u) => setYoutubeUrl(u),
+                        onPersist: persistLive,
+                      }}
+                    />
                   )}
 
                   {activePage === "gallery" && <GalleryEditor />}

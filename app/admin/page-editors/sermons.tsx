@@ -39,7 +39,15 @@ const EMPTY_SERIES: SermonSeriesWriteInput = {
 
 type SubKey = "sermons" | "series";
 
-export function SermonsEditor() {
+type LiveControl = {
+  youtubeUrl: string | null;
+  isLive: boolean;
+  saving: boolean;
+  onChangeUrl: (url: string) => void;
+  onPersist: (url: string | null, isLive: boolean) => void;
+};
+
+export function SermonsEditor({ live }: { live?: LiveControl }) {
   const [section, setSection] = useState<SubKey>("sermons");
   const [seriesList, setSeriesList] = useState<SermonSeriesItem[]>([]);
 
@@ -59,6 +67,40 @@ export function SermonsEditor() {
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {live && (
+          <div className="form-row full" style={{ margin: 0 }}>
+            <label htmlFor="ad-youtube">실시간 방송 (유튜브 채널)</label>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <input
+                id="ad-youtube"
+                type="url"
+                value={live.youtubeUrl ?? ""}
+                onChange={(e) => live.onChangeUrl(e.target.value)}
+                placeholder="https://www.youtube.com/@교회채널"
+                style={{ flex: 1, minWidth: 220 }}
+              />
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => live.onPersist(live.youtubeUrl, live.isLive)}
+                disabled={live.saving}
+              >
+                {live.saving ? "저장 중..." : "주소 저장"}
+              </button>
+              <button
+                type="button"
+                className={`btn ${live.isLive ? "btn-primary" : "btn-secondary"}`}
+                onClick={() => live.onPersist(live.youtubeUrl, !live.isLive)}
+                disabled={live.saving}
+                style={live.isLive ? { background: "#e11d48", borderColor: "#e11d48" } : undefined}
+              >
+                {live.isLive ? "🔴 방송 끄기" : "방송 시작 (ON)"}
+              </button>
+            </div>
+            <p className="form-hint">방송 시작을 켜면 홈 메인에 ON AIR 배지가 떠 말씀 페이지에서 라이브를 볼 수 있습니다. 끄는 걸 깜빡해도 3시간 뒤 자동 종료됩니다.</p>
+          </div>
+        )}
+
         <div className="chips">
           {(["sermons", "series"] as const).map((s) => (
             <div
