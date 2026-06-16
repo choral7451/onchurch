@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
+// youtubeUrl이 /channel/UC... 또는 ?channel=UC... 형식이면 채널ID를 직접 추출 (서버 해석 없이도 임베드 가능).
+function channelIdFromUrl(url: string | null): string | null {
+  if (!url) return null;
+  return url.match(/\/channel\/(UC[\w-]{20,})/)?.[1] ?? url.match(/[?&]channel=(UC[\w-]{20,})/)?.[1] ?? null;
+}
+
 type Props = {
   slug: string;
   initialLive: boolean;
@@ -45,26 +51,24 @@ export function SermonLive({ slug, initialLive, initialChannelId, youtubeUrl }: 
 
   if (!live) return null;
 
+  // 서버가 해석한 채널ID 우선, 없으면 URL에서 직접 추출 → 유튜브로 이동 없이 페이지 내 임베드.
+  const cid = channelId ?? channelIdFromUrl(youtubeUrl);
+  if (!cid) return null;
+
   return (
     <div className="sermon-live">
       <div className="sermon-live-head">
         <span className="onair-dot" aria-hidden="true" />
         <span className="sermon-live-title">실시간 예배 중계</span>
       </div>
-      {channelId ? (
-        <div className="sermon-live-video">
-          <iframe
-            src={`https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(channelId)}&autoplay=1`}
-            title="실시간 예배"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-        </div>
-      ) : youtubeUrl ? (
-        <a href={youtubeUrl} target="_blank" rel="noreferrer noopener" className="btn btn-primary">
-          ▶ 유튜브에서 실시간 예배 보기
-        </a>
-      ) : null}
+      <div className="sermon-live-video">
+        <iframe
+          src={`https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(cid)}&autoplay=1`}
+          title="실시간 예배"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
     </div>
   );
 }
