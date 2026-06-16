@@ -59,64 +59,74 @@ export function SermonsEditor({ live }: { live?: LiveControl }) {
   }
 
   return (
-    <section className="admin-section">
-      <div className="admin-section-head">
-        <div className="admin-section-eyebrow">SERMONS</div>
-        <h2>말씀</h2>
-        <p>설교 영상 · 카테고리 필터를 관리합니다. 카테고리를 먼저 만든 뒤 설교에서 선택할 수 있습니다.</p>
-      </div>
-
-      <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {live && (
-          <div className="form-row full" style={{ margin: 0 }}>
-            <label htmlFor="ad-live-url">실시간 방송 (라이브 영상 URL)</label>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <input
-                id="ad-live-url"
-                type="url"
-                value={live.liveUrl ?? ""}
-                onChange={(e) => live.onChangeUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                style={{ flex: 1, minWidth: 220 }}
-              />
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => live.onPersist(live.liveUrl, live.isLive)}
-                disabled={live.saving}
-              >
-                {live.saving ? "저장 중..." : "URL 저장"}
-              </button>
-              <button
-                type="button"
-                className={`btn ${live.isLive ? "btn-primary" : "btn-secondary"}`}
-                onClick={() => live.onPersist(live.liveUrl, !live.isLive)}
-                disabled={live.saving}
-                style={live.isLive ? { background: "#e11d48", borderColor: "#e11d48" } : undefined}
-              >
-                {live.isLive ? "🔴 방송 끄기" : "방송 시작 (ON)"}
-              </button>
-            </div>
-            <p className="form-hint">예배 시작 시 유튜브 라이브 영상 주소(watch?v=...)를 붙여넣고 방송 시작을 켜면, 홈 메인에 ON AIR가 뜨고 말씀 페이지에서 바로 시청됩니다. 끄는 걸 깜빡해도 2시간 뒤 자동 종료됩니다.</p>
+    <>
+      {live && (
+        <section className="admin-section">
+          <div className="admin-section-head">
+            <div className="admin-section-eyebrow">LIVE</div>
+            <h2>실시간 방송</h2>
+            <p>예배 시작 시 유튜브 라이브 영상 주소(watch?v=...)를 붙여넣고 방송 시작을 켜면, 홈 메인에 ON AIR가 뜨고 말씀 페이지에서 바로 시청됩니다. 끄는 걸 깜빡해도 2시간 뒤 자동 종료됩니다.</p>
           </div>
-        )}
-
-        <div className="chips">
-          {(["sermons", "series"] as const).map((s) => (
-            <div
-              key={s}
-              className={`chip ${section === s ? "active" : ""}`}
-              onClick={() => setSection(s)}
-            >
-              <span>{s === "sermons" ? "설교" : "카테고리"}</span>
+          <div className="admin-section-body">
+            <div className="form-row full" style={{ margin: 0 }}>
+              <label htmlFor="ad-live-url">라이브 영상 URL</label>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <input
+                  id="ad-live-url"
+                  type="url"
+                  value={live.liveUrl ?? ""}
+                  onChange={(e) => live.onChangeUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  style={{ flex: 1, minWidth: 220 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => live.onPersist(live.liveUrl, live.isLive)}
+                  disabled={live.saving}
+                >
+                  {live.saving ? "저장 중..." : "URL 저장"}
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${live.isLive ? "btn-primary" : "btn-secondary"}`}
+                  onClick={() => live.onPersist(live.liveUrl, !live.isLive)}
+                  disabled={live.saving}
+                  style={live.isLive ? { background: "#e11d48", borderColor: "#e11d48" } : undefined}
+                >
+                  {live.isLive ? "🔴 방송 끄기" : "방송 시작 (ON)"}
+                </button>
+              </div>
             </div>
-          ))}
+          </div>
+        </section>
+      )}
+
+      <section className="admin-section">
+        <div className="admin-section-head">
+          <div className="admin-section-eyebrow">SERMONS</div>
+          <h2>말씀</h2>
+          <p>설교 영상 · 카테고리 필터를 관리합니다. 카테고리를 먼저 만든 뒤 설교에서 선택할 수 있습니다.</p>
         </div>
 
-        {section === "sermons" && <SermonItemsEditor seriesList={seriesList} />}
-        {section === "series" && <SermonSeriesEditor onChanged={loadSeries} />}
-      </div>
-    </section>
+        <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="chips">
+            {(["sermons", "series"] as const).map((s) => (
+              <div
+                key={s}
+                className={`chip ${section === s ? "active" : ""}`}
+                onClick={() => setSection(s)}
+              >
+                <span>{s === "sermons" ? "설교" : "카테고리"}</span>
+              </div>
+            ))}
+          </div>
+
+          {section === "sermons" && <SermonItemsEditor seriesList={seriesList} />}
+          {section === "series" && <SermonSeriesEditor onChanged={loadSeries} />}
+        </div>
+      </section>
+    </>
   );
 }
 
