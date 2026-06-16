@@ -271,6 +271,20 @@ main { flex: 1; }
 .sermon-modal-close:hover { background: oklch(0 0 0 / 0.75); }
 .sermon-modal-video { position: relative; width: 100%; aspect-ratio: 16 / 9; background: black; }
 .sermon-modal-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* 실시간 방송(라이브) */
+@keyframes onair-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
+.onair-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #fff; animation: onair-pulse 1.3s ease-in-out infinite; }
+.onair-bar { display: flex; justify-content: center; padding: 14px 16px 0; }
+.onair-badge { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; background: #e11d48; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: 0.04em; box-shadow: 0 6px 20px oklch(0.6 0.22 18 / 0.4); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.onair-badge:hover { transform: translateY(-1px); box-shadow: 0 10px 26px oklch(0.6 0.22 18 / 0.5); }
+.onair-badge .onair-label { font-weight: 500; font-size: 13px; opacity: 0.95; letter-spacing: 0; }
+.sermon-live { margin-bottom: 28px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.sermon-live-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.sermon-live-head .onair-dot { background: #e11d48; }
+.sermon-live-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: #e11d48; letter-spacing: 0.02em; }
+.sermon-live-video { position: relative; width: 100%; aspect-ratio: 16 / 9; background: black; border-radius: 12px; overflow: hidden; }
+.sermon-live-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .sermon-modal-meta { padding: 18px 22px 20px; display: flex; flex-direction: column; gap: 6px; }
 .sermon-modal-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
 

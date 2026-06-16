@@ -16,10 +16,28 @@ export type PublicChurch = {
   businessNo: string | null;
   logoUrl: string | null;
   youtubeUrl: string | null;
+  liveChannelId: string | null;
+  isLive: boolean;
+  liveStartedAt: string | null;
   enabledPages: string[];
   homeSectionOrder: string[];
   isPublished: boolean;
 };
+
+export type LiveStatus = { isLive: boolean; channelId: string | null };
+
+export async function fetchLiveStatus(slug: string): Promise<LiveStatus> {
+  try {
+    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/live-status`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return { isLive: false, channelId: null };
+    const body = await res.json();
+    return (body?.item ?? { isLive: false, channelId: null }) as LiveStatus;
+  } catch {
+    return { isLive: false, channelId: null };
+  }
+}
 
 export const fetchPublicChurch = cache(async (slug: string): Promise<PublicChurch | null> => {
   try {

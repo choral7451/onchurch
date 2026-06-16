@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { SermonsList } from "./list";
 import type { Sermon } from "@/lib/types";
-import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicChurch, fetchLiveStatus } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+import { SermonLive } from "@/components/sermon-live";
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
@@ -54,7 +55,11 @@ async function fetchSermons(slug: string): Promise<{ series: ApiSermonSeries[]; 
 }
 
 async function SermonsContent({ tenant }: { tenant: string }) {
-  const data = await fetchSermons(tenant);
+  const [data, church, liveStatus] = await Promise.all([
+    fetchSermons(tenant),
+    fetchPublicChurch(tenant),
+    fetchLiveStatus(tenant),
+  ]);
   const seriesById = new Map(data.series.map((s) => [s.id, s.name] as const));
   const sermons: Sermon[] = data.sermons.map((s, i) => ({
     series: s.seriesId != null ? seriesById.get(s.seriesId) ?? "미분류" : "미분류",
@@ -67,7 +72,17 @@ async function SermonsContent({ tenant }: { tenant: string }) {
   }));
   const filters: string[] = ["전체", ...data.series.map((s) => s.name)];
 
-  return <SermonsList sermons={sermons} filters={filters} />;
+  return (
+    <>
+      <SermonLive
+        slug={tenant}
+        initialLive={liveStatus.isLive}
+        initialChannelId={liveStatus.channelId}
+        youtubeUrl={church?.youtubeUrl ?? null}
+      />
+      <SermonsList sermons={sermons} filters={filters} />
+    </>
+  );
 }
 
 function SermonsSkeleton() {

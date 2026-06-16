@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchPublicChurch } from "@/lib/public-site";
+import { fetchPublicChurch, fetchLiveStatus } from "@/lib/public-site";
+import { LiveBadge } from "@/components/live-badge";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { getPathPrefix } from "@/lib/path-prefix";
 import { Icon, type IconKey } from "@/components/icons";
@@ -397,6 +398,8 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const visibleQuickLinks = QUICK_LINKS.filter((q) => isPageEnabled(q.path.replace(/^\//, "")));
   const youtubeUrl = church.youtubeUrl?.trim() || null;
   const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder);
+  const sermonsEnabled = isPageEnabled("sermons");
+  const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
 
   const sections: Record<HomeSectionKey, React.ReactNode> = {
     banner: (
@@ -490,5 +493,10 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
     ),
   };
 
-  return <div>{sectionOrder.map((key) => <div key={key}>{sections[key]}</div>)}</div>;
+  return (
+    <div>
+      {sermonsEnabled && <LiveBadge slug={tenant} sermonsHref={url("/sermons")} initialLive={initialLive} />}
+      {sectionOrder.map((key) => <div key={key}>{sections[key]}</div>)}
+    </div>
+  );
 }
