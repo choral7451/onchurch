@@ -1,21 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
+import { onchurchNotice, type Notice } from "@/lib/api-client";
 
-type Notice = {
-  id: number;
-  category: string | null;
-  title: string;
-  content: string | null;
-  author: string | null;
-  isPinned: boolean;
-  isActive: boolean;
-  publishedAt: string | null;
-  createdAt: string;
-};
-
-const PAGE_SIZE = 20;
+const ALL = "전체";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -24,11 +13,88 @@ function formatDate(iso: string | null): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export function NoticesList({ notices, categories, churchName }: { notices: Notice[]; categories: string[]; churchName: string }) {
-  const [cat, setCat] = useState<string>(categories[0] ?? "전체");
-  const [query, setQuery] = useState<string>("");
+type Props = {
+  slug: string;
+  initialNotices: Notice[];
+  totalCount: number;
+  pageSize: number;
+  categories: string[];
+  churchName: string;
+};
+
+export function NoticesList({ slug, initialNotices, totalCount, pageSize, categories, churchName }: Props) {
+  const [items, setItems] = useState<Notice[]>(initialNotices);
+  const [total, setTotal] = useState<number>(totalCount);
   const [page, setPage] = useState<number>(1);
+  const [cat, setCat] = useState<string>(categories[0] ?? ALL);
+  const [query, setQuery] = useState<string>("");
+  const [loading, setLoading] = useState(false);
   const [active, setActive] = useState<Notice | null>(null);
+
+  const hasMore = items.length < total;
+
+  // 카테고리/검색어 변경 → 서버에서 1페이지부터 다시 조회 (교체).
+  // 최초 마운트 시에는 서버에서 받은 initialNotices를 그대로 쓰고 재조회하지 않는다.
+  const didMount = useRef(false);
+  useEffect(() => {
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(() => {
+      setLoading(true);
+      onchurchNotice
+        .listPublic(slug, { category: cat, keyword: query, page: 1, size: pageSize })
+        .then((res) => {
+          if (cancelled) return;
+          setItems(res.notices ?? []);
+          setTotal(res.totalCount ?? 0);
+          setPage(1);
+        })
+        .catch(() => {
+          /* 네트워크 오류 시 현재 목록 유지 */
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    }, query ? 300 : 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [cat, query, slug, pageSize]);
+
+  // 무한스크롤 → 다음 페이지를 이어서 append.
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    const nextPage = page + 1;
+    try {
+      const res = await onchurchNotice.listPublic(slug, { category: cat, keyword: query, page: nextPage, size: pageSize });
+      setItems((prev) => [...prev, ...(res.notices ?? [])]);
+      setTotal(res.totalCount ?? total);
+      setPage(nextPage);
+    } catch {
+      /* 실패 시 다음 교차 시점에 재시도됨 */
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMore, page, cat, query, slug, pageSize, total]);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void loadMore();
+      },
+      { rootMargin: "400px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [loadMore]);
 
   useEffect(() => {
     if (!active) return;
@@ -41,24 +107,6 @@ export function NoticesList({ notices, categories, churchName }: { notices: Noti
     };
   }, [active]);
 
-  const filtered = useMemo(() => {
-    let list = cat === "전체" ? notices : notices.filter((n) => (n.category ?? "일반") === cat);
-    const q = query.trim().toLowerCase();
-    if (q) {
-      list = list.filter((n) =>
-        n.title.toLowerCase().includes(q) ||
-        (n.content ?? "").toLowerCase().includes(q) ||
-        (n.author ?? "").toLowerCase().includes(q),
-      );
-    }
-    return list;
-  }, [notices, cat, query]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const start = (safePage - 1) * PAGE_SIZE;
-  const visible = filtered.slice(start, start + PAGE_SIZE);
-
   return (
     <>
       <div className="notices-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 16, flexWrap: "wrap" }}>
@@ -67,10 +115,7 @@ export function NoticesList({ notices, categories, churchName }: { notices: Noti
             <div
               key={c}
               className={`chip ${cat === c ? "active" : ""}`}
-              onClick={() => {
-                setCat(c);
-                setPage(1);
-              }}
+              onClick={() => setCat(c)}
             >
               {c}
             </div>
@@ -80,10 +125,7 @@ export function NoticesList({ notices, categories, churchName }: { notices: Noti
           <div style={{ position: "relative", width: "100%" }}>
             <input
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="검색..."
               style={{
                 padding: "9px 14px 9px 36px",
@@ -102,8 +144,10 @@ export function NoticesList({ notices, categories, churchName }: { notices: Noti
         </div>
       </div>
 
-      {visible.length === 0 ? (
-        <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>등록된 공지가 없습니다.</div>
+      {items.length === 0 && !loading ? (
+        <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>
+          {query.trim() ? "검색 결과가 없습니다." : "등록된 공지가 없습니다."}
+        </div>
       ) : (
         <div className="notice-list">
           <div className="notice-row head">
@@ -113,7 +157,7 @@ export function NoticesList({ notices, categories, churchName }: { notices: Noti
             <div>작성자</div>
             <div style={{ textAlign: "right" }}>작성일</div>
           </div>
-          {visible.map((n) => (
+          {items.map((n) => (
             <div
               key={n.id}
               className="notice-row clickable"
@@ -134,49 +178,12 @@ export function NoticesList({ notices, categories, churchName }: { notices: Noti
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 32, gap: 4 }}>
-          <button
-            type="button"
-            className="icon-btn"
-            style={{ width: 36, height: 36, border: "1px solid var(--line)", borderRadius: 8 }}
-            aria-label="이전 페이지"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={safePage === 1}
-          >
-            <Icon.chevL />
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPage(p)}
-              style={{
-                width: 36,
-                height: 36,
-                border: "1px solid",
-                borderRadius: 8,
-                fontFamily: "var(--font-display)",
-                fontSize: 13,
-                fontWeight: 600,
-                background: p === safePage ? "var(--primary)" : "var(--surface)",
-                color: p === safePage ? "white" : "var(--ink)",
-                borderColor: p === safePage ? "var(--primary)" : "var(--line)",
-              }}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            type="button"
-            className="icon-btn"
-            style={{ width: 36, height: 36, border: "1px solid var(--line)", borderRadius: 8 }}
-            aria-label="다음 페이지"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={safePage === totalPages}
-          >
-            <Icon.chevR />
-          </button>
+      {/* 무한스크롤 감지 지점 */}
+      {hasMore && <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />}
+
+      {loading && (
+        <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
+          불러오는 중...
         </div>
       )}
 

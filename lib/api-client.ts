@@ -586,15 +586,21 @@ export const onchurchNotice = {
     }),
   remove: (id: number) =>
     request<unknown>(`/onchurch/notices/me/${id}`, { method: "DELETE", auth: true }),
-  listPublic: (slug: string, opts?: { category?: string; page?: number; size?: number }) => {
+  listPublic: (slug: string, opts?: { category?: string; keyword?: string; page?: number; size?: number }) => {
     const qs = new URLSearchParams();
     if (opts?.category && opts.category !== "전체") qs.set("category", opts.category);
+    if (opts?.keyword?.trim()) qs.set("keyword", opts.keyword.trim());
     if (opts?.page) qs.set("page", String(opts.page));
     if (opts?.size) qs.set("size", String(opts.size));
     const query = qs.toString();
     const path = `/onchurch/sites/${encodeURIComponent(slug)}/notices${query ? `?${query}` : ""}`;
     return request<{ notices: Notice[]; totalCount: number }>(path, { method: "GET" });
   },
+  listPublicCategories: (slug: string) =>
+    request<{ categories: NoticeCategoryItem[] }>(
+      `/onchurch/sites/${encodeURIComponent(slug)}/notice-categories`,
+      { method: "GET" },
+    ).then((r) => r.categories ?? []),
 };
 
 export type EventItem = {

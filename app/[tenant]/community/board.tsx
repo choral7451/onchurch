@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import {
@@ -16,11 +16,11 @@ import { toEmbedUrl, toVideoThumbnailUrl } from "@/lib/video-embed";
 type Props = {
   slug: string;
   initialPosts: CommunityPost[];
+  totalCount: number;
+  pageSize: number;
   categories: string[];
   loginHref: string;
 };
-
-const PAGE_SIZE = 12;
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -39,10 +39,12 @@ type Draft = {
 
 const EMPTY_DRAFT: Draft = { id: null, category: "", title: "", content: "", photoUrls: [], videoUrl: "" };
 
-export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Props) {
+export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categories, loginHref }: Props) {
   const [posts, setPosts] = useState<CommunityPost[]>(initialPosts);
-  const [cat, setCat] = useState<string>("전체");
+  const [total, setTotal] = useState<number>(totalCount);
   const [page, setPage] = useState(1);
+  const [cat, setCat] = useState<string>("전체");
+  const [loading, setLoading] = useState(false);
   const [active, setActive] = useState<CommunityPost | null>(null);
 
   const [loggedIn, setLoggedIn] = useState(false);
@@ -72,21 +74,66 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
 
   const allCats = useMemo(() => ["전체", ...categories], [categories]);
 
-  const filtered = useMemo(
-    () => (cat === "전체" ? posts : posts.filter((p) => (p.category ?? "") === cat)),
-    [posts, cat],
+  const hasMore = posts.length < total;
+
+  // 현재 카테고리 기준 1페이지부터 다시 조회 (교체). 작성/수정/삭제 후에도 사용.
+  const reload = useCallback(
+    async (category: string) => {
+      setLoading(true);
+      try {
+        const res = await onchurchCommunity.listPublic(slug, { category, page: 1, size: pageSize });
+        setPosts(res.posts ?? []);
+        setTotal(res.totalCount ?? 0);
+        setPage(1);
+      } catch {
+        /* keep current */
+      } finally {
+        setLoading(false);
+      }
+    },
+    [slug, pageSize],
   );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // 카테고리 칩 클릭 → 서버에서 해당 카테고리 1페이지부터 조회.
+  function selectCat(c: string) {
+    if (c === cat || loading) return;
+    setCat(c);
+    void reload(c);
+  }
+
+  // 무한스크롤 → 다음 페이지 append.
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    const nextPage = page + 1;
+    try {
+      const res = await onchurchCommunity.listPublic(slug, { category: cat, page: nextPage, size: pageSize });
+      setPosts((prev) => [...prev, ...(res.posts ?? [])]);
+      setTotal(res.totalCount ?? total);
+      setPage(nextPage);
+    } catch {
+      /* 실패 시 다음 교차 시점에 재시도됨 */
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMore, page, cat, slug, pageSize, total]);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void loadMore();
+      },
+      { rootMargin: "400px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [loadMore]);
 
   async function refresh() {
-    try {
-      const res = await onchurchCommunity.listPublic(slug, { size: 100 });
-      setPosts(res.posts ?? []);
-    } catch {
-      /* keep current */
-    }
+    await reload(cat);
   }
 
   // ── 작성/수정 ────────────────────────────────────────
@@ -153,7 +200,6 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
       else await onchurchCommunity.create(payload);
       cancelWrite();
       await refresh();
-      setPage(1);
     } catch (err) {
       setFormErr(err instanceof ApiError ? err.message : "저장에 실패했습니다.");
     } finally {
@@ -200,7 +246,7 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
         {isMobile ? (
           <select
             value={cat}
-            onChange={(e) => { setCat(e.target.value); setPage(1); }}
+            onChange={(e) => selectCat(e.target.value)}
             aria-label="카테고리 선택"
             style={{ flex: 1, minWidth: 0, padding: "10px 12px", fontSize: 14, border: "1px solid var(--line)", borderRadius: 10, background: "var(--surface)", fontFamily: "inherit" }}
           >
@@ -209,7 +255,7 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
         ) : (
           <div className="chips" style={{ marginBottom: 0 }}>
             {allCats.map((c) => (
-              <div key={c} className={`chip ${cat === c ? "active" : ""}`} onClick={() => { setCat(c); setPage(1); }}>
+              <div key={c} className={`chip ${cat === c ? "active" : ""}`} onClick={() => selectCat(c)}>
                 {c}
               </div>
             ))}
@@ -307,13 +353,13 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
       )}
 
       {/* 게시글 그리드 */}
-      {visible.length === 0 ? (
+      {posts.length === 0 && !loading ? (
         <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>
           아직 등록된 글이 없습니다. {loggedIn ? "첫 글을 남겨보세요!" : "로그인 후 첫 글을 남겨보세요!"}
         </div>
       ) : (
         <div className="community-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
-          {visible.map((p) => {
+          {posts.map((p) => {
             const hasVideo = !!p.videoUrl;
             const videoThumb = hasVideo ? toVideoThumbnailUrl(p.videoUrl) : null;
             const thumb = p.photoUrls[0] ?? videoThumb;
@@ -382,24 +428,12 @@ export function CommunityBoard({ slug, initialPosts, categories, loginHref }: Pr
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 32, gap: 4 }}>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPage(p)}
-              style={{
-                width: 36, height: 36, border: "1px solid", borderRadius: 8,
-                fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 600,
-                background: p === safePage ? "var(--primary)" : "var(--surface)",
-                color: p === safePage ? "white" : "var(--ink)",
-                borderColor: p === safePage ? "var(--primary)" : "var(--line)",
-              }}
-            >
-              {p}
-            </button>
-          ))}
+      {/* 무한스크롤 감지 지점 */}
+      {hasMore && <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />}
+
+      {loading && (
+        <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
+          불러오는 중...
         </div>
       )}
 

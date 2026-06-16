@@ -30,11 +30,12 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
+const PAGE_SIZE = 12;
 
 async function fetchInitial(slug: string): Promise<{ posts: CommunityPost[]; totalCount: number; categories: CommunityCategoryItem[] }> {
   try {
     const [postsRes, catsRes] = await Promise.all([
-      fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/community-posts?size=100`, { cache: "no-store" }),
+      fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/community-posts?page=1&size=${PAGE_SIZE}`, { cache: "no-store" }),
       fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/community-categories`, { cache: "no-store" }),
     ]);
     const postsBody = postsRes.ok ? await postsRes.json() : null;
@@ -55,7 +56,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ tena
   if (!church) notFound();
   if (!isCommunityEnabled(church.enabledPages)) notFound();
 
-  const { posts, categories } = await fetchInitial(tenant);
+  const { posts, totalCount, categories } = await fetchInitial(tenant);
   const prefix = await getPathPrefix(tenant);
   // 교회가 카테고리를 정의하지 않았으면 기본 카테고리를 노출한다.
   const categoryNames = categories.length > 0 ? categories.map((c) => c.name) : [...DEFAULT_COMMUNITY_CATEGORIES];
@@ -72,6 +73,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ tena
           <CommunityBoard
             slug={tenant}
             initialPosts={posts}
+            totalCount={totalCount}
+            pageSize={PAGE_SIZE}
             categories={categoryNames}
             loginHref={`${prefix}/login`}
           />

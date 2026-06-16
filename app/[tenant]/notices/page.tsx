@@ -30,28 +30,43 @@ type Notice = {
   createdAt: string;
 };
 
-async function fetchNotices(slug: string): Promise<{ notices: Notice[]; totalCount: number }> {
+const PAGE_SIZE = 20;
+
+async function fetchNoticesFirstPage(slug: string): Promise<{ notices: Notice[]; totalCount: number; categories: string[] }> {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
   try {
-    const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/notices?size=100`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return { notices: [], totalCount: 0 };
-    const body = await res.json();
+    const [listRes, catsRes] = await Promise.all([
+      fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/notices?page=1&size=${PAGE_SIZE}`, { cache: "no-store" }),
+      fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/notice-categories`, { cache: "no-store" }),
+    ]);
+    const listBody = listRes.ok ? await listRes.json() : null;
+    const catsBody = catsRes.ok ? await catsRes.json() : null;
+    const categories = ((catsBody?.item?.categories ?? []) as { name: string }[]).map((c) => c.name);
     return {
-      notices: (body?.item?.notices ?? []) as Notice[],
-      totalCount: (body?.item?.totalCount ?? 0) as number,
+      notices: (listBody?.item?.notices ?? []) as Notice[],
+      totalCount: (listBody?.item?.totalCount ?? 0) as number,
+      categories,
     };
   } catch {
-    return { notices: [], totalCount: 0 };
+    return { notices: [], totalCount: 0, categories: [] };
   }
 }
 
 async function NoticesContent({ tenant }: { tenant: string }) {
-  const [{ notices }, church] = await Promise.all([fetchNotices(tenant), fetchPublicChurch(tenant)]);
-  const categories = Array.from(new Set(notices.map((n) => n.category ?? "일반")));
-  categories.unshift("전체");
-  return <NoticesList notices={notices} categories={categories} churchName={church?.name ?? ""} />;
+  const [{ notices, totalCount, categories }, church] = await Promise.all([
+    fetchNoticesFirstPage(tenant),
+    fetchPublicChurch(tenant),
+  ]);
+  return (
+    <NoticesList
+      slug={tenant}
+      initialNotices={notices}
+      totalCount={totalCount}
+      pageSize={PAGE_SIZE}
+      categories={["전체", ...categories]}
+      churchName={church?.name ?? ""}
+    />
+  );
 }
 
 function NoticesSkeleton() {
