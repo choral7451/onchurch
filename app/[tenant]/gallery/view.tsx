@@ -33,7 +33,11 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
   const [page, setPage] = useState<number>(1);
   const [filterId, setFilterId] = useState<number | null>(initialFilter);
   const [loading, setLoading] = useState(false);
+  // 카테고리 전환 중 표시 — 클릭 즉시 스켈레톤으로 바꿔 "바로 넘어간 것처럼" 보이게 한다.
+  const [switching, setSwitching] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // 카테고리를 빠르게 연속 클릭할 때, 가장 마지막 요청의 응답만 반영하도록 하는 가드.
+  const reqIdRef = useRef(0);
 
   const hasMore = items.length < total;
 
@@ -49,6 +53,8 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
 
   const fetchPage1 = useCallback(
     async (id: number | null) => {
+      const myId = ++reqIdRef.current;
+      setSwitching(true);
       setLoading(true);
       try {
         const res = await onchurchGallery.listPublic(slug, {
@@ -56,26 +62,30 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
           page: 1,
           size: pageSize,
         });
+        if (myId !== reqIdRef.current) return; // 더 최신 클릭이 있으면 이 응답은 버린다.
         setItems(res.galleries ?? []);
         setTotal(res.totalCount ?? 0);
         setPage(1);
       } catch {
         // 네트워크 오류 시 현재 목록 유지
       } finally {
-        setLoading(false);
+        if (myId === reqIdRef.current) {
+          setLoading(false);
+          setSwitching(false);
+        }
       }
     },
     [slug, pageSize, queryCategoryId],
   );
 
-  // 카테고리 칩 클릭 → 서버에서 해당 카테고리 1페이지부터 다시 조회.
+  // 카테고리 칩 클릭 → 즉시 칩 활성화 + 스켈레톤 전환, 데이터는 뒤이어 갱신.
   const selectFilter = useCallback(
     (id: number) => {
-      if (id === filterId || loading) return;
+      if (id === filterId) return;
       setFilterId(id);
       void fetchPage1(id);
     },
-    [filterId, loading, fetchPage1],
+    [filterId, fetchPage1],
   );
 
   // '전체'가 없어 기본값이 특정 카테고리인 경우, 서버가 내려준 전체 목록을 기본 카테고리로 좁힌다.
@@ -90,7 +100,8 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
 
   // 무한스크롤 → 다음 페이지를 이어서 append.
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loading || switching || !hasMore) return;
+    const myId = reqIdRef.current;
     setLoading(true);
     const nextPage = page + 1;
     try {
@@ -99,15 +110,16 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
         page: nextPage,
         size: pageSize,
       });
+      if (myId !== reqIdRef.current) return; // 그 사이 카테고리가 바뀌었으면 버린다.
       setItems((prev) => [...prev, ...(res.galleries ?? [])]);
       setTotal(res.totalCount ?? total);
       setPage(nextPage);
     } catch {
       // 실패 시 다음 교차 시점에 재시도됨
     } finally {
-      setLoading(false);
+      if (myId === reqIdRef.current) setLoading(false);
     }
-  }, [loading, hasMore, page, filterId, slug, pageSize, total, queryCategoryId]);
+  }, [loading, switching, hasMore, page, filterId, slug, pageSize, total, queryCategoryId]);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -177,7 +189,19 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
         </div>
       )}
       <div className="gallery-grid">
-        {items.map((g, i) => {
+        {switching
+          ? Array.from({ length: pageSize }).map((_, i) => {
+              const l = layout[i % layout.length] ?? { col: 4, row: 1 };
+              return (
+                <span
+                  key={`skel-${i}`}
+                  className="skel"
+                  aria-hidden="true"
+                  style={{ gridColumn: `span ${l.col}`, gridRow: `span ${l.row}`, borderRadius: "var(--r-lg)" }}
+                />
+              );
+            })
+          : items.map((g, i) => {
           const l = layout[i % layout.length] ?? { col: 4, row: 1 };
           const clickable = !!g.photoUrl;
           return (
@@ -224,7 +248,7 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
         })}
       </div>
 
-      {items.length === 0 && !loading && (
+      {!switching && items.length === 0 && !loading && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 40 }}>
           이 카테고리에 사진이 없습니다.
         </div>
@@ -233,7 +257,7 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
       {/* 무한스크롤 감지 지점 */}
       {hasMore && <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />}
 
-      {loading && (
+      {loading && !switching && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
           불러오는 중...
         </div>
