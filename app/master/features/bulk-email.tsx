@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ApiError, onchurchMaster, type BulkEmailResult } from "@/lib/api-client";
+import { useEffect, useMemo, useState } from "react";
+import { ApiError, onchurchMaster, type BulkEmailResult, type EmailTemplate } from "@/lib/api-client";
 import { EmailHistoryFeature } from "./email-history";
 
 // 붙여넣은 텍스트(줄바꿈/쉼표/세미콜론/공백 구분)에서 이메일 목록을 추출한다.
@@ -30,7 +30,66 @@ export function BulkEmailFeature() {
   const [result, setResult] = useState<BulkEmailResult | null>(null);
   const [historyKey, setHistoryKey] = useState(0);
 
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+
   const recipients = useMemo(() => parseRecipients(recipientsRaw), [recipientsRaw]);
+
+  // 저장된 템플릿 목록 로드
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await onchurchMaster.listEmailTemplates();
+        if (!cancelled) setTemplates(res.items);
+      } catch {
+        // 템플릿 로드 실패는 발송 기능에 영향 없으므로 조용히 무시
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 선택한 템플릿의 제목·본문을 입력란에 채운다.
+  function handleLoadTemplate(idStr: string) {
+    setSelectedTemplateId(idStr);
+    const tpl = templates.find((t) => String(t.id) === idStr);
+    if (!tpl) return;
+    setSubject(tpl.subject);
+    setContent(tpl.content);
+  }
+
+  // 현재 제목·본문을 새 템플릿으로 저장한다.
+  async function handleSaveTemplate() {
+    if (!subject.trim() || !content.trim()) {
+      setErrorMsg("템플릿으로 저장하려면 제목과 본문을 입력해주세요.");
+      return;
+    }
+    const name = prompt("템플릿 이름을 입력하세요.");
+    if (!name?.trim()) return;
+    try {
+      const created = await onchurchMaster.createEmailTemplate({ name: name.trim(), subject: subject.trim(), content });
+      setTemplates((prev) => [created, ...prev]);
+      setSelectedTemplateId(String(created.id));
+    } catch (err) {
+      setErrorMsg(err instanceof ApiError ? err.message : "템플릿 저장에 실패했습니다.");
+    }
+  }
+
+  // 선택한 템플릿을 삭제한다.
+  async function handleDeleteTemplate() {
+    const tpl = templates.find((t) => String(t.id) === selectedTemplateId);
+    if (!tpl) return;
+    if (!confirm(`"${tpl.name}" 템플릿을 삭제할까요?`)) return;
+    try {
+      await onchurchMaster.deleteEmailTemplate(tpl.id);
+      setTemplates((prev) => prev.filter((t) => t.id !== tpl.id));
+      setSelectedTemplateId("");
+    } catch (err) {
+      setErrorMsg(err instanceof ApiError ? err.message : "템플릿 삭제에 실패했습니다.");
+    }
+  }
 
   async function handleSend() {
     setErrorMsg("");
@@ -55,6 +114,11 @@ export function BulkEmailFeature() {
       setResult(res);
       setState("done");
       setHistoryKey((k) => k + 1); // 발송 후 오른쪽 내역 새로고침
+      // 발송 후 입력 초기화
+      setSubject("");
+      setContent("");
+      setRecipientsRaw("");
+      setSelectedTemplateId("");
     } catch (err) {
       setState("error");
       setErrorMsg(err instanceof ApiError ? err.message : "발송 중 오류가 발생했습니다.");
@@ -69,6 +133,40 @@ export function BulkEmailFeature() {
         <p className="mt-1 text-sm text-gray-500">온교회 도입 광고 메일을 대량으로 발송합니다.</p>
 
         <div className="mt-6 space-y-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700">템플릿</label>
+          <p className="mt-1 text-xs text-gray-400">저장된 템플릿을 불러오거나, 현재 제목·본문을 템플릿으로 저장할 수 있습니다.</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <select
+              value={selectedTemplateId}
+              onChange={(e) => handleLoadTemplate(e.target.value)}
+              className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            >
+              <option value="">불러올 템플릿 선택…</option>
+              {templates.map((t) => (
+                <option key={t.id} value={String(t.id)}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={handleSaveTemplate}
+              className="shrink-0 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+            >
+              템플릿으로 저장
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteTemplate}
+              disabled={!selectedTemplateId}
+              className="shrink-0 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-semibold text-gray-700">제목</label>
           <input

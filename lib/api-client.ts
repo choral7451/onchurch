@@ -433,6 +433,24 @@ export const onchurchMaster = {
       auth: true,
     });
   },
+  listEmailTemplates: () =>
+    request<{ items: EmailTemplate[] }>("/onchurch/master/email-templates", { method: "GET", auth: true }),
+  createEmailTemplate: (input: { name: string; subject: string; content: string }) =>
+    request<EmailTemplate>("/onchurch/master/email-templates", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(input),
+    }),
+  deleteEmailTemplate: (id: number) =>
+    request<unknown>(`/onchurch/master/email-templates/${id}`, { method: "DELETE", auth: true }),
+};
+
+export type EmailTemplate = {
+  id: number;
+  name: string;
+  subject: string;
+  content: string;
+  createdAt: string;
 };
 
 export type ChurchRole = "owner" | "admin" | "member";
