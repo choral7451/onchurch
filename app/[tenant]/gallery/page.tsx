@@ -24,7 +24,7 @@ const LAYOUT = [
   { col: 4, row: 1 }, { col: 4, row: 1 }, { col: 4, row: 1 },
 ];
 
-type ApiCategory = { id: number; name: string; isActive: boolean };
+type ApiCategory = { id: number; name: string; isActive: boolean; isAll: boolean };
 type ApiGallery = {
   id: number;
   categoryId: number | null;

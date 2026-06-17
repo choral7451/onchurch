@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { onchurchGallery } from "@/lib/api-client";
 
-type Category = { id: number; name: string };
+type Category = { id: number; name: string; isAll: boolean };
 type Gallery = {
   id: number;
   categoryId: number | null;
@@ -23,27 +23,36 @@ type Props = {
   layout: Layout[];
 };
 
-const ALL_KEY = -1 as const;
-
 export function GalleryView({ slug, categories, initialGalleries, totalCount, pageSize, layout }: Props) {
+  // '전체'(isAll) 카테고리가 있으면 그것을, 없으면(삭제한 교회) 첫 카테고리를 기본 선택.
+  const allCat = useMemo(() => categories.find((c) => c.isAll) ?? null, [categories]);
+  const initialFilter = allCat ? allCat.id : categories[0]?.id ?? null;
+
   const [items, setItems] = useState<Gallery[]>(initialGalleries);
   const [total, setTotal] = useState<number>(totalCount);
   const [page, setPage] = useState<number>(1);
-  const [filter, setFilter] = useState<number>(ALL_KEY);
+  const [filterId, setFilterId] = useState<number | null>(initialFilter);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const hasMore = items.length < total;
 
-  // 카테고리 칩 클릭 → 서버에서 해당 카테고리 1페이지부터 다시 조회.
-  const selectFilter = useCallback(
-    async (cat: number) => {
-      if (cat === filter || loading) return;
-      setFilter(cat);
+  // 선택된 카테고리를 조회용 categoryId로 변환. '전체'(isAll)는 필터 없이 전부 조회(null).
+  const queryCategoryId = useCallback(
+    (id: number | null): number | null => {
+      if (id == null) return null;
+      const c = categories.find((x) => x.id === id);
+      return c && !c.isAll ? id : null;
+    },
+    [categories],
+  );
+
+  const fetchPage1 = useCallback(
+    async (id: number | null) => {
       setLoading(true);
       try {
         const res = await onchurchGallery.listPublic(slug, {
-          categoryId: cat === ALL_KEY ? null : cat,
+          categoryId: queryCategoryId(id),
           page: 1,
           size: pageSize,
         });
@@ -56,8 +65,28 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
         setLoading(false);
       }
     },
-    [filter, loading, slug, pageSize],
+    [slug, pageSize, queryCategoryId],
   );
+
+  // 카테고리 칩 클릭 → 서버에서 해당 카테고리 1페이지부터 다시 조회.
+  const selectFilter = useCallback(
+    (id: number) => {
+      if (id === filterId || loading) return;
+      setFilterId(id);
+      void fetchPage1(id);
+    },
+    [filterId, loading, fetchPage1],
+  );
+
+  // '전체'가 없어 기본값이 특정 카테고리인 경우, 서버가 내려준 전체 목록을 기본 카테고리로 좁힌다.
+  const didInit = useRef(false);
+  useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
+    if (initialFilter != null && queryCategoryId(initialFilter) != null) {
+      void fetchPage1(initialFilter);
+    }
+  }, [initialFilter, queryCategoryId, fetchPage1]);
 
   // 무한스크롤 → 다음 페이지를 이어서 append.
   const loadMore = useCallback(async () => {
@@ -66,7 +95,7 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
     const nextPage = page + 1;
     try {
       const res = await onchurchGallery.listPublic(slug, {
-        categoryId: filter === ALL_KEY ? null : filter,
+        categoryId: queryCategoryId(filterId),
         page: nextPage,
         size: pageSize,
       });
@@ -78,7 +107,7 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, page, filter, slug, pageSize, total]);
+  }, [loading, hasMore, page, filterId, slug, pageSize, total, queryCategoryId]);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -136,16 +165,10 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
     <>
       {categories.length > 0 && (
         <div className="chips">
-          <div
-            className={`chip ${filter === ALL_KEY ? "active" : ""}`}
-            onClick={() => selectFilter(ALL_KEY)}
-          >
-            전체
-          </div>
           {categories.map((c) => (
             <div
               key={c.id}
-              className={`chip ${filter === c.id ? "active" : ""}`}
+              className={`chip ${filterId === c.id ? "active" : ""}`}
               onClick={() => selectFilter(c.id)}
             >
               {c.name}

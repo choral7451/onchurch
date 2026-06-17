@@ -1048,6 +1048,7 @@ export type GalleryCategoryItem = {
   name: string;
   sortOrder: number;
   isActive: boolean;
+  isAll: boolean;
 };
 
 export type GalleryCategoryWriteInput = {

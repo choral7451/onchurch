@@ -290,7 +290,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                 onChange={(e) => setDraftCategoryId(e.target.value === "" ? null : Number(e.target.value))}
               >
                 <option value="">— 미분류 —</option>
-                {categories.map((c) => (
+                {categories.filter((c) => !c.isAll).map((c) => (
                   <option key={c.id} value={c.id}>{c.name}{!c.isActive ? " (비공개)" : ""}</option>
                 ))}
               </select>
@@ -485,6 +485,9 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
+                {it.isAll && (
+                  <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>전체 보기</span>
+                )}
                 <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                   {it.isActive ? "공개" : "비공개"}
                 </span>
