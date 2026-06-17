@@ -530,6 +530,7 @@ export const onchurchBanner = {
 
 export type Notice = {
   id: number;
+  seqNo: number | null;
   category: string | null;
   title: string;
   content: string | null;

@@ -168,7 +168,8 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
                 if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActive(n); }
               }}
             >
-              <div className="notice-num">{n.isPinned ? "📌" : n.id}</div>
+              {/* 전역 id 대신 교회별 게시판 순번(seqNo) 표시. 고정글은 📌 */}
+              <div className="notice-num">{n.isPinned ? "📌" : n.seqNo ?? n.id}</div>
               <div className="notice-col-cat"><span className="notice-cat">{n.category ?? "일반"}</span></div>
               <div className="notice-title">{n.title}</div>
               <div className="notice-author">{n.author ?? churchName}</div>

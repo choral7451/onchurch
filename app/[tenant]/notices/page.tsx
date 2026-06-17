@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
 
 type Notice = {
   id: number;
+  seqNo: number | null;
   category: string | null;
   title: string;
   content: string | null;
