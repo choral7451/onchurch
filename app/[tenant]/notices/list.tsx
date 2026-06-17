@@ -219,7 +219,15 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
               {active.content ? (
                 <div className="notice-modal-content">{active.content}</div>
               ) : (
-                <div className="notice-modal-content empty">내용이 없습니다.</div>
+                !active.imageUrls?.length && <div className="notice-modal-content empty">내용이 없습니다.</div>
+              )}
+              {active.imageUrls?.length > 0 && (
+                <div className="notice-modal-images" style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+                  {active.imageUrls.map((url) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={url} src={url} alt="" style={{ width: "100%", borderRadius: 8 }} />
+                  ))}
+                </div>
               )}
             </div>
           </div>

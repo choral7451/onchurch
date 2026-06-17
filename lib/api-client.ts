@@ -534,6 +534,7 @@ export type Notice = {
   category: string | null;
   title: string;
   content: string | null;
+  imageUrls: string[];
   author: string | null;
   isPinned: boolean;
   isActive: boolean;
@@ -545,6 +546,7 @@ export type NoticeWriteInput = {
   category?: string | null;
   title: string;
   content?: string | null;
+  imageUrls?: string[];
   author?: string | null;
   isPinned: boolean;
   isActive: boolean;
@@ -588,6 +590,7 @@ export const onchurchNotice = {
         category: input.category ?? null,
         title: input.title,
         content: input.content ?? null,
+        imageUrls: input.imageUrls ?? [],
         author: input.author ?? null,
         isPinned: input.isPinned,
         isActive: input.isActive,
@@ -602,6 +605,7 @@ export const onchurchNotice = {
         category: input.category ?? null,
         title: input.title,
         content: input.content ?? null,
+        imageUrls: input.imageUrls ?? [],
         author: input.author ?? null,
         isPinned: input.isPinned,
         isActive: input.isActive,

@@ -24,6 +24,7 @@ type Notice = {
   category: string | null;
   title: string;
   content: string | null;
+  imageUrls: string[];
   author: string | null;
   isPinned: boolean;
   isActive: boolean;

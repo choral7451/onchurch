@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ApiError,
   onchurchNotice,
   onchurchNoticeCategory,
+  uploadImages,
   type Notice,
   type NoticeWriteInput,
   type NoticeCategoryItem,
   type NoticeCategoryWriteInput,
 } from "@/lib/api-client";
+import { Icon } from "@/components/icons";
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
@@ -20,6 +22,7 @@ const EMPTY_INPUT: NoticeWriteInput = {
   category: "",
   title: "",
   content: "",
+  imageUrls: [],
   author: "",
   isPinned: false,
   isActive: true,
@@ -79,6 +82,8 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
   const [errMsg, setErrMsg] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<NoticeWriteInput>(EMPTY_INPUT);
+  const [uploading, setUploading] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { void load(); }, []);
 
@@ -106,11 +111,32 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
       category: n.category ?? "",
       title: n.title,
       content: n.content ?? "",
+      imageUrls: n.imageUrls ?? [],
       author: n.author ?? "",
       isPinned: n.isPinned,
       isActive: n.isActive,
       publishedAt: n.publishedAt,
     });
+  }
+
+  async function onPickImages(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploading(true);
+    setErrMsg("");
+    try {
+      const uploaded = await uploadImages(files);
+      setDraft((d) => ({ ...d, imageUrls: [...(d.imageUrls ?? []), ...uploaded.map((u) => u.url)] }));
+    } catch (err) {
+      setErrMsg(err instanceof ApiError ? err.message : "이미지 업로드에 실패했습니다.");
+    } finally {
+      setUploading(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  }
+
+  function removeImage(url: string) {
+    setDraft((d) => ({ ...d, imageUrls: (d.imageUrls ?? []).filter((u) => u !== url) }));
   }
 
   function cancel() {
@@ -131,6 +157,7 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
         category: draft.category?.trim() || null,
         title: draft.title.trim(),
         content: draft.content?.trim() || null,
+        imageUrls: draft.imageUrls ?? [],
         author: draft.author?.trim() || null,
         isPinned: !!draft.isPinned,
         isActive: !!draft.isActive,
@@ -245,6 +272,23 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
                 onChange={(e) => setDraft((d) => ({ ...d, content: e.target.value }))}
                 placeholder="공지 본문을 입력해주세요"
               />
+            </div>
+            <div className="form-row full">
+              <label>이미지</label>
+              <input ref={imageInputRef} type="file" accept="image/*" multiple onChange={onPickImages} style={{ display: "none" }} />
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                {(draft.imageUrls ?? []).map((url) => (
+                  <div key={url} style={{ position: "relative", width: 90, height: 68, borderRadius: 8, overflow: "hidden", border: "1px solid var(--line)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <button type="button" onClick={() => removeImage(url)} aria-label="이미지 제거" style={{ position: "absolute", top: 2, right: 2, width: 20, height: 20, borderRadius: "50%", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: 12, lineHeight: "20px" }}>×</button>
+                  </div>
+                ))}
+                <button type="button" className="btn btn-secondary" onClick={() => imageInputRef.current?.click()} disabled={uploading}>
+                  <Icon.image style={{ width: 14, height: 14 }} />
+                  {uploading ? "업로드 중..." : "이미지 추가"}
+                </button>
+              </div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
