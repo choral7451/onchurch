@@ -388,6 +388,22 @@ export const onchurchUser = {
     request<unknown>("/onchurch/users/me/password", { method: "PUT", auth: true, body: JSON.stringify(input) }),
 };
 
+export type BulkEmailResult = {
+  total: number;
+  sent: number;
+  failed: number;
+  failures: { email: string; reason: string }[];
+};
+
+export const onchurchMaster = {
+  sendBulkEmail: (input: { subject: string; content: string; recipients: string[] }) =>
+    request<BulkEmailResult>("/onchurch/master/emails", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(input),
+    }),
+};
+
 export type ChurchRole = "owner" | "admin" | "member";
 
 export type ChurchMember = {
