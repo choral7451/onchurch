@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ApiError, onchurchMaster, type EmailLog } from "@/lib/api-client";
 
 type LoadState = "loading" | "done" | "error";
@@ -16,6 +16,17 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
   const [errorMsg, setErrorMsg] = useState("");
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [openId, setOpenId] = useState<number | null>(null);
+  const [keyword, setKeyword] = useState("");
+
+  // 이메일 주소·제목·본문에서 키워드(공백 무시, 대소문자 무시) 검색
+  const filteredLogs = useMemo(() => {
+    const q = keyword.trim().toLowerCase();
+    if (!q) return logs;
+    return logs.filter((log) => {
+      const haystack = [log.subject, log.content, log.recipients.join(" ")].join(" ").toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [logs, keyword]);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,7 +52,15 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
       <h2 className="text-xl font-bold text-gray-900">메일 발송 내역</h2>
       <p className="mt-1 text-sm text-gray-500">누구에게 어떤 내용의 메일을 보냈는지 확인할 수 있습니다.</p>
 
-      <div className="mt-6 space-y-3">
+      <input
+        type="text"
+        value={keyword}
+        onChange={(e) => setKeyword(e.target.value)}
+        placeholder="이메일 주소, 제목, 내용 검색"
+        className="mt-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+      />
+
+      <div className="mt-4 space-y-3">
         {state === "loading" && <p className="text-sm text-gray-500">불러오는 중…</p>}
         {state === "error" && (
           <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{errorMsg}</div>
@@ -49,8 +68,11 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
         {state === "done" && logs.length === 0 && (
           <p className="text-sm text-gray-500">아직 발송 내역이 없습니다.</p>
         )}
+        {state === "done" && logs.length > 0 && filteredLogs.length === 0 && (
+          <p className="text-sm text-gray-500">검색 결과가 없습니다.</p>
+        )}
 
-        {logs.map((log) => {
+        {filteredLogs.map((log) => {
           const open = openId === log.id;
           return (
             <div key={log.id} className="rounded-lg border border-gray-200 bg-white">
