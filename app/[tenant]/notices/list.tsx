@@ -29,6 +29,8 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
   const [cat, setCat] = useState<string>(categories[0] ?? ALL);
   const [query, setQuery] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  // 카테고리/검색 전환 중 표시 — 즉시 스켈레톤으로 바꿔 '바로 넘어간 것처럼' 보이게 한다.
+  const [switching, setSwitching] = useState(false);
   const [active, setActive] = useState<Notice | null>(null);
 
   const hasMore = items.length < total;
@@ -44,6 +46,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
     let cancelled = false;
     const t = setTimeout(() => {
       setLoading(true);
+      setSwitching(true);
       onchurchNotice
         .listPublic(slug, { category: cat, keyword: query, page: 1, size: pageSize })
         .then((res) => {
@@ -56,7 +59,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
           /* 네트워크 오류 시 현재 목록 유지 */
         })
         .finally(() => {
-          if (!cancelled) setLoading(false);
+          if (!cancelled) { setLoading(false); setSwitching(false); }
         });
     }, query ? 300 : 0);
     return () => {
@@ -67,7 +70,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
 
   // 무한스크롤 → 다음 페이지를 이어서 append.
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loading || switching || !hasMore) return;
     setLoading(true);
     const nextPage = page + 1;
     try {
@@ -80,7 +83,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, page, cat, query, slug, pageSize, total]);
+  }, [loading, switching, hasMore, page, cat, query, slug, pageSize, total]);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -115,7 +118,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
             <div
               key={c}
               className={`chip ${cat === c ? "active" : ""}`}
-              onClick={() => setCat(c)}
+              onClick={() => { if (c !== cat) { setSwitching(true); setCat(c); } }}
             >
               {c}
             </div>
@@ -144,7 +147,13 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
         </div>
       </div>
 
-      {items.length === 0 && !loading ? (
+      {switching ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <span key={`skel-${i}`} className="skel" aria-hidden="true" style={{ height: 48, width: "100%", borderRadius: 8 }} />
+          ))}
+        </div>
+      ) : items.length === 0 && !loading ? (
         <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>
           {query.trim() ? "검색 결과가 없습니다." : "등록된 공지가 없습니다."}
         </div>
@@ -182,7 +191,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
       {/* 무한스크롤 감지 지점 */}
       {hasMore && <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />}
 
-      {loading && (
+      {loading && !switching && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
           불러오는 중...
         </div>

@@ -45,6 +45,10 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
   const [page, setPage] = useState(1);
   const [cat, setCat] = useState<string>("전체");
   const [loading, setLoading] = useState(false);
+  // 카테고리 전환 중 표시 — 클릭 즉시 스켈레톤으로 바꿔 '바로 넘어간 것처럼' 보이게 한다.
+  const [switching, setSwitching] = useState(false);
+  // 빠른 연속 클릭 시 마지막 요청 응답만 반영하는 가드.
+  const reqIdRef = useRef(0);
   const [active, setActive] = useState<CommunityPost | null>(null);
 
   const [loggedIn, setLoggedIn] = useState(false);
@@ -79,44 +83,49 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
   // 현재 카테고리 기준 1페이지부터 다시 조회 (교체). 작성/수정/삭제 후에도 사용.
   const reload = useCallback(
     async (category: string) => {
+      const myId = ++reqIdRef.current;
+      setSwitching(true);
       setLoading(true);
       try {
         const res = await onchurchCommunity.listPublic(slug, { category, page: 1, size: pageSize });
+        if (myId !== reqIdRef.current) return; // 더 최신 클릭이 있으면 버린다.
         setPosts(res.posts ?? []);
         setTotal(res.totalCount ?? 0);
         setPage(1);
       } catch {
         /* keep current */
       } finally {
-        setLoading(false);
+        if (myId === reqIdRef.current) { setLoading(false); setSwitching(false); }
       }
     },
     [slug, pageSize],
   );
 
-  // 카테고리 칩 클릭 → 서버에서 해당 카테고리 1페이지부터 조회.
+  // 카테고리 칩 클릭 → 즉시 칩 활성화 + 스켈레톤 전환, 데이터는 뒤이어 갱신.
   function selectCat(c: string) {
-    if (c === cat || loading) return;
+    if (c === cat) return;
     setCat(c);
     void reload(c);
   }
 
   // 무한스크롤 → 다음 페이지 append.
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loading || switching || !hasMore) return;
+    const myId = reqIdRef.current;
     setLoading(true);
     const nextPage = page + 1;
     try {
       const res = await onchurchCommunity.listPublic(slug, { category: cat, page: nextPage, size: pageSize });
+      if (myId !== reqIdRef.current) return; // 그 사이 카테고리가 바뀌었으면 버린다.
       setPosts((prev) => [...prev, ...(res.posts ?? [])]);
       setTotal(res.totalCount ?? total);
       setPage(nextPage);
     } catch {
       /* 실패 시 다음 교차 시점에 재시도됨 */
     } finally {
-      setLoading(false);
+      if (myId === reqIdRef.current) setLoading(false);
     }
-  }, [loading, hasMore, page, cat, slug, pageSize, total]);
+  }, [loading, switching, hasMore, page, cat, slug, pageSize, total]);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -353,7 +362,13 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       )}
 
       {/* 게시글 그리드 */}
-      {posts.length === 0 && !loading ? (
+      {switching ? (
+        <div className="community-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <span key={`skel-${i}`} className="skel" aria-hidden="true" style={{ height: 220, borderRadius: "var(--r-lg)" }} />
+          ))}
+        </div>
+      ) : posts.length === 0 && !loading ? (
         <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>
           아직 등록된 글이 없습니다. {loggedIn ? "첫 글을 남겨보세요!" : "로그인 후 첫 글을 남겨보세요!"}
         </div>
@@ -431,7 +446,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       {/* 무한스크롤 감지 지점 */}
       {hasMore && <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />}
 
-      {loading && (
+      {loading && !switching && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
           불러오는 중...
         </div>
