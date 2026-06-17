@@ -110,6 +110,9 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   const [uploading, setUploading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const isNew = editingKey === "new";
+  // '전체' 보기가 없으면 미분류(categoryId null) 사진은 공개되지 않으므로 카테고리 선택을 강제한다.
+  const hasAll = categories.some((c) => c.isAll);
+  const categoryRequired = !hasAll && draftCategoryId == null;
 
   const groups = useMemo(() => groupGalleries(items), [items]);
 
@@ -179,6 +182,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     if (!draftTitle.trim()) { setErrMsg("제목은 필수입니다."); return; }
     const remaining = draftPhotos.filter((p) => p.url);
     if (remaining.length === 0) { setErrMsg("사진을 1장 이상 업로드해주세요."); return; }
+    if (categoryRequired) { setErrMsg("‘전체’ 보기가 없어 미분류로는 올릴 수 없습니다. 카테고리를 선택해주세요."); return; }
     setStatus("saving"); setErrMsg("");
     try {
       const title = draftTitle.trim();
@@ -289,11 +293,18 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                 value={draftCategoryId ?? ""}
                 onChange={(e) => setDraftCategoryId(e.target.value === "" ? null : Number(e.target.value))}
               >
-                <option value="">— 미분류 —</option>
+                {hasAll
+                  ? <option value="">— 미분류 —</option>
+                  : <option value="" disabled>카테고리를 선택하세요</option>}
                 {categories.filter((c) => !c.isAll).map((c) => (
                   <option key={c.id} value={c.id}>{c.name}{!c.isActive ? " (비공개)" : ""}</option>
                 ))}
               </select>
+              {categoryRequired && (
+                <span className="form-hint" style={{ fontSize: 12, marginTop: 4, color: "var(--accent)" }}>
+                  ‘전체’ 보기가 없어 미분류 사진은 공개되지 않습니다. 카테고리를 선택해주세요.
+                </span>
+              )}
             </div>
             <div className="form-row">
               <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
@@ -311,7 +322,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
               type="button"
               className="btn btn-primary"
               onClick={save}
-              disabled={status === "saving" || !draftTitle.trim() || draftPhotos.length === 0}
+              disabled={status === "saving" || !draftTitle.trim() || draftPhotos.length === 0 || categoryRequired}
             >
               {status === "saving"
                 ? "저장 중..."
@@ -459,12 +470,32 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       {status !== "loading" && !items.some((it) => it.isAll) && (
-        <div className="admin-banner-card" style={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-          <span style={{ color: "var(--muted)", fontSize: 13 }}>
-            공개 갤러리에 모든 사진을 한 번에 보여주는 ‘전체’ 보기가 없습니다.
-          </span>
-          <button type="button" className="btn btn-secondary" onClick={restoreAll} disabled={editing !== null || status === "saving"}>
-            ‘전체’ 보기 다시 추가
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "12px 16px",
+            borderRadius: "var(--r-md)",
+            background: "var(--surface-2)",
+            border: "1px solid var(--line)",
+            borderLeft: "3px solid var(--accent)",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+            <strong style={{ fontSize: 13.5 }}>‘전체’ 보기가 꺼져 있습니다</strong>
+            <span style={{ color: "var(--muted)", fontSize: 12.5, lineHeight: 1.5 }}>
+              공개 갤러리에서 모든 사진을 한 번에 보여주는 ‘전체’ 칩이 표시되지 않습니다.
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={restoreAll}
+            disabled={editing !== null || status === "saving"}
+            style={{ flexShrink: 0 }}
+          >
+            {status === "saving" ? "추가 중..." : "‘전체’ 보기 켜기"}
           </button>
         </div>
       )}
