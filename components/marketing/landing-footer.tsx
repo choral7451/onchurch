@@ -14,6 +14,11 @@ export function LandingFooter() {
           © {new Date().getFullYear()} 온교회. 교회를 위한 홈페이지 빌더.
         </div>
       </div>
+      <div className="landing-footer-biz">
+        <div>대표: 임성준 | 사업자등록번호: 329-35-01197</div>
+        <div>주소: 서울특별시 방배동 1430 401호</div>
+        <div>이메일: <a href="mailto:azeyokorea@gmail.com">azeyokorea@gmail.com</a></div>
+      </div>
     </footer>
   );
 }
