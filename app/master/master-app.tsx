@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { ApiError, clearTokens, onchurchUser } from "@/lib/api-client";
 import { BulkEmailFeature } from "./features/bulk-email";
+import { EmailHistoryFeature } from "./features/email-history";
 
 // 사이드바 메뉴 + 렌더링할 화면. 새 기능은 여기 한 줄과 render()의 case만 추가하면 된다.
-type SectionKey = "dashboard" | "bulk-email";
+type SectionKey = "dashboard" | "bulk-email" | "email-history";
 
 const SECTIONS: { key: SectionKey; label: string; icon: (typeof Icon)[keyof typeof Icon] }[] = [
   { key: "dashboard", label: "대시보드", icon: Icon.building },
   { key: "bulk-email", label: "대량 메일 발송", icon: Icon.mail },
+  { key: "email-history", label: "메일 발송 내역", icon: Icon.mail },
 ];
 
 function Dashboard() {
@@ -114,6 +116,7 @@ export function MasterApp() {
         <div className="p-8">
           {section === "dashboard" && <Dashboard />}
           {section === "bulk-email" && <BulkEmailFeature />}
+          {section === "email-history" && <EmailHistoryFeature />}
         </div>
       </main>
     </div>

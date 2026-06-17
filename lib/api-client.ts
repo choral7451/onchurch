@@ -395,6 +395,20 @@ export type BulkEmailResult = {
   failures: { email: string; reason: string }[];
 };
 
+export type EmailLog = {
+  id: number;
+  senderId: number;
+  senderName: string;
+  subject: string;
+  content: string;
+  recipients: string[];
+  total: number;
+  sent: number;
+  failed: number;
+  failures: { email: string; reason: string }[];
+  createdAt: string;
+};
+
 export const onchurchMaster = {
   sendBulkEmail: (input: { subject: string; content: string; recipients: string[] }) =>
     request<BulkEmailResult>("/onchurch/master/emails", {
@@ -402,6 +416,8 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify(input),
     }),
+  listEmailLogs: () =>
+    request<{ items: EmailLog[] }>("/onchurch/master/emails", { method: "GET", auth: true }),
 };
 
 export type ChurchRole = "owner" | "admin" | "member";
