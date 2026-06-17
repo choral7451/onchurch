@@ -418,17 +418,23 @@ function NoticeCategoriesEditor({ onChanged }: { onChanged: () => void }) {
       </div>
       {editing !== null && (
         <div className="admin-banner-card editing">
-          <div className="form-grid">
-            <div className="form-row">
-              <label>이름 <span className="required-mark" aria-hidden="true">*</span></label>
-              <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="행사" required />
+          <div className="form-row full">
+            <label>카테고리 이름 <span className="required-mark" aria-hidden="true">*</span></label>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <input
+                value={draft.name}
+                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                onKeyDown={(e) => { if (e.key === "Enter" && draft.name.trim() && status !== "saving") save(); }}
+                placeholder="행사"
+                autoFocus
+                required
+                style={{ flex: 1, minWidth: 200 }}
+              />
+              <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
+              <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
+                {status === "saving" ? "저장 중..." : "저장"}
+              </button>
             </div>
-          </div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
-            <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
-            <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
-              {status === "saving" ? "저장 중..." : "저장"}
-            </button>
           </div>
         </div>
       )}
@@ -440,16 +446,13 @@ function NoticeCategoriesEditor({ onChanged }: { onChanged: () => void }) {
         {items.map((it, idx) => (
           <div
             key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            className="admin-banner-card"
             {...(dragDisabled ? {} : getItemProps(idx))}
           >
             <DragHandle disabled={dragDisabled} />
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
-                <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {it.isActive ? "공개" : "비공개"}
-                </span>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
