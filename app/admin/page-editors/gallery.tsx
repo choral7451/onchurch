@@ -341,9 +341,8 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
         {groups.map((g) => {
           const head = g.items[0];
           const more = g.items.length - 1;
-          const allActive = g.items.every((it) => it.isActive);
           return (
-            <div key={g.key} className={`admin-banner-card ${allActive ? "" : "inactive"}`}>
+            <div key={g.key} className="admin-banner-card">
               <div
                 style={{ position: "relative", width: 80, height: 60, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: "var(--surface-2)" }}
                 className={!head.photoUrl ? head.grad ?? "" : ""}
@@ -375,9 +374,6 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                   <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{categoryName(head.categoryId)}</span>
                   <strong>{head.title}</strong>
-                  <span className={`admin-sidebar-pill ${allActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                    {allActive ? "공개" : "비공개"}
-                  </span>
                   {g.items.length > 1 && (
                     <span style={{ color: "var(--muted)", fontSize: 12 }}>사진 {g.items.length}장</span>
                   )}
@@ -504,17 +500,23 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
       </div>
       {editing !== null && (
         <div className="admin-banner-card editing">
-          <div className="form-grid">
-            <div className="form-row">
-              <label>이름 <span className="required-mark" aria-hidden="true">*</span></label>
-              <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="예배" required />
+          <div className="form-row full">
+            <label>카테고리 이름 <span className="required-mark" aria-hidden="true">*</span></label>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <input
+                value={draft.name}
+                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                onKeyDown={(e) => { if (e.key === "Enter" && draft.name.trim() && status !== "saving") save(); }}
+                placeholder="예: 예배, 행사, 교제"
+                autoFocus
+                required
+                style={{ flex: 1, minWidth: 200 }}
+              />
+              <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
+              <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
+                {status === "saving" ? "저장 중..." : "저장"}
+              </button>
             </div>
-          </div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
-            <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
-            <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
-              {status === "saving" ? "저장 중..." : "저장"}
-            </button>
           </div>
         </div>
       )}
@@ -526,7 +528,7 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
         {items.map((it, idx) => (
           <div
             key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            className="admin-banner-card"
             {...(dragDisabled ? {} : getItemProps(idx))}
           >
             <DragHandle disabled={dragDisabled} />
@@ -536,9 +538,6 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
                 {it.isAll && (
                   <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>전체 보기</span>
                 )}
-                <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {it.isActive ? "공개" : "비공개"}
-                </span>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
