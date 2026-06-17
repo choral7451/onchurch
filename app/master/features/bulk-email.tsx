@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ApiError, onchurchMaster, type BulkEmailResult } from "@/lib/api-client";
+import { EmailHistoryFeature } from "./email-history";
 
 // 붙여넣은 텍스트(줄바꿈/쉼표/세미콜론/공백 구분)에서 이메일 목록을 추출한다.
 function parseRecipients(raw: string): string[] {
@@ -27,6 +28,7 @@ export function BulkEmailFeature() {
   const [state, setState] = useState<SendState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [result, setResult] = useState<BulkEmailResult | null>(null);
+  const [historyKey, setHistoryKey] = useState(0);
 
   const recipients = useMemo(() => parseRecipients(recipientsRaw), [recipientsRaw]);
 
@@ -52,6 +54,7 @@ export function BulkEmailFeature() {
       const res = await onchurchMaster.sendBulkEmail({ subject: subject.trim(), content, recipients });
       setResult(res);
       setState("done");
+      setHistoryKey((k) => k + 1); // 발송 후 오른쪽 내역 새로고침
     } catch (err) {
       setState("error");
       setErrorMsg(err instanceof ApiError ? err.message : "발송 중 오류가 발생했습니다.");
@@ -59,11 +62,13 @@ export function BulkEmailFeature() {
   }
 
   return (
-    <div className="max-w-3xl">
-      <h2 className="text-xl font-bold text-gray-900">대량 메일 발송</h2>
-      <p className="mt-1 text-sm text-gray-500">온교회 도입 광고 메일을 대량으로 발송합니다.</p>
+    <div className="grid grid-cols-1 gap-10 xl:grid-cols-2">
+      {/* 왼쪽: 발송 */}
+      <div>
+        <h2 className="text-xl font-bold text-gray-900">대량 메일 발송</h2>
+        <p className="mt-1 text-sm text-gray-500">온교회 도입 광고 메일을 대량으로 발송합니다.</p>
 
-      <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-6">
         <div>
           <label className="block text-sm font-semibold text-gray-700">제목</label>
           <input
@@ -129,6 +134,12 @@ export function BulkEmailFeature() {
         >
           {state === "sending" ? "발송 중…" : `${recipients.length}명에게 발송`}
         </button>
+        </div>
+      </div>
+
+      {/* 오른쪽: 발송 내역 */}
+      <div className="border-t border-gray-200 pt-8 xl:border-l xl:border-t-0 xl:pl-10 xl:pt-0">
+        <EmailHistoryFeature reloadKey={historyKey} />
       </div>
     </div>
   );

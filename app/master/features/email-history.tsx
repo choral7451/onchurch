@@ -11,7 +11,7 @@ function formatDate(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export function EmailHistoryFeature() {
+export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
   const [state, setState] = useState<LoadState>("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const [logs, setLogs] = useState<EmailLog[]>([]);
@@ -34,10 +34,10 @@ export function EmailHistoryFeature() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   return (
-    <div className="max-w-3xl">
+    <div>
       <h2 className="text-xl font-bold text-gray-900">메일 발송 내역</h2>
       <p className="mt-1 text-sm text-gray-500">누구에게 어떤 내용의 메일을 보냈는지 확인할 수 있습니다.</p>
 
