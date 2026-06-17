@@ -39,7 +39,7 @@ import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
 import { InquiryEditor } from "./page-editors/inquiry";
 import { HomeOrderEditor } from "./page-editors/home-order";
-import { BulletinEditor } from "./page-editors/bulletin";
+// import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 
 type Initial = {
@@ -787,6 +787,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               </button>
             </div>
 
+            {/* 주보 만들기 - 임시 숨김
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">도구</div>
               <button
@@ -798,6 +799,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 <span className="admin-sidebar-pill optional">PDF</span>
               </button>
             </div>
+            */}
 
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">회원</div>
@@ -1127,7 +1129,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </section>
               )}
 
+              {/* 주보 만들기 - 임시 숨김
               {activeSection === "bulletin" && <BulletinEditor />}
+              */}
 
               {activeSection === "inquiry" && <InquiryEditor />}
 
