@@ -884,7 +884,7 @@ main { flex: 1; }
 .toggle.on { background: var(--primary); }
 .toggle.on::after { transform: translateX(18px); }
 
-.admin-savebar { position: sticky; bottom: 0; background: oklch(1 0 0 / 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow-md); }
+.admin-savebar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 4px; }
 .admin-savebar-msg { flex: 1; min-width: 0; }
 .admin-savebar-actions { display: flex; gap: 10px; align-items: center; }
 
