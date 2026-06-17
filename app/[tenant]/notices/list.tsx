@@ -6,27 +6,6 @@ import { onchurchNotice, type Notice } from "@/lib/api-client";
 
 const ALL = "전체";
 
-async function downloadImage(url: string, index: number) {
-  const fallbackName = `image-${index + 1}`;
-  const nameFromUrl = url.split("?")[0]?.split("/").pop() || fallbackName;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("download failed");
-    const blob = await res.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = objectUrl;
-    a.download = nameFromUrl;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(objectUrl);
-  } catch {
-    // 크로스오리진 등으로 blob 다운로드가 막히면 새 탭으로 연다.
-    window.open(url, "_blank", "noopener");
-  }
-}
-
 function formatDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
@@ -244,32 +223,9 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
               )}
               {active.imageUrls?.length > 0 && (
                 <div className="notice-modal-images" style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
-                  {active.imageUrls.map((url, i) => (
-                    <div key={url} style={{ position: "relative" }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="" style={{ width: "100%", borderRadius: 8, display: "block" }} />
-                      <button
-                        type="button"
-                        onClick={() => void downloadImage(url, i)}
-                        aria-label="이미지 다운로드"
-                        style={{
-                          position: "absolute",
-                          top: 8,
-                          right: 8,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          padding: "6px 10px",
-                          borderRadius: 8,
-                          background: "rgba(0,0,0,0.6)",
-                          color: "#fff",
-                          fontSize: 12,
-                        }}
-                      >
-                        <Icon.download style={{ width: 14, height: 14 }} />
-                        저장
-                      </button>
-                    </div>
+                  {active.imageUrls.map((url) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={url} src={url} alt="" style={{ width: "100%", borderRadius: 8 }} />
                   ))}
                 </div>
               )}
