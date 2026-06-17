@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, onchurchMaster, type EmailLog } from "@/lib/api-client";
 
-type LoadState = "loading" | "done" | "error";
+const PAGE_SIZE = 20;
+
+type LoadStatus = "loading" | "done" | "error";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -12,40 +14,82 @@ function formatDate(iso: string): string {
 }
 
 export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
-  const [state, setState] = useState<LoadState>("loading");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [logs, setLogs] = useState<EmailLog[]>([]);
-  const [openId, setOpenId] = useState<number | null>(null);
   const [keyword, setKeyword] = useState("");
+  const [query, setQuery] = useState(""); // 디바운스된 실제 검색어
 
-  // 이메일 주소·제목·본문에서 키워드(공백 무시, 대소문자 무시) 검색
-  const filteredLogs = useMemo(() => {
-    const q = keyword.trim().toLowerCase();
-    if (!q) return logs;
-    return logs.filter((log) => {
-      const haystack = [log.subject, log.content, log.recipients.join(" ")].join(" ").toLowerCase();
-      return haystack.includes(q);
-    });
-  }, [logs, keyword]);
+  const [items, setItems] = useState<EmailLog[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(0);
+  const [status, setStatus] = useState<LoadStatus>("loading");
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [openId, setOpenId] = useState<number | null>(null);
 
+  const seqRef = useRef(0); // 검색어/리로드 변경 시 진행 중인 요청을 무효화하기 위한 토큰
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const hasMore = items.length < totalCount;
+
+  // 입력 디바운스 (300ms)
   useEffect(() => {
-    let cancelled = false;
+    const t = setTimeout(() => setQuery(keyword.trim()), 300);
+    return () => clearTimeout(t);
+  }, [keyword]);
+
+  // 검색어 또는 발송(reloadKey) 변경 → 1페이지부터 다시 로드
+  useEffect(() => {
+    const seq = ++seqRef.current;
+    setStatus("loading");
+    setErrorMsg("");
+    setLoadingMore(false);
     (async () => {
       try {
-        const res = await onchurchMaster.listEmailLogs();
-        if (cancelled) return;
-        setLogs(res.items);
-        setState("done");
+        const res = await onchurchMaster.listEmailLogs({ keyword: query, page: 1, size: PAGE_SIZE });
+        if (seq !== seqRef.current) return;
+        setItems(res.items);
+        setTotalCount(res.totalCount);
+        setPage(1);
+        setStatus("done");
       } catch (err) {
-        if (cancelled) return;
-        setState("error");
+        if (seq !== seqRef.current) return;
+        setStatus("error");
         setErrorMsg(err instanceof ApiError ? err.message : "내역을 불러오지 못했습니다.");
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
+  }, [query, reloadKey]);
+
+  // 다음 페이지 로드 (이어붙이기)
+  const loadMore = useCallback(async () => {
+    if (loadingMore || status !== "done") return;
+    const seq = seqRef.current;
+    const next = page + 1;
+    setLoadingMore(true);
+    try {
+      const res = await onchurchMaster.listEmailLogs({ keyword: query, page: next, size: PAGE_SIZE });
+      if (seq !== seqRef.current) return; // 검색어가 바뀌었으면 폐기
+      setItems((prev) => [...prev, ...res.items]);
+      setTotalCount(res.totalCount);
+      setPage(next);
+    } catch {
+      // 추가 로드 실패는 조용히 무시 — 다음 스크롤에서 재시도
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, status, page, query]);
+
+  // 무한 스크롤: 하단 센티넬이 보이면 다음 페이지 로드
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMore();
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   return (
     <div>
@@ -61,18 +105,15 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
       />
 
       <div className="mt-4 space-y-3">
-        {state === "loading" && <p className="text-sm text-gray-500">불러오는 중…</p>}
-        {state === "error" && (
+        {status === "loading" && <p className="text-sm text-gray-500">불러오는 중…</p>}
+        {status === "error" && (
           <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{errorMsg}</div>
         )}
-        {state === "done" && logs.length === 0 && (
-          <p className="text-sm text-gray-500">아직 발송 내역이 없습니다.</p>
-        )}
-        {state === "done" && logs.length > 0 && filteredLogs.length === 0 && (
-          <p className="text-sm text-gray-500">검색 결과가 없습니다.</p>
+        {status === "done" && items.length === 0 && (
+          <p className="text-sm text-gray-500">{query ? "검색 결과가 없습니다." : "아직 발송 내역이 없습니다."}</p>
         )}
 
-        {filteredLogs.map((log) => {
+        {items.map((log) => {
           const open = openId === log.id;
           return (
             <div key={log.id} className="rounded-lg border border-gray-200 bg-white">
@@ -121,6 +162,10 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
             </div>
           );
         })}
+
+        {/* 무한 스크롤 센티넬 */}
+        {hasMore && <div ref={sentinelRef} className="h-1" />}
+        {loadingMore && <p className="py-2 text-center text-xs text-gray-400">더 불러오는 중…</p>}
       </div>
     </div>
   );

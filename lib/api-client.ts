@@ -416,8 +416,14 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify(input),
     }),
-  listEmailLogs: () =>
-    request<{ items: EmailLog[] }>("/onchurch/master/emails", { method: "GET", auth: true }),
+  listEmailLogs: (params: { keyword?: string; page: number; size: number }) => {
+    const query = new URLSearchParams({ page: String(params.page), size: String(params.size) });
+    if (params.keyword?.trim()) query.set("keyword", params.keyword.trim());
+    return request<{ items: EmailLog[]; totalCount: number }>(`/onchurch/master/emails?${query.toString()}`, {
+      method: "GET",
+      auth: true,
+    });
+  },
 };
 
 export type ChurchRole = "owner" | "admin" | "member";
