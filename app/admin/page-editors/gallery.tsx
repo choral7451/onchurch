@@ -433,6 +433,13 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
     finally { setStatus("idle"); }
   }
 
+  async function restoreAll() {
+    setStatus("saving"); setErrMsg("");
+    try { await onchurchGalleryCategory.restoreAll(); await load(); onChanged(); }
+    catch (err) { setErrMsg(err instanceof ApiError ? err.message : "'전체' 추가에 실패했습니다."); }
+    finally { setStatus("idle"); }
+  }
+
   async function move(fromIndex: number, toIndex: number) {
     setStatus("saving"); setErrMsg("");
     try {
@@ -451,6 +458,16 @@ function GalleryCategoriesEditor({ onChanged }: { onChanged: () => void }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
+      {status !== "loading" && !items.some((it) => it.isAll) && (
+        <div className="admin-banner-card" style={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+          <span style={{ color: "var(--muted)", fontSize: 13 }}>
+            공개 갤러리에 모든 사진을 한 번에 보여주는 ‘전체’ 보기가 없습니다.
+          </span>
+          <button type="button" className="btn btn-secondary" onClick={restoreAll} disabled={editing !== null || status === "saving"}>
+            ‘전체’ 보기 다시 추가
+          </button>
+        </div>
+      )}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 카테고리 추가</button>
       </div>

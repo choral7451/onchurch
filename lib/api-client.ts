@@ -1087,6 +1087,10 @@ export const onchurchGalleryCategory = {
     ),
   create: (input: GalleryCategoryWriteInput) =>
     request<GalleryCategoryItem>("/onchurch/gallery-categories/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  restoreAll: () =>
+    request<{ categories: GalleryCategoryItem[] }>("/onchurch/gallery-categories/me/all", { method: "POST", auth: true }).then(
+      (r) => r.categories ?? [],
+    ),
   update: (id: number, input: GalleryCategoryWriteInput) =>
     request<GalleryCategoryItem>(`/onchurch/gallery-categories/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
   remove: (id: number) =>
