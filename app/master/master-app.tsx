@@ -95,7 +95,15 @@ export function MasterApp() {
             );
           })}
         </nav>
-        <div className="border-t border-gray-200 p-3">
+        <div className="space-y-1 border-t border-gray-200 p-3">
+          <button
+            type="button"
+            onClick={() => router.push("/admin")}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+          >
+            <span className="shrink-0">{Icon.building({ width: 18, height: 18 })}</span>
+            관리자 페이지
+          </button>
           <button
             type="button"
             onClick={handleLogout}

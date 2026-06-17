@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { AccountRecoveryModal } from "@/components/shell/account-recovery";
-import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
+import { ApiError, onchurchAuth, onchurchUser, saveTokens } from "@/lib/api-client";
 
 type Status = "idle" | "submitting" | "error";
 
@@ -32,7 +32,13 @@ export function LoginForm() {
     try {
       const tokens = await onchurchAuth.login(userId, pw);
       saveTokens(tokens);
-      router.push("/admin");
+      // 마스터 계정은 전용 콘솔로, 그 외에는 관리자 페이지로 이동
+      try {
+        const profile = await onchurchUser.getMe();
+        router.push(profile.role === "master" ? "/master" : "/admin");
+      } catch {
+        router.push("/admin");
+      }
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof ApiError ? err.message : "로그인에 실패했습니다.");

@@ -299,7 +299,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
           try {
             const profile = await onchurchUser.getMe();
             if (cancelled) return;
-            if (profile.role !== "admin") {
+            // 마스터는 교회가 없어도 관리 콘솔에 접근할 수 있다.
+            if (profile.role !== "admin" && profile.role !== "master") {
               alert("교회 관리자 계정만 접근할 수 있습니다.");
               router.push("/");
               return;
