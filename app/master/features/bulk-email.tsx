@@ -112,15 +112,17 @@ export function BulkEmailFeature() {
           <div className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-700">
             <p className="font-semibold">발송 완료</p>
             <p className="mt-1">
-              총 {result.total}명 중 성공 {result.sent}명 · 실패 {result.failed}명
+              총 {result.total}명 중 성공 {result.sent}명 · 제외 {result.excluded}명 · 실패 {result.failed}명
             </p>
-            {result.failures.length > 0 && (
-              <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-red-600">
-                {result.failures.map((f) => (
-                  <li key={f.email}>
-                    {f.email} — {f.reason}
-                  </li>
-                ))}
+            {result.results.filter((r) => r.status !== "sent").length > 0 && (
+              <ul className="mt-2 space-y-0.5 pl-1 text-xs">
+                {result.results
+                  .filter((r) => r.status !== "sent")
+                  .map((r) => (
+                    <li key={r.email} className={r.status === "failed" ? "text-red-600" : "text-amber-700"}>
+                      [{r.status === "failed" ? "실패" : "제외"}] {r.email} — {r.reason}
+                    </li>
+                  ))}
               </ul>
             )}
           </div>

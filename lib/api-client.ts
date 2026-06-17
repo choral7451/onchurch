@@ -388,11 +388,20 @@ export const onchurchUser = {
     request<unknown>("/onchurch/users/me/password", { method: "PUT", auth: true, body: JSON.stringify(input) }),
 };
 
+export type EmailRecipientStatus = "sent" | "failed" | "excluded";
+
+export type EmailRecipientResult = {
+  email: string;
+  status: EmailRecipientStatus;
+  reason: string | null;
+};
+
 export type BulkEmailResult = {
   total: number;
   sent: number;
   failed: number;
-  failures: { email: string; reason: string }[];
+  excluded: number;
+  results: EmailRecipientResult[];
 };
 
 export type EmailLog = {
@@ -401,11 +410,11 @@ export type EmailLog = {
   senderName: string;
   subject: string;
   content: string;
-  recipients: string[];
+  results: EmailRecipientResult[];
   total: number;
   sent: number;
   failed: number;
-  failures: { email: string; reason: string }[];
+  excluded: number;
   createdAt: string;
 };
 
