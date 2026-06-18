@@ -182,23 +182,27 @@ export function LedgerFeature() {
               <button
                 type="button"
                 onClick={() => setType("income")}
-                className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                aria-pressed={type === "income"}
+                className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-bold transition ${
                   type === "income"
-                    ? "border-green-600 bg-green-50 text-green-700"
-                    : "border-gray-300 text-gray-500 hover:bg-gray-50"
+                    ? "border-green-600 bg-green-600 text-white shadow-sm"
+                    : "border-gray-300 bg-white text-gray-400 hover:bg-gray-50"
                 }`}
               >
+                {type === "income" && <span aria-hidden="true">✓</span>}
                 수입
               </button>
               <button
                 type="button"
                 onClick={() => setType("expense")}
-                className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                aria-pressed={type === "expense"}
+                className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-bold transition ${
                   type === "expense"
-                    ? "border-red-500 bg-red-50 text-red-600"
-                    : "border-gray-300 text-gray-500 hover:bg-gray-50"
+                    ? "border-red-600 bg-red-600 text-white shadow-sm"
+                    : "border-gray-300 bg-white text-gray-400 hover:bg-gray-50"
                 }`}
               >
+                {type === "expense" && <span aria-hidden="true">✓</span>}
                 지출
               </button>
             </div>
