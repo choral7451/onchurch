@@ -1182,14 +1182,26 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 const MAX_QUICK = 4;
                 const selected = homeQuickLinks.length ? homeQuickLinks : DEFAULT_QUICK_LINK_KEYS;
                 const isSel = (k: string) => selected.includes(k);
+                const showQuickToast = (m: string) => {
+                  setQuickLimitMsg(m);
+                  window.setTimeout(() => setQuickLimitMsg(""), 2800);
+                };
                 const toggle = (k: string) => {
                   const set = new Set(selected);
                   if (set.has(k)) {
                     set.delete(k);
                   } else {
+                    const def = QUICK_LINK_DEFS.find((d) => d.key === k);
+                    // 유튜브/인스타는 주소가 없으면 선택 불가 — 연락처 메뉴에서 먼저 입력하도록 안내
+                    if (def?.kind === "external") {
+                      const hasUrl = def.external === "youtube" ? !!youtubeUrl?.trim() : !!instagramUrl?.trim();
+                      if (!hasUrl) {
+                        showQuickToast(`${def.title} 주소가 없습니다. ‘연락처’ 메뉴에서 ${def.title} 주소를 먼저 입력해주세요.`);
+                        return;
+                      }
+                    }
                     if (set.size >= MAX_QUICK) {
-                      setQuickLimitMsg(`바로가기는 최대 ${MAX_QUICK}개까지만 선택할 수 있습니다.`);
-                      window.setTimeout(() => setQuickLimitMsg(""), 2500);
+                      showQuickToast(`바로가기는 최대 ${MAX_QUICK}개까지만 선택할 수 있습니다.`);
                       return;
                     }
                     set.add(k);
