@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, onchurchMaster, type BulkSmsResult, type SmsTemplate } from "@/lib/api-client";
 import { SmsHistoryFeature } from "./sms-history";
+import { OwnerPicker } from "./owner-picker";
 
 const SMS_CONTENT_MAX_BYTES = 2000;
 
@@ -43,6 +44,8 @@ export function BulkSmsFeature() {
 
   const [templates, setTemplates] = useState<SmsTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
+
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const recipients = useMemo(() => parseRecipients(recipientsRaw), [recipientsRaw]);
   const contentBytes = useMemo(() => smsByteLength(content), [content]);
@@ -106,6 +109,12 @@ export function BulkSmsFeature() {
     } catch (err) {
       setErrorMsg(err instanceof ApiError ? err.message : "템플릿 삭제에 실패했습니다.");
     }
+  }
+
+  // 소유자 선택 모달에서 받은 번호들을 기존 수신자 목록에 합친다(숫자 정규화·중복 제거).
+  function handleAddOwners(phones: string[]) {
+    setRecipientsRaw((prev) => parseRecipients(`${prev}\n${phones.join("\n")}`).join("\n"));
+    setPickerOpen(false);
   }
 
   async function handleSend() {
@@ -220,9 +229,18 @@ export function BulkSmsFeature() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700">
-            수신자 번호 <span className="text-gray-400">({recipients.length}명)</span>
-          </label>
+          <div className="flex items-center justify-between gap-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              수신자 번호 <span className="text-gray-400">({recipients.length}명)</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              className="shrink-0 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
+            >
+              교회 소유자에서 선택
+            </button>
+          </div>
           <p className="mt-1 text-xs text-gray-400">줄바꿈, 쉼표(,), 세미콜론(;)으로 구분해 붙여넣으세요. 하이픈은 무시되며 중복은 자동 제거됩니다.</p>
           <textarea
             value={recipientsRaw}
@@ -270,6 +288,8 @@ export function BulkSmsFeature() {
       <div className="border-t border-gray-200 pt-8 xl:border-l xl:border-t-0 xl:pl-10 xl:pt-0">
         <SmsHistoryFeature reloadKey={historyKey} />
       </div>
+
+      {pickerOpen && <OwnerPicker onClose={() => setPickerOpen(false)} onConfirm={handleAddOwners} />}
     </div>
   );
 }
