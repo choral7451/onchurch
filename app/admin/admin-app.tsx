@@ -86,7 +86,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | `page:${string}`;
+type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | `page:${string}`;
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -207,7 +207,7 @@ const DENOMINATION_LOGOS: { url: string; label: string }[] = [
 export function AdminApp({ initial }: { initial: Initial }) {
   const router = useRouter();
 
-  const [activeSection, setActiveSection] = useState<SectionKey>("site");
+  const [activeSection, setActiveSection] = useState<SectionKey>("start");
 
   const [slug, setSlug] = useState(initial.slug);
   const [name, setName] = useState(initial.brand.name);
@@ -366,6 +366,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const siteRequiredFilled = !!trimmedSlug && !!name.trim() && slugCheck !== "taken";
   const contactRequiredFilled = !!phone.trim() && !!email.trim() && !!address.trim();
   const allRequiredFilled = siteRequiredFilled && contactRequiredFilled && aboutFilled && worshipFilled;
+
+  // 사이트 공개에 꼭 필요한 4단계 — '시작하기' 화면과 사이드바 진척 표시에 함께 사용.
+  const requiredSteps: { label: string; desc: string; done: boolean; target: SectionKey }[] = [
+    { label: "기본 정보", desc: "서브도메인 · 교회 이름", done: siteRequiredFilled, target: "site" },
+    { label: "연락처", desc: "전화 · 이메일 · 주소", done: contactRequiredFilled, target: "contact" },
+    { label: "교회 소개", desc: "담임목사 인사 등 필수 항목", done: aboutFilled, target: "page:about" },
+    { label: "예배 안내", desc: "예배 시간표 1개 이상", done: worshipFilled, target: "page:worship" },
+  ];
+  const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
 
   useEffect(() => {
     if (!loaded) return;
@@ -775,7 +784,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <span className="admin-publish-toggle-label">
                 <span className="admin-action-label">사이트 운영</span>
                 <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
-                  {isPublished ? "ON" : "OFF"}
+                  {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
                 </span>
               </span>
               <button
@@ -785,6 +794,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 disabled={!loaded || publishLoading}
                 aria-label="사이트 운영 토글"
                 aria-pressed={isPublished}
+                title={
+                  isPublished
+                    ? "클릭하면 사이트를 비공개로 전환합니다"
+                    : allRequiredFilled
+                      ? "클릭하면 사이트를 공개합니다"
+                      : `필수 ${4 - requiredDoneCount}단계를 완료하면 공개할 수 있어요`
+                }
               />
             </div>
             <Link href={previewHref} className="btn btn-secondary" target="_blank">
@@ -802,7 +818,24 @@ export function AdminApp({ initial }: { initial: Initial }) {
         <form onSubmit={onSave} className="admin-layout">
           <aside className="admin-sidebar">
             <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">사이트</div>
+              <div className="admin-sidebar-eyebrow">시작</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "start" ? "active" : ""}`}
+                onClick={() => setActiveSection("start")}
+              >
+                <span className="admin-sidebar-item-label">시작하기</span>
+                <span
+                  className={`admin-sidebar-pill ${allRequiredFilled ? "complete" : "incomplete"}`}
+                  aria-label={`필수 ${requiredDoneCount}/4 완료`}
+                >
+                  {allRequiredFilled ? "완료 ✓" : `${requiredDoneCount}/4`}
+                </span>
+              </button>
+            </div>
+
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">필수 설정</div>
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "site" ? "active" : ""} ${siteRequiredFilled ? "is-complete" : "is-incomplete"}`}
@@ -829,6 +862,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   {contactRequiredFilled ? "필수 ✓" : "필수 미입력"}
                 </span>
               </button>
+            </div>
+
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">홈 꾸미기</div>
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "logo" ? "active" : ""}`}
@@ -956,6 +993,109 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
           <div className="admin-content">
             <div className="admin-container">
+              {activeSection === "start" && (
+                <section className="admin-section">
+                  <div className="admin-section-head">
+                    <div className="admin-section-eyebrow">START</div>
+                    <h2>{isPublished ? "사이트 운영 중" : "환영합니다 👋"}</h2>
+                    <p>
+                      {isPublished
+                        ? "필수 설정이 완료되어 사이트가 공개되어 있습니다. 아래에서 언제든 내용을 보강하세요."
+                        : "처음이라 할 게 많아 보여도 괜찮아요. 사이트 공개에 꼭 필요한 건 아래 4가지뿐입니다."}
+                    </p>
+                  </div>
+                  <div className="admin-section-body">
+                    <div className="onboard-progress">
+                      <div className="onboard-progress-top">
+                        <strong>사이트 공개까지 {requiredDoneCount}/4 단계</strong>
+                        <span className={`onboard-progress-pill ${allRequiredFilled ? "done" : ""}`}>
+                          {allRequiredFilled ? "준비 완료" : `${4 - requiredDoneCount}개 남음`}
+                        </span>
+                      </div>
+                      <div className="onboard-progress-bar">
+                        <div className="onboard-progress-fill" style={{ width: `${(requiredDoneCount / 4) * 100}%` }} />
+                      </div>
+                    </div>
+
+                    <ol className="onboard-steps">
+                      {requiredSteps.map((s, i) => (
+                        <li key={s.target} className={`onboard-step ${s.done ? "done" : ""}`}>
+                          <span className="onboard-step-num">{s.done ? "✓" : i + 1}</span>
+                          <div className="onboard-step-body">
+                            <strong>{s.label}</strong>
+                            <span>{s.desc}</span>
+                          </div>
+                          <button
+                            type="button"
+                            className={`btn ${s.done ? "btn-ghost" : "btn-primary"}`}
+                            onClick={() => setActiveSection(s.target)}
+                          >
+                            {s.done ? "수정" : "입력하러 가기"}
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+
+                    <div className={`onboard-cta ${allRequiredFilled || isPublished ? "ready" : "locked"}`}>
+                      {isPublished ? (
+                        <>
+                          <div className="onboard-cta-text">
+                            <strong>사이트가 공개 중입니다.</strong>
+                            <span>방문자가 홈페이지를 볼 수 있어요.</span>
+                          </div>
+                          <Link href={previewHref} target="_blank" className="btn btn-secondary">
+                            홈페이지 보기
+                          </Link>
+                        </>
+                      ) : allRequiredFilled ? (
+                        <>
+                          <div className="onboard-cta-text">
+                            <strong>이제 사이트를 공개할 수 있어요!</strong>
+                            <span>공개하면 첫 7일 무료 체험이 시작됩니다.</span>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-lg"
+                            onClick={onTogglePublish}
+                            disabled={publishLoading}
+                          >
+                            {publishLoading ? "처리 중..." : "사이트 공개하기"}
+                          </button>
+                        </>
+                      ) : (
+                        <div className="onboard-cta-text">
+                          <strong>🔒 필수 {4 - requiredDoneCount}단계를 완료하면 공개할 수 있어요.</strong>
+                          <span>위 단계를 모두 끝내면 ‘사이트 공개하기’ 버튼이 켜집니다.</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="onboard-optional">
+                      <div className="onboard-optional-head">선택 — 나중에 해도 됩니다</div>
+                      <div className="onboard-optional-list">
+                        {([
+                          { label: "로고 등록", target: "logo" },
+                          { label: "홈 배너", target: "banners" },
+                          { label: "홈화면 구성", target: "home-order" },
+                          { label: "설교·소식·갤러리 등 페이지", target: "page:sermons" },
+                          { label: "회원 관리", target: "members" },
+                        ] as { label: string; target: SectionKey }[]).map((o) => (
+                          <button
+                            key={o.target}
+                            type="button"
+                            className="onboard-optional-item"
+                            onClick={() => setActiveSection(o.target)}
+                          >
+                            <span>{o.label}</span>
+                            <Icon.arrow style={{ width: 13, height: 13 }} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+
               {activeSection === "site" && (
                 <section className="admin-section">
                   <div className="admin-section-head">
