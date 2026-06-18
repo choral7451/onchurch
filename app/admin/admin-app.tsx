@@ -927,6 +927,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
               </div>
             )}
 
+            {/* 사이트 오픈(공개) 전에는 '시작'만 노출하고 나머지 네비게이션은 숨긴다. */}
+            {isPublished && (
+            <>
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">필수 설정</div>
               <button
@@ -1082,6 +1085,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 );
               })}
             </div>
+            </>
+            )}
           </aside>
 
           <div className="admin-content">
