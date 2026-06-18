@@ -30,6 +30,7 @@ import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
 import { ScheduleEditor } from "./page-editors/schedule";
 import { AboutEditor } from "./page-editors/about";
+import { OnboardPastorName, OnboardFirstWorship } from "./page-editors/onboard-mini";
 import { DirectionsEditor } from "./page-editors/directions";
 import { GalleryEditor } from "./page-editors/gallery";
 import { CommunityEditor } from "./page-editors/community";
@@ -208,6 +209,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const router = useRouter();
 
   const [activeSection, setActiveSection] = useState<SectionKey>("start");
+  // 시작하기 화면에서 현재 펼쳐진 단계(아코디언). 기본은 첫 단계.
+  const [openStep, setOpenStep] = useState<SectionKey | null>("site");
 
   const [slug, setSlug] = useState(initial.slug);
   const [name, setName] = useState(initial.brand.name);
@@ -760,6 +763,76 @@ export function AdminApp({ initial }: { initial: Initial }) {
     </div>
   );
 
+  // 시작하기 아코디언의 각 단계 패널 — '딱 기본 필수값'만 입력.
+  const stepPanelContent = (target: SectionKey) => {
+    if (target === "site") {
+      return (
+        <>
+          <div className="form-row full">
+            <label htmlFor="ob-slug">
+              서브도메인 <span className="required-mark" aria-hidden="true">*</span>
+            </label>
+            <div className={`slug-input${slugLocked ? " slug-input-locked" : ""}`}>
+              <span className="slug-prefix">https://</span>
+              <input
+                id="ob-slug"
+                type="text"
+                value={slug}
+                onChange={(e) => {
+                  if (slugLocked) return;
+                  setSlug(e.target.value.replace(/[^a-z0-9-]/g, "").slice(0, 30));
+                }}
+                placeholder="onchurch"
+                required
+                readOnly={slugLocked}
+                aria-readonly={slugLocked}
+              />
+              <span className="slug-suffix">.everychurch.co.kr</span>
+            </div>
+            {!slugLocked && trimmedSlug && (
+              <span className={`form-hint slug-check slug-check-${slugCheck}`} aria-live="polite" style={{ marginTop: 2 }}>
+                {slugCheck === "checking" && "확인 중..."}
+                {slugCheck === "available" && "✓ 사용 가능한 서브도메인입니다."}
+                {slugCheck === "taken" && "✕ 이미 사용 중인 서브도메인입니다."}
+              </span>
+            )}
+          </div>
+          <div className="form-row full">
+            <label htmlFor="ob-name">
+              교회 이름 (한글) <span className="required-mark" aria-hidden="true">*</span>
+            </label>
+            <input id="ob-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="온교회" required />
+          </div>
+          {sectionSaveBar}
+        </>
+      );
+    }
+    if (target === "contact") {
+      return (
+        <>
+          <div className="form-grid">
+            <div className="form-row">
+              <label htmlFor="ob-phone">전화번호 <span className="required-mark" aria-hidden="true">*</span></label>
+              <input id="ob-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="02-1234-5678" required />
+            </div>
+            <div className="form-row">
+              <label htmlFor="ob-email">이메일 <span className="required-mark" aria-hidden="true">*</span></label>
+              <input id="ob-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@onchurch.kr" required />
+            </div>
+            <div className="form-row full">
+              <label htmlFor="ob-address">주소 <span className="required-mark" aria-hidden="true">*</span></label>
+              <AddressPicker id="ob-address" value={address} onChange={setAddress} placeholder="서울특별시 강남구 테헤란로 ..." required churchName={name} />
+            </div>
+          </div>
+          {sectionSaveBar}
+        </>
+      );
+    }
+    if (target === "page:about") return <OnboardPastorName onChanged={refreshRequiredStatus} />;
+    if (target === "page:worship") return <OnboardFirstWorship onChanged={refreshRequiredStatus} />;
+    return null;
+  };
+
   return (
     <div className="admin-shell">
       {quickLimitMsg && (
@@ -1026,22 +1099,29 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     </div>
 
                     <ol className="onboard-steps">
-                      {requiredSteps.map((s, i) => (
-                        <li key={s.target} className={`onboard-step ${s.done ? "done" : ""}`}>
-                          <span className="onboard-step-num">{s.done ? "✓" : i + 1}</span>
-                          <div className="onboard-step-body">
-                            <strong>{s.label}</strong>
-                            <span>{s.desc}</span>
-                          </div>
-                          <button
-                            type="button"
-                            className={`btn ${s.done ? "btn-ghost" : "btn-primary"}`}
-                            onClick={() => setActiveSection(s.target)}
-                          >
-                            {s.done ? "수정" : "입력하러 가기"}
-                          </button>
-                        </li>
-                      ))}
+                      {requiredSteps.map((s, i) => {
+                        const open = openStep === s.target;
+                        return (
+                          <li key={s.target} className={`onboard-step ${s.done ? "done" : ""} ${open ? "open" : ""}`}>
+                            <button
+                              type="button"
+                              className="onboard-step-head"
+                              onClick={() => setOpenStep(open ? null : s.target)}
+                              aria-expanded={open}
+                            >
+                              <span className="onboard-step-num">{s.done ? "✓" : i + 1}</span>
+                              <span className="onboard-step-body">
+                                <strong>{s.label}</strong>
+                                <span>{s.desc}</span>
+                              </span>
+                              <span className="onboard-step-toggle">
+                                {open ? "닫기 ▲" : s.done ? "수정 ▾" : "입력 ▾"}
+                              </span>
+                            </button>
+                            {open && <div className="onboard-step-panel">{stepPanelContent(s.target)}</div>}
+                          </li>
+                        );
+                      })}
                     </ol>
 
                     <div className={`onboard-cta ${allRequiredFilled || isPublished ? "ready" : "locked"}`}>

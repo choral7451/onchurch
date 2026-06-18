@@ -866,14 +866,18 @@ main { flex: 1; }
 .onboard-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-glow)); transition: width 0.4s ease; }
 
 .onboard-steps { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.onboard-step { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); transition: border-color 0.15s ease, background 0.15s ease; }
-.onboard-step.done { background: var(--bg-tinted); border-color: var(--line-2); }
+.onboard-step { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); overflow: hidden; transition: border-color 0.15s ease; }
+.onboard-step.done:not(.open) { background: var(--bg-tinted); border-color: var(--line-2); }
+.onboard-step.open { border-color: oklch(0.62 0.14 245 / 0.4); }
+.onboard-step-head { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px 18px; background: transparent; border: none; text-align: left; cursor: pointer; }
+.onboard-step-head:hover { background: var(--surface-2); }
 .onboard-step-num { display: inline-grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; font-size: 13px; font-weight: 700; background: oklch(0.62 0.14 245 / 0.1); color: var(--accent); }
 .onboard-step.done .onboard-step-num { background: oklch(0.6 0.14 145); color: white; }
 .onboard-step-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .onboard-step-body strong { font-size: 14.5px; color: var(--ink); }
 .onboard-step-body span { font-size: 12.5px; color: var(--muted); }
-.onboard-step .btn { flex-shrink: 0; }
+.onboard-step-toggle { flex-shrink: 0; font-size: 13px; font-weight: 600; color: var(--accent); }
+.onboard-step-panel { display: flex; flex-direction: column; gap: 16px; padding: 18px; border-top: 1px solid var(--line-2); }
 
 .onboard-cta { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; border-radius: var(--r-md); flex-wrap: wrap; }
 .onboard-cta.ready { background: linear-gradient(135deg, oklch(0.62 0.14 245 / 0.08), oklch(0.6 0.14 145 / 0.08)); border: 1px solid oklch(0.62 0.14 245 / 0.25); }

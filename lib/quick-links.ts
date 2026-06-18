@@ -35,7 +35,7 @@ export const QUICK_LINK_DEFS: QuickLinkDef[] = [
 ];
 
 // 관리자가 따로 선택하지 않았을 때(homeQuickLinks 비어 있음)의 기본 노출 항목.
-export const DEFAULT_QUICK_LINK_KEYS: QuickLinkKey[] = ["worship", "sermons", "gallery", "youtube"];
+export const DEFAULT_QUICK_LINK_KEYS: QuickLinkKey[] = ["worship", "sermons", "gallery", "community"];
 
 export function quickLinkDef(key: string): QuickLinkDef | undefined {
   return QUICK_LINK_DEFS.find((d) => d.key === key);
