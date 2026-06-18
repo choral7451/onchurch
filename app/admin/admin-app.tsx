@@ -263,6 +263,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [loaded, setLoaded] = useState(false);
 
   const [isPublished, setIsPublished] = useState(false);
+  // 온보딩(시작 가이드) 완료 = first_published_at not null (한 번이라도 사이트 오픈).
+  // true가 되면 시작하기를 숨기고 사이드바를 노출한다. 이후 OFF해도 유지.
+  const [onboardingDone, setOnboardingDone] = useState(false);
   const [churchExistsOnServer, setChurchExistsOnServer] = useState(false);
   const [slugLocked, setSlugLocked] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -345,6 +348,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           }
           setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? []));
           setIsPublished(c.isPublished);
+          setOnboardingDone(!!c.firstPublishedAt);
           setChurchExistsOnServer(true);
         }
         if (res?.subscription) setSubscription(res.subscription);
@@ -384,12 +388,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
 
-  // 이미 공개(=사이트 오픈)한 교회만 '시작하기' 화면에서 기본 정보로 이동.
-  // (freeTrialUntil은 가입/교회생성 시점에 부여될 수 있어 '오픈 이력' 판단에 쓰면 안 된다 —
-  //  신규 교회가 시작하기 대신 기본 정보로 튕기는 버그가 생긴다.)
+  // 온보딩을 끝낸(첫 오픈 = first_published_at not null) 교회만 '시작하기'에서 기본 정보로 이동.
   useEffect(() => {
-    if (loaded && isPublished && activeSection === "start") setActiveSection("site");
-  }, [loaded, isPublished, activeSection]);
+    if (loaded && onboardingDone && activeSection === "start") setActiveSection("site");
+  }, [loaded, onboardingDone, activeSection]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -715,6 +717,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     try {
       const updated = await onchurchChurch.publish(target);
       setIsPublished(updated.church.isPublished);
+      setOnboardingDone(!!updated.church.firstPublishedAt);
       setSubscription(updated.subscription);
       if (target && updated.subscription.freeTrialUntil) {
         const end = new Date(updated.subscription.freeTrialUntil);
@@ -918,9 +921,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} className={`admin-layout ${allRequiredFilled ? "" : "admin-layout-solo"}`}>
-          {/* 시작 가이드(필수 4단계)를 끝내기 전에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
-          {allRequiredFilled && (
+        <form onSubmit={onSave} className={`admin-layout ${onboardingDone ? "" : "admin-layout-solo"}`}>
+          {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
+          {onboardingDone && (
           <aside className="admin-sidebar">
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">필수 설정</div>

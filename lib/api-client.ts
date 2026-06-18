@@ -28,6 +28,8 @@ export type Church = {
   homeSectionOrder: string[];
   homeQuickLinks: string[];
   isPublished: boolean;
+  // 최초 사이트 오픈(첫 공개) 시각. 한 번이라도 오픈하면 채워지고 OFF해도 유지 — 온보딩 완료 판단에 사용.
+  firstPublishedAt: string | null;
 };
 
 export type Subscription = {
