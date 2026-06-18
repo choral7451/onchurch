@@ -443,9 +443,72 @@ export const onchurchMaster = {
     }),
   deleteEmailTemplate: (id: number) =>
     request<unknown>(`/onchurch/master/email-templates/${id}`, { method: "DELETE", auth: true }),
+
+  sendBulkSms: (input: { subject: string; content: string; recipients: string[] }) =>
+    request<BulkSmsResult>("/onchurch/master/sms", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(input),
+    }),
+  listSmsLogs: (params: { keyword?: string; page: number; size: number }) => {
+    const query = new URLSearchParams({ page: String(params.page), size: String(params.size) });
+    if (params.keyword?.trim()) query.set("keyword", params.keyword.trim());
+    return request<{ items: SmsLog[]; totalCount: number }>(`/onchurch/master/sms?${query.toString()}`, {
+      method: "GET",
+      auth: true,
+    });
+  },
+  listSmsTemplates: () =>
+    request<{ items: SmsTemplate[] }>("/onchurch/master/sms-templates", { method: "GET", auth: true }),
+  createSmsTemplate: (input: { name: string; subject: string; content: string }) =>
+    request<SmsTemplate>("/onchurch/master/sms-templates", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(input),
+    }),
+  deleteSmsTemplate: (id: number) =>
+    request<unknown>(`/onchurch/master/sms-templates/${id}`, { method: "DELETE", auth: true }),
 };
 
 export type EmailTemplate = {
+  id: number;
+  name: string;
+  subject: string;
+  content: string;
+  createdAt: string;
+};
+
+export type SmsRecipientStatus = "sent" | "failed" | "excluded";
+
+export type SmsRecipientResult = {
+  phone: string;
+  status: SmsRecipientStatus;
+  reason: string | null;
+};
+
+export type BulkSmsResult = {
+  total: number;
+  sent: number;
+  failed: number;
+  excluded: number;
+  results: SmsRecipientResult[];
+};
+
+export type SmsLog = {
+  id: number;
+  senderId: number;
+  senderName: string;
+  subject: string;
+  content: string;
+  results: SmsRecipientResult[];
+  total: number;
+  sent: number;
+  failed: number;
+  excluded: number;
+  createdAt: string;
+};
+
+export type SmsTemplate = {
   id: number;
   name: string;
   subject: string;
