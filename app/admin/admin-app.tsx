@@ -19,6 +19,7 @@ import type {
 import {
   ApiError,
   clearTokens,
+  saveSessionChurch,
   onchurchChurch,
   onchurchPastor,
   onchurchUser,
@@ -317,6 +318,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
         if (res?.church) {
           const c = res.church;
           setSlug(c.slug);
+          // 관리자 로그인은 성도 세션(sessionChurch)을 따로 만들지 않아, 자기 교회 홈을 열면
+          // 로그아웃처럼 보였다. 콘솔이 자기 교회를 로드하면 세션을 그 교회로 기록해 동일 로그인으로 인식시킨다.
+          if (c.slug) saveSessionChurch(c.slug);
           if (c.slug) setSlugLocked(true);
           setName(c.name);
           setEng(c.eng ?? "");
@@ -754,6 +758,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     if (!allRequiredFilled || publishLoading) return;
     const ok = isPublished ? true : await onTogglePublish();
     if (!ok) return; // 공개 실패(결제/필수 모달 등) 시 중단
+    if (slug.trim()) saveSessionChurch(slug.trim());
     if (typeof window !== "undefined") window.open(previewHref, "_blank", "noopener,noreferrer");
     setActiveSection("site");
   }
@@ -899,7 +904,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 }
               />
             </div>
-            <Link href={previewHref} className="btn btn-secondary" target="_blank">
+            <Link
+              href={previewHref}
+              className="btn btn-secondary"
+              target="_blank"
+              onClick={() => { if (slug.trim()) saveSessionChurch(slug.trim()); }}
+            >
               <Icon.arrow style={{ width: 14, height: 14 }} />
               <span className="admin-action-label">홈페이지 바로가기</span>
             </Link>
