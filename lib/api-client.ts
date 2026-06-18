@@ -469,9 +469,10 @@ export const onchurchMaster = {
   deleteSmsTemplate: (id: number) =>
     request<unknown>(`/onchurch/master/sms-templates/${id}`, { method: "DELETE", auth: true }),
 
-  listChurches: (params: { keyword?: string; page: number; size: number }) => {
+  listChurches: (params: { keyword?: string; publishedOnly: boolean; page: number; size: number }) => {
     const query = new URLSearchParams({ page: String(params.page), size: String(params.size) });
     if (params.keyword?.trim()) query.set("keyword", params.keyword.trim());
+    query.set("publishedOnly", String(params.publishedOnly));
     return request<{ items: ChurchOverview[]; totalCount: number }>(`/onchurch/master/churches?${query.toString()}`, {
       method: "GET",
       auth: true,

@@ -34,6 +34,7 @@ function PeriodCell({ text, active, hasValue }: { text: string; active: boolean;
 export function ChurchesFeature() {
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState(""); // 디바운스된 실제 검색어
+  const [publishedOnly, setPublishedOnly] = useState(true); // 기본: 운영중인 교회만
 
   const [items, setItems] = useState<ChurchOverview[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -53,7 +54,7 @@ export function ChurchesFeature() {
     return () => clearTimeout(t);
   }, [keyword]);
 
-  // 검색어 변경 → 1페이지부터 다시 로드
+  // 검색어 또는 필터 변경 → 1페이지부터 다시 로드
   useEffect(() => {
     const seq = ++seqRef.current;
     setStatus("loading");
@@ -61,7 +62,7 @@ export function ChurchesFeature() {
     setLoadingMore(false);
     (async () => {
       try {
-        const res = await onchurchMaster.listChurches({ keyword: query, page: 1, size: PAGE_SIZE });
+        const res = await onchurchMaster.listChurches({ keyword: query, publishedOnly, page: 1, size: PAGE_SIZE });
         if (seq !== seqRef.current) return;
         setItems(res.items);
         setTotalCount(res.totalCount);
@@ -73,7 +74,7 @@ export function ChurchesFeature() {
         setErrorMsg(err instanceof ApiError ? err.message : "교회 목록을 불러오지 못했습니다.");
       }
     })();
-  }, [query]);
+  }, [query, publishedOnly]);
 
   // 다음 페이지 로드 (이어붙이기)
   const loadMore = useCallback(async () => {
@@ -82,7 +83,7 @@ export function ChurchesFeature() {
     const next = page + 1;
     setLoadingMore(true);
     try {
-      const res = await onchurchMaster.listChurches({ keyword: query, page: next, size: PAGE_SIZE });
+      const res = await onchurchMaster.listChurches({ keyword: query, publishedOnly, page: next, size: PAGE_SIZE });
       if (seq !== seqRef.current) return;
       setItems((prev) => [...prev, ...res.items]);
       setTotalCount(res.totalCount);
@@ -92,7 +93,7 @@ export function ChurchesFeature() {
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, status, page, query]);
+  }, [loadingMore, status, page, query, publishedOnly]);
 
   // 무한 스크롤: 하단 센티넬이 보이면 다음 페이지 로드
   useEffect(() => {
@@ -116,13 +117,24 @@ export function ChurchesFeature() {
         {status === "done" && <span className="ml-1 text-gray-400">(총 {totalCount}곳)</span>}
       </p>
 
-      <input
-        type="text"
-        value={keyword}
-        onChange={(e) => setKeyword(e.target.value)}
-        placeholder="교회명, 소유자명, 연락처 검색"
-        className="mt-4 w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-      />
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <input
+          type="text"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          placeholder="교회명, 소유자명, 연락처 검색"
+          className="w-full max-w-md flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+        />
+        <label className="flex shrink-0 cursor-pointer select-none items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={publishedOnly}
+            onChange={(e) => setPublishedOnly(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 accent-gray-900"
+          />
+          운영중인 교회만
+        </label>
+      </div>
 
       <div className="mt-4">
         {status === "loading" && <p className="text-sm text-gray-500">불러오는 중…</p>}
@@ -147,7 +159,14 @@ export function ChurchesFeature() {
                 {items.map((c) => (
                   <tr key={c.id} className="border-b border-gray-100 last:border-0 align-top">
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-gray-900">{c.name}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-gray-900">{c.name}</span>
+                        {!c.isPublished && (
+                          <span className="inline-flex shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500">
+                            미운영
+                          </span>
+                        )}
+                      </div>
                       <div className="mt-0.5 text-xs text-gray-400">{c.slug}.everychurch.co.kr</div>
                     </td>
                     <td className="px-4 py-3 text-gray-700">{c.ownerName ?? "—"}</td>
