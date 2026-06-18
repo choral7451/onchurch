@@ -231,7 +231,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const [boards, setBoards] = useState<Record<string, boolean>>(
     () => {
-      const base = Object.fromEntries(initial.nav.map((n) => [n.id, false]));
+      // 새 교회는 온오프 선택 페이지를 모두 ON으로 시작한다(첫 저장 시 전부 노출).
+      const base = Object.fromEntries(initial.nav.map((n) => [n.id, true]));
       base["about"] = true;
       base["worship"] = true;
       base["directions"] = true;
@@ -337,6 +338,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
           }
           setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? []));
           setIsPublished(c.isPublished);
+          // 이미 공개(=온보딩 완료)한 교회는 '시작하기' 대신 기본 정보로 진입.
+          if (c.isPublished) setActiveSection("site");
           setChurchExistsOnServer(true);
         }
         if (res?.subscription) setSubscription(res.subscription);
@@ -817,22 +820,24 @@ export function AdminApp({ initial }: { initial: Initial }) {
       <main className="admin-main">
         <form onSubmit={onSave} className="admin-layout">
           <aside className="admin-sidebar">
-            <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">시작</div>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "start" ? "active" : ""}`}
-                onClick={() => setActiveSection("start")}
-              >
-                <span className="admin-sidebar-item-label">시작하기</span>
-                <span
-                  className={`admin-sidebar-pill ${allRequiredFilled ? "complete" : "incomplete"}`}
-                  aria-label={`필수 ${requiredDoneCount}/4 완료`}
+            {!isPublished && (
+              <div className="admin-sidebar-group">
+                <div className="admin-sidebar-eyebrow">시작</div>
+                <button
+                  type="button"
+                  className={`admin-sidebar-item ${activeSection === "start" ? "active" : ""}`}
+                  onClick={() => setActiveSection("start")}
                 >
-                  {allRequiredFilled ? "완료 ✓" : `${requiredDoneCount}/4`}
-                </span>
-              </button>
-            </div>
+                  <span className="admin-sidebar-item-label">시작하기</span>
+                  <span
+                    className={`admin-sidebar-pill ${allRequiredFilled ? "complete" : "incomplete"}`}
+                    aria-label={`필수 ${requiredDoneCount}/4 완료`}
+                  >
+                    {allRequiredFilled ? "완료 ✓" : `${requiredDoneCount}/4`}
+                  </span>
+                </button>
+              </div>
+            )}
 
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">필수 설정</div>
