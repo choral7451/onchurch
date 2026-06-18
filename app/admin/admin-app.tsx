@@ -384,15 +384,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
 
-  // 한 번이라도 사이트를 오픈한 적이 있으면(현재 공개 중이거나 체험/결제 이력 존재) 온보딩을 끝낸 교회로 본다.
-  // 이렇게 해야 운영 중인 교회가 사이트를 OFF 해도 사이드바가 사라지지 않는다.
-  const hasLaunchedBefore =
-    isPublished || !!subscription?.freeTrialUntil || !!subscription?.paidUntil;
-
-  // 온보딩을 끝낸 교회는 '시작하기' 화면에 머무를 필요가 없으므로 기본 정보로 이동.
+  // 이미 공개(=사이트 오픈)한 교회만 '시작하기' 화면에서 기본 정보로 이동.
+  // (freeTrialUntil은 가입/교회생성 시점에 부여될 수 있어 '오픈 이력' 판단에 쓰면 안 된다 —
+  //  신규 교회가 시작하기 대신 기본 정보로 튕기는 버그가 생긴다.)
   useEffect(() => {
-    if (loaded && hasLaunchedBefore && activeSection === "start") setActiveSection("site");
-  }, [loaded, hasLaunchedBefore, activeSection]);
+    if (loaded && isPublished && activeSection === "start") setActiveSection("site");
+  }, [loaded, isPublished, activeSection]);
 
   useEffect(() => {
     if (!loaded) return;
