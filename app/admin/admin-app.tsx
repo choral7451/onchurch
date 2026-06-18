@@ -37,7 +37,6 @@ import { MembersEditor } from "./page-editors/members";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
-import { InquiryEditor } from "./page-editors/inquiry";
 import { HomeOrderEditor } from "./page-editors/home-order";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
@@ -86,7 +85,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "inquiry" | "billing" | "members" | `page:${string}`;
+type SectionKey = "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | `page:${string}`;
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -816,14 +815,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">도움말</div>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "inquiry" ? "active" : ""}`}
-                onClick={() => setActiveSection("inquiry")}
+              <a
+                href="http://pf.kakao.com/_slJXX/chat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="admin-sidebar-item"
               >
                 <span className="admin-sidebar-item-label">문의</span>
-                <span className="admin-sidebar-pill optional">지원</span>
-              </button>
+                <span className="admin-sidebar-pill optional">카카오톡</span>
+              </a>
             </div>
 
             <div className="admin-sidebar-group">
@@ -1134,7 +1134,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {activeSection === "bulletin" && <BulletinEditor />}
               */}
 
-              {activeSection === "inquiry" && <InquiryEditor />}
 
               {activeSection === "members" && <MembersEditor />}
 
