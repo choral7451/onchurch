@@ -635,10 +635,12 @@ export const onchurchChurch = {
         businessNo: input.businessNo ?? null,
         logoUrl: input.logoUrl ?? null,
         youtubeUrl: input.youtubeUrl ?? null,
+        instagramUrl: input.instagramUrl ?? null,
         liveUrl: input.liveUrl ?? null,
         isLive: input.isLive ?? false,
         enabledPages: input.enabledPages,
         homeSectionOrder: input.homeSectionOrder ?? [],
+        homeQuickLinks: input.homeQuickLinks ?? [],
       }),
     }),
   publish: (isPublished: boolean) =>
