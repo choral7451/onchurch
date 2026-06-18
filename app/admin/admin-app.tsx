@@ -384,7 +384,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     { label: "기본 정보", desc: "서브도메인 · 교회 이름", done: siteRequiredFilled, target: "site" },
     { label: "연락처", desc: "전화 · 이메일 · 주소", done: contactRequiredFilled, target: "contact" },
     { label: "교회 소개", desc: "담임목사 인사 등 필수 항목", done: aboutFilled, target: "page:about" },
-    { label: "예배 안내", desc: "", done: worshipFilled, target: "page:worship" },
+    { label: "예배 안내", desc: "예배 시간표 1개 이상", done: worshipFilled, target: "page:worship" },
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
 

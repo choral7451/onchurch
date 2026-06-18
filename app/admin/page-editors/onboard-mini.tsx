@@ -10,6 +10,7 @@ import {
   onchurchWorshipService,
   type PastorWriteInput,
   type WorshipServiceTag,
+  type WorshipServiceItem,
 } from "@/lib/api-client";
 
 type Status = "loading" | "idle" | "saving";
@@ -82,7 +83,7 @@ export function OnboardPastorName({ onChanged }: { onChanged?: () => void }) {
 
 // 예배 안내 필수값 = 예배 시간표 1개 이상
 export function OnboardFirstWorship({ onChanged }: { onChanged?: () => void }) {
-  const [count, setCount] = useState(0);
+  const [items, setItems] = useState<WorshipServiceItem[]>([]);
   const [tag, setTag] = useState<WorshipServiceTag>("WEEK");
   const [name, setName] = useState("");
   const [time, setTime] = useState("");
@@ -94,7 +95,7 @@ export function OnboardFirstWorship({ onChanged }: { onChanged?: () => void }) {
 
   async function load() {
     setStatus("loading");
-    try { setCount((await onchurchWorshipService.listMine()).length); }
+    try { setItems(await onchurchWorshipService.listMine()); }
     catch { /* 무시 */ }
     finally { setStatus("idle"); }
   }
@@ -104,7 +105,7 @@ export function OnboardFirstWorship({ onChanged }: { onChanged?: () => void }) {
     setStatus("saving"); setErr(""); setMsg("");
     try {
       await onchurchWorshipService.create({
-        tag, name: name.trim(), time: time.trim(), meta: null, isFeatured: false, sortOrder: count, isActive: true,
+        tag, name: name.trim(), time: time.trim(), meta: null, isFeatured: false, sortOrder: items.length, isActive: true,
       });
       setName(""); setTime("");
       await load();
@@ -117,12 +118,45 @@ export function OnboardFirstWorship({ onChanged }: { onChanged?: () => void }) {
     }
   }
 
+  async function remove(id: number) {
+    setStatus("saving"); setErr("");
+    try {
+      await onchurchWorshipService.remove(id);
+      await load();
+      onChanged?.();
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "삭제에 실패했습니다.");
+    } finally {
+      setStatus("idle");
+    }
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {count > 0 && (
-        <p className="form-hint" style={{ color: "oklch(0.38 0.16 145)" }}>
-          ✓ 예배 {count}개 등록됨 — 더 추가하거나 예배 안내 페이지에서 관리할 수 있습니다.
-        </p>
+      {items.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {items.map((it) => (
+            <div
+              key={it.id}
+              style={{
+                display: "flex", alignItems: "center", gap: 8, padding: "8px 12px",
+                border: "1px solid var(--line)", borderRadius: "var(--r-sm)", background: "var(--surface)",
+              }}
+            >
+              <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{it.tag === "WEEK" ? "주일·주중" : "매일"}</span>
+              <strong style={{ fontSize: 13.5 }}>{it.name}</strong>
+              <span style={{ color: "var(--muted)", fontSize: 12.5 }}>{it.time}</span>
+              <button
+                type="button"
+                onClick={() => remove(it.id)}
+                disabled={status !== "idle"}
+                style={{ marginLeft: "auto", background: "transparent", border: "none", color: "var(--muted)", fontSize: 12.5, cursor: "pointer", padding: 4 }}
+              >
+                삭제
+              </button>
+            </div>
+          ))}
+        </div>
       )}
       <div className="form-grid">
         <div className="form-row">
@@ -146,6 +180,7 @@ export function OnboardFirstWorship({ onChanged }: { onChanged?: () => void }) {
           {status === "saving" ? "저장 중..." : "저장"}
         </button>
       </div>
+      <p className="form-hint">입력 후 저장을 누르면 목록에 추가됩니다. 여러 개 등록할 수 있어요.</p>
       {msg && <span className="phone-msg phone-msg-success">{msg}</span>}
       {err && <span className="phone-msg phone-msg-error">{err}</span>}
     </div>
