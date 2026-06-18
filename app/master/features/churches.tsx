@@ -14,20 +14,22 @@ function formatDate(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-// 구독 칸 표시: 기간 문자열 + 활성/만료 배지.
-function PeriodCell({ text, active, hasValue }: { text: string; active: boolean; hasValue: boolean }) {
+// 구독 기간 문자열만 표시(활성 여부는 별도 '상태' 컬럼에서 표시).
+function PeriodCell({ text, hasValue }: { text: string; hasValue: boolean }) {
   if (!hasValue) return <span className="text-gray-400">—</span>;
+  return <span className="text-gray-700">{text}</span>;
+}
+
+// 상태 배지: 프리티어 또는 결제 중 하나라도 유효하면 활성.
+function StatusBadge({ active }: { active: boolean }) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-gray-700">{text}</span>
-      <span
-        className={`inline-flex w-fit rounded px-1.5 py-0.5 text-[11px] font-semibold ${
-          active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-        }`}
-      >
-        {active ? "활성" : "만료"}
-      </span>
-    </div>
+    <span
+      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
+        active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+      }`}
+    >
+      {active ? "활성" : "만료"}
+    </span>
   );
 }
 
@@ -78,16 +80,7 @@ function PaidUntilEditor({
     <div className="flex min-w-[230px] flex-col gap-1.5">
       <div className="flex items-center gap-1.5">
         {church.paidUntil ? (
-          <>
-            <span className="text-gray-700">~ {formatDate(church.paidUntil)}</span>
-            <span
-              className={`inline-flex rounded px-1.5 py-0.5 text-[11px] font-semibold ${
-                church.isPaidActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-              }`}
-            >
-              {church.isPaidActive ? "활성" : "만료"}
-            </span>
-          </>
+          <span className="text-gray-700">~ {formatDate(church.paidUntil)}</span>
         ) : (
           <span className="text-gray-400">미설정</span>
         )}
@@ -248,10 +241,11 @@ export function ChurchesFeature() {
 
         {status !== "loading" && items.length > 0 && (
           <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="w-full min-w-[1080px] border-collapse text-sm">
+            <table className="w-full min-w-[1160px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500">
                   <th className="px-4 py-3">교회이름</th>
+                  <th className="px-4 py-3">상태</th>
                   <th className="px-4 py-3">주소</th>
                   <th className="px-4 py-3">교회소유자이름</th>
                   <th className="px-4 py-3">소유자 연락처</th>
@@ -273,6 +267,9 @@ export function ChurchesFeature() {
                       </div>
                       <div className="mt-0.5 text-xs text-gray-400">{c.slug}.everychurch.co.kr</div>
                     </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge active={c.isFreeTrialActive || c.isPaidActive} />
+                    </td>
                     <td className="px-4 py-3 text-gray-600">
                       <div className="max-w-[220px] truncate" title={c.address ?? undefined}>
                         {c.address ?? "—"}
@@ -283,7 +280,6 @@ export function ChurchesFeature() {
                     <td className="px-4 py-3">
                       <PeriodCell
                         hasValue={!!c.freeTrialUntil}
-                        active={c.isFreeTrialActive}
                         text={`${formatDate(c.freeTrialStartAt)} ~ ${formatDate(c.freeTrialUntil)}`}
                       />
                     </td>
