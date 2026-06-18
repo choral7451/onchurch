@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LandingNav } from "@/components/marketing/landing-nav";
 import { LandingFooter } from "@/components/marketing/landing-footer";
 import { HideWhenAuthed } from "@/components/marketing/hide-when-authed";
+import { ContactSticky } from "@/components/marketing/contact-sticky";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { fetchPublicChurchList } from "@/lib/public-site";
@@ -328,6 +329,7 @@ export default async function LandingPage() {
       </section>
 
       <LandingFooter />
+      <ContactSticky />
     </div>
   );
 }
