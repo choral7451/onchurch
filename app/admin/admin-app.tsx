@@ -384,7 +384,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     { label: "기본 정보", desc: "서브도메인 · 교회 이름", done: siteRequiredFilled, target: "site" },
     { label: "연락처", desc: "전화 · 이메일 · 주소", done: contactRequiredFilled, target: "contact" },
     { label: "교회 소개", desc: "담임목사 인사 등 필수 항목", done: aboutFilled, target: "page:about" },
-    { label: "예배 안내", desc: "예배 시간표 1개 이상", done: worshipFilled, target: "page:worship" },
+    { label: "예배 안내", desc: "", done: worshipFilled, target: "page:worship" },
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
 
@@ -1123,7 +1123,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                               <span className="onboard-step-num">{s.done ? "✓" : i + 1}</span>
                               <span className="onboard-step-body">
                                 <strong>{s.label}</strong>
-                                <span>{s.desc}</span>
+                                {s.desc && <span>{s.desc}</span>}
                               </span>
                               <span className="onboard-step-toggle">
                                 {open ? "닫기 ▲" : s.done ? "수정 ▾" : "입력 ▾"}
