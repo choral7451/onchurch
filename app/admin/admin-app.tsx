@@ -228,7 +228,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const ABOUT_SUB_KEYS = ["about-vision", "about-history", "about-staff"] as const;
-  const WORSHIP_SUB_KEYS = ["worship-order"] as const;
 
   const [boards, setBoards] = useState<Record<string, boolean>>(
     () => {
@@ -237,7 +236,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
       base["worship"] = true;
       base["directions"] = true;
       for (const k of ABOUT_SUB_KEYS) base[k] = false;
-      for (const k of WORSHIP_SUB_KEYS) base[k] = false;
       return base;
     },
   );
@@ -335,7 +333,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
             next["worship"] = true;
             next["directions"] = true;
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
-            for (const k of WORSHIP_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);
           }
           setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? []));
@@ -1330,15 +1327,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </div>
 
                   {activePage === "worship" && (
-                    <WorshipEditor
-                      orderVisible={boards["worship-order"] ?? true}
-                      onToggleOrderVisible={(on) => setBoards((prev) => {
-                        const next = { ...prev, ["worship-order"]: on };
-                        void persistEnabledPages(next);
-                        return next;
-                      })}
-                      onChanged={refreshRequiredStatus}
-                    />
+                    <WorshipEditor onChanged={refreshRequiredStatus} />
                   )}
 
                   {activePage === "notices" && <NoticesEditor />}

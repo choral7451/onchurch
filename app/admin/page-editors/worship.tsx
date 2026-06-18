@@ -38,14 +38,12 @@ const EMPTY_ORDER: WorshipOrderWriteInput = {
 };
 
 type WorshipEditorProps = {
-  orderVisible: boolean;
-  onToggleOrderVisible: (on: boolean) => void;
   onChanged?: () => void;
 };
 
 type SubKey = "services" | "orders";
 
-export function WorshipEditor({ orderVisible, onToggleOrderVisible, onChanged }: WorshipEditorProps) {
+export function WorshipEditor({ onChanged }: WorshipEditorProps) {
   const [section, setSection] = useState<SubKey>("services");
 
   return (
@@ -53,14 +51,13 @@ export function WorshipEditor({ orderVisible, onToggleOrderVisible, onChanged }:
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">WORSHIP</div>
         <h2>예배 안내 <span className="admin-sidebar-pill complete" style={{ fontSize: 10, marginLeft: 8, verticalAlign: "middle" }}>필수</span></h2>
-        <p>예배 시간표는 필수입니다. 예배 순서는 공개 여부를 선택할 수 있습니다.</p>
+        <p>예배 시간표는 필수입니다. 등록한 항목은 모두 사이트에 노출되며, 숨기려면 삭제하세요.</p>
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div className="chips">
           {(["services", "orders"] as const).map((s) => {
             const isServices = s === "services";
-            const isOn = isServices ? true : orderVisible;
             const label = isServices ? "예배 시간표" : "예배 순서";
             return (
               <div
@@ -70,55 +67,16 @@ export function WorshipEditor({ orderVisible, onToggleOrderVisible, onChanged }:
                 style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
               >
                 <span>{label}</span>
-                {isServices ? (
-                  <span className="required-mark" aria-hidden="true">*</span>
-                ) : (
-                  <span className={`admin-sidebar-pill ${isOn ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                    {isOn ? "공개" : "비공개"}
-                  </span>
-                )}
+                {isServices && <span className="required-mark" aria-hidden="true">*</span>}
               </div>
             );
           })}
         </div>
 
         {section === "services" && <WorshipServicesEditor onChanged={onChanged} />}
-        {section === "orders" && (
-          <WorshipOrdersEditor visible={orderVisible} onToggleVisible={onToggleOrderVisible} />
-        )}
+        {section === "orders" && <WorshipOrdersEditor />}
       </div>
     </section>
-  );
-}
-
-function SectionVisibilityToggle({ label, visible, onToggle }: { label: string; visible: boolean; onToggle: (on: boolean) => void }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 12,
-        padding: "12px 16px",
-        border: "1px solid var(--line)",
-        borderRadius: "var(--r-md)",
-        background: visible ? "var(--surface)" : "var(--bg-tinted)",
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <strong style={{ fontSize: 14 }}>{label} 섹션 공개</strong>
-        <span style={{ color: "var(--muted)", fontSize: 12.5 }}>
-          {visible ? "사이트 방문자에게 노출됩니다." : "관리자만 볼 수 있고 공개 페이지에서는 숨겨집니다."}
-        </span>
-      </div>
-      <button
-        type="button"
-        className={`toggle ${visible ? "on" : ""}`}
-        onClick={() => onToggle(!visible)}
-        aria-pressed={visible}
-        aria-label={`${label} 섹션 공개 토글`}
-      />
-    </div>
   );
 }
 
@@ -150,7 +108,7 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
       meta: it.meta ?? "",
       isFeatured: it.isFeatured,
       sortOrder: it.sortOrder,
-      isActive: it.isActive,
+      isActive: true,
     });
   }
   function cancel() { setEditing(null); setDraft(EMPTY_SERVICE); setErrMsg(""); }
@@ -169,7 +127,7 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
         meta: (draft.meta ?? "").trim() || null,
         isFeatured: !!draft.isFeatured,
         sortOrder: Number(draft.sortOrder) || 0,
-        isActive: !!draft.isActive,
+        isActive: true,
       };
       if (editing === 0 || editing === null) await onchurchWorshipService.create(payload);
       else await onchurchWorshipService.update(editing, payload);
@@ -198,7 +156,7 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
           meta: it.meta ?? null,
           isFeatured: it.isFeatured,
           sortOrder: next,
-          isActive: it.isActive,
+          isActive: true,
         }),
       );
       await load();
@@ -243,12 +201,6 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
                 <span>대표 예배</span>
               </label>
             </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
-              </label>
-            </div>
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
@@ -266,7 +218,7 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
         {items.map((it, idx) => (
           <div
             key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            className="admin-banner-card"
             {...(dragDisabled ? {} : getItemProps(idx))}
           >
             <DragHandle disabled={dragDisabled} />
@@ -275,9 +227,6 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
                 <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{it.tag}</span>
                 <strong>{it.name}</strong>
                 {it.isFeatured && <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>대표</span>}
-                <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {it.isActive ? "공개" : "비공개"}
-                </span>
               </div>
               <div style={{ color: "var(--muted)", fontSize: 13 }}>
                 {it.time}
@@ -295,7 +244,7 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
   );
 }
 
-function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; onToggleVisible: (on: boolean) => void }) {
+function WorshipOrdersEditor() {
   const [items, setItems] = useState<WorshipOrderItem[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<WorshipOrderWriteInput>(EMPTY_ORDER);
@@ -320,7 +269,7 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
   }
   function startEdit(it: WorshipOrderItem) {
     setEditing(it.id);
-    setDraft({ no: it.no, item: it.item, leader: it.leader ?? "", sortOrder: it.sortOrder, isActive: it.isActive });
+    setDraft({ no: it.no, item: it.item, leader: it.leader ?? "", sortOrder: it.sortOrder, isActive: true });
   }
   function cancel() { setEditing(null); setDraft(EMPTY_ORDER); setErrMsg(""); }
 
@@ -336,7 +285,7 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
         item: draft.item.trim(),
         leader: (draft.leader ?? "").trim() || null,
         sortOrder: Number(draft.sortOrder) || 0,
-        isActive: !!draft.isActive,
+        isActive: true,
       };
       if (editing === 0 || editing === null) await onchurchWorshipOrder.create(payload);
       else await onchurchWorshipOrder.update(editing, payload);
@@ -362,7 +311,7 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
           item: it.item,
           leader: it.leader ?? null,
           sortOrder: next,
-          isActive: it.isActive,
+          isActive: true,
         }),
       );
       await load();
@@ -372,7 +321,6 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <SectionVisibilityToggle label="예배 순서" visible={visible} onToggle={onToggleVisible} />
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 순서 추가</button>
@@ -392,12 +340,6 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
               <label>담당</label>
               <input value={draft.leader ?? ""} onChange={(e) => setDraft({ ...draft, leader: e.target.value })} placeholder="사회자" />
             </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
-              </label>
-            </div>
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
@@ -415,7 +357,7 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
         {items.map((it, idx) => (
           <div
             key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            className="admin-banner-card"
             {...(dragDisabled ? {} : getItemProps(idx))}
           >
             <DragHandle disabled={dragDisabled} />
@@ -423,9 +365,6 @@ function WorshipOrdersEditor({ visible, onToggleVisible }: { visible: boolean; o
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.no}</strong>
                 <span>· {it.item}</span>
-                <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {it.isActive ? "공개" : "비공개"}
-                </span>
               </div>
               {it.leader && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.leader}</div>}
             </div>
