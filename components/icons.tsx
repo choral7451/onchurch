@@ -51,6 +51,12 @@ export const Icon = {
       <path d="M16 2v4M8 2v4M3 10h18" />
     </svg>
   ),
+  wallet: (p: IconProps = {}) => (
+    <svg {...base(20)} {...p}>
+      <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+    </svg>
+  ),
   cross: (p: IconProps = {}) => (
     <svg {...base(20)} strokeLinejoin={undefined} {...p}>
       <path d="M12 3v18M5 8h14" />

@@ -15,7 +15,7 @@ type SectionKey = "dashboard" | "churches" | "ledger" | "bulk-email" | "bulk-sms
 const SECTIONS: { key: SectionKey; label: string; icon: (typeof Icon)[keyof typeof Icon] }[] = [
   { key: "dashboard", label: "대시보드", icon: Icon.building },
   { key: "churches", label: "교회 확인", icon: Icon.users },
-  { key: "ledger", label: "가계부", icon: Icon.calendar },
+  { key: "ledger", label: "재무 관리", icon: Icon.wallet },
   { key: "bulk-email", label: "대량 메일 발송", icon: Icon.mail },
   { key: "bulk-sms", label: "대량 문자 발송", icon: Icon.phone },
 ];

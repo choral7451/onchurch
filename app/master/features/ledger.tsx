@@ -78,7 +78,7 @@ export function LedgerFeature() {
       } catch (err) {
         if (seq !== seqRef.current) return;
         setStatus("error");
-        setListError(err instanceof ApiError ? err.message : "가계부를 불러오지 못했습니다.");
+        setListError(err instanceof ApiError ? err.message : "재무 내역을 불러오지 못했습니다.");
       }
     })();
   }, [monthParam, reloadKey]);
@@ -162,7 +162,7 @@ export function LedgerFeature() {
     <div className="grid grid-cols-1 gap-10 xl:grid-cols-[360px_1fr]">
       {/* 왼쪽: 입력 */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900">가계부 기록</h2>
+        <h2 className="text-xl font-bold text-gray-900">재무 기록</h2>
         <p className="mt-1 text-sm text-gray-500">서비스 운영 수입·지출을 일자별로 기록합니다.</p>
 
         <div className="mt-6 space-y-4">
