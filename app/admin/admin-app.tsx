@@ -906,30 +906,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} className="admin-layout">
+        <form onSubmit={onSave} className={`admin-layout ${isPublished ? "" : "admin-layout-solo"}`}>
+          {/* 사이트 오픈(공개) 전에는 사이드바를 통째로 숨기고, 시작하기 화면만 전체 폭으로 노출. */}
+          {isPublished && (
           <aside className="admin-sidebar">
-            {!isPublished && (
-              <div className="admin-sidebar-group">
-                <div className="admin-sidebar-eyebrow">시작</div>
-                <button
-                  type="button"
-                  className={`admin-sidebar-item ${activeSection === "start" ? "active" : ""}`}
-                  onClick={() => setActiveSection("start")}
-                >
-                  <span className="admin-sidebar-item-label">시작하기</span>
-                  <span
-                    className={`admin-sidebar-pill ${allRequiredFilled ? "complete" : "incomplete"}`}
-                    aria-label={`필수 ${requiredDoneCount}/4 완료`}
-                  >
-                    {allRequiredFilled ? "완료 ✓" : `${requiredDoneCount}/4`}
-                  </span>
-                </button>
-              </div>
-            )}
-
-            {/* 사이트 오픈(공개) 전에는 '시작'만 노출하고 나머지 네비게이션은 숨긴다. */}
-            {isPublished && (
-            <>
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">필수 설정</div>
               <button
@@ -1085,9 +1065,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 );
               })}
             </div>
-            </>
-            )}
           </aside>
+          )}
 
           <div className="admin-content">
             <div className="admin-container">
