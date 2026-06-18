@@ -380,10 +380,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
 
-  // 이미 공개(=사이트 오픈 완료)한 교회는 '시작하기'를 숨기므로, 그 화면에 있으면 기본 정보로 이동.
+  // 한 번이라도 사이트를 오픈한 적이 있으면(현재 공개 중이거나 체험/결제 이력 존재) 온보딩을 끝낸 교회로 본다.
+  // 이렇게 해야 운영 중인 교회가 사이트를 OFF 해도 사이드바가 사라지지 않는다.
+  const hasLaunchedBefore =
+    isPublished || !!subscription?.freeTrialUntil || !!subscription?.paidUntil;
+
+  // 온보딩을 끝낸 교회는 '시작하기' 화면에 머무를 필요가 없으므로 기본 정보로 이동.
   useEffect(() => {
-    if (loaded && isPublished && activeSection === "start") setActiveSection("site");
-  }, [loaded, isPublished, activeSection]);
+    if (loaded && hasLaunchedBefore && activeSection === "start") setActiveSection("site");
+  }, [loaded, hasLaunchedBefore, activeSection]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -906,9 +911,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} className={`admin-layout ${isPublished ? "" : "admin-layout-solo"}`}>
-          {/* 사이트 오픈(공개) 전에는 사이드바를 통째로 숨기고, 시작하기 화면만 전체 폭으로 노출. */}
-          {isPublished && (
+        <form onSubmit={onSave} className={`admin-layout ${allRequiredFilled ? "" : "admin-layout-solo"}`}>
+          {/* 시작 가이드(필수 4단계)를 끝내기 전에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
+          {allRequiredFilled && (
           <aside className="admin-sidebar">
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">필수 설정</div>
