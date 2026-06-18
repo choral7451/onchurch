@@ -6,18 +6,13 @@ import { fetchPublicChurch, fetchLiveStatus } from "@/lib/public-site";
 import { LiveBadge } from "@/components/live-badge";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { getPathPrefix } from "@/lib/path-prefix";
-import { Icon, type IconKey } from "@/components/icons";
+import { Icon } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { SermonFeatureGrid } from "@/components/sermon-feature-grid";
 import { TopBanner } from "@/components/top-banner";
 import type { Sermon } from "@/lib/types";
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
-
-const QUICK_LINKS: { ic: IconKey; title: string; desc: string; path: string }[] = [
-  { ic: "calendar", title: "예배 안내", desc: "주일/수요/새벽 모든 예배 시간을 확인하세요", path: "/worship" },
-  { ic: "video", title: "설교 영상", desc: "지난 설교를 언제든 다시 듣고 묵상하세요", path: "/sermons" },
-  { ic: "image", title: "갤러리", desc: "공동체의 사진과 추억을 모아두는 곳", path: "/gallery" },
-];
+import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS } from "@/lib/quick-links";
 
 const GRAD_CYCLE: Sermon["grad"][] = ["ph-grad-1", "ph-grad-2", "ph-grad-3", "ph-grad-4"];
 
@@ -395,8 +390,24 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const enabled = church.enabledPages ?? [];
   const isPageEnabled = (id: string) => id === "directions" || enabled.length === 0 || enabled.includes(id);
   const showHomeEvents = isPageEnabled("schedule");
-  const visibleQuickLinks = QUICK_LINKS.filter((q) => isPageEnabled(q.path.replace(/^\//, "")));
   const youtubeUrl = church.youtubeUrl?.trim() || null;
+  const instagramUrl = church.instagramUrl?.trim() || null;
+
+  // 관리자가 고른 홈 바로가기 항목(순서 포함). 비어 있으면 기본 항목. 각 항목은 사용 가능 여부로 한 번 더 필터.
+  const quickKeys = church.homeQuickLinks?.length ? church.homeQuickLinks : DEFAULT_QUICK_LINK_KEYS;
+  const quickItems = quickKeys
+    .map((k) => QUICK_LINK_DEFS.find((d) => d.key === k))
+    .filter((d): d is (typeof QUICK_LINK_DEFS)[number] => !!d)
+    .map((d) => {
+      if (d.kind === "external") {
+        const href = d.external === "youtube" ? youtubeUrl : instagramUrl;
+        return href ? { def: d, href, external: true as const } : null;
+      }
+      return d.pageId && isPageEnabled(d.pageId)
+        ? { def: d, href: url(`/${d.pageId}`), external: false as const }
+        : null;
+    })
+    .filter((x): x is { def: (typeof QUICK_LINK_DEFS)[number]; href: string; external: boolean } => !!x);
   const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder);
   const sermonsEnabled = isPageEnabled("sermons");
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
@@ -429,29 +440,26 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         </div>
       </section>
     ) : null,
-    quick: (visibleQuickLinks.length > 0 || youtubeUrl) ? (
+    quick: quickItems.length > 0 ? (
       <section className="hero hero-quick-only">
         <div className="container">
           <div className="quick-strip">
-            {visibleQuickLinks.map((q) => {
-              const QuickIcon = Icon[q.ic];
-              return (
-                <Link key={q.title} href={url(q.path)} className="quick-card">
+            {quickItems.map(({ def, href, external }) => {
+              const QuickIcon = Icon[def.ic];
+              const inner = (
+                <>
                   <div className="quick-card-icon"><QuickIcon width={22} height={22} /></div>
-                  <div className="quick-card-title">{q.title}</div>
-                  <div className="quick-card-desc">{q.desc}</div>
+                  <div className="quick-card-title">{def.title}</div>
+                  <div className="quick-card-desc">{def.desc}</div>
                   <div className="quick-card-arrow">바로가기 <Icon.arrow style={{ width: 12, height: 12 }} /></div>
-                </Link>
+                </>
+              );
+              return external ? (
+                <a key={def.key} href={href} target="_blank" rel="noopener noreferrer" className="quick-card">{inner}</a>
+              ) : (
+                <Link key={def.key} href={href} className="quick-card">{inner}</Link>
               );
             })}
-            {youtubeUrl && (
-              <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="quick-card">
-                <div className="quick-card-icon"><Icon.play width={22} height={22} /></div>
-                <div className="quick-card-title">유튜브</div>
-                <div className="quick-card-desc">예배와 설교 영상을 유튜브 채널에서 만나보세요</div>
-                <div className="quick-card-arrow">바로가기 <Icon.arrow style={{ width: 12, height: 12 }} /></div>
-              </a>
-            )}
           </div>
         </div>
       </section>

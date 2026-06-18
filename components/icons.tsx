@@ -57,6 +57,13 @@ export const Icon = {
       <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
     </svg>
   ),
+  instagram: (p: IconProps = {}) => (
+    <svg {...base(20)} {...p}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M17.5 6.5h.01" />
+    </svg>
+  ),
   cross: (p: IconProps = {}) => (
     <svg {...base(20)} strokeLinejoin={undefined} {...p}>
       <path d="M12 3v18M5 8h14" />

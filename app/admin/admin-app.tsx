@@ -38,6 +38,7 @@ import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
 import { HomeOrderEditor } from "./page-editors/home-order";
+import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 
@@ -216,6 +217,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [email, setEmail] = useState(initial.brand.email);
   const [address, setAddress] = useState(initial.brand.address);
   const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
+  const [instagramUrl, setInstagramUrl] = useState<string | null>(null);
   const [liveUrl, setLiveUrl] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [liveSaving, setLiveSaving] = useState(false);
@@ -241,6 +243,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   );
 
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
+  const [homeQuickLinks, setHomeQuickLinks] = useState<string[]>([]);
 
   const [notices, setNotices] = useState<Notice[]>(initial.notices);
   const [noticeCategories, setNoticeCategories] = useState<string[]>(initial.noticeCategories);
@@ -320,6 +323,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
           setAddress(c.address ?? "");
           if (c.logoUrl) setLogoPreview(c.logoUrl);
           setYoutubeUrl(c.youtubeUrl ?? null);
+          setInstagramUrl(c.instagramUrl ?? null);
+          setHomeQuickLinks(c.homeQuickLinks ?? []);
           setLiveUrl(c.liveUrl ?? null);
           setIsLive(c.isLive ?? false);
           if (c.enabledPages?.length) {
@@ -440,9 +445,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
+        instagramUrl: instagramUrl?.trim() || null,
         liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
+        homeQuickLinks,
         homeSectionOrder,
       });
     } catch (err) {
@@ -477,9 +484,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
+        instagramUrl: instagramUrl?.trim() || null,
         liveUrl: nextLiveUrl?.trim() || null,
         isLive: nextIsLive,
         enabledPages,
+        homeQuickLinks,
         homeSectionOrder,
       });
     } catch (err) {
@@ -509,10 +518,44 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
+        instagramUrl: instagramUrl?.trim() || null,
         liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
+        homeQuickLinks,
         homeSectionOrder: nextOrder,
+      });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        clearTokens();
+        router.push("/login");
+      }
+    }
+  }
+
+  async function persistHomeQuickLinks(nextKeys: string[]) {
+    setHomeQuickLinks(nextKeys);
+    if (!churchExistsOnServer || !slug.trim() || !name.trim()) return;
+    const enabledPages = Object.entries(boards).filter(([, on]) => on).map(([id]) => id);
+    try {
+      await onchurchChurch.upsertMine({
+        slug,
+        name,
+        eng: eng || null,
+        tagline: tagline || null,
+        phone: phone || null,
+        email: email || null,
+        address: address || null,
+        representative: null,
+        businessNo: null,
+        logoUrl: logoPreview || null,
+        youtubeUrl: youtubeUrl?.trim() || null,
+        instagramUrl: instagramUrl?.trim() || null,
+        liveUrl: liveUrl?.trim() || null,
+        isLive,
+        enabledPages,
+        homeQuickLinks: nextKeys,
+        homeSectionOrder,
       });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -572,9 +615,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
         businessNo: null,
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
+        instagramUrl: instagramUrl?.trim() || null,
         liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
+        homeQuickLinks,
         homeSectionOrder,
       });
       setIsPublished(updated.isPublished);
@@ -1092,6 +1137,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         />
                         <p className="form-hint">입력하면 홈 메인 빠른 이동에 &lsquo;유튜브&rsquo; 바로가기가 노출됩니다. 비워두면 숨겨집니다. (실시간 방송은 말씀 메뉴에서 설정)</p>
                       </div>
+                      <div className="form-row full">
+                        <label htmlFor="ad-instagram">인스타그램 주소</label>
+                        <input
+                          id="ad-instagram"
+                          type="url"
+                          value={instagramUrl ?? ""}
+                          onChange={(e) => setInstagramUrl(e.target.value)}
+                          placeholder="https://www.instagram.com/yourchurch"
+                        />
+                        <p className="form-hint">입력하면 홈 바로가기에 &lsquo;인스타그램&rsquo;을 추가할 수 있습니다. (홈 구성 메뉴에서 노출 항목 선택)</p>
+                      </div>
                     </div>
                     {sectionSaveBar}
                     <DirectionsEditor />
@@ -1107,7 +1163,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   activeKeys={(() => {
                     const keys: HomeSectionKey[] = ["banner"];
                     if (boards["schedule"]) keys.push("events");
-                    if (boards["worship"] || boards["sermons"] || boards["gallery"] || boards["directions"]) keys.push("quick");
+                    if (
+                      boards["worship"] || boards["sermons"] || boards["gallery"] || boards["directions"] ||
+                      boards["notices"] || boards["schedule"] || boards["community"] ||
+                      youtubeUrl?.trim() || instagramUrl?.trim()
+                    ) keys.push("quick");
                     if (boards["worship"]) keys.push("worship");
                     if (boards["sermons"]) keys.push("sermons");
                     keys.push("visit", "pastor");
@@ -1116,6 +1176,69 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   onChange={(next) => void persistHomeSectionOrder(next)}
                 />
               )}
+
+              {activeSection === "home-order" && (() => {
+                const selected = homeQuickLinks.length ? homeQuickLinks : DEFAULT_QUICK_LINK_KEYS;
+                const isSel = (k: string) => selected.includes(k);
+                const toggle = (k: string) => {
+                  const set = new Set(selected);
+                  if (set.has(k)) set.delete(k);
+                  else set.add(k);
+                  const next = QUICK_LINK_DEFS.filter((d) => set.has(d.key)).map((d) => d.key);
+                  void persistHomeQuickLinks(next);
+                };
+                const availability = (key: string): string => {
+                  const def = QUICK_LINK_DEFS.find((d) => d.key === key);
+                  if (!def) return "";
+                  if (def.kind === "external") {
+                    const has = def.external === "youtube" ? !!youtubeUrl?.trim() : !!instagramUrl?.trim();
+                    return has ? "" : (def.external === "youtube" ? "유튜브 주소 입력 필요" : "인스타그램 주소 입력 필요");
+                  }
+                  return def.pageId && boards[def.pageId] ? "" : "페이지를 켜야 노출";
+                };
+                return (
+                  <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
+                    <h3 style={{ margin: "0 0 4px", fontSize: 16 }}>홈 바로가기</h3>
+                    <p className="form-hint" style={{ marginBottom: 14 }}>
+                      홈 메인에 노출할 바로가기 항목을 선택하세요. 선택해도 해당 페이지가 꺼져 있거나 URL이 없으면 노출되지 않습니다.
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {QUICK_LINK_DEFS.map((d) => {
+                        const sel = isSel(d.key);
+                        const note = availability(d.key);
+                        return (
+                          <button
+                            key={d.key}
+                            type="button"
+                            onClick={() => toggle(d.key)}
+                            className="admin-banner-card"
+                            style={{ textAlign: "left", cursor: "pointer", borderColor: sel ? "var(--accent)" : undefined }}
+                          >
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                width: 18, height: 18, borderRadius: 5, flexShrink: 0,
+                                display: "grid", placeItems: "center", fontSize: 12, color: "#fff",
+                                background: sel ? "var(--accent)" : "transparent",
+                                border: `1.5px solid ${sel ? "var(--accent)" : "var(--line)"}`,
+                              }}
+                            >
+                              {sel ? "✓" : ""}
+                            </span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                <strong>{d.title}</strong>
+                                {note && <span style={{ color: "var(--muted)", fontSize: 11.5 }}>· {note}</span>}
+                              </div>
+                              <div style={{ color: "var(--muted)", fontSize: 12 }}>{d.desc}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {activeSection === "billing" && (
                 <section className="admin-section">

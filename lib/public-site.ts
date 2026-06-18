@@ -16,11 +16,13 @@ export type PublicChurch = {
   businessNo: string | null;
   logoUrl: string | null;
   youtubeUrl: string | null;
+  instagramUrl: string | null;
   liveUrl: string | null;
   isLive: boolean;
   liveStartedAt: string | null;
   enabledPages: string[];
   homeSectionOrder: string[];
+  homeQuickLinks: string[];
   isPublished: boolean;
 };
 
