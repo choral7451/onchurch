@@ -244,6 +244,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
   const [homeQuickLinks, setHomeQuickLinks] = useState<string[]>([]);
+  const [quickLimitMsg, setQuickLimitMsg] = useState("");
 
   const [notices, setNotices] = useState<Notice[]>(initial.notices);
   const [noticeCategories, setNoticeCategories] = useState<string[]>(initial.noticeCategories);
@@ -1178,12 +1179,21 @@ export function AdminApp({ initial }: { initial: Initial }) {
               )}
 
               {activeSection === "home-order" && (() => {
+                const MAX_QUICK = 4;
                 const selected = homeQuickLinks.length ? homeQuickLinks : DEFAULT_QUICK_LINK_KEYS;
                 const isSel = (k: string) => selected.includes(k);
                 const toggle = (k: string) => {
                   const set = new Set(selected);
-                  if (set.has(k)) set.delete(k);
-                  else set.add(k);
+                  if (set.has(k)) {
+                    set.delete(k);
+                  } else {
+                    if (set.size >= MAX_QUICK) {
+                      setQuickLimitMsg(`바로가기는 최대 ${MAX_QUICK}개까지만 선택할 수 있습니다.`);
+                      window.setTimeout(() => setQuickLimitMsg(""), 2500);
+                      return;
+                    }
+                    set.add(k);
+                  }
                   const next = QUICK_LINK_DEFS.filter((d) => set.has(d.key)).map((d) => d.key);
                   void persistHomeQuickLinks(next);
                 };
@@ -1198,9 +1208,21 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 };
                 return (
                   <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
-                    <h3 style={{ margin: "0 0 4px", fontSize: 16 }}>홈 바로가기</h3>
+                    {quickLimitMsg && (
+                      <div
+                        role="alert"
+                        style={{
+                          position: "fixed", left: "50%", bottom: 28, transform: "translateX(-50%)", zIndex: 2000,
+                          background: "var(--primary-deep)", color: "#fff", padding: "12px 20px", borderRadius: 999,
+                          fontSize: 13.5, fontWeight: 600, boxShadow: "0 8px 24px oklch(0 0 0 / 0.25)",
+                        }}
+                      >
+                        {quickLimitMsg}
+                      </div>
+                    )}
+                    <h3 style={{ margin: "0 0 4px", fontSize: 16 }}>홈 바로가기 <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 400 }}>(최대 {MAX_QUICK}개 · {selected.length}/{MAX_QUICK})</span></h3>
                     <p className="form-hint" style={{ marginBottom: 14 }}>
-                      홈 메인에 노출할 바로가기 항목을 선택하세요. 선택해도 해당 페이지가 꺼져 있거나 URL이 없으면 노출되지 않습니다.
+                      홈 메인에 노출할 바로가기 항목을 최대 {MAX_QUICK}개까지 선택하세요. 선택해도 해당 페이지가 꺼져 있거나 URL이 없으면 노출되지 않습니다.
                     </p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {QUICK_LINK_DEFS.map((d) => {

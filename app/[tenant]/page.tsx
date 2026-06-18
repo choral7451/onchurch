@@ -394,7 +394,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const instagramUrl = church.instagramUrl?.trim() || null;
 
   // 관리자가 고른 홈 바로가기 항목(순서 포함). 비어 있으면 기본 항목. 각 항목은 사용 가능 여부로 한 번 더 필터.
-  const quickKeys = church.homeQuickLinks?.length ? church.homeQuickLinks : DEFAULT_QUICK_LINK_KEYS;
+  const quickKeys = (church.homeQuickLinks?.length ? church.homeQuickLinks : DEFAULT_QUICK_LINK_KEYS).slice(0, 4);
   const quickItems = quickKeys
     .map((k) => QUICK_LINK_DEFS.find((d) => d.key === k))
     .filter((d): d is (typeof QUICK_LINK_DEFS)[number] => !!d)
