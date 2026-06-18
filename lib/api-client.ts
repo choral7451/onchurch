@@ -478,6 +478,13 @@ export const onchurchMaster = {
       auth: true,
     });
   },
+  // paidUntil: "YYYY-MM-DD" 또는 null(해제). 응답으로 갱신된 만료일/활성여부 반환.
+  updateChurchPaidUntil: (churchId: number, paidUntil: string | null) =>
+    request<{ paidUntil: string | null; isPaidActive: boolean }>(`/onchurch/master/churches/${churchId}/paid-until`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ paidUntil }),
+    }),
 
   createLedgerEntry: (input: { entryDate: string; type: LedgerType; amount: number; category: string; memo?: string }) =>
     request<LedgerEntry>("/onchurch/master/ledger", {
@@ -518,6 +525,7 @@ export type ChurchOverview = {
   id: number;
   name: string;
   slug: string;
+  address: string | null;
   isPublished: boolean;
   ownerName: string | null;
   ownerPhone: string | null;

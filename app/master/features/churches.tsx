@@ -31,6 +31,104 @@ function PeriodCell({ text, active, hasValue }: { text: string; active: boolean;
   );
 }
 
+function ymd(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// 결제 만료일 편집: 날짜 직접 선택(적용) + 현재 기준 1일/1달/1년 연장 + 해제.
+function PaidUntilEditor({
+  church,
+  onUpdated,
+}: {
+  church: ChurchOverview;
+  onUpdated: (id: number, paidUntil: string | null, isPaidActive: boolean) => void;
+}) {
+  const [draft, setDraft] = useState(church.paidUntil ? church.paidUntil.slice(0, 10) : "");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function save(dateStr: string | null) {
+    setSaving(true);
+    setErr("");
+    try {
+      const res = await onchurchMaster.updateChurchPaidUntil(church.id, dateStr);
+      onUpdated(church.id, res.paidUntil, res.isPaidActive);
+      setDraft(res.paidUntil ? res.paidUntil.slice(0, 10) : "");
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "변경에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // 연장 기준: 현재 결제일이 미래면 그 날짜에서, 아니면 오늘부터 더한다.
+  function extend(unit: "day" | "month" | "year") {
+    const now = new Date();
+    const base = church.paidUntil && new Date(church.paidUntil) > now ? new Date(church.paidUntil) : now;
+    if (unit === "day") base.setDate(base.getDate() + 1);
+    if (unit === "month") base.setMonth(base.getMonth() + 1);
+    if (unit === "year") base.setFullYear(base.getFullYear() + 1);
+    void save(ymd(base));
+  }
+
+  const btn = "rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-40";
+
+  return (
+    <div className="flex min-w-[230px] flex-col gap-1.5">
+      <div className="flex items-center gap-1.5">
+        {church.paidUntil ? (
+          <>
+            <span className="text-gray-700">~ {formatDate(church.paidUntil)}</span>
+            <span
+              className={`inline-flex rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+                church.isPaidActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {church.isPaidActive ? "활성" : "만료"}
+            </span>
+          </>
+        ) : (
+          <span className="text-gray-400">미설정</span>
+        )}
+      </div>
+      <div className="flex items-center gap-1">
+        <input
+          type="date"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          className="w-[140px] rounded border border-gray-300 px-2 py-1 text-xs focus:border-gray-900 focus:outline-none"
+        />
+        <button type="button" onClick={() => save(draft || null)} disabled={saving || !draft} className={btn}>
+          적용
+        </button>
+      </div>
+      <div className="flex flex-wrap items-center gap-1">
+        <button type="button" onClick={() => extend("day")} disabled={saving} className={btn}>
+          +1일
+        </button>
+        <button type="button" onClick={() => extend("month")} disabled={saving} className={btn}>
+          +1달
+        </button>
+        <button type="button" onClick={() => extend("year")} disabled={saving} className={btn}>
+          +1년
+        </button>
+        {church.paidUntil && (
+          <button
+            type="button"
+            onClick={() => save(null)}
+            disabled={saving}
+            className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-red-500 transition hover:bg-red-50 disabled:opacity-40"
+          >
+            해제
+          </button>
+        )}
+      </div>
+      {err && <span className="text-[11px] text-red-600">{err}</span>}
+    </div>
+  );
+}
+
 export function ChurchesFeature() {
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState(""); // 디바운스된 실제 검색어
@@ -109,6 +207,11 @@ export function ChurchesFeature() {
     return () => observer.disconnect();
   }, [loadMore]);
 
+  // 결제 만료일 변경 후 해당 행만 갱신
+  const handlePaidUpdated = useCallback((id: number, paidUntil: string | null, isPaidActive: boolean) => {
+    setItems((prev) => prev.map((c) => (c.id === id ? { ...c, paidUntil, isPaidActive } : c)));
+  }, []);
+
   return (
     <div>
       <h2 className="text-xl font-bold text-gray-900">교회 확인</h2>
@@ -145,10 +248,11 @@ export function ChurchesFeature() {
 
         {status !== "loading" && items.length > 0 && (
           <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="w-full min-w-[860px] border-collapse text-sm">
+            <table className="w-full min-w-[1080px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500">
                   <th className="px-4 py-3">교회이름</th>
+                  <th className="px-4 py-3">주소</th>
                   <th className="px-4 py-3">교회소유자이름</th>
                   <th className="px-4 py-3">소유자 연락처</th>
                   <th className="px-4 py-3">프리티어 기간</th>
@@ -169,6 +273,11 @@ export function ChurchesFeature() {
                       </div>
                       <div className="mt-0.5 text-xs text-gray-400">{c.slug}.everychurch.co.kr</div>
                     </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      <div className="max-w-[220px] truncate" title={c.address ?? undefined}>
+                        {c.address ?? "—"}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-gray-700">{c.ownerName ?? "—"}</td>
                     <td className="px-4 py-3 text-gray-700">{c.ownerPhone ?? "—"}</td>
                     <td className="px-4 py-3">
@@ -179,11 +288,7 @@ export function ChurchesFeature() {
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <PeriodCell
-                        hasValue={!!c.paidUntil}
-                        active={c.isPaidActive}
-                        text={`~ ${formatDate(c.paidUntil)}`}
-                      />
+                      <PaidUntilEditor church={c} onUpdated={handlePaidUpdated} />
                     </td>
                   </tr>
                 ))}
