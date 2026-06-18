@@ -108,7 +108,7 @@ export function OnboardFirstWorship({ onChanged }: { onChanged?: () => void }) {
       });
       setName(""); setTime("");
       await load();
-      setMsg("예배가 추가되었습니다."); onChanged?.();
+      setMsg("저장되었습니다."); onChanged?.();
       setTimeout(() => setMsg(""), 2000);
     } catch (e) {
       setErr(e instanceof ApiError ? e.message : "추가에 실패했습니다.");
@@ -143,7 +143,7 @@ export function OnboardFirstWorship({ onChanged }: { onChanged?: () => void }) {
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={add} disabled={status !== "idle" || !name.trim() || !time.trim()}>
-          {status === "saving" ? "추가 중..." : "+ 예배 추가"}
+          {status === "saving" ? "저장 중..." : "저장"}
         </button>
       </div>
       {msg && <span className="phone-msg phone-msg-success">{msg}</span>}
