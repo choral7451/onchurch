@@ -380,10 +380,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
 
-  // 필수를 모두 채우면 '시작하기'를 사이드바에서 숨기므로, 그 화면에 머물러 있으면 기본 정보로 이동.
+  // 이미 공개(=사이트 오픈 완료)한 교회는 '시작하기'를 숨기므로, 그 화면에 있으면 기본 정보로 이동.
   useEffect(() => {
-    if (loaded && allRequiredFilled && activeSection === "start") setActiveSection("site");
-  }, [loaded, allRequiredFilled, activeSection]);
+    if (loaded && isPublished && activeSection === "start") setActiveSection("site");
+  }, [loaded, isPublished, activeSection]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -687,20 +687,21 @@ export function AdminApp({ initial }: { initial: Initial }) {
     router.push("/login");
   }
 
-  async function onTogglePublish() {
-    if (publishLoading) return;
+  // 공개/비공개 토글. 처리 후 최종 공개 여부를 반환한다(시작하기의 '사이트 오픈'에서 사용).
+  async function onTogglePublish(): Promise<boolean> {
+    if (publishLoading) return isPublished;
     const target = !isPublished;
 
     if (target) {
       if (!churchExistsOnServer || !allRequiredFilled) {
         setModal("required");
-        return;
+        return false;
       }
       // 첫 publish 시 서버가 자동으로 7일 무료 체험을 부여하므로 클라이언트에선 차단하지 않음.
       // 체험/결제가 모두 만료된 재publish 만 차단.
       if (!subscription?.isActive && subscription?.freeTrialUntil) {
         setModal("payment");
-        return;
+        return false;
       }
     }
 
@@ -717,28 +718,39 @@ export function AdminApp({ initial }: { initial: Initial }) {
         setTrialEndDateLabel(`${yyyy}년 ${mm}월 ${dd}일`);
         setModal("trial-started");
       }
+      return updated.church.isPublished;
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 401) {
           clearTokens();
           router.push("/login");
-          return;
+          return false;
         }
         if (err.code === "ONCHURCH-CHURCH-003" || err.code === "ONCHURCH-CHURCH-002") {
           setModal("required");
-          return;
+          return false;
         }
         if (err.code === "ONCHURCH-CHURCH-004" || err.status === 402) {
           setModal("payment");
-          return;
+          return false;
         }
         alert(err.message);
       } else {
         alert("사이트 운영 상태 변경에 실패했습니다.");
       }
+      return false;
     } finally {
       setPublishLoading(false);
     }
+  }
+
+  // 시작하기 맨 아래 '사이트 오픈' — 필수 4단계 완료 후 공개 + 홈 새 탭 + 기본 정보로 이동.
+  async function onOpenSite() {
+    if (!allRequiredFilled || publishLoading) return;
+    const ok = isPublished ? true : await onTogglePublish();
+    if (!ok) return; // 공개 실패(결제/필수 모달 등) 시 중단
+    if (typeof window !== "undefined") window.open(previewHref, "_blank", "noopener,noreferrer");
+    setActiveSection("site");
   }
 
   const activePage = activeSection.startsWith("page:") ? activeSection.slice(5) : null;
@@ -896,7 +908,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       <main className="admin-main">
         <form onSubmit={onSave} className="admin-layout">
           <aside className="admin-sidebar">
-            {!allRequiredFilled && (
+            {!isPublished && (
               <div className="admin-sidebar-group">
                 <div className="admin-sidebar-eyebrow">시작</div>
                 <button
@@ -1124,38 +1136,28 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       })}
                     </ol>
 
-                    <div className={`onboard-cta ${allRequiredFilled || isPublished ? "ready" : "locked"}`}>
-                      {isPublished ? (
-                        <>
-                          <div className="onboard-cta-text">
-                            <strong>사이트가 공개 중입니다.</strong>
-                            <span>방문자가 홈페이지를 볼 수 있어요.</span>
-                          </div>
-                          <Link href={previewHref} target="_blank" className="btn btn-secondary">
-                            홈페이지 보기
-                          </Link>
-                        </>
-                      ) : allRequiredFilled ? (
-                        <>
-                          <div className="onboard-cta-text">
-                            <strong>이제 사이트를 공개할 수 있어요!</strong>
-                            <span>공개하면 첫 7일 무료 체험이 시작됩니다.</span>
-                          </div>
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-lg"
-                            onClick={onTogglePublish}
-                            disabled={publishLoading}
-                          >
-                            {publishLoading ? "처리 중..." : "사이트 공개하기"}
-                          </button>
-                        </>
-                      ) : (
-                        <div className="onboard-cta-text">
-                          <strong>🔒 필수 {4 - requiredDoneCount}단계를 완료하면 공개할 수 있어요.</strong>
-                          <span>위 단계를 모두 끝내면 ‘사이트 공개하기’ 버튼이 켜집니다.</span>
-                        </div>
-                      )}
+                    <div className={`onboard-cta ${allRequiredFilled ? "ready" : "locked"}`}>
+                      <div className="onboard-cta-text">
+                        {allRequiredFilled ? (
+                          <>
+                            <strong>이제 사이트를 오픈할 수 있어요! 🎉</strong>
+                            <span>오픈하면 첫 7일 무료 체험이 시작되고 홈페이지가 새 탭으로 열립니다.</span>
+                          </>
+                        ) : (
+                          <>
+                            <strong>🔒 필수 {4 - requiredDoneCount}단계를 완료하면 오픈할 수 있어요.</strong>
+                            <span>위 단계를 모두 끝내면 ‘사이트 오픈’ 버튼이 켜집니다.</span>
+                          </>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-lg"
+                        onClick={onOpenSite}
+                        disabled={!allRequiredFilled || publishLoading}
+                      >
+                        {publishLoading ? "오픈 중..." : "사이트 오픈"}
+                      </button>
                     </div>
 
                     <div className="onboard-optional">
