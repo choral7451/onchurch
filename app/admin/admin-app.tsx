@@ -338,8 +338,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
           }
           setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? []));
           setIsPublished(c.isPublished);
-          // 이미 공개(=온보딩 완료)한 교회는 '시작하기' 대신 기본 정보로 진입.
-          if (c.isPublished) setActiveSection("site");
           setChurchExistsOnServer(true);
         }
         if (res?.subscription) setSubscription(res.subscription);
@@ -378,6 +376,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
     { label: "예배 안내", desc: "예배 시간표 1개 이상", done: worshipFilled, target: "page:worship" },
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
+
+  // 필수를 모두 채우면 '시작하기'를 사이드바에서 숨기므로, 그 화면에 머물러 있으면 기본 정보로 이동.
+  useEffect(() => {
+    if (loaded && allRequiredFilled && activeSection === "start") setActiveSection("site");
+  }, [loaded, allRequiredFilled, activeSection]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -820,7 +823,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       <main className="admin-main">
         <form onSubmit={onSave} className="admin-layout">
           <aside className="admin-sidebar">
-            {!isPublished && (
+            {!allRequiredFilled && (
               <div className="admin-sidebar-group">
                 <div className="admin-sidebar-eyebrow">시작</div>
                 <button
