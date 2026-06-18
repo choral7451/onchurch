@@ -65,7 +65,7 @@ async function NoticesContent({ tenant }: { tenant: string }) {
       initialNotices={notices}
       totalCount={totalCount}
       pageSize={PAGE_SIZE}
-      categories={["전체", ...categories]}
+      categories={categories}
       churchName={church?.name ?? ""}
     />
   );

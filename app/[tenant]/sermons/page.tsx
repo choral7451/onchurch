@@ -70,7 +70,8 @@ async function SermonsContent({ tenant }: { tenant: string }) {
     videoUrl: s.videoUrl,
     grad: GRAD_CYCLE[i % GRAD_CYCLE.length],
   }));
-  const filters: string[] = ["전체", ...data.series.map((s) => s.name)];
+  // '전체'는 백엔드의 is_all series(이름 '전체')로 내려온다. 관리자가 '전체'를 삭제하면 칩도 사라진다.
+  const filters: string[] = data.series.map((s) => s.name);
 
   return (
     <>

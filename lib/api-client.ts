@@ -736,6 +736,7 @@ export type NoticeCategoryItem = {
   name: string;
   sortOrder: number;
   isActive: boolean;
+  isAll: boolean;
 };
 
 export type NoticeCategoryWriteInput = {
@@ -751,6 +752,10 @@ export const onchurchNoticeCategory = {
     ),
   create: (input: NoticeCategoryWriteInput) =>
     request<NoticeCategoryItem>("/onchurch/notice-categories/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  restoreAll: () =>
+    request<{ categories: NoticeCategoryItem[] }>("/onchurch/notice-categories/me/all", { method: "POST", auth: true }).then(
+      (r) => r.categories ?? [],
+    ),
   update: (id: number, input: NoticeCategoryWriteInput) =>
     request<NoticeCategoryItem>(`/onchurch/notice-categories/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
   remove: (id: number) =>
@@ -1156,6 +1161,7 @@ export type SermonSeriesItem = {
   name: string;
   sortOrder: number;
   isActive: boolean;
+  isAll: boolean;
 };
 
 export type SermonSeriesWriteInput = {
@@ -1202,6 +1208,10 @@ export const onchurchSermonSeries = {
     ),
   create: (input: SermonSeriesWriteInput) =>
     request<SermonSeriesItem>("/onchurch/sermon-series/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  restoreAll: () =>
+    request<{ series: SermonSeriesItem[] }>("/onchurch/sermon-series/me/all", { method: "POST", auth: true }).then(
+      (r) => r.series ?? [],
+    ),
   update: (id: number, input: SermonSeriesWriteInput) =>
     request<SermonSeriesItem>(`/onchurch/sermon-series/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
   remove: (id: number) =>

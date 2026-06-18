@@ -220,7 +220,7 @@ function SermonItemsEditor({ seriesList }: { seriesList: SermonSeriesItem[] }) {
                 onChange={(e) => setDraft({ ...draft, seriesId: e.target.value === "" ? null : Number(e.target.value) })}
               >
                 <option value="">— 미분류 —</option>
-                {seriesList.map((s) => (
+                {seriesList.filter((s) => !s.isAll).map((s) => (
                   <option key={s.id} value={s.id}>{s.name}{!s.isActive ? " (비공개)" : ""}</option>
                 ))}
               </select>
@@ -333,6 +333,13 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
     finally { setStatus("idle"); }
   }
 
+  async function restoreAll() {
+    setStatus("saving"); setErrMsg("");
+    try { await onchurchSermonSeries.restoreAll(); await load(); onChanged(); }
+    catch (err) { setErrMsg(err instanceof ApiError ? err.message : "'전체' 추가에 실패했습니다."); }
+    finally { setStatus("idle"); }
+  }
+
   async function move(fromIndex: number, toIndex: number) {
     setStatus("saving"); setErrMsg("");
     try {
@@ -351,6 +358,36 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
+      {status !== "loading" && !items.some((it) => it.isAll) && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "12px 16px",
+            borderRadius: "var(--r-md)",
+            background: "var(--surface-2)",
+            border: "1px solid var(--line)",
+            borderLeft: "3px solid var(--accent)",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+            <strong style={{ fontSize: 13.5 }}>‘전체’ 보기가 꺼져 있습니다</strong>
+            <span style={{ color: "var(--muted)", fontSize: 12.5, lineHeight: 1.5 }}>
+              공개 말씀 페이지에서 모든 설교를 한 번에 보여주는 ‘전체’ 칩이 표시되지 않습니다.
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={restoreAll}
+            disabled={editing !== null || status === "saving"}
+            style={{ flexShrink: 0 }}
+          >
+            {status === "saving" ? "추가 중..." : "‘전체’ 보기 켜기"}
+          </button>
+        </div>
+      )}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>+ 카테고리 추가</button>
       </div>
@@ -391,6 +428,9 @@ function SermonSeriesEditor({ onChanged }: { onChanged: () => void }) {
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
+                {it.isAll && (
+                  <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>전체 보기</span>
+                )}
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
