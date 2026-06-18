@@ -468,6 +468,29 @@ export const onchurchMaster = {
     }),
   deleteSmsTemplate: (id: number) =>
     request<unknown>(`/onchurch/master/sms-templates/${id}`, { method: "DELETE", auth: true }),
+
+  listChurches: (params: { keyword?: string; page: number; size: number }) => {
+    const query = new URLSearchParams({ page: String(params.page), size: String(params.size) });
+    if (params.keyword?.trim()) query.set("keyword", params.keyword.trim());
+    return request<{ items: ChurchOverview[]; totalCount: number }>(`/onchurch/master/churches?${query.toString()}`, {
+      method: "GET",
+      auth: true,
+    });
+  },
+};
+
+export type ChurchOverview = {
+  id: number;
+  name: string;
+  slug: string;
+  isPublished: boolean;
+  ownerName: string | null;
+  ownerPhone: string | null;
+  freeTrialStartAt: string | null;
+  freeTrialUntil: string | null;
+  paidUntil: string | null;
+  isFreeTrialActive: boolean;
+  isPaidActive: boolean;
 };
 
 export type EmailTemplate = {
