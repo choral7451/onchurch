@@ -7,13 +7,15 @@ import { ApiError, clearTokens, onchurchUser } from "@/lib/api-client";
 import { BulkEmailFeature } from "./features/bulk-email";
 import { BulkSmsFeature } from "./features/bulk-sms";
 import { ChurchesFeature } from "./features/churches";
+import { LedgerFeature } from "./features/ledger";
 
 // 사이드바 메뉴 + 렌더링할 화면. 새 기능은 여기 한 줄과 render()의 case만 추가하면 된다.
-type SectionKey = "dashboard" | "churches" | "bulk-email" | "bulk-sms";
+type SectionKey = "dashboard" | "churches" | "ledger" | "bulk-email" | "bulk-sms";
 
 const SECTIONS: { key: SectionKey; label: string; icon: (typeof Icon)[keyof typeof Icon] }[] = [
   { key: "dashboard", label: "대시보드", icon: Icon.building },
   { key: "churches", label: "교회 확인", icon: Icon.users },
+  { key: "ledger", label: "가계부", icon: Icon.calendar },
   { key: "bulk-email", label: "대량 메일 발송", icon: Icon.mail },
   { key: "bulk-sms", label: "대량 문자 발송", icon: Icon.phone },
 ];
@@ -126,6 +128,7 @@ export function MasterApp() {
         <div className="p-8">
           {section === "dashboard" && <Dashboard />}
           {section === "churches" && <ChurchesFeature />}
+          {section === "ledger" && <LedgerFeature />}
           {section === "bulk-email" && <BulkEmailFeature />}
           {section === "bulk-sms" && <BulkSmsFeature />}
         </div>

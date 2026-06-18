@@ -478,6 +478,40 @@ export const onchurchMaster = {
       auth: true,
     });
   },
+
+  createLedgerEntry: (input: { entryDate: string; type: LedgerType; amount: number; category: string; memo?: string }) =>
+    request<LedgerEntry>("/onchurch/master/ledger", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(input),
+    }),
+  listLedger: (params: { month?: string; page: number; size: number }) => {
+    const query = new URLSearchParams({ page: String(params.page), size: String(params.size) });
+    if (params.month?.trim()) query.set("month", params.month.trim());
+    return request<LedgerListResult>(`/onchurch/master/ledger?${query.toString()}`, { method: "GET", auth: true });
+  },
+  deleteLedgerEntry: (id: number) =>
+    request<unknown>(`/onchurch/master/ledger/${id}`, { method: "DELETE", auth: true }),
+};
+
+export type LedgerType = "income" | "expense";
+
+export type LedgerEntry = {
+  id: number;
+  entryDate: string;
+  type: LedgerType;
+  amount: number;
+  category: string;
+  memo: string | null;
+  createdAt: string;
+};
+
+export type LedgerListResult = {
+  items: LedgerEntry[];
+  totalCount: number;
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
 };
 
 export type ChurchOverview = {
