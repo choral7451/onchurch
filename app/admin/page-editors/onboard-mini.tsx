@@ -65,7 +65,7 @@ export function OnboardPastorName({ onChanged }: { onChanged?: () => void }) {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder={status === "loading" ? "불러오는 중..." : "홍길동 목사"}
+          placeholder={status === "loading" ? "불러오는 중..." : "홍길동"}
           disabled={status === "loading"}
           style={{ flex: 1 }}
         />
