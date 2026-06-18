@@ -566,13 +566,38 @@ export function AdminApp({ initial }: { initial: Initial }) {
     }
   }
 
+  // 페이지를 끄면, 그 페이지를 가리키던 홈 바로가기를 빼고
+  // 대신 켜져 있는 다른 페이지 하나를 자동으로 채운 뒤 관리자에게 알린다.
+  function syncQuickLinksAfterPageOff(pageId: string, nextBoards: Record<string, boolean>) {
+    const removed = QUICK_LINK_DEFS.find((d) => d.kind === "page" && d.pageId === pageId);
+    if (!removed) return;
+    const effective = homeQuickLinks.length ? homeQuickLinks : [...DEFAULT_QUICK_LINK_KEYS];
+    if (!effective.includes(removed.key)) return;
+
+    const remaining = effective.filter((k) => k !== removed.key);
+    const replacement = QUICK_LINK_DEFS.find(
+      (d) => d.kind === "page" && d.pageId != null && (nextBoards[d.pageId] ?? true) && !remaining.includes(d.key),
+    );
+    const set = new Set(replacement ? [...remaining, replacement.key] : remaining);
+    const nextKeys = QUICK_LINK_DEFS.filter((d) => set.has(d.key)).map((d) => d.key);
+    void persistHomeQuickLinks(nextKeys);
+
+    const msg = replacement
+      ? `‘${removed.title}’ 페이지를 꺼서 홈 바로가기에서 빼고 ‘${replacement.title}’를 추가했어요.`
+      : `‘${removed.title}’ 페이지를 꺼서 홈 바로가기에서 제외했어요.`;
+    setQuickLimitMsg(msg);
+    window.setTimeout(() => setQuickLimitMsg(""), 3600);
+  }
+
   function toggleBoard(id: string) {
     if (id === "about") return;
+    const willTurnOff = !!boards[id];
     setBoards((prev) => {
       const next = { ...prev, [id]: !prev[id] };
       void persistEnabledPages(next);
       return next;
     });
+    if (willTurnOff) syncQuickLinksAfterPageOff(id, { ...boards, [id]: false });
   }
 
   function setAboutSubSection(key: "vision" | "history" | "staff", on: boolean) {
@@ -725,6 +750,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   return (
     <div className="admin-shell">
+      {quickLimitMsg && (
+        <div
+          role="alert"
+          style={{
+            position: "fixed", left: "50%", bottom: 28, transform: "translateX(-50%)", zIndex: 2000,
+            background: "var(--primary-deep)", color: "#fff", padding: "12px 20px", borderRadius: 999,
+            fontSize: 13.5, fontWeight: 600, boxShadow: "0 8px 24px oklch(0 0 0 / 0.25)",
+          }}
+        >
+          {quickLimitMsg}
+        </div>
+      )}
       <header className="admin-topbar">
         <div className="admin-topbar-inner">
           <Link href="/admin" className="brand">
@@ -1220,18 +1257,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 };
                 return (
                   <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
-                    {quickLimitMsg && (
-                      <div
-                        role="alert"
-                        style={{
-                          position: "fixed", left: "50%", bottom: 28, transform: "translateX(-50%)", zIndex: 2000,
-                          background: "var(--primary-deep)", color: "#fff", padding: "12px 20px", borderRadius: 999,
-                          fontSize: 13.5, fontWeight: 600, boxShadow: "0 8px 24px oklch(0 0 0 / 0.25)",
-                        }}
-                      >
-                        {quickLimitMsg}
-                      </div>
-                    )}
                     <h3 style={{ margin: "0 0 4px", fontSize: 16 }}>홈 바로가기 <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 400 }}>(최대 {MAX_QUICK}개 · {selected.length}/{MAX_QUICK})</span></h3>
                     <p className="form-hint" style={{ marginBottom: 14 }}>
                       홈 메인에 노출할 바로가기 항목을 최대 {MAX_QUICK}개까지 선택하세요. 선택해도 해당 페이지가 꺼져 있거나 URL이 없으면 노출되지 않습니다.
