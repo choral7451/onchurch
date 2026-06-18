@@ -10,7 +10,6 @@ import {
   onchurchStaff,
   onchurchNotice,
   onchurchWorshipService,
-  onchurchWorshipOrder,
   uploadImages,
   type Church,
   type BulletinWorshipOrderItem,
@@ -114,13 +113,13 @@ export function BulletinEditor() {
     }
   }
 
-  // 현재 사이트에 저장된 데이터로 예배순서·예배시간·섬기는분들·소식을 다시 채움
+  // 현재 사이트에 저장된 데이터로 예배시간·섬기는분들·소식을 다시 채움
+  // (예배 순서는 주보에서 직접 입력 — 사이트 prefill 대상이 아님)
   async function fillFromSite({ silent = false }: { silent?: boolean } = {}) {
     if (!silent && !confirm("현재 사이트에 저장된 정보로 다시 불러올까요? 지금 입력한 내용은 덮어쓰여집니다.")) return;
     try {
-      const [services, orders, staff, noticeRes] = await Promise.all([
+      const [services, staff, noticeRes] = await Promise.all([
         onchurchWorshipService.listMine().catch(() => []),
-        onchurchWorshipOrder.listMine().catch(() => []),
         onchurchStaff.listMine().catch(() => []),
         onchurchNotice.listMine().catch(() => ({ notices: [] })),
       ]);
@@ -129,9 +128,6 @@ export function BulletinEditor() {
         worshipServices: services
           .filter((s) => s.isActive)
           .map((s) => ({ name: s.name, time: s.time, meta: s.meta })),
-        worshipOrder: orders
-          .filter((o) => o.isActive)
-          .map((o) => ({ item: o.item, detail: "", leader: o.leader })),
         staff: staff
           .filter((s) => s.isActive)
           .map((s) => ({ name: s.name, role: s.role, area: s.area })),

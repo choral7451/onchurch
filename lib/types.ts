@@ -156,7 +156,6 @@ export type SiteData = {
   nav: NavItem[];
   hero: { feature: HeroFeature; sideList: NewsItem[] };
   worshipServices: WorshipService[];
-  worshipOrder: [string, string, string][];
   sermons: Sermon[];
   sermonFilters: string[];
   departments: Department[];

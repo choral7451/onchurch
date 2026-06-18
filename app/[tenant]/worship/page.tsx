@@ -12,8 +12,8 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   return buildChurchMetadata(church, pastor, {
     pageTitle: "예배 안내",
     path: "/worship",
-    pageDescription: `${church.name}의 주일·주중·새벽 예배 시간과 예배 순서를 안내합니다.${church.address ? ` 위치: ${church.address}.` : ""}`,
-    extraKeywords: ["예배 안내", "주일예배", "수요예배", "새벽기도", "예배 시간", "예배 순서"],
+    pageDescription: `${church.name}의 주일·주중·새벽 예배 시간을 안내합니다.${church.address ? ` 위치: ${church.address}.` : ""}`,
+    extraKeywords: ["예배 안내", "주일예배", "수요예배", "새벽기도", "예배 시간"],
   });
 }
 
@@ -28,16 +28,8 @@ type WorshipServiceItem = {
   isFeatured: boolean;
 };
 
-type WorshipOrderItem = {
-  id: number;
-  no: string;
-  item: string;
-  leader: string | null;
-};
-
 type WorshipData = {
   services: WorshipServiceItem[];
-  orders: WorshipOrderItem[];
 };
 
 async function fetchWorship(slug: string): Promise<WorshipData> {
@@ -46,21 +38,19 @@ async function fetchWorship(slug: string): Promise<WorshipData> {
     const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/worship`, {
       cache: "no-store",
     });
-    if (!res.ok) return { services: [], orders: [] };
+    if (!res.ok) return { services: [] };
     const body = await res.json();
     return {
       services: (body?.item?.services ?? []) as WorshipServiceItem[],
-      orders: (body?.item?.orders ?? []) as WorshipOrderItem[],
     };
   } catch {
-    return { services: [], orders: [] };
+    return { services: [] };
   }
 }
 
 async function WorshipContent({ tenant }: { tenant: string }) {
   const data = await fetchWorship(tenant);
   const services = data.services;
-  const orders = data.orders;
   const weekServices = services.filter((s) => s.tag === "WEEK");
   const dailyServices = services.filter((s) => s.tag === "DAILY");
 
@@ -76,35 +66,6 @@ async function WorshipContent({ tenant }: { tenant: string }) {
         <p style={{ color: "var(--muted)", textAlign: "center", padding: "40px 0" }}>
           등록된 예배가 없습니다.
         </p>
-      )}
-
-      {orders.length > 0 && (
-        <div style={{ marginTop: 64 }}>
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">Order of Worship</span>
-              <h2>주일예배 순서</h2>
-            </div>
-          </div>
-          <div className="card" style={{ padding: 0 }}>
-            {orders.map((row, i) => (
-              <div
-                key={row.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "60px 1fr 200px",
-                  padding: "18px 28px",
-                  borderBottom: i < orders.length - 1 ? "1px solid var(--line-2)" : "none",
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--accent)", fontWeight: 600 }}>{row.no}</div>
-                <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 16, letterSpacing: "-0.01em" }}>{row.item}</div>
-                <div style={{ fontSize: 13, color: "var(--muted)" }}>{row.leader ?? ""}</div>
-              </div>
-            ))}
-          </div>
-        </div>
       )}
     </>
   );

@@ -75,7 +75,7 @@ function buildPreviewUrl(slug: string): string {
 
 const BOARD_DESCRIPTIONS: Record<string, string> = {
   about: "담임목사 인사 · 비전 · 연혁 · 섬김의 사람들",
-  worship: "주일/수요/새벽 예배 안내 · 예배 순서",
+  worship: "주일/수요/새벽 예배 안내",
   sermons: "설교 영상 · 카테고리 필터",
   notices: "공지사항",
   schedule: "행사 캘린더 · 다가오는 일정",
