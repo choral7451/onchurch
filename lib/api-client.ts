@@ -402,13 +402,13 @@ export type EmailRecipientResult = {
   reason: string | null;
 };
 
-export type BulkEmailResult = {
+// 대량 메일 발송 "접수" 응답 — 실제 발송은 큐 워커가 백그라운드로 처리한다.
+export type EnqueueBulkEmailResult = {
+  logId: number;
   total: number;
-  sent: number;
-  failed: number;
-  excluded: number;
-  results: EmailRecipientResult[];
 };
+
+export type EmailLogStatus = "queued" | "processing" | "completed";
 
 export type EmailLog = {
   id: number;
@@ -421,16 +421,19 @@ export type EmailLog = {
   sent: number;
   failed: number;
   excluded: number;
+  status: EmailLogStatus;
   createdAt: string;
 };
 
 export const onchurchMaster = {
   sendBulkEmail: (input: { subject: string; content: string; recipients: string[] }) =>
-    request<BulkEmailResult>("/onchurch/master/emails", {
+    request<EnqueueBulkEmailResult>("/onchurch/master/emails", {
       method: "POST",
       auth: true,
       body: JSON.stringify(input),
     }),
+  getEmailLog: (id: number) =>
+    request<EmailLog>(`/onchurch/master/emails/${id}`, { method: "GET", auth: true }),
   listEmailLogs: (params: { keyword?: string; page: number; size: number }) => {
     const query = new URLSearchParams({ page: String(params.page), size: String(params.size) });
     if (params.keyword?.trim()) query.set("keyword", params.keyword.trim());

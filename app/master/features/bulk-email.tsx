@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ApiError, onchurchMaster, type BulkEmailResult, type EmailTemplate } from "@/lib/api-client";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ApiError, onchurchMaster, type EmailLog, type EmailTemplate } from "@/lib/api-client";
 import { EmailHistoryFeature } from "./email-history";
+
+const POLL_INTERVAL_MS = 1500;
 
 // 붙여넣은 텍스트(줄바꿈/쉼표/세미콜론/공백 구분)에서 이메일 목록을 추출한다.
 function parseRecipients(raw: string): string[] {
@@ -27,8 +29,18 @@ export function BulkEmailFeature() {
 
   const [state, setState] = useState<SendState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [result, setResult] = useState<BulkEmailResult | null>(null);
+  const [progress, setProgress] = useState<EmailLog | null>(null); // 발송 중 진행 상황(폴링)
+  const [result, setResult] = useState<EmailLog | null>(null); // 발송 완료 결과
   const [historyKey, setHistoryKey] = useState(0);
+
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 언마운트 시 진행 중인 폴링 정리
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+    };
+  }, []);
 
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
@@ -91,9 +103,31 @@ export function BulkEmailFeature() {
     }
   }
 
+  // 발송 로그를 주기적으로 조회해 진행 상황을 갱신하고, 완료되면 결과로 확정한다.
+  function pollLog(logId: number) {
+    const tick = async () => {
+      try {
+        const log = await onchurchMaster.getEmailLog(logId);
+        setProgress(log);
+        if (log.status === "completed") {
+          setResult(log);
+          setProgress(null);
+          setState("done");
+          setHistoryKey((k) => k + 1); // 완료 후 오른쪽 내역 새로고침
+          return;
+        }
+      } catch {
+        // 일시적 조회 실패는 무시하고 다음 주기에 재시도
+      }
+      pollTimerRef.current = setTimeout(tick, POLL_INTERVAL_MS);
+    };
+    tick();
+  }
+
   async function handleSend() {
     setErrorMsg("");
     setResult(null);
+    setProgress(null);
     if (!subject.trim()) {
       setErrorMsg("제목을 입력해주세요.");
       return;
@@ -110,15 +144,15 @@ export function BulkEmailFeature() {
 
     setState("sending");
     try {
-      const res = await onchurchMaster.sendBulkEmail({ subject: subject.trim(), content, recipients });
-      setResult(res);
-      setState("done");
-      setHistoryKey((k) => k + 1); // 발송 후 오른쪽 내역 새로고침
+      const { logId } = await onchurchMaster.sendBulkEmail({ subject: subject.trim(), content, recipients });
+      // 접수 완료 — 발송은 백그라운드로 진행되며 진행 상황을 폴링한다.
+      setHistoryKey((k) => k + 1); // 접수되자마자 내역에 노출
       // 발송 후 입력 초기화
       setSubject("");
       setContent("");
       setRecipientsRaw("");
       setSelectedTemplateId("");
+      pollLog(logId);
     } catch (err) {
       setState("error");
       setErrorMsg(err instanceof ApiError ? err.message : "발송 중 오류가 발생했습니다.");
@@ -205,6 +239,31 @@ export function BulkEmailFeature() {
         </div>
 
         {errorMsg && <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{errorMsg}</div>}
+
+        {state === "sending" && (
+          <div className="rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            <p className="font-semibold">발송 중…</p>
+            {progress ? (
+              <>
+                <p className="mt-1">
+                  {progress.sent + progress.failed + progress.excluded} / {progress.total} 처리됨 (성공 {progress.sent} · 제외{" "}
+                  {progress.excluded} · 실패 {progress.failed})
+                </p>
+                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-blue-100">
+                  <div
+                    className="h-full bg-blue-500 transition-all"
+                    style={{
+                      width: `${progress.total ? Math.round(((progress.sent + progress.failed + progress.excluded) / progress.total) * 100) : 0}%`,
+                    }}
+                  />
+                </div>
+              </>
+            ) : (
+              <p className="mt-1">발송을 접수했습니다. 진행 상황을 불러오는 중…</p>
+            )}
+            <p className="mt-2 text-xs text-blue-600">이 창을 닫아도 발송은 백그라운드에서 계속 진행됩니다.</p>
+          </div>
+        )}
 
         {result && (
           <div className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-700">
