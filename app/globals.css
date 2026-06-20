@@ -202,9 +202,9 @@ main { flex: 1; }
 .news-item-pin { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); color: var(--muted); display: grid; place-items: center; }
 
 /* Quick strip */
-/* 카드 개수(1~4개)에 따라 칸이 비지 않도록: 4개면 한 줄을 채우고, 그보다 적으면 카드 크기를 유지한 채 가운데 정렬한다. */
-.quick-strip { margin-top: 72px; display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
-.quick-card { flex: 1 1 240px; max-width: 300px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 26px; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; transition: all 0.2s ease; cursor: pointer; }
+/* 카드 개수(--quick-count, 1~4)만큼 칸을 나눠 한 줄을 꽉 채운다. 2개면 반반, 3개면 1/3씩. (모바일·태블릿은 아래 미디어쿼리에서 2열 고정) */
+.quick-strip { margin-top: 72px; display: grid; grid-template-columns: repeat(var(--quick-count, 4), 1fr); gap: 16px; }
+.quick-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 26px; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; transition: all 0.2s ease; cursor: pointer; }
 .quick-card:hover { border-color: oklch(0.62 0.14 245 / 0.5); transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .quick-card-icon { width: 44px; height: 44px; border-radius: 12px; background: oklch(0.62 0.14 245 / 0.1); color: var(--primary); display: grid; place-items: center; transition: all 0.18s ease; }
 .quick-card:hover .quick-card-icon { background: var(--primary); color: white; }
@@ -1012,8 +1012,7 @@ main { flex: 1; }
   .news-item-date .day { font-size: 18px; }
   .news-item-title { font-size: 13.5px; }
   .quick-strip { margin-top: 40px; gap: 10px; }
-  /* 모바일에서는 카드가 화면 폭을 꽉 채우도록 폭 제한 해제 */
-  .quick-card { padding: 18px 16px; gap: 10px; max-width: none; }
+  .quick-card { padding: 18px 16px; gap: 10px; }
   .quick-card-title { font-size: 15px; }
   .quick-card-desc { font-size: 12.5px; }
   .worship-grid { grid-template-columns: 1fr; }

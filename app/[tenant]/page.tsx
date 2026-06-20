@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, type CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -443,7 +443,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
     quick: quickItems.length > 0 ? (
       <section className="hero hero-quick-only">
         <div className="container">
-          <div className="quick-strip">
+          <div className="quick-strip" style={{ "--quick-count": Math.min(quickItems.length, 4) } as CSSProperties}>
             {quickItems.map(({ def, href, external }) => {
               const QuickIcon = Icon[def.ic];
               const inner = (
