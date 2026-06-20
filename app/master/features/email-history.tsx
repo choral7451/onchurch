@@ -25,6 +25,7 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [openId, setOpenId] = useState<number | null>(null);
+  const [showRaw, setShowRaw] = useState(false); // 본문 미리보기/원본 전환
 
   const seqRef = useRef(0); // 검색어/리로드 변경 시 진행 중인 요청을 무효화하기 위한 토큰
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -120,7 +121,10 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
             <div key={log.id} className="rounded-lg border border-gray-200 bg-white">
               <button
                 type="button"
-                onClick={() => setOpenId(open ? null : log.id)}
+                onClick={() => {
+                  setShowRaw(false);
+                  setOpenId(open ? null : log.id);
+                }}
                 className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
               >
                 <div className="min-w-0">
@@ -178,12 +182,36 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
                     );
                   })()}
                   <div>
-                    <p className="text-xs font-semibold text-gray-500">본문</p>
-                    <div
-                      style={EMAIL_BODY_STYLE}
-                      className="mt-1 break-words rounded-lg bg-gray-50 px-3 py-2"
-                      dangerouslySetInnerHTML={{ __html: buildPreviewHtml(log.content) }}
-                    />
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-gray-500">본문</p>
+                      <div className="inline-flex overflow-hidden rounded-lg border border-gray-300 text-xs font-medium">
+                        <button
+                          type="button"
+                          onClick={() => setShowRaw(false)}
+                          className={`px-3 py-1 transition ${!showRaw ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+                        >
+                          미리보기
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowRaw(true)}
+                          className={`px-3 py-1 transition ${showRaw ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+                        >
+                          원본
+                        </button>
+                      </div>
+                    </div>
+                    {showRaw ? (
+                      <pre className="mt-1 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-gray-50 px-3 py-2 font-mono text-xs text-gray-700">
+                        {log.content}
+                      </pre>
+                    ) : (
+                      <div
+                        style={EMAIL_BODY_STYLE}
+                        className="mt-1 break-words rounded-lg bg-gray-50 px-3 py-2"
+                        dangerouslySetInnerHTML={{ __html: buildPreviewHtml(log.content) }}
+                      />
+                    )}
                   </div>
                 </div>
               )}
