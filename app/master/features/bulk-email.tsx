@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ApiError, onchurchMaster, type EmailLog, type EmailTemplate } from "@/lib/api-client";
 import { EmailHistoryFeature } from "./email-history";
+import { buildPreviewHtml, EMAIL_BODY_STYLE } from "./email-html";
 
 const POLL_INTERVAL_MS = 1500;
 
@@ -21,14 +22,6 @@ function parseRecipients(raw: string): string[] {
 }
 
 type SendState = "idle" | "sending" | "done" | "error";
-
-// 백엔드 buildHtml과 동일한 규칙으로 본문을 렌더링한다(미리보기를 실제 발송과 일치시키기 위함).
-//  - HTML 태그가 포함되면: 그대로 사용(줄바꿈 변환하지 않음)
-//  - 일반 텍스트면: 줄바꿈만 <br/>로 변환
-function buildPreviewHtml(content: string): string {
-  const looksLikeHtml = /<\/?[a-z][^>]*>/i.test(content);
-  return looksLikeHtml ? content : content.replace(/\r\n/g, "\n").replace(/\n/g, "<br />");
-}
 
 export function BulkEmailFeature() {
   const [subject, setSubject] = useState("");
@@ -246,7 +239,7 @@ export function BulkEmailFeature() {
             <div className="mt-2 min-h-[18rem] w-full overflow-auto rounded-lg border border-gray-300 bg-white px-3 py-2">
               {content.trim() ? (
                 <div
-                  style={{ fontFamily: "'Apple SD Gothic Neo', sans-serif", fontSize: 15, lineHeight: 1.7, color: "#222" }}
+                  style={EMAIL_BODY_STYLE}
                   className="break-words"
                   dangerouslySetInnerHTML={{ __html: buildPreviewHtml(content) }}
                 />

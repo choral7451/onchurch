@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, onchurchMaster, type EmailLog } from "@/lib/api-client";
+import { buildPreviewHtml, EMAIL_BODY_STYLE } from "./email-html";
 
 const PAGE_SIZE = 20;
 
@@ -178,9 +179,11 @@ export function EmailHistoryFeature({ reloadKey = 0 }: { reloadKey?: number }) {
                   })()}
                   <div>
                     <p className="text-xs font-semibold text-gray-500">본문</p>
-                    <div className="mt-1 whitespace-pre-wrap rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">
-                      {log.content}
-                    </div>
+                    <div
+                      style={EMAIL_BODY_STYLE}
+                      className="mt-1 break-words rounded-lg bg-gray-50 px-3 py-2"
+                      dangerouslySetInnerHTML={{ __html: buildPreviewHtml(log.content) }}
+                    />
                   </div>
                 </div>
               )}
