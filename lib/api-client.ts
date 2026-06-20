@@ -21,6 +21,7 @@ export type Church = {
   logoUrl: string | null;
   youtubeUrl: string | null;
   instagramUrl: string | null;
+  naverVerification: string | null;
   liveUrl: string | null;
   isLive: boolean;
   liveStartedAt: string | null;
@@ -52,6 +53,7 @@ export type UpsertChurchInput = {
   logoUrl?: string | null;
   youtubeUrl?: string | null;
   instagramUrl?: string | null;
+  naverVerification?: string | null;
   liveUrl?: string | null;
   isLive?: boolean;
   enabledPages: string[];
@@ -641,6 +643,7 @@ export const onchurchChurch = {
         logoUrl: input.logoUrl ?? null,
         youtubeUrl: input.youtubeUrl ?? null,
         instagramUrl: input.instagramUrl ?? null,
+        naverVerification: input.naverVerification ?? null,
         liveUrl: input.liveUrl ?? null,
         isLive: input.isLive ?? false,
         enabledPages: input.enabledPages,

@@ -156,6 +156,11 @@ export async function buildChurchMetadata(
 
   const logo = church.logoUrl ?? undefined;
 
+  // <meta name="..."> 추가 항목. 교회별 네이버 사이트 인증 코드가 있으면 해당 교회 페이지에만 주입한다.
+  const other: Record<string, string> = {};
+  if (church.address) other["geo.placename"] = church.address;
+  if (compact(church.naverVerification)) other["naver-site-verification"] = church.naverVerification!.trim();
+
   return {
     metadataBase: new URL(origin),
     // absolute: 루트 레이아웃의 "%s | 온교회" template을 무시하고 교회 제목만 노출
@@ -187,7 +192,7 @@ export async function buildChurchMetadata(
       description,
       images: logo ? [logo] : undefined,
     },
-    other: church.address ? { "geo.placename": church.address } : undefined,
+    other: Object.keys(other).length > 0 ? other : undefined,
   };
 }
 

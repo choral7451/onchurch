@@ -17,6 +17,7 @@ export type PublicChurch = {
   logoUrl: string | null;
   youtubeUrl: string | null;
   instagramUrl: string | null;
+  naverVerification: string | null;
   liveUrl: string | null;
   isLive: boolean;
   liveStartedAt: string | null;
