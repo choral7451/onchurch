@@ -37,13 +37,20 @@ const PAGE_SIZE = 20;
 async function fetchNoticesFirstPage(slug: string): Promise<{ notices: Notice[]; totalCount: number; categories: string[] }> {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
   try {
-    const [listRes, catsRes] = await Promise.all([
-      fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/notices?page=1&size=${PAGE_SIZE}`, { cache: "no-store" }),
-      fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/notice-categories`, { cache: "no-store" }),
-    ]);
-    const listBody = listRes.ok ? await listRes.json() : null;
+    // 카테고리를 먼저 받아 기본 선택 카테고리(첫번째)를 정한다.
+    // '전체'가 있으면 isAll 정렬로 첫번째가 '전체'이고, 백엔드는 '전체'를 필터 없음으로 처리한다.
+    // '전체'가 없으면 첫번째 실제 카테고리로 첫 페이지를 필터한다.
+    const catsRes = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/notice-categories`, { cache: "no-store" });
     const catsBody = catsRes.ok ? await catsRes.json() : null;
     const categories = ((catsBody?.item?.categories ?? []) as { name: string }[]).map((c) => c.name);
+
+    const defaultCategory = categories[0];
+    const categoryQuery = defaultCategory ? `&category=${encodeURIComponent(defaultCategory)}` : "";
+    const listRes = await fetch(
+      `${base}/onchurch/sites/${encodeURIComponent(slug)}/notices?page=1&size=${PAGE_SIZE}${categoryQuery}`,
+      { cache: "no-store" },
+    );
+    const listBody = listRes.ok ? await listRes.json() : null;
     return {
       notices: (listBody?.item?.notices ?? []) as Notice[],
       totalCount: (listBody?.item?.totalCount ?? 0) as number,

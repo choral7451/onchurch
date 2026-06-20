@@ -85,19 +85,27 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
     }
   }, [loading, switching, hasMore, page, cat, query, slug, pageSize, total]);
 
+  // 옵저버 콜백이 항상 최신 loadMore를 참조하도록 ref로 보관한다.
+  // (loadMore를 의존성에 직접 넣으면 매 페이지 로드마다 옵저버가 재생성되고,
+  //  새 옵저버가 '교차 중' 상태를 즉시 다시 보고해 끝 페이지까지 연쇄 호출되는 버그가 생긴다.)
+  const loadMoreRef = useRef(loadMore);
+  useEffect(() => {
+    loadMoreRef.current = loadMore;
+  }, [loadMore]);
+
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) void loadMore();
+        if (entries[0]?.isIntersecting) void loadMoreRef.current();
       },
       { rootMargin: "400px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [loadMore]);
+  }, [hasMore]);
 
   useEffect(() => {
     if (!active) return;
