@@ -964,6 +964,8 @@ main { flex: 1; }
 @media (max-width: 960px) {
   .hero-inner, .pastor-section, .calendar-wrap, .bible-hero { grid-template-columns: 1fr; }
   .quick-strip, .worship-grid, .dept-grid { grid-template-columns: repeat(2, 1fr); }
+  /* 2열에서 마지막 카드가 홀수번째로 혼자 남으면(예: 3개) 두 칸을 꽉 채워 빈칸이 없게 한다. */
+  .quick-strip .quick-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .sermon-grid { grid-template-columns: 1fr 1fr; }
   .footer-grid { grid-template-columns: 1fr; gap: 32px; padding-bottom: 32px; }
   .form-grid { grid-template-columns: 1fr; }
