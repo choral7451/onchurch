@@ -987,6 +987,8 @@ main { flex: 1; }
   .utilbar-left span { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .utilbar-right { flex-shrink: 0; }
   .top-banner-section { padding: 16px; }
+  /* 모바일에서는 배너 텍스트(제목·설명)를 노출하지 않는다. 데스크탑에서만 보인다. */
+  .top-banner-inner { display: none; }
   .top-banner-nav { width: 32px; height: 32px; font-size: 18px; }
   .top-banner-nav.prev { left: 8px; }
   .top-banner-nav.next { right: 8px; }
