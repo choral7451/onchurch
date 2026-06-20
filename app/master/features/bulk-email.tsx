@@ -22,12 +22,21 @@ function parseRecipients(raw: string): string[] {
 
 type SendState = "idle" | "sending" | "done" | "error";
 
+// 백엔드 buildHtml과 동일한 규칙으로 본문을 렌더링한다(미리보기를 실제 발송과 일치시키기 위함).
+//  - HTML 태그가 포함되면: 그대로 사용(줄바꿈 변환하지 않음)
+//  - 일반 텍스트면: 줄바꿈만 <br/>로 변환
+function buildPreviewHtml(content: string): string {
+  const looksLikeHtml = /<\/?[a-z][^>]*>/i.test(content);
+  return looksLikeHtml ? content : content.replace(/\r\n/g, "\n").replace(/\n/g, "<br />");
+}
+
 export function BulkEmailFeature() {
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [recipientsRaw, setRecipientsRaw] = useState("");
 
   const [state, setState] = useState<SendState>("idle");
+  const [showPreview, setShowPreview] = useState(false); // 본문 작성/미리보기 전환
   const [errorMsg, setErrorMsg] = useState("");
   const [progress, setProgress] = useState<EmailLog | null>(null); // 발송 중 진행 상황(폴링)
   const [result, setResult] = useState<EmailLog | null>(null); // 발송 완료 결과
@@ -213,15 +222,47 @@ export function BulkEmailFeature() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700">본문</label>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-semibold text-gray-700">본문</label>
+            <div className="inline-flex overflow-hidden rounded-lg border border-gray-300 text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                className={`px-3 py-1.5 transition ${!showPreview ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+              >
+                작성
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPreview(true)}
+                className={`px-3 py-1.5 transition ${showPreview ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+              >
+                미리보기
+              </button>
+            </div>
+          </div>
           <p className="mt-1 text-xs text-gray-400">줄바꿈은 그대로 반영됩니다. HTML 태그(링크 등)도 사용할 수 있습니다.</p>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={12}
-            placeholder="메일 본문을 입력하세요."
-            className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-          />
+          {showPreview ? (
+            <div className="mt-2 min-h-[18rem] w-full overflow-auto rounded-lg border border-gray-300 bg-white px-3 py-2">
+              {content.trim() ? (
+                <div
+                  style={{ fontFamily: "'Apple SD Gothic Neo', sans-serif", fontSize: 15, lineHeight: 1.7, color: "#222" }}
+                  className="break-words"
+                  dangerouslySetInnerHTML={{ __html: buildPreviewHtml(content) }}
+                />
+              ) : (
+                <p className="text-sm text-gray-400">미리볼 본문이 없습니다.</p>
+              )}
+            </div>
+          ) : (
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={12}
+              placeholder="메일 본문을 입력하세요."
+              className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            />
+          )}
         </div>
 
         <div>
