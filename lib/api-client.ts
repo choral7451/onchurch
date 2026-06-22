@@ -496,6 +496,22 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ paidUntil }),
     }),
+  // 오너 이관 대상 후보 검색(마스터 제외). 검색어가 비면 빈 목록.
+  searchUsers: (keyword: string) => {
+    const query = new URLSearchParams();
+    if (keyword.trim()) query.set("keyword", keyword.trim());
+    return request<{ items: OwnerCandidate[] }>(`/onchurch/master/users?${query.toString()}`, {
+      method: "GET",
+      auth: true,
+    });
+  },
+  // 교회 소유자를 지정한 사용자에게 이관. 기존 오너는 일반 멤버로 강등됨.
+  transferChurchOwner: (churchId: number, userId: number) =>
+    request<{ ownerId: number; ownerName: string; ownerPhone: string }>(`/onchurch/master/churches/${churchId}/owner`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ userId }),
+    }),
 
   createLedgerEntry: (input: { entryDate: string; type: LedgerType; amount: number; category: string; memo?: string }) =>
     request<LedgerEntry>("/onchurch/master/ledger", {
@@ -545,6 +561,15 @@ export type ChurchOverview = {
   paidUntil: string | null;
   isFreeTrialActive: boolean;
   isPaidActive: boolean;
+};
+
+export type OwnerCandidate = {
+  id: number;
+  name: string;
+  loginId: string;
+  phone: string;
+  role: "master" | "owner" | "admin" | "member";
+  churchName: string | null;
 };
 
 export type EmailTemplate = {

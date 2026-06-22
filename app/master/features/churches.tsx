@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, onchurchMaster, type ChurchOverview } from "@/lib/api-client";
+import { TransferOwnerModal } from "./transfer-owner-modal";
 
 const PAGE_SIZE = 30;
 
@@ -205,6 +206,14 @@ export function ChurchesFeature() {
     setItems((prev) => prev.map((c) => (c.id === id ? { ...c, paidUntil, isPaidActive } : c)));
   }, []);
 
+  // 소유자 이관 모달 대상 교회
+  const [transferTarget, setTransferTarget] = useState<ChurchOverview | null>(null);
+
+  // 이관 완료 후 해당 행의 소유자 정보만 갱신
+  const handleTransferred = useCallback((churchId: number, ownerName: string, ownerPhone: string) => {
+    setItems((prev) => prev.map((c) => (c.id === churchId ? { ...c, ownerName, ownerPhone } : c)));
+  }, []);
+
   return (
     <div>
       <h2 className="text-xl font-bold text-gray-900">교회 확인</h2>
@@ -241,7 +250,7 @@ export function ChurchesFeature() {
 
         {status !== "loading" && items.length > 0 && (
           <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="w-full min-w-[1160px] border-collapse text-sm">
+            <table className="w-full min-w-[1280px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500">
                   <th className="px-4 py-3">교회이름</th>
@@ -251,6 +260,7 @@ export function ChurchesFeature() {
                   <th className="px-4 py-3">소유자 연락처</th>
                   <th className="px-4 py-3">프리티어 기간</th>
                   <th className="px-4 py-3">결제기간</th>
+                  <th className="px-4 py-3">관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -286,6 +296,15 @@ export function ChurchesFeature() {
                     <td className="px-4 py-3">
                       <PaidUntilEditor church={c} onUpdated={handlePaidUpdated} />
                     </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setTransferTarget(c)}
+                        className="whitespace-nowrap rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
+                      >
+                        오너 이관
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -297,6 +316,14 @@ export function ChurchesFeature() {
         {hasMore && <div ref={sentinelRef} className="h-1" />}
         {loadingMore && <p className="py-2 text-center text-xs text-gray-400">더 불러오는 중…</p>}
       </div>
+
+      {transferTarget && (
+        <TransferOwnerModal
+          church={transferTarget}
+          onClose={() => setTransferTarget(null)}
+          onTransferred={(ownerName, ownerPhone) => handleTransferred(transferTarget.id, ownerName, ownerPhone)}
+        />
+      )}
     </div>
   );
 }
