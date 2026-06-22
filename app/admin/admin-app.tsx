@@ -222,7 +222,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [address, setAddress] = useState(initial.brand.address);
   const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
   const [instagramUrl, setInstagramUrl] = useState<string | null>(null);
-  const [naverVerification, setNaverVerification] = useState<string | null>(null);
   const [liveUrl, setLiveUrl] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [liveSaving, setLiveSaving] = useState(false);
@@ -335,7 +334,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
           if (c.logoUrl) setLogoPreview(c.logoUrl);
           setYoutubeUrl(c.youtubeUrl ?? null);
           setInstagramUrl(c.instagramUrl ?? null);
-          setNaverVerification(c.naverVerification ?? null);
           setHomeQuickLinks(c.homeQuickLinks ?? []);
           setLiveUrl(c.liveUrl ?? null);
           setIsLive(c.isLive ?? false);
@@ -472,7 +470,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
         instagramUrl: instagramUrl?.trim() || null,
-        naverVerification: naverVerification?.trim() || null,
         liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
@@ -512,7 +509,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
         instagramUrl: instagramUrl?.trim() || null,
-        naverVerification: naverVerification?.trim() || null,
         liveUrl: nextLiveUrl?.trim() || null,
         isLive: nextIsLive,
         enabledPages,
@@ -547,7 +543,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
         instagramUrl: instagramUrl?.trim() || null,
-        naverVerification: naverVerification?.trim() || null,
         liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
@@ -580,7 +575,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
         instagramUrl: instagramUrl?.trim() || null,
-        naverVerification: naverVerification?.trim() || null,
         liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
@@ -671,7 +665,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
         logoUrl: logoPreview || null,
         youtubeUrl: youtubeUrl?.trim() || null,
         instagramUrl: instagramUrl?.trim() || null,
-        naverVerification: naverVerification?.trim() || null,
         liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
@@ -1418,17 +1411,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           placeholder="https://www.instagram.com/yourchurch"
                         />
                         <p className="form-hint">입력하면 홈 바로가기에 &lsquo;인스타그램&rsquo;을 추가할 수 있습니다. (홈 구성 메뉴에서 노출 항목 선택)</p>
-                      </div>
-                      <div className="form-row full">
-                        <label htmlFor="ad-naver-verification">네이버 사이트 인증 코드</label>
-                        <input
-                          id="ad-naver-verification"
-                          type="text"
-                          value={naverVerification ?? ""}
-                          onChange={(e) => setNaverVerification(e.target.value)}
-                          placeholder="예: 2203903c3ef5b89d1291aeb50cc607c3a81c2dd4"
-                        />
-                        <p className="form-hint">네이버 서치어드바이저에서 발급한 인증 코드(meta 태그의 content 값)만 입력하세요. 저장하면 이 교회 사이트에 자동으로 적용되어 소유확인을 할 수 있습니다.</p>
                       </div>
                     </div>
                     {sectionSaveBar}
