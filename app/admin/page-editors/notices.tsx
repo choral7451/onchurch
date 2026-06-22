@@ -6,6 +6,7 @@ import {
   onchurchNotice,
   onchurchNoticeCategory,
   uploadImages,
+  uploadFiles,
   type Notice,
   type NoticeWriteInput,
   type NoticeCategoryItem,
@@ -23,11 +24,18 @@ const EMPTY_INPUT: NoticeWriteInput = {
   title: "",
   content: "",
   imageUrls: [],
+  attachments: [],
   author: "",
   isPinned: false,
   isActive: true,
   publishedAt: null,
 };
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 const EMPTY_CATEGORY: NoticeCategoryWriteInput = {
   name: "",
@@ -83,7 +91,9 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<NoticeWriteInput>(EMPTY_INPUT);
   const [uploading, setUploading] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { void load(); }, []);
 
@@ -112,6 +122,7 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
       title: n.title,
       content: n.content ?? "",
       imageUrls: n.imageUrls ?? [],
+      attachments: n.attachments ?? [],
       author: n.author ?? "",
       isPinned: n.isPinned,
       isActive: n.isActive,
@@ -139,6 +150,26 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
     setDraft((d) => ({ ...d, imageUrls: (d.imageUrls ?? []).filter((u) => u !== url) }));
   }
 
+  async function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploadingFile(true);
+    setErrMsg("");
+    try {
+      const uploaded = await uploadFiles(files);
+      setDraft((d) => ({ ...d, attachments: [...(d.attachments ?? []), ...uploaded] }));
+    } catch (err) {
+      setErrMsg(err instanceof ApiError ? err.message : "파일 업로드에 실패했습니다.");
+    } finally {
+      setUploadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  function removeAttachment(url: string) {
+    setDraft((d) => ({ ...d, attachments: (d.attachments ?? []).filter((a) => a.url !== url) }));
+  }
+
   function cancel() {
     setEditingId(null);
     setDraft(EMPTY_INPUT);
@@ -158,6 +189,7 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
         title: draft.title.trim(),
         content: draft.content?.trim() || null,
         imageUrls: draft.imageUrls ?? [],
+        attachments: draft.attachments ?? [],
         author: draft.author?.trim() || null,
         isPinned: !!draft.isPinned,
         isActive: !!draft.isActive,
@@ -288,6 +320,25 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
                   <Icon.image style={{ width: 14, height: 14 }} />
                   {uploading ? "업로드 중..." : "이미지 추가"}
                 </button>
+              </div>
+            </div>
+            <div className="form-row full">
+              <label>첨부파일</label>
+              <input ref={fileInputRef} type="file" multiple onChange={onPickFiles} style={{ display: "none" }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {(draft.attachments ?? []).map((a) => (
+                  <div key={a.url} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", border: "1px solid var(--line)", borderRadius: 8 }}>
+                    <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13 }}>{a.name}</span>
+                    <span style={{ flexShrink: 0, fontSize: 12, color: "var(--muted)" }}>{formatBytes(a.size)}</span>
+                    <button type="button" onClick={() => removeAttachment(a.url)} aria-label="첨부파일 제거" style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: 12, lineHeight: "20px" }}>×</button>
+                  </div>
+                ))}
+                <div>
+                  <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={uploadingFile}>
+                    {uploadingFile ? "업로드 중..." : "파일 추가"}
+                  </button>
+                </div>
+                <p className="form-hint" style={{ fontSize: 12 }}>이미지 외 문서·압축파일 등을 올리면 소식에서 다운로드할 수 있습니다. (파일당 최대 32MB)</p>
               </div>
             </div>
           </div>

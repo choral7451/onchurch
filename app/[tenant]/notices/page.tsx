@@ -25,6 +25,7 @@ type Notice = {
   title: string;
   content: string | null;
   imageUrls: string[];
+  attachments: { url: string; name: string; size: number; mimeType: string }[];
   author: string | null;
   isPinned: boolean;
   isActive: boolean;

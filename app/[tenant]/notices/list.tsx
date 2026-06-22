@@ -13,6 +13,12 @@ function formatDate(iso: string | null): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 type Props = {
   slug: string;
   initialNotices: Notice[];
@@ -236,13 +242,33 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
               {active.content ? (
                 <div className="notice-modal-content">{active.content}</div>
               ) : (
-                !active.imageUrls?.length && <div className="notice-modal-content empty">내용이 없습니다.</div>
+                !active.imageUrls?.length && !active.attachments?.length && (
+                  <div className="notice-modal-content empty">내용이 없습니다.</div>
+                )
               )}
               {active.imageUrls?.length > 0 && (
                 <div className="notice-modal-images" style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
                   {active.imageUrls.map((url) => (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img key={url} src={url} alt="" style={{ width: "100%", borderRadius: 8 }} />
+                  ))}
+                </div>
+              )}
+              {active.attachments?.length > 0 && (
+                <div className="notice-modal-files" style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+                  {active.attachments.map((a) => (
+                    <a
+                      key={a.url}
+                      href={a.url}
+                      download={a.name}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", border: "1px solid var(--line, #e5e7eb)", borderRadius: 8, textDecoration: "none", color: "inherit" }}
+                    >
+                      <span aria-hidden style={{ flexShrink: 0 }}>📎</span>
+                      <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 14 }}>{a.name}</span>
+                      <span style={{ flexShrink: 0, fontSize: 12, color: "var(--muted, #6b7280)" }}>{formatBytes(a.size)}</span>
+                    </a>
                   ))}
                 </div>
               )}

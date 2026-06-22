@@ -324,6 +324,36 @@ export async function uploadImages(files: File[]): Promise<UploadedImage[]> {
   return (body?.item?.images ?? []) as UploadedImage[];
 }
 
+export type UploadedFile = {
+  url: string;
+  name: string;
+  size: number;
+  mimeType: string;
+};
+
+// 이미지 외 일반 첨부파일 업로드(다운로드용). 원본 파일명·크기·MIME을 함께 반환한다.
+export async function uploadFiles(files: File[]): Promise<UploadedFile[]> {
+  if (!files.length) return [];
+  const accessToken = getAccessToken();
+  const form = new FormData();
+  files.forEach((f) => form.append("files", f));
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+  const res = await fetch(`${API_BASE}/system/upload/files`, {
+    method: "POST",
+    headers,
+    body: form,
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    const code = body?.code ?? "ERROR";
+    const rawMessage = body?.message;
+    const message = Array.isArray(rawMessage) ? rawMessage.join("\n") : rawMessage ?? "파일 업로드에 실패했습니다.";
+    throw new ApiError(message, code, res.status);
+  }
+  return (body?.item?.files ?? []) as UploadedFile[];
+}
+
 export type FoundAccount = {
   loginId: string;
   name: string;
@@ -745,6 +775,13 @@ export const onchurchBanner = {
     }),
 };
 
+export type NoticeAttachment = {
+  url: string;
+  name: string;
+  size: number;
+  mimeType: string;
+};
+
 export type Notice = {
   id: number;
   seqNo: number | null;
@@ -752,6 +789,7 @@ export type Notice = {
   title: string;
   content: string | null;
   imageUrls: string[];
+  attachments: NoticeAttachment[];
   author: string | null;
   isPinned: boolean;
   isActive: boolean;
@@ -764,6 +802,7 @@ export type NoticeWriteInput = {
   title: string;
   content?: string | null;
   imageUrls?: string[];
+  attachments?: NoticeAttachment[];
   author?: string | null;
   isPinned: boolean;
   isActive: boolean;
@@ -813,6 +852,7 @@ export const onchurchNotice = {
         title: input.title,
         content: input.content ?? null,
         imageUrls: input.imageUrls ?? [],
+        attachments: input.attachments ?? [],
         author: input.author ?? null,
         isPinned: input.isPinned,
         isActive: input.isActive,
@@ -828,6 +868,7 @@ export const onchurchNotice = {
         title: input.title,
         content: input.content ?? null,
         imageUrls: input.imageUrls ?? [],
+        attachments: input.attachments ?? [],
         author: input.author ?? null,
         isPinned: input.isPinned,
         isActive: input.isActive,
