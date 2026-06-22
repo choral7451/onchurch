@@ -146,6 +146,9 @@ export function BannersEditor() {
         <div className="admin-section-eyebrow">BANNERS</div>
         <h2>홈 상단 배너</h2>
         <p>홈페이지 최상단에 노출되는 배너입니다. 등록된 배너가 없으면 기본 환영 배너가 자동으로 표시됩니다.</p>
+        <p style={{ marginTop: 4, color: "var(--muted)", fontSize: 13 }}>
+          배너는 <strong>가로:세로 16:9 비율</strong>로 표시됩니다. 권장 크기 <strong>1920×1080</strong>(또는 1280×720)으로 올리면 잘리지 않습니다. 다른 비율의 이미지는 가운데를 기준으로 잘릴 수 있습니다.
+        </p>
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -182,7 +185,7 @@ export function BannersEditor() {
                     <button type="button" className="btn btn-secondary" onClick={() => imageInputRef.current?.click()} disabled={uploading}>
                       {uploading ? "업로드 중..." : draft.imageUrl ? "이미지 교체" : "이미지 업로드"}
                     </button>
-                    <span className="form-hint" style={{ fontSize: 12 }}>JPG/PNG · 최대 32MB</span>
+                    <span className="form-hint" style={{ fontSize: 12 }}>권장 16:9 · 1920×1080 · JPG/PNG · 최대 32MB</span>
                   </div>
                 </div>
               </div>
