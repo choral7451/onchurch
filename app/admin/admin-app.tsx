@@ -278,6 +278,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [aboutFilled, setAboutFilled] = useState(false);
   const [worshipFilled, setWorshipFilled] = useState(false);
 
+  // 시작하기 단계의 초록 체크는 '저장된 값' 기준으로 표시한다(입력 중에는 변하지 않음).
+  const [savedRequired, setSavedRequired] = useState({ slug: "", name: "", phone: "", email: "", address: "" });
+
   async function refreshRequiredStatus() {
     try {
       const [pastorRes, services, churchRes] = await Promise.all([
@@ -333,6 +336,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
           setPhone(c.phone ?? "");
           setEmail(c.email ?? "");
           setAddress(c.address ?? "");
+          setSavedRequired({
+            slug: c.slug ?? "",
+            name: c.name ?? "",
+            phone: c.phone ?? "",
+            email: c.email ?? "",
+            address: c.address ?? "",
+          });
           if (c.logoUrl) setLogoPreview(c.logoUrl);
           setYoutubeUrl(c.youtubeUrl ?? null);
           setInstagramUrl(c.instagramUrl ?? null);
@@ -377,8 +387,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const [slugCheck, setSlugCheck] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const trimmedSlug = slug.trim();
-  const siteRequiredFilled = !!trimmedSlug && !!name.trim() && slugCheck !== "taken";
-  const contactRequiredFilled = !!phone.trim() && !!email.trim() && !!address.trim();
+  // 저장된 값 기준 — 입력만 하고 저장하지 않으면 체크가 켜지지 않는다.
+  const siteRequiredFilled = !!savedRequired.slug.trim() && !!savedRequired.name.trim();
+  const contactRequiredFilled = !!savedRequired.phone.trim() && !!savedRequired.email.trim() && !!savedRequired.address.trim();
   const allRequiredFilled = siteRequiredFilled && contactRequiredFilled && aboutFilled && worshipFilled;
 
   // 사이트 공개에 꼭 필요한 4단계 — '시작하기' 화면과 사이드바 진척 표시에 함께 사용.
@@ -675,6 +686,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
       });
       setIsPublished(updated.isPublished);
       setChurchExistsOnServer(true);
+      setSavedRequired({
+        slug,
+        name,
+        phone: phone || "",
+        email: email || "",
+        address: address || "",
+      });
       setSave("saved");
       setTimeout(() => setSave("idle"), 2000);
     } catch (err) {
