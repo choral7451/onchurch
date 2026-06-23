@@ -449,8 +449,9 @@ main { flex: 1; }
 .notice-row.clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 /* Notice modal */
-.notice-modal-backdrop { position: fixed; inset: 0; background: oklch(0 0 0 / 0.6); z-index: 1100; display: grid; place-items: center; padding: 20px; animation: nav-fade-in 0.18s ease; }
-.notice-modal { background: var(--surface); border-radius: var(--r-lg); width: 100%; max-width: 640px; max-height: calc(100vh - 40px); overflow: hidden; position: relative; box-shadow: 0 20px 60px -10px oklch(0 0 0 / 0.4); display: flex; flex-direction: column; }
+/* 모바일 주소창 영역을 제외한 실제 보이는 높이(dvh) 기준으로 잡아, 모달 상단의 닫기(×)가 잘리지 않게 한다. */
+.notice-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; height: 100dvh; background: oklch(0 0 0 / 0.6); z-index: 1100; display: grid; place-items: center; padding: 20px; animation: nav-fade-in 0.18s ease; }
+.notice-modal { background: var(--surface); border-radius: var(--r-lg); width: 100%; max-width: 640px; max-height: calc(100dvh - 40px); overflow: hidden; position: relative; box-shadow: 0 20px 60px -10px oklch(0 0 0 / 0.4); display: flex; flex-direction: column; }
 .notice-modal-close { position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border-radius: 50%; background: var(--surface-2); color: var(--ink); border: none; cursor: pointer; font-size: 22px; line-height: 1; display: grid; place-items: center; z-index: 2; transition: background 0.12s ease; }
 .notice-modal-close:hover { background: var(--line); }
 .notice-modal-body { padding: 28px 32px 28px; overflow-y: auto; }
@@ -463,6 +464,8 @@ main { flex: 1; }
 .notice-modal-content { font-size: 14.5px; color: var(--ink-2); line-height: 1.8; white-space: pre-wrap; margin: 0; }
 .notice-modal-content.empty { color: var(--muted); font-style: italic; }
 @media (max-width: 640px) {
+  .notice-modal-backdrop { padding: 12px; }
+  .notice-modal { max-height: calc(100dvh - 24px); }
   .notice-modal-body { padding: 24px 22px 22px; }
   .notice-modal-title { font-size: 19px; }
 }
