@@ -1632,21 +1632,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   필수 항목(<strong>기본정보</strong>·<strong>연락처</strong>·<strong>교회 소개</strong>·<strong>예배 안내</strong>)이 모두 입력되어야 사이트를 운영할 수 있습니다.
                 </p>
                 <div className="admin-modal-actions">
-                  <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>
+                  <button type="button" className="btn btn-primary" onClick={() => setModal(null)}>
                     닫기
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => {
-                      setModal(null);
-                      if (!siteRequiredFilled) setActiveSection("site");
-                      else if (!contactRequiredFilled) setActiveSection("contact");
-                      else if (!aboutFilled) setActiveSection("page:about" as SectionKey);
-                      else if (!worshipFilled) setActiveSection("page:worship" as SectionKey);
-                    }}
-                  >
-                    필수 정보 입력하기
                   </button>
                 </div>
               </>
