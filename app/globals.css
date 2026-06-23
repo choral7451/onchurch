@@ -891,7 +891,6 @@ main { flex: 1; }
 .onboard-cta .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 .onboard-optional { margin-top: 8px; padding-top: 20px; border-top: 1px solid var(--line); }
-.onboard-optional-head { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); margin-bottom: 12px; }
 .onboard-optional-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .onboard-optional-item { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease; }
 .onboard-optional-item:hover { border-color: var(--accent); color: var(--accent); background: oklch(0.62 0.14 245 / 0.05); }

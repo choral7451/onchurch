@@ -1160,7 +1160,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     </div>
 
                     <div className="onboard-optional">
-                      <div className="onboard-optional-head">선택 — 나중에 해도 됩니다</div>
                       <div className="onboard-optional-list">
                         {([
                           { label: "로고 등록", target: "logo" },
