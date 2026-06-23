@@ -406,6 +406,23 @@ export function AdminApp({ initial }: { initial: Initial }) {
     if (loaded && onboardingDone && activeSection === "start") setActiveSection("site");
   }, [loaded, onboardingDone, activeSection]);
 
+  // 시작하기 화면: 처음 진입 시(및 저장으로 어떤 단계든 완료 상태가 바뀔 때마다)
+  // 가장 빠른 미완료 단계만 펼친다. 완료된 단계는 닫히고 다음 미완료 단계가 열린다.
+  // 완료 플래그가 바뀔 때만 동작하므로, 사용자가 수동으로 펼친 단계는 영향받지 않는다.
+  useEffect(() => {
+    if (!loaded) return;
+    const next: SectionKey | null = !siteRequiredFilled
+      ? "site"
+      : !contactRequiredFilled
+        ? "contact"
+        : !aboutFilled
+          ? ("page:about" as SectionKey)
+          : !worshipFilled
+            ? ("page:worship" as SectionKey)
+            : null;
+    setOpenStep(next);
+  }, [loaded, siteRequiredFilled, contactRequiredFilled, aboutFilled, worshipFilled]);
+
   useEffect(() => {
     if (!loaded) return;
     if (slugLocked) {
