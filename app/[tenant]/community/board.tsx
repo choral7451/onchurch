@@ -370,7 +370,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
         </div>
       ) : posts.length === 0 && !loading ? (
         <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>
-          아직 등록된 글이 없습니다. {loggedIn ? "첫 글을 남겨보세요!" : "로그인 후 첫 글을 남겨보세요!"}
+          아직 등록된 글이 없습니다.<br className="mobile-only-br" /> {loggedIn ? "첫 글을 남겨보세요!" : "로그인 후 첫 글을 남겨보세요!"}
         </div>
       ) : (
         <div className="community-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>

@@ -463,7 +463,10 @@ main { flex: 1; }
 .notice-modal-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted-2); }
 .notice-modal-content { font-size: 14.5px; color: var(--ink-2); line-height: 1.8; white-space: pre-wrap; margin: 0; }
 .notice-modal-content.empty { color: var(--muted); font-style: italic; }
+/* 데스크톱에선 한 줄, 모바일에선 줄바꿈하는 보조 개행. */
+.mobile-only-br { display: none; }
 @media (max-width: 640px) {
+  .mobile-only-br { display: inline; }
   .notice-modal-backdrop { padding: 12px; }
   .notice-modal { max-height: calc(100dvh - 24px); }
   .notice-modal-body { padding: 24px 22px 22px; }
