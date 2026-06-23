@@ -378,6 +378,8 @@ export const onchurchAuth = {
     phone: string;
     marketingConsent?: boolean;
     churchSlug?: string | null;
+    referralSource?: "naver" | "instagram" | "mail" | "etc" | "";
+    referralSourceEtc?: string | null;
   }) =>
     request<AuthTokens>("/onchurch/auths/sign-up", {
       method: "POST",

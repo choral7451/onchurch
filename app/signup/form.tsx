@@ -6,8 +6,16 @@ import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
 
 type PhoneStatus = "idle" | "code-sent" | "verifying" | "verified";
 type FormStatus = "idle" | "submitting" | "error" | "success";
+type ReferralSource = "" | "naver" | "instagram" | "mail" | "etc";
 
 const CODE_TTL_SECONDS = 300;
+
+const REFERRAL_OPTIONS: { value: Exclude<ReferralSource, ""> ; label: string }[] = [
+  { value: "naver", label: "네이버" },
+  { value: "instagram", label: "인스타그램" },
+  { value: "mail", label: "메일" },
+  { value: "etc", label: "기타" },
+];
 
 function formatPhone(raw: string) {
   const d = raw.replace(/[^0-9]/g, "").slice(0, 11);
@@ -28,6 +36,8 @@ export function SignupForm() {
   const [phoneSending, setPhoneSending] = useState(false);
   const [phoneMsg, setPhoneMsg] = useState<{ kind: "info" | "error" | "success"; text: string } | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [referralSource, setReferralSource] = useState<ReferralSource>("");
+  const [referralEtc, setReferralEtc] = useState("");
   const [agree, setAgree] = useState(false);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -113,6 +123,8 @@ export function SignupForm() {
         name,
         phone,
         marketingConsent: false,
+        referralSource,
+        referralSourceEtc: referralSource === "etc" ? referralEtc.trim() : null,
       });
       saveTokens(tokens);
       setStatus("success");
@@ -130,6 +142,8 @@ export function SignupForm() {
     pwConfirm.length >= 8 &&
     pw === pwConfirm &&
     phoneStatus === "verified" &&
+    !!referralSource &&
+    (referralSource !== "etc" || !!referralEtc.trim()) &&
     agree &&
     status !== "submitting";
 
@@ -270,6 +284,36 @@ export function SignupForm() {
           <div className={`phone-msg phone-msg-${phoneMsg.kind}`} style={{ marginTop: 8 }}>
             {phoneMsg.text}
           </div>
+        )}
+      </div>
+
+      <div className="form-row full">
+        <label htmlFor="signup-referral">유입경로</label>
+        <select
+          id="signup-referral"
+          value={referralSource}
+          onChange={(e) => setReferralSource(e.target.value as ReferralSource)}
+          required
+        >
+          <option value="" disabled>
+            가입 경로를 선택해주세요
+          </option>
+          {REFERRAL_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        {referralSource === "etc" && (
+          <input
+            type="text"
+            placeholder="유입경로를 직접 입력해주세요"
+            value={referralEtc}
+            onChange={(e) => setReferralEtc(e.target.value)}
+            maxLength={200}
+            required
+            style={{ marginTop: 8 }}
+          />
         )}
       </div>
 
