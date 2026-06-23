@@ -97,11 +97,13 @@ function formatYMD(iso: string): string {
 }
 
 function daysLeft(iso: string): number {
-  const end = new Date(iso).getTime();
-  if (Number.isNaN(end)) return 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.max(0, Math.ceil((end - today.getTime()) / (24 * 60 * 60 * 1000)));
+  const end = new Date(iso);
+  if (Number.isNaN(end.getTime())) return 0;
+  // 시·분 단위 잔여시간이 올림되지 않도록 달력 날짜(연·월·일)끼리 차이를 센다.
+  const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  const now = new Date();
+  const todayDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(0, Math.round((endDay.getTime() - todayDay.getTime()) / (24 * 60 * 60 * 1000)));
 }
 
 function SubscriptionBadge({ subscription }: { subscription: Subscription | null }) {
