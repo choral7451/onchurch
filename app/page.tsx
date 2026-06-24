@@ -276,7 +276,7 @@ export default async function LandingPage() {
                 ))}
               </ul>
               <HideWhenAuthed>
-                <Link href="/login" className="btn btn-primary btn-lg" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
+                <Link href="/signup" className="btn btn-primary btn-lg" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
                   7일 무료로 시작 <Icon.arrow style={{ width: 14, height: 14 }} />
                 </Link>
                 <p className="price-note">사이트 운영을 시작하면 7일 무료 체험이 자동으로 시작됩니다.</p>
@@ -319,7 +319,7 @@ export default async function LandingPage() {
           <p className="cta-banner-desc">월 1만원, 첫 7일 무료. 신청 후 5분이면 발급됩니다.</p>
           <HideWhenAuthed>
             <div className="cta-banner-buttons">
-              <Link href="/login" className="btn btn-primary btn-lg" style={{ background: "white", color: "var(--primary-deep)" }}>
+              <Link href="/signup" className="btn btn-primary btn-lg" style={{ background: "white", color: "var(--primary-deep)" }}>
                 <Icon.mail style={{ width: 16, height: 16 }} />
                 지금 시작하기
               </Link>
