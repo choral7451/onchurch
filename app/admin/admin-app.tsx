@@ -998,10 +998,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </Link>
               </>
             )}
-            <button type="button" className="btn btn-ghost" onClick={onLogout}>
-              로그아웃
-            </button>
           </div>
+          <button type="button" className="btn btn-ghost admin-logout" onClick={onLogout}>
+            로그아웃
+          </button>
         </div>
       </header>
 

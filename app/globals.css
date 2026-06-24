@@ -702,6 +702,8 @@ main { flex: 1; }
 .admin-topbar-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .admin-topbar-actions { display: flex; gap: 8px; align-items: center; }
 .admin-action-label-mobile { display: none; }
+/* 브랜드가 남은 공간을 흡수해 액션 그룹과 로그아웃을 우측으로 모은다. */
+.admin-topbar-inner .brand { margin-right: auto; }
 
 .admin-main { flex: 1; padding: 0 0 80px; }
 .admin-layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 68px); }
@@ -1070,8 +1072,9 @@ main { flex: 1; }
   .brand-logo { width: 32px; height: 32px; }
   .brand-name { font-size: 15px; }
   .brand-eng { font-size: 9px; letter-spacing: 0.14em; }
-  /* 액션들은 전체폭 둘째 줄에서 고르게 펼친다. */
-  .admin-topbar-actions { flex: 1 1 100%; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+  /* 윗줄: 브랜드(좌) — 로그아웃(우). 아랫줄: 액션 툴바(기간·스위치·홈페이지) 전체폭. */
+  .admin-logout { order: 2; }
+  .admin-topbar-actions { order: 3; flex: 1 1 100%; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
   .admin-publish-toggle { padding: 5px 8px 5px 10px; gap: 8px; }
   .admin-publish-toggle-label { font-size: 12px; gap: 6px; }
   .admin-sub-badge { padding: 5px 8px; gap: 6px; font-size: 11px; }
