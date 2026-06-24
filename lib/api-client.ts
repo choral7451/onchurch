@@ -745,6 +745,14 @@ export type AttendanceSession = {
   count: number;
 };
 
+export type AttendanceStats = {
+  weeks: number;
+  windowDates: number;
+  trend: { date: string; count: number }[];
+  byService: { serviceType: string; occurrences: number; total: number }[];
+  perSaint: { saintId: number; count: number }[];
+};
+
 export const onchurchAttendance = {
   getSession: (date: string, serviceType: string) =>
     request<{ saintIds: number[] }>(
@@ -761,6 +769,8 @@ export const onchurchAttendance = {
     request<{ sessions: AttendanceSession[] }>("/onchurch/attendances/me/sessions", { method: "GET", auth: true }).then(
       (r) => r.sessions ?? [],
     ),
+  stats: (weeks: number) =>
+    request<AttendanceStats>(`/onchurch/attendances/me/stats?weeks=${weeks}`, { method: "GET", auth: true }),
 };
 
 export const onchurchChurch = {
