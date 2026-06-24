@@ -316,12 +316,14 @@ function SaintDetail({
   onEdit,
   onRemove,
   onBack,
+  onOpenSaint,
   busy,
 }: {
   saint: ChurchSaint;
   onEdit: () => void;
   onRemove: () => void;
   onBack: () => void;
+  onOpenSaint: (saintId: number) => void;
   busy: boolean;
 }) {
   const [relations, setRelations] = useState<SaintRelation[]>([]);
@@ -388,11 +390,17 @@ function SaintDetail({
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {relations.map((r) => (
-              <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)" }}>
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => onOpenSaint(r.relatedSaintId)}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", background: "var(--surface)" }}
+              >
                 <SaintAvatar url={r.relatedSaintPhotoUrl} name={r.relatedSaintName} size={32} />
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{r.relatedSaintName}</span>
                 <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>{r.relation}</span>
-              </div>
+                <span aria-hidden="true" style={{ marginLeft: "auto", color: "var(--muted-2)", fontSize: 16 }}>›</span>
+              </button>
             ))}
           </div>
         )}
@@ -563,6 +571,7 @@ export function SaintsEditor() {
             onEdit={() => startEdit(detailSaint)}
             onRemove={() => remove(detailSaint)}
             onBack={() => setDetailId(null)}
+            onOpenSaint={(id) => { setDetailId(id); setEditing(null); setErrMsg(""); }}
             busy={busy}
           />
         ) : (
