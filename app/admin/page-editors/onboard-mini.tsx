@@ -60,21 +60,20 @@ export function OnboardPastorName({ onChanged }: { onChanged?: () => void }) {
       <label htmlFor="ob-pastor">
         담임목사 성함 <span className="required-mark" aria-hidden="true">*</span>
       </label>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <input
-          id="ob-pastor"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={status === "loading" ? "불러오는 중..." : "홍길동"}
-          disabled={status === "loading"}
-          style={{ flex: 1 }}
-        />
+      <input
+        id="ob-pastor"
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder={status === "loading" ? "불러오는 중..." : "홍길동"}
+        disabled={status === "loading"}
+      />
+      <p className="form-hint">교회 소개 페이지에서 인사말·사진 등 나머지는 나중에 추가할 수 있습니다.</p>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={save} disabled={status !== "idle" || !name.trim()}>
           {status === "saving" ? "저장 중..." : "저장"}
         </button>
       </div>
-      <p className="form-hint">교회 소개 페이지에서 인사말·사진 등 나머지는 나중에 추가할 수 있습니다.</p>
       {msg && <span className="phone-msg phone-msg-success">{msg}</span>}
       {err && <span className="phone-msg phone-msg-error">{err}</span>}
     </div>
