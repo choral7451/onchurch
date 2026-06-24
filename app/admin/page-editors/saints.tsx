@@ -532,7 +532,7 @@ export function SaintsEditor() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                  <button type="button" className="btn btn-ghost" onClick={() => startEdit(s)} disabled={editing !== null}>편집</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => startEdit(s)} disabled={status === "saving" || status === "deleting"}>편집</button>
                   <button type="button" className="btn btn-ghost" onClick={() => remove(s)} disabled={status === "deleting"}>삭제</button>
                 </div>
               </div>
