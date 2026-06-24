@@ -56,6 +56,26 @@ function isValidEmail(v: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 }
 
+// 숫자만 입력하면 YYYY-MM-DD 형태로 하이픈을 자동 삽입한다.
+function formatDateInput(v: string): string {
+  const d = v.replace(/[^0-9]/g, "").slice(0, 8);
+  if (d.length <= 4) return d;
+  if (d.length <= 6) return `${d.slice(0, 4)}-${d.slice(4)}`;
+  return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
+}
+
+function isValidDate(v: string): boolean {
+  if (!v.trim()) return true; // 선택 항목
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
+  if (!m) return false;
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return false;
+  const dt = new Date(year, month - 1, day);
+  return dt.getFullYear() === year && dt.getMonth() === month - 1 && dt.getDate() === day;
+}
+
 function PhotoUploadField({
   value,
   onChange,
@@ -348,6 +368,14 @@ export function SaintsEditor() {
       setErrMsg("이메일 형식이 올바르지 않습니다.");
       return;
     }
+    if (!isValidDate(draft.birthDate ?? "")) {
+      setErrMsg("생년월일 형식이 올바르지 않습니다. 예) 1990-01-15");
+      return;
+    }
+    if (!isValidDate(draft.ordinationDate ?? "")) {
+      setErrMsg("임직일 형식이 올바르지 않습니다. 예) 2015-03-20");
+      return;
+    }
     setStatus("saving");
     setErrMsg("");
     try {
@@ -451,7 +479,14 @@ export function SaintsEditor() {
               </div>
               <div className="form-row">
                 <label>생년월일</label>
-                <input type="date" value={draft.birthDate ?? ""} onChange={(e) => setDraft({ ...draft, birthDate: e.target.value || null })} />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={draft.birthDate ?? ""}
+                  onChange={(e) => setDraft({ ...draft, birthDate: formatDateInput(e.target.value) || null })}
+                  placeholder="YYYY-MM-DD"
+                  maxLength={10}
+                />
               </div>
               <div className="form-row">
                 <label>연락처</label>
@@ -477,7 +512,14 @@ export function SaintsEditor() {
               </div>
               <div className="form-row">
                 <label>임직일</label>
-                <input type="date" value={draft.ordinationDate ?? ""} onChange={(e) => setDraft({ ...draft, ordinationDate: e.target.value || null })} />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={draft.ordinationDate ?? ""}
+                  onChange={(e) => setDraft({ ...draft, ordinationDate: formatDateInput(e.target.value) || null })}
+                  placeholder="YYYY-MM-DD"
+                  maxLength={10}
+                />
               </div>
               <div className="form-row">
                 <label>신급</label>
