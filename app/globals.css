@@ -950,6 +950,8 @@ main { flex: 1; }
 
 .admin-savebar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 4px; }
 .admin-savebar-msg { flex: 1; min-width: 0; }
+/* phone-msg는 기본 inline이라 세로 패딩+테두리가 줄 밖으로 삐져나온다. 저장 바에서는 블록 박스로 렌더. */
+.admin-savebar-msg .phone-msg { display: inline-block; }
 .admin-savebar-actions { display: flex; gap: 10px; align-items: center; }
 
 @media (max-width: 960px) {
