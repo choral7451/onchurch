@@ -412,10 +412,11 @@ main { flex: 1; }
 .form-row input, .form-row select, .form-row textarea { font-family: inherit; font-size: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--ink); transition: border-color 0.15s ease; }
 .form-row input:focus, .form-row select:focus, .form-row textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px oklch(0.62 0.14 245 / 0.12); }
 .form-row textarea { resize: vertical; min-height: 120px; }
-/* iOS Safari는 input 폰트가 16px 미만이면 포커스 시 화면을 자동 확대한다.
-   모바일에서는 모든 입력 요소의 폰트를 최소 16px로 올려 어느 페이지에서든 자동 확대를 막는다. */
+/* iOS Safari는 input 폰트가 16px 미만이면 포커스 시 화면을 자동 확대한다(확대되면 좌우 스크롤도 생김).
+   모바일에서는 모든 입력 요소의 폰트를 16px로 강제한다. .form-row input(14px) 등 더 구체적인 규칙을
+   확실히 덮어쓰기 위해 !important를 쓴다 — 우선순위에 밀리면 자동 확대가 그대로 발생한다. */
 @media (max-width: 640px) {
-  input, select, textarea { font-size: 16px; }
+  input, select, textarea { font-size: 16px !important; }
 }
 .checkbox-row { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--ink-2); line-height: 1.55; }
 .checkbox-row input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 1.5px solid var(--line); border-radius: 5px; background: var(--surface); cursor: pointer; position: relative; flex-shrink: 0; margin: 1px 0 0; padding: 0; transition: border-color 0.15s ease, background 0.15s ease; }
@@ -1090,6 +1091,22 @@ main { flex: 1; }
   .editor-row-staff { grid-template-columns: 48px 1fr; }
   .editor-row-staff > *:nth-child(n+3) { grid-column: span 2; }
   .board-list { grid-template-columns: 1fr; }
+
+  /* 시작하기(온보딩) 화면 모바일 최적화 */
+  .admin-section-body { padding: 18px 20px 24px; gap: 14px; }
+  .onboard-progress-top { flex-wrap: wrap; gap: 8px; }
+  .onboard-progress-top strong { font-size: 14px; }
+  .onboard-steps { gap: 8px; }
+  .onboard-step-head { padding: 14px 14px; gap: 11px; }
+  .onboard-step-num { width: 26px; height: 26px; }
+  .onboard-step-body strong { font-size: 14px; }
+  .onboard-step-body span { font-size: 12px; }
+  .onboard-step-toggle { font-size: 12px; }
+  .onboard-step-panel { padding: 14px; gap: 14px; }
+  /* CTA는 텍스트 위 / 버튼 아래 전체폭으로 스택 */
+  .onboard-cta { flex-direction: column; align-items: stretch; gap: 14px; padding: 16px; }
+  .onboard-cta .btn { width: 100%; justify-content: center; }
+  .onboard-cta-text strong { font-size: 14.5px; }
 
   /* 회원 관리 — 검색 입력은 한 줄 전체, 카드는 세로 스택 */
   .member-search { flex: 1 1 100%; width: 100%; }
