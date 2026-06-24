@@ -977,7 +977,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`btn ${navGroup === "home" ? "btn-primary" : "btn-secondary"}`}
-                style={{ flex: 1 }}
+                style={{ flex: 1, justifyContent: "center" }}
                 onClick={() => selectNavGroup("home")}
               >
                 홈페이지
@@ -985,7 +985,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`btn ${navGroup === "saints" ? "btn-primary" : "btn-secondary"}`}
-                style={{ flex: 1 }}
+                style={{ flex: 1, justifyContent: "center" }}
                 onClick={() => selectNavGroup("saints")}
               >
                 성도관리
