@@ -302,9 +302,109 @@ function RelationsEditor({ saint, others }: { saint: ChurchSaint; others: Church
   );
 }
 
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
+      <span style={{ width: 84, flexShrink: 0, color: "var(--muted)", fontSize: 13 }}>{label}</span>
+      <span style={{ fontSize: 13.5, fontWeight: 500 }}>{value || <span style={{ color: "var(--muted-2)" }}>—</span>}</span>
+    </div>
+  );
+}
+
+function SaintDetail({
+  saint,
+  onEdit,
+  onRemove,
+  onBack,
+  busy,
+}: {
+  saint: ChurchSaint;
+  onEdit: () => void;
+  onRemove: () => void;
+  onBack: () => void;
+  busy: boolean;
+}) {
+  const [relations, setRelations] = useState<SaintRelation[]>([]);
+  const [loadingRel, setLoadingRel] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoadingRel(true);
+      try {
+        const rel = await onchurchChurchSaint.listRelations(saint.id);
+        if (!cancelled) setRelations(rel);
+      } catch {
+        if (!cancelled) setRelations([]);
+      } finally {
+        if (!cancelled) setLoadingRel(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [saint.id]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <button type="button" className="btn btn-ghost" onClick={onBack}>← 목록</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" className="btn btn-primary" onClick={onEdit} disabled={busy}>편집</button>
+          <button type="button" className="btn btn-ghost" onClick={onRemove} disabled={busy}>삭제</button>
+        </div>
+      </div>
+
+      <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+          <SaintAvatar url={saint.photoUrl} name={saint.name} size={72} />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <strong style={{ fontSize: 20 }}>{saint.name}</strong>
+              {saint.position && <span className="admin-sidebar-pill optional" style={{ fontSize: 11 }}>{saint.position}</span>}
+            </div>
+            <div style={{ color: "var(--muted)", fontSize: 13, marginTop: 4 }}>
+              {[saint.gender ? GENDER_LABEL[saint.gender] : null, saint.faithLevel].filter(Boolean).join(" · ") || ""}
+            </div>
+          </div>
+        </div>
+
+        <DetailRow label="생년월일" value={saint.birthDate} />
+        <DetailRow label="성별" value={saint.gender ? GENDER_LABEL[saint.gender] : null} />
+        <DetailRow label="연락처" value={saint.phone} />
+        <DetailRow label="이메일" value={saint.email} />
+        <DetailRow label="주소" value={saint.address} />
+        <DetailRow label="직분" value={saint.position} />
+        <DetailRow label="임직일" value={saint.ordinationDate} />
+        <DetailRow label="신급" value={saint.faithLevel} />
+      </div>
+
+      <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <strong style={{ fontSize: 14 }}>가족관계</strong>
+        {loadingRel ? (
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>불러오는 중...</p>
+        ) : relations.length === 0 ? (
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>등록된 가족이 없습니다.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {relations.map((r) => (
+              <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)" }}>
+                <SaintAvatar url={r.relatedSaintPhotoUrl} name={r.relatedSaintName} size={32} />
+                <span style={{ fontSize: 13, fontWeight: 600 }}>{r.relatedSaintName}</span>
+                <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>{r.relation}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function SaintsEditor() {
   const [saints, setSaints] = useState<ChurchSaint[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
+  const [detailId, setDetailId] = useState<number | null>(null);
   const [draft, setDraft] = useState<ChurchSaintWriteInput>(EMPTY_SAINT);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
@@ -327,8 +427,15 @@ export function SaintsEditor() {
   }
 
   function startNew() {
+    setDetailId(null);
     setEditing(0);
     setDraft(EMPTY_SAINT);
+    setErrMsg("");
+  }
+
+  function openDetail(s: ChurchSaint) {
+    setDetailId(s.id);
+    setEditing(null);
     setErrMsg("");
   }
 
@@ -399,6 +506,9 @@ export function SaintsEditor() {
       } else {
         await onchurchChurchSaint.update(editing, payload);
         await load();
+        // 편집 완료 후 상세 보기로 복귀
+        setDetailId(editing);
+        setEditing(null);
       }
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "저장에 실패했습니다.");
@@ -413,7 +523,9 @@ export function SaintsEditor() {
     setErrMsg("");
     try {
       await onchurchChurchSaint.remove(s.id);
-      if (editing === s.id) cancel();
+      if (editing === s.id) setEditing(null);
+      if (detailId === s.id) setDetailId(null);
+      setDraft(EMPTY_SAINT);
       await load();
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다.");
@@ -433,6 +545,8 @@ export function SaintsEditor() {
   }, [saints, query]);
 
   const editingSaint = editing && editing > 0 ? saints.find((s) => s.id === editing) ?? null : null;
+  const detailSaint = detailId != null ? saints.find((s) => s.id === detailId) ?? null : null;
+  const busy = status === "saving" || status === "deleting";
 
   return (
     <section className="admin-section">
@@ -443,8 +557,19 @@ export function SaintsEditor() {
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {detailSaint && editing === null ? (
+          <SaintDetail
+            saint={detailSaint}
+            onEdit={() => startEdit(detailSaint)}
+            onRemove={() => remove(detailSaint)}
+            onBack={() => setDetailId(null)}
+            busy={busy}
+          />
+        ) : (
+        <>
         {errMsg && editing === null && <div className="phone-msg phone-msg-error">{errMsg}</div>}
 
+        {editing === null && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <span style={{ color: "var(--muted)", fontSize: 13 }}>총 {saints.length}명</span>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -460,6 +585,7 @@ export function SaintsEditor() {
             </button>
           </div>
         </div>
+        )}
 
         {editing !== null && (
           <div className="admin-banner-card editing">
@@ -554,14 +680,20 @@ export function SaintsEditor() {
           </div>
         )}
 
-        {status === "loading" ? (
+        {editing === null && (status === "loading" ? (
           <p style={{ color: "var(--muted)" }}>불러오는 중...</p>
         ) : filtered.length === 0 ? (
           <p style={{ color: "var(--muted)" }}>{saints.length === 0 ? "아직 등록된 성도가 없습니다." : "검색 결과가 없습니다."}</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {filtered.map((s) => (
-              <div key={s.id} className="admin-banner-card" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => openDetail(s)}
+                className="admin-banner-card"
+                style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", background: "var(--surface)" }}
+              >
                 <SaintAvatar url={s.photoUrl} name={s.name} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -573,13 +705,12 @@ export function SaintsEditor() {
                     {[s.gender ? GENDER_LABEL[s.gender] : null, s.phone, s.birthDate].filter(Boolean).join(" · ") || "정보 없음"}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                  <button type="button" className="btn btn-ghost" onClick={() => startEdit(s)} disabled={status === "saving" || status === "deleting"}>편집</button>
-                  <button type="button" className="btn btn-ghost" onClick={() => remove(s)} disabled={status === "deleting"}>삭제</button>
-                </div>
-              </div>
+                <span aria-hidden="true" style={{ color: "var(--muted-2)", fontSize: 18, flexShrink: 0 }}>›</span>
+              </button>
             ))}
           </div>
+        ))}
+        </>
         )}
       </div>
     </section>
