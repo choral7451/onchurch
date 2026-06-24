@@ -412,6 +412,10 @@ main { flex: 1; }
 .form-row input, .form-row select, .form-row textarea { font-family: inherit; font-size: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--ink); transition: border-color 0.15s ease; }
 .form-row input:focus, .form-row select:focus, .form-row textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px oklch(0.62 0.14 245 / 0.12); }
 .form-row textarea { resize: vertical; min-height: 120px; }
+/* iOS Safari는 input 폰트가 16px 미만이면 포커스 시 화면을 자동 확대한다. 모바일에서만 16px로 올려 확대를 막는다. */
+@media (max-width: 640px) {
+  .form-row input, .form-row select, .form-row textarea { font-size: 16px; }
+}
 .checkbox-row { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--ink-2); line-height: 1.55; }
 .checkbox-row input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 1.5px solid var(--line); border-radius: 5px; background: var(--surface); cursor: pointer; position: relative; flex-shrink: 0; margin: 1px 0 0; padding: 0; transition: border-color 0.15s ease, background 0.15s ease; }
 .checkbox-row input[type="checkbox"]:hover { border-color: var(--accent); }
