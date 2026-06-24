@@ -5,11 +5,11 @@ import {
   ApiError,
   onchurchAttendance,
   onchurchChurchSaint,
+  onchurchWorshipService,
   type AttendanceSession,
   type ChurchSaint,
+  type WorshipServiceItem,
 } from "@/lib/api-client";
-
-const SERVICE_TYPES = ["주일오전예배", "주일오후예배", "수요예배", "새벽기도회", "금요기도회"];
 
 function todayStr(): string {
   const d = new Date();
@@ -86,9 +86,10 @@ function HistoryView() {
 export function AttendanceEditor() {
   const [view, setView] = useState<"check" | "history">("check");
   const [date, setDate] = useState(todayStr());
-  const [serviceType, setServiceType] = useState(SERVICE_TYPES[0]);
+  const [serviceType, setServiceType] = useState("");
 
   const [saints, setSaints] = useState<ChurchSaint[]>([]);
+  const [services, setServices] = useState<WorshipServiceItem[]>([]);
   const [present, setPresent] = useState<Set<number>>(new Set());
   const [loadingRoster, setLoadingRoster] = useState(true);
   const [loadingSession, setLoadingSession] = useState(false);
@@ -97,13 +98,20 @@ export function AttendanceEditor() {
   const [query, setQuery] = useState("");
   const [posFilter, setPosFilter] = useState("");
 
-  // 명단은 한 번만 로드
+  // 명단 + 예배안내(예배 종류) 로드 — 예배 종류는 홈페이지 예배안내에서 가져온다
   useEffect(() => {
     (async () => {
       setLoadingRoster(true);
       setErrMsg("");
       try {
-        setSaints(await onchurchChurchSaint.listMine());
+        const [roster, svcs] = await Promise.all([
+          onchurchChurchSaint.listMine(),
+          onchurchWorshipService.listMine(),
+        ]);
+        setSaints(roster);
+        const active = svcs.filter((s) => s.isActive);
+        setServices(active);
+        setServiceType((prev) => prev || active[0]?.name || "");
       } catch (err) {
         setErrMsg(err instanceof ApiError ? err.message : "성도 명부를 불러오지 못했습니다.");
       } finally {
@@ -114,7 +122,7 @@ export function AttendanceEditor() {
 
   // 날짜/예배가 바뀌면 해당 세션 출석 현황 로드
   useEffect(() => {
-    if (view !== "check") return;
+    if (view !== "check" || !serviceType) return;
     let cancelled = false;
     (async () => {
       setLoadingSession(true);
@@ -222,10 +230,16 @@ export function AttendanceEditor() {
               </div>
               <div className="form-row">
                 <label>예배</label>
-                <select value={serviceType} onChange={(e) => setServiceType(e.target.value)}>
-                  {SERVICE_TYPES.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
+                <select value={serviceType} onChange={(e) => setServiceType(e.target.value)} disabled={services.length === 0}>
+                  {services.length === 0 ? (
+                    <option value="">예배안내에 예배가 없습니다</option>
+                  ) : (
+                    services.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name}{s.time ? ` · ${s.time}` : ""}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
             </div>
@@ -250,8 +264,8 @@ export function AttendanceEditor() {
                 출석 <span style={{ color: "var(--primary)" }}>{present.size}</span> / 전체 {saints.length}명
               </strong>
               <div style={{ display: "flex", gap: 6 }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setAll(true)} disabled={loadingSession}>전체 출석</button>
-                <button type="button" className="btn btn-ghost" onClick={() => setAll(false)} disabled={loadingSession}>전체 해제</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setAll(true)} disabled={loadingSession || !serviceType}>전체 출석</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setAll(false)} disabled={loadingSession || !serviceType}>전체 해제</button>
               </div>
             </div>
 
@@ -275,6 +289,8 @@ export function AttendanceEditor() {
 
             {loadingRoster ? (
               <p style={{ color: "var(--muted)" }}>불러오는 중...</p>
+            ) : services.length === 0 ? (
+              <p style={{ color: "var(--muted)" }}>홈페이지 <b>예배안내</b>에 예배를 먼저 등록해주세요. 등록된 예배가 출석 예배 종류로 표시됩니다.</p>
             ) : saints.length === 0 ? (
               <p style={{ color: "var(--muted)" }}>먼저 성도 명부에 성도를 등록해주세요.</p>
             ) : filtered.length === 0 ? (
