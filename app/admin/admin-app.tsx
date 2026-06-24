@@ -930,38 +930,43 @@ export function AdminApp({ initial }: { initial: Initial }) {
           </Link>
           <div className="admin-topbar-actions">
             <SubscriptionBadge subscription={subscription} />
-            <div className="admin-publish-toggle" aria-live="polite">
-              <span className="admin-publish-toggle-label">
-                <span className="admin-action-label">사이트 운영</span>
-                <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
-                  {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
-                </span>
-              </span>
-              <button
-                type="button"
-                className={`toggle ${isPublished ? "on" : ""}`}
-                onClick={onTogglePublish}
-                disabled={!loaded || publishLoading}
-                aria-label="사이트 운영 토글"
-                aria-pressed={isPublished}
-                title={
-                  isPublished
-                    ? "클릭하면 사이트를 비공개로 전환합니다"
-                    : allRequiredFilled
-                      ? "클릭하면 사이트를 공개합니다"
-                      : `필수 ${4 - requiredDoneCount}단계를 완료하면 공개할 수 있어요`
-                }
-              />
-            </div>
-            <Link
-              href={previewHref}
-              className="btn btn-secondary"
-              target="_blank"
-              onClick={() => { if (slug.trim()) saveSessionChurch(slug.trim()); }}
-            >
-              <Icon.arrow style={{ width: 14, height: 14 }} />
-              <span className="admin-action-label">홈페이지 바로가기</span>
-            </Link>
+            {/* 시작하기(온보딩) 화면에서는 사이트 운영 토글·홈페이지 바로가기를 숨긴다. */}
+            {activeSection !== "start" && (
+              <>
+                <div className="admin-publish-toggle" aria-live="polite">
+                  <span className="admin-publish-toggle-label">
+                    <span className="admin-action-label">사이트 운영</span>
+                    <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
+                      {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className={`toggle ${isPublished ? "on" : ""}`}
+                    onClick={onTogglePublish}
+                    disabled={!loaded || publishLoading}
+                    aria-label="사이트 운영 토글"
+                    aria-pressed={isPublished}
+                    title={
+                      isPublished
+                        ? "클릭하면 사이트를 비공개로 전환합니다"
+                        : allRequiredFilled
+                          ? "클릭하면 사이트를 공개합니다"
+                          : `필수 ${4 - requiredDoneCount}단계를 완료하면 공개할 수 있어요`
+                    }
+                  />
+                </div>
+                <Link
+                  href={previewHref}
+                  className="btn btn-secondary"
+                  target="_blank"
+                  onClick={() => { if (slug.trim()) saveSessionChurch(slug.trim()); }}
+                >
+                  <Icon.arrow style={{ width: 14, height: 14 }} />
+                  <span className="admin-action-label">홈페이지 바로가기</span>
+                </Link>
+              </>
+            )}
             <button type="button" className="btn btn-ghost" onClick={onLogout}>
               로그아웃
             </button>
