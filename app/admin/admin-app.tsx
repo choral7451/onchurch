@@ -1249,28 +1249,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         {publishLoading ? "오픈 중..." : "사이트 오픈"}
                       </button>
                     </div>
-
-                    <div className="onboard-optional">
-                      <div className="onboard-optional-list">
-                        {([
-                          { label: "로고 등록", target: "logo" },
-                          { label: "홈 배너", target: "banners" },
-                          { label: "홈화면 구성", target: "home-order" },
-                          { label: "설교·소식·갤러리 등 페이지", target: "page:sermons" },
-                          { label: "회원 관리", target: "members" },
-                        ] as { label: string; target: SectionKey }[]).map((o) => (
-                          <button
-                            key={o.target}
-                            type="button"
-                            className="onboard-optional-item"
-                            onClick={() => setActiveSection(o.target)}
-                          >
-                            <span>{o.label}</span>
-                            <Icon.arrow style={{ width: 13, height: 13 }} />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </section>
               )}
