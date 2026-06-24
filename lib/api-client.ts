@@ -677,6 +677,68 @@ export const onchurchChurchMember = {
     request<unknown>(`/onchurch/church-members/me/${id}`, { method: "DELETE", auth: true }),
 };
 
+export type SaintGender = "male" | "female";
+
+export type ChurchSaint = {
+  id: number;
+  name: string;
+  photoUrl: string | null;
+  birthDate: string | null;
+  gender: SaintGender | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  position: string | null;
+  ordinationDate: string | null;
+  faithLevel: string | null;
+};
+
+export type ChurchSaintWriteInput = {
+  name: string;
+  photoUrl: string | null;
+  birthDate: string | null;
+  gender: SaintGender | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  position: string | null;
+  ordinationDate: string | null;
+  faithLevel: string | null;
+};
+
+export type SaintRelation = {
+  id: number;
+  relation: string;
+  relatedSaintId: number;
+  relatedSaintName: string;
+  relatedSaintPhotoUrl: string | null;
+};
+
+export const onchurchChurchSaint = {
+  listMine: () =>
+    request<{ saints: ChurchSaint[] }>("/onchurch/saints/me", { method: "GET", auth: true }).then(
+      (r) => r.saints ?? [],
+    ),
+  create: (input: ChurchSaintWriteInput) =>
+    request<ChurchSaint>("/onchurch/saints/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: ChurchSaintWriteInput) =>
+    request<ChurchSaint>(`/onchurch/saints/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/saints/me/${id}`, { method: "DELETE", auth: true }),
+  listRelations: (saintId: number) =>
+    request<{ relations: SaintRelation[] }>(`/onchurch/saints/me/${saintId}/relations`, { method: "GET", auth: true }).then(
+      (r) => r.relations ?? [],
+    ),
+  addRelation: (saintId: number, relatedSaintId: number, relation: string) =>
+    request<unknown>(`/onchurch/saints/me/${saintId}/relations`, {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ relatedSaintId, relation }),
+    }),
+  removeRelation: (relationId: number) =>
+    request<unknown>(`/onchurch/saints/me/relations/${relationId}`, { method: "DELETE", auth: true }),
+};
+
 export const onchurchChurch = {
   getMine: () =>
     request<{ church: Church | null; subscription: Subscription; churchRole: ChurchRole | null }>("/onchurch/churches/me", {

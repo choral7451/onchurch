@@ -36,6 +36,7 @@ import { DirectionsEditor } from "./page-editors/directions";
 import { GalleryEditor } from "./page-editors/gallery";
 import { CommunityEditor } from "./page-editors/community";
 import { MembersEditor } from "./page-editors/members";
+import { SaintsEditor } from "./page-editors/saints";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
@@ -88,7 +89,9 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | `page:${string}`;
+type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | `page:${string}`;
+
+type NavGroup = "home" | "saints";
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -212,6 +215,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const router = useRouter();
 
   const [activeSection, setActiveSection] = useState<SectionKey>("start");
+  // 사이드바 최상위 구분: 홈페이지 / 성도관리
+  const [navGroup, setNavGroup] = useState<NavGroup>("home");
+
+  function selectNavGroup(group: NavGroup) {
+    setNavGroup(group);
+    if (group === "saints") setActiveSection("saints-roster");
+    else setActiveSection("site");
+  }
   // 시작하기 화면에서 현재 펼쳐진 단계(아코디언). 기본은 첫 단계.
   const [openStep, setOpenStep] = useState<SectionKey | null>("site");
 
@@ -962,6 +973,27 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
           {onboardingDone && (
           <aside className="admin-sidebar">
+            <div className="admin-sidebar-switch" style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+              <button
+                type="button"
+                className={`btn ${navGroup === "home" ? "btn-primary" : "btn-secondary"}`}
+                style={{ flex: 1 }}
+                onClick={() => selectNavGroup("home")}
+              >
+                홈페이지
+              </button>
+              <button
+                type="button"
+                className={`btn ${navGroup === "saints" ? "btn-primary" : "btn-secondary"}`}
+                style={{ flex: 1 }}
+                onClick={() => selectNavGroup("saints")}
+              >
+                성도관리
+              </button>
+            </div>
+
+            {navGroup === "home" && (
+            <>
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">필수 설정</div>
               <button
@@ -1047,18 +1079,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
             */}
 
             <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">회원</div>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "members" ? "active" : ""}`}
-                onClick={() => setActiveSection("members")}
-              >
-                <span className="admin-sidebar-item-label">회원 관리</span>
-                <span className="admin-sidebar-pill optional">성도</span>
-              </button>
-            </div>
-
-            <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">도움말</div>
               <a
                 href="http://pf.kakao.com/_slJXX/chat"
@@ -1117,6 +1137,30 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 );
               })}
             </div>
+            </>
+            )}
+
+            {navGroup === "saints" && (
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">성도관리</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "saints-roster" ? "active" : ""}`}
+                onClick={() => setActiveSection("saints-roster")}
+              >
+                <span className="admin-sidebar-item-label">성도 명부</span>
+                <span className="admin-sidebar-pill optional">명부</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "members" ? "active" : ""}`}
+                onClick={() => setActiveSection("members")}
+              >
+                <span className="admin-sidebar-item-label">홈페이지 회원</span>
+                <span className="admin-sidebar-pill optional">계정</span>
+              </button>
+            </div>
+            )}
           </aside>
           )}
 
@@ -1580,6 +1624,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
 
               {activeSection === "members" && <MembersEditor />}
+
+              {activeSection === "saints-roster" && <SaintsEditor />}
 
               {activePage && activePageItem && (
                 <div className="admin-page-editor">
