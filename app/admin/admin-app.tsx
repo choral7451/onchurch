@@ -37,6 +37,7 @@ import { GalleryEditor } from "./page-editors/gallery";
 import { CommunityEditor } from "./page-editors/community";
 import { MembersEditor } from "./page-editors/members";
 import { SaintsEditor } from "./page-editors/saints";
+import { AttendanceEditor } from "./page-editors/attendance";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { PrayerEditor } from "./page-editors/prayer";
@@ -89,7 +90,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | `page:${string}`;
+type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "attendance" | `page:${string}`;
 
 type NavGroup = "home" | "saints";
 
@@ -1153,6 +1154,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
               </button>
               <button
                 type="button"
+                className={`admin-sidebar-item ${activeSection === "attendance" ? "active" : ""}`}
+                onClick={() => setActiveSection("attendance")}
+              >
+                <span className="admin-sidebar-item-label">출석체크</span>
+                <span className="admin-sidebar-pill optional">출석</span>
+              </button>
+              <button
+                type="button"
                 className={`admin-sidebar-item ${activeSection === "members" ? "active" : ""}`}
                 onClick={() => setActiveSection("members")}
               >
@@ -1626,6 +1635,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {activeSection === "members" && <MembersEditor />}
 
               {activeSection === "saints-roster" && <SaintsEditor />}
+
+              {activeSection === "attendance" && <AttendanceEditor />}
 
               {activePage && activePageItem && (
                 <div className="admin-page-editor">

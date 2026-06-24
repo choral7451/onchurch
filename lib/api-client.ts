@@ -739,6 +739,30 @@ export const onchurchChurchSaint = {
     request<unknown>(`/onchurch/saints/me/relations/${relationId}`, { method: "DELETE", auth: true }),
 };
 
+export type AttendanceSession = {
+  date: string;
+  serviceType: string;
+  count: number;
+};
+
+export const onchurchAttendance = {
+  getSession: (date: string, serviceType: string) =>
+    request<{ saintIds: number[] }>(
+      `/onchurch/attendances/me?date=${encodeURIComponent(date)}&serviceType=${encodeURIComponent(serviceType)}`,
+      { method: "GET", auth: true },
+    ).then((r) => r.saintIds ?? []),
+  mark: (date: string, serviceType: string, saintId: number, present: boolean) =>
+    request<unknown>("/onchurch/attendances/me/mark", {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ date, serviceType, saintId, present }),
+    }),
+  listSessions: () =>
+    request<{ sessions: AttendanceSession[] }>("/onchurch/attendances/me/sessions", { method: "GET", auth: true }).then(
+      (r) => r.sessions ?? [],
+    ),
+};
+
 export const onchurchChurch = {
   getMine: () =>
     request<{ church: Church | null; subscription: Subscription; churchRole: ChurchRole | null }>("/onchurch/churches/me", {
