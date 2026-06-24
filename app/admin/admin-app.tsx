@@ -994,6 +994,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 >
                   <Icon.arrow style={{ width: 14, height: 14 }} />
                   <span className="admin-action-label">홈페이지 바로가기</span>
+                  <span className="admin-action-label-mobile">홈페이지</span>
                 </Link>
               </>
             )}

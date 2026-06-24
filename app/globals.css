@@ -701,6 +701,7 @@ main { flex: 1; }
 .admin-topbar { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; }
 .admin-topbar-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .admin-topbar-actions { display: flex; gap: 8px; align-items: center; }
+.admin-action-label-mobile { display: none; }
 
 .admin-main { flex: 1; padding: 0 0 80px; }
 .admin-layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 68px); }
@@ -1064,9 +1065,13 @@ main { flex: 1; }
   .footer-meta { flex-direction: column; gap: 6px; padding: 20px 0 0; }
 
   /* Admin */
-  .admin-topbar-inner { padding: 10px 16px; height: auto; min-height: 60px; gap: 10px; flex-wrap: wrap; }
-  .admin-topbar-inner .brand-text { display: none; }
-  .admin-topbar-actions { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  /* 모바일 헤더: 위(브랜드) / 아래(액션 툴바) 2단 배치로 정돈한다. */
+  .admin-topbar-inner { padding: 9px 14px; height: auto; min-height: 56px; gap: 8px 12px; flex-wrap: wrap; }
+  .brand-logo { width: 32px; height: 32px; }
+  .brand-name { font-size: 15px; }
+  .brand-eng { font-size: 9px; letter-spacing: 0.14em; }
+  /* 액션들은 전체폭 둘째 줄에서 고르게 펼친다. */
+  .admin-topbar-actions { flex: 1 1 100%; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
   .admin-publish-toggle { padding: 5px 8px 5px 10px; gap: 8px; }
   .admin-publish-toggle-label { font-size: 12px; gap: 6px; }
   .admin-sub-badge { padding: 5px 8px; gap: 6px; font-size: 11px; }
@@ -1074,7 +1079,9 @@ main { flex: 1; }
   .admin-sub-badge-date { font-size: 11px; }
   .admin-sub-badge-rem { font-size: 10.5px; padding: 2px 6px; }
   .admin-topbar-actions .btn { padding: 8px 12px; font-size: 13px; }
+  /* 긴 라벨은 숨기고, 바로가기 버튼은 짧은 라벨(홈페이지)로 화살표만 남지 않게 한다. */
   .admin-action-label { display: none; }
+  .admin-action-label-mobile { display: inline; }
   .admin-container { padding: 0 16px; gap: 16px; }
   .admin-content { padding: 24px 0 60px; }
   .admin-section-head { padding: 22px 20px 0; }
