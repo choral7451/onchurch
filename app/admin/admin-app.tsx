@@ -941,7 +941,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
             position: "fixed", left: "50%", bottom: 28, transform: "translateX(-50%)", zIndex: 2000,
             background: "oklch(0.52 0.13 145)", color: "#fff", padding: "12px 20px", borderRadius: 999,
             fontSize: 13.5, fontWeight: 600, boxShadow: "0 8px 24px oklch(0 0 0 / 0.25)",
-            display: "inline-flex", alignItems: "center", gap: 8,
+            display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap",
           }}
         >
           <span aria-hidden="true">✓</span>
