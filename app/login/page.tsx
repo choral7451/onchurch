@@ -36,7 +36,7 @@ export default function LoginPage() {
           </div>
 
           <div className="auth-meta">
-            <span>도움이 필요하세요? <a href="mailto:hello@everychurch.co.kr">hello@everychurch.co.kr</a></span>
+            <span>도움이 필요하세요? <a href="http://pf.kakao.com/_slJXX/chat" target="_blank" rel="noopener noreferrer">카카오톡 채널 문의</a></span>
           </div>
         </div>
       </main>
