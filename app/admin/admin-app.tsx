@@ -274,6 +274,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const [save, setSave] = useState<SaveState>("idle");
   const [saveMsg, setSaveMsg] = useState<string>("");
+  const [saveToast, setSaveToast] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
 
   const [isPublished, setIsPublished] = useState(false);
@@ -723,7 +724,24 @@ export function AdminApp({ initial }: { initial: Initial }) {
         address: address || "",
       });
       setSave("saved");
+      setSaveToast("변경사항이 저장되었습니다.");
+      setTimeout(() => setSaveToast(""), 2500);
       setTimeout(() => setSave("idle"), 2000);
+      // 온보딩(시작하기) 화면에서 저장하면, 방금 완료한 단계는 닫고 다음 미완료 단계를 펼친다.
+      if (activeSection === "start") {
+        const nowSite = !!slug.trim() && !!name.trim();
+        const nowContact = !!phone.trim() && !!email.trim() && !!address.trim();
+        const nextStep: SectionKey | null = !nowSite
+          ? "site"
+          : !nowContact
+            ? "contact"
+            : !aboutFilled
+              ? ("page:about" as SectionKey)
+              : !worshipFilled
+                ? ("page:worship" as SectionKey)
+                : null;
+        setOpenStep(nextStep);
+      }
     } catch (err) {
       setSave("error");
       if (err instanceof ApiError) {
@@ -819,7 +837,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const sectionSaveBar = (
     <div className="admin-savebar">
       <div className="admin-savebar-msg">
-        {save === "saved" && <span className="phone-msg phone-msg-success">변경사항이 저장되었습니다.</span>}
         {save === "error" && saveMsg && <span className="phone-msg phone-msg-error">{saveMsg}</span>}
       </div>
       <div className="admin-savebar-actions">
@@ -915,6 +932,20 @@ export function AdminApp({ initial }: { initial: Initial }) {
           }}
         >
           {quickLimitMsg}
+        </div>
+      )}
+      {saveToast && (
+        <div
+          role="status"
+          style={{
+            position: "fixed", left: "50%", bottom: 28, transform: "translateX(-50%)", zIndex: 2000,
+            background: "oklch(0.52 0.13 145)", color: "#fff", padding: "12px 20px", borderRadius: 999,
+            fontSize: 13.5, fontWeight: 600, boxShadow: "0 8px 24px oklch(0 0 0 / 0.25)",
+            display: "inline-flex", alignItems: "center", gap: 8,
+          }}
+        >
+          <span aria-hidden="true">✓</span>
+          {saveToast}
         </div>
       )}
       <header className="admin-topbar">
