@@ -853,7 +853,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   if (slugLocked) return;
                   setSlug(e.target.value.replace(/[^a-z0-9-]/g, "").slice(0, 30));
                 }}
-                placeholder="onchurch"
                 required
                 readOnly={slugLocked}
                 aria-readonly={slugLocked}
@@ -1296,7 +1295,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                             if (slugLocked) return;
                             setSlug(e.target.value.replace(/[^a-z0-9-]/g, "").slice(0, 30));
                           }}
-                          placeholder="onchurch"
                           required
                           readOnly={slugLocked}
                           aria-readonly={slugLocked}
