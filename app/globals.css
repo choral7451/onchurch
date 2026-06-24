@@ -1107,6 +1107,10 @@ main { flex: 1; }
   .onboard-cta { flex-direction: column; align-items: stretch; gap: 14px; padding: 16px; }
   .onboard-cta .btn { width: 100%; justify-content: center; }
   .onboard-cta-text strong { font-size: 14.5px; }
+  /* 서브도메인 입력: 좁은 화면에선 장식용 https:// 를 숨기고 접미사를 줄여 입력 공간 확보 */
+  .slug-input { padding: 0 12px; }
+  .slug-prefix { display: none; }
+  .slug-suffix { font-size: 12px; }
 
   /* 회원 관리 — 검색 입력은 한 줄 전체, 카드는 세로 스택 */
   .member-search { flex: 1 1 100%; width: 100%; }
