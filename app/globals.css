@@ -1218,6 +1218,8 @@ main { flex: 1; }
     justify-content: space-between;
     width: 100%;
   }
+  /* 전체폭 토글 행이 휑해 보이지 않게 '사이트 운영' 라벨을 되살려 좌측을 채운다. */
+  .admin-topbar-actions > .admin-publish-toggle .admin-action-label { display: inline; }
 }
 
 /* =====================================================
