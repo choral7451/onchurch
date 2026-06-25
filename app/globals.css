@@ -1210,6 +1210,9 @@ main { flex: 1; }
     row-gap: 8px;
     width: 100%;
   }
+  /* 윗줄 배지·홈페이지 버튼 높이를 맞춰 어긋남 없이 정렬한다. */
+  .admin-topbar-actions > .admin-sub-badge,
+  .admin-topbar-actions > .btn { min-height: 34px; }
   .admin-topbar-actions > .admin-sub-badge { grid-column: 1; grid-row: 1; justify-self: start; }
   .admin-topbar-actions > .btn { grid-column: 2; grid-row: 1; justify-self: end; }
   .admin-topbar-actions > .admin-publish-toggle {
