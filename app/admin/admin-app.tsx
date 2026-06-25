@@ -1410,7 +1410,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           {logoUploading ? "업로드 중..." : logoPreview ? "이미지 변경" : "이미지 업로드"}
                         </button>
                         {logoPreview && !logoUploading && (
-                          <button type="button" className="btn btn-ghost" onClick={clearLogo}>
+                          <button type="button" className="btn btn-secondary logo-remove-btn" onClick={clearLogo}>
                             제거
                           </button>
                         )}
