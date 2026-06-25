@@ -1229,6 +1229,18 @@ main { flex: 1; }
   }
   /* 전체폭 토글 행이 휑해 보이지 않게 '사이트 운영' 라벨을 되살려 좌측을 채운다. */
   .admin-topbar-actions > .admin-publish-toggle .admin-action-label { display: inline; }
+
+  /* 리스트 카드(배너·비전·연혁·섬김): 좁은 폰에서 편집·삭제 버튼이 내용을 눌러
+     제목이 세로로 깨지던 문제 해결. 버튼 묶음을 아랫줄 전체폭(우측 정렬)으로 내린다. */
+  .admin-banner-card:not(.editing) { flex-wrap: wrap; }
+  .admin-banner-card:not(.editing) > div:last-child { flex: 1 0 100%; justify-content: flex-end; }
+
+  /* 결제 계좌 카드: 계좌번호는 한 줄로, 요금 카드는 1열로 스택해 글자 줄바꿈을 막는다. */
+  .payment-account-card { padding: 16px; }
+  .payment-account-number-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .payment-account-number { font-size: 19px; }
+  .payment-account-number-row .btn { width: 100%; justify-content: center; }
+  .payment-account-plans { grid-template-columns: 1fr; }
 }
 
 /* =====================================================

@@ -254,7 +254,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
       base["about"] = true;
       base["worship"] = true;
       base["directions"] = true;
-      for (const k of ABOUT_SUB_KEYS) base[k] = false;
+      // 비전·연혁·섬김의 사람들도 새 교회는 기본 공개로 시작한다(첫 저장 시 함께 노출).
+      for (const k of ABOUT_SUB_KEYS) base[k] = true;
       return base;
     },
   );
