@@ -1098,6 +1098,9 @@ main { flex: 1; }
   .admin-savebar-actions { justify-content: flex-end; gap: 8px; }
   .logo-row { flex-direction: column; gap: 14px; align-items: stretch; }
   .logo-preview { width: 96px; height: 96px; }
+  /* '이미지 변경'·'제거'는 한 줄에 나란히, 안내 문구는 그 아래 전체폭으로 내려 외톨이처럼 보이지 않게 한다. */
+  .logo-actions { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .logo-actions > .form-hint { flex-basis: 100%; margin: 2px 0 0; }
   .editor-row-worship, .editor-row-notice, .editor-row-event, .editor-row-order, .editor-row-vision, .editor-row-history, .editor-row-transport { grid-template-columns: 1fr; }
   .editor-row-worship > *, .editor-row-notice > *, .editor-row-event > *, .editor-row-order > *, .editor-row-vision > *, .editor-row-history > *, .editor-row-transport > * { grid-column: 1 !important; }
   .editor-row-staff { grid-template-columns: 48px 1fr; }
