@@ -1200,6 +1200,26 @@ main { flex: 1; }
   .landing-footer-biz { padding: 14px 16px 0; margin-top: 14px; }
 }
 
+/* 좁은 폰(≈375px) 헤더: 액션 줄을 2행 그리드로 고정해 줄바꿈이 들쭉날쭉해지는 걸 막는다.
+   윗줄: 구독배지(좌) · 홈페이지(우) / 아랫줄: 사이트 운영 토글 전체폭(라벨 좌 · 스위치 우). */
+@media (max-width: 480px) {
+  .admin-topbar-actions {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 8px;
+    row-gap: 8px;
+    width: 100%;
+  }
+  .admin-topbar-actions > .admin-sub-badge { grid-column: 1; grid-row: 1; justify-self: start; }
+  .admin-topbar-actions > .btn { grid-column: 2; grid-row: 1; justify-self: end; }
+  .admin-topbar-actions > .admin-publish-toggle {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
 /* =====================================================
    Sermons list page
    ===================================================== */
