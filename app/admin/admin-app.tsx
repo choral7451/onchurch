@@ -296,12 +296,21 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [topActionsHidden, setTopActionsHidden] = useState(false);
   useEffect(() => {
     let lastY = window.scrollY;
-    const onScroll = () => {
+    let ticking = false;
+    const update = () => {
+      ticking = false;
       const y = window.scrollY;
+      const maxY = document.documentElement.scrollHeight - window.innerHeight;
+      // 맨 아래 근처에서는 상태를 바꾸지 않는다. 접히면 헤더 높이가 줄어 스크롤이
+      // 되튕기고, 그걸 '위로 스크롤'로 오인해 접힘/펼침이 무한 깜빡이기 때문이다.
+      if (maxY - y < 120) { lastY = y; return; }
       if (Math.abs(y - lastY) < 6) return; // 미세 흔들림 무시
       if (y > lastY && y > 72) setTopActionsHidden(true); // 아래로 스크롤 → 접기
       else if (y < lastY) setTopActionsHidden(false); // 위로 스크롤 → 펼치기
       lastY = y;
+    };
+    const onScroll = () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
