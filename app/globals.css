@@ -702,9 +702,10 @@ main { flex: 1; }
 .admin-topbar-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .admin-topbar-actions { display: flex; gap: 8px; align-items: center; }
 .admin-action-label-mobile { display: none; }
-/* 헤더 홈페이지 버튼·바텀 네비는 모바일 전용 — 데스크톱에서는 숨긴다. */
+/* 헤더 홈페이지 버튼·바텀 네비·상세 뒤로가기는 모바일 전용 — 데스크톱에서는 숨긴다. */
 .admin-topbar-home-mobile { display: none; }
 .admin-bottom-nav { display: none; }
+.admin-mobile-back { display: none; }
 /* 브랜드가 남은 공간을 흡수해 액션 그룹과 로그아웃을 우측으로 모은다. */
 .admin-topbar-inner .brand { margin-right: auto; }
 
@@ -1107,8 +1108,21 @@ main { flex: 1; }
   .admin-main { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   /* 모바일에선 바텀 네비가 그룹 전환을 대신하므로 사이드바 상단 전환 버튼을 숨긴다. */
   .admin-sidebar-switch { display: none; }
-  /* '설정' 탭에서는 페이지 목록 사이드바를 숨겨 설정 화면만 보이게 한다. */
+  /* 마스터-디테일: 기본은 메뉴 목록(사이드바)만, 항목을 탭하면 상세 화면으로 전환한다.
+     - 목록 보기(상세/설정 아님): 본문 숨김 → 메뉴만 노출
+     - 상세/설정 보기: 사이드바 숨김 → 본문 전체화면 */
+  .admin-layout:not(.admin-layout-solo):not(.mobile-detail):not(.settings-active) .admin-content { display: none; }
+  .admin-layout.mobile-detail .admin-sidebar,
   .admin-layout.settings-active .admin-sidebar { display: none; }
+  /* 상세 화면 상단 뒤로가기 버튼 */
+  .admin-layout.mobile-detail .admin-mobile-back {
+    display: inline-flex; align-items: center; gap: 4px;
+    align-self: flex-start;
+    background: transparent; border: none; cursor: pointer;
+    padding: 4px 4px 4px 0; margin-bottom: 2px;
+    font-size: 14px; font-weight: 600; color: var(--ink-2);
+  }
+  .admin-layout.mobile-detail .admin-mobile-back:hover { color: var(--primary); }
   /* 설정 화면 행: 좌측 라벨 + 우측 컨트롤 */
   .admin-settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
   .admin-settings-row-label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

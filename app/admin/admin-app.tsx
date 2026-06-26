@@ -218,9 +218,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [activeSection, setActiveSection] = useState<SectionKey>("start");
   // 사이드바 최상위 구분: 홈페이지 / 성도관리
   const [navGroup, setNavGroup] = useState<NavGroup>("home");
+  // 모바일: 메뉴 목록(false) ↔ 상세 화면(true) 전환. 데스크톱은 무시되고 항상 둘 다 노출.
+  const [mobileDetail, setMobileDetail] = useState(false);
+
+  // 사이드바 항목 탭 → 해당 섹션 열고 모바일에선 상세 화면으로 진입.
+  function openSection(key: SectionKey) {
+    setActiveSection(key);
+    setMobileDetail(true);
+  }
 
   function selectNavGroup(group: NavGroup) {
     setNavGroup(group);
+    setMobileDetail(false); // 그룹 전환 시 모바일은 메뉴 목록부터 보여준다.
     if (group === "saints") setActiveSection("saints-roster");
     else setActiveSection("site");
   }
@@ -1019,7 +1028,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} className={`admin-layout ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""}`}>
+        <form onSubmit={onSave} className={`admin-layout ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
           {onboardingDone && (
           <aside className="admin-sidebar">
@@ -1050,7 +1059,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "site" ? "active" : ""} ${siteRequiredFilled ? "is-complete" : "is-incomplete"}`}
-                onClick={() => setActiveSection("site")}
+                onClick={() => openSection("site")}
               >
                 <span className="admin-sidebar-item-label">기본 정보</span>
                 <span
@@ -1063,7 +1072,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "contact" ? "active" : ""} ${contactRequiredFilled ? "is-complete" : "is-incomplete"}`}
-                onClick={() => setActiveSection("contact")}
+                onClick={() => openSection("contact")}
               >
                 <span className="admin-sidebar-item-label">연락처</span>
                 <span
@@ -1080,7 +1089,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "logo" ? "active" : ""}`}
-                onClick={() => setActiveSection("logo")}
+                onClick={() => openSection("logo")}
               >
                 <span className="admin-sidebar-item-label">로고</span>
                 <span className="admin-sidebar-pill optional">선택</span>
@@ -1088,7 +1097,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "banners" ? "active" : ""}`}
-                onClick={() => setActiveSection("banners")}
+                onClick={() => openSection("banners")}
               >
                 <span className="admin-sidebar-item-label">홈 배너</span>
                 <span className="admin-sidebar-pill optional">선택</span>
@@ -1096,7 +1105,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "home-order" ? "active" : ""}`}
-                onClick={() => setActiveSection("home-order")}
+                onClick={() => openSection("home-order")}
               >
                 <span className="admin-sidebar-item-label">홈화면 구성</span>
                 <span className="admin-sidebar-pill optional">선택</span>
@@ -1108,7 +1117,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item admin-sidebar-item-billing ${activeSection === "billing" ? "active" : ""}`}
-                onClick={() => setActiveSection("billing")}
+                onClick={() => openSection("billing")}
               >
                 <span className="admin-sidebar-item-label">결제 · 입금 계좌</span>
                 <span className="admin-sidebar-pill billing">계좌</span>
@@ -1163,7 +1172,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <button
                       type="button"
                       className="admin-sidebar-page-label"
-                      onClick={() => setActiveSection(`page:${n.id}` as SectionKey)}
+                      onClick={() => openSection(`page:${n.id}` as SectionKey)}
                     >
                       <span>{n.label}</span>
                     </button>
@@ -1197,7 +1206,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "saints-roster" ? "active" : ""}`}
-                onClick={() => setActiveSection("saints-roster")}
+                onClick={() => openSection("saints-roster")}
               >
                 <span className="admin-sidebar-item-label">성도 명부</span>
                 <span className="admin-sidebar-pill optional">명부</span>
@@ -1205,7 +1214,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "attendance" ? "active" : ""}`}
-                onClick={() => setActiveSection("attendance")}
+                onClick={() => openSection("attendance")}
               >
                 <span className="admin-sidebar-item-label">출석체크</span>
                 <span className="admin-sidebar-pill optional">출석</span>
@@ -1213,7 +1222,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <button
                 type="button"
                 className={`admin-sidebar-item ${activeSection === "members" ? "active" : ""}`}
-                onClick={() => setActiveSection("members")}
+                onClick={() => openSection("members")}
               >
                 <span className="admin-sidebar-item-label">홈페이지 회원</span>
                 <span className="admin-sidebar-pill optional">계정</span>
@@ -1225,6 +1234,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
           <div className="admin-content">
             <div className="admin-container">
+              {/* 모바일 상세 화면 상단 뒤로가기 — 메뉴 목록으로 복귀. 데스크톱에서는 CSS로 숨김. */}
+              <button type="button" className="admin-mobile-back" onClick={() => setMobileDetail(false)}>
+                <Icon.chevL style={{ width: 18, height: 18 }} />
+                뒤로
+              </button>
               {/* 모바일 바텀 '설정' 탭 화면: 구독(디데이) · 사이트 운영 · 로그아웃 */}
               {activeSection === "settings" && (
                 <section className="admin-section">
@@ -1799,7 +1813,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           <button
             type="button"
             className={`admin-bottom-nav-item ${activeSection === "settings" ? "active" : ""}`}
-            onClick={() => setActiveSection("settings")}
+            onClick={() => { setActiveSection("settings"); setMobileDetail(false); }}
           >
             <Icon.gear />
             <span>설정</span>
