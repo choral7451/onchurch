@@ -394,7 +394,14 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                 </div>
               </div>
               <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
-                <button type="button" className="btn btn-ghost" onClick={() => startEdit(g)} disabled={editingKey !== null}>편집</button>
+                <button
+                  type="button"
+                  className={`btn ${editingKey === g.key ? "btn-secondary" : "btn-ghost"}`}
+                  onClick={() => startEdit(g)}
+                  disabled={status === "saving" || status === "deleting"}
+                >
+                  {editingKey === g.key ? "편집 중" : "편집"}
+                </button>
                 <button type="button" className="btn btn-ghost" onClick={() => removeGroup(g)} disabled={status === "deleting"}>삭제</button>
               </div>
             </div>
