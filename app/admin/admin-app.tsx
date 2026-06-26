@@ -90,7 +90,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "attendance" | `page:${string}`;
+type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "attendance" | "settings" | `page:${string}`;
 
 type NavGroup = "home" | "saints";
 
@@ -291,30 +291,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   const [aboutFilled, setAboutFilled] = useState(false);
   const [worshipFilled, setWorshipFilled] = useState(false);
-
-  // 모바일 헤더: 스크롤을 내리면 액션 행(기간·홈페이지·사이트 운영)을 접고, 올리면 다시 펼친다.
-  const [topActionsHidden, setTopActionsHidden] = useState(false);
-  useEffect(() => {
-    let lastY = window.scrollY;
-    let ticking = false;
-    const update = () => {
-      ticking = false;
-      const y = window.scrollY;
-      const maxY = document.documentElement.scrollHeight - window.innerHeight;
-      // 맨 아래 근처에서는 상태를 바꾸지 않는다. 접히면 헤더 높이가 줄어 스크롤이
-      // 되튕기고, 그걸 '위로 스크롤'로 오인해 접힘/펼침이 무한 깜빡이기 때문이다.
-      if (maxY - y < 120) { lastY = y; return; }
-      if (Math.abs(y - lastY) < 6) return; // 미세 흔들림 무시
-      if (y > lastY && y > 72) setTopActionsHidden(true); // 아래로 스크롤 → 접기
-      else if (y < lastY) setTopActionsHidden(false); // 위로 스크롤 → 펼치기
-      lastY = y;
-    };
-    const onScroll = () => {
-      if (!ticking) { ticking = true; requestAnimationFrame(update); }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   // 시작하기 단계의 초록 체크는 '저장된 값' 기준으로 표시한다(입력 중에는 변하지 않음).
   const [savedRequired, setSavedRequired] = useState({ slug: "", name: "", phone: "", email: "", address: "" });
@@ -973,7 +949,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {saveToast}
         </div>
       )}
-      <header className={`admin-topbar ${topActionsHidden ? "actions-collapsed" : ""}`}>
+      <header className={`admin-topbar ${onboardingDone ? "onboarded" : ""}`}>
         <div className="admin-topbar-inner">
           <Link href="/admin" className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1024,6 +1000,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
               </>
             )}
           </div>
+          {/* 모바일: 로그아웃 자리에 홈페이지 이동 버튼(온보딩 완료 후). 로그아웃은 바텀 '설정' 탭으로 이동. */}
+          {onboardingDone && (
+            <Link
+              href={previewHref}
+              className="btn btn-secondary admin-topbar-home-mobile"
+              target="_blank"
+              onClick={() => { if (slug.trim()) saveSessionChurch(slug.trim()); }}
+            >
+              <Icon.arrow style={{ width: 14, height: 14 }} />
+              홈페이지
+            </Link>
+          )}
           <button type="button" className="btn btn-ghost admin-logout" onClick={onLogout}>
             로그아웃
           </button>
@@ -1031,7 +1019,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} className={`admin-layout ${onboardingDone ? "" : "admin-layout-solo"}`}>
+        <form onSubmit={onSave} className={`admin-layout ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""}`}>
           {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
           {onboardingDone && (
           <aside className="admin-sidebar">
@@ -1237,6 +1225,47 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
           <div className="admin-content">
             <div className="admin-container">
+              {/* 모바일 바텀 '설정' 탭 화면: 구독(디데이) · 사이트 운영 · 로그아웃 */}
+              {activeSection === "settings" && (
+                <section className="admin-section">
+                  <div className="admin-section-head">
+                    <div className="admin-section-eyebrow">SETTINGS</div>
+                    <h2>설정</h2>
+                    <p>구독 상태 확인, 사이트 공개 전환, 로그아웃을 할 수 있어요.</p>
+                  </div>
+                  <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <div className="admin-settings-row">
+                      <div className="admin-settings-row-label">
+                        <strong>구독 상태</strong>
+                        <span>남은 기간과 결제 상태입니다.</span>
+                      </div>
+                      <SubscriptionBadge subscription={subscription} />
+                    </div>
+                    <div className="admin-settings-row">
+                      <div className="admin-settings-row-label">
+                        <strong>사이트 운영</strong>
+                        <span>{isPublished ? "방문자에게 공개 중입니다." : "현재 비공개 상태입니다."}</span>
+                      </div>
+                      <div className="admin-publish-toggle" aria-live="polite">
+                        <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
+                          {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
+                        </span>
+                        <button
+                          type="button"
+                          className={`toggle ${isPublished ? "on" : ""}`}
+                          onClick={onTogglePublish}
+                          disabled={!loaded || publishLoading}
+                          aria-label="사이트 운영 토글"
+                          aria-pressed={isPublished}
+                        />
+                      </div>
+                    </div>
+                    <button type="button" className="btn btn-secondary admin-settings-logout" onClick={onLogout}>
+                      로그아웃
+                    </button>
+                  </div>
+                </section>
+              )}
               {activeSection === "start" && (
                 <section className="admin-section">
                   <div className="admin-section-head">
@@ -1747,6 +1776,36 @@ export function AdminApp({ initial }: { initial: Initial }) {
           </div>
         </form>
       </main>
+
+      {/* 모바일 전용 바텀 네비게이션 (온보딩 완료 후). 데스크톱에서는 CSS로 숨김. */}
+      {onboardingDone && (
+        <nav className="admin-bottom-nav" aria-label="모바일 메뉴">
+          <button
+            type="button"
+            className={`admin-bottom-nav-item ${activeSection !== "settings" && navGroup === "home" ? "active" : ""}`}
+            onClick={() => selectNavGroup("home")}
+          >
+            <Icon.home />
+            <span>홈페이지 설정</span>
+          </button>
+          <button
+            type="button"
+            className={`admin-bottom-nav-item ${activeSection !== "settings" && navGroup === "saints" ? "active" : ""}`}
+            onClick={() => selectNavGroup("saints")}
+          >
+            <Icon.users />
+            <span>성도관리</span>
+          </button>
+          <button
+            type="button"
+            className={`admin-bottom-nav-item ${activeSection === "settings" ? "active" : ""}`}
+            onClick={() => setActiveSection("settings")}
+          >
+            <Icon.gear />
+            <span>설정</span>
+          </button>
+        </nav>
+      )}
 
       {modal && (
         <div
