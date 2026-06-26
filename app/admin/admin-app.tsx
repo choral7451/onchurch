@@ -285,6 +285,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [save, setSave] = useState<SaveState>("idle");
   const [saveMsg, setSaveMsg] = useState<string>("");
   const [saveToast, setSaveToast] = useState<string>("");
+  // 홈페이지 버튼: 사이트 운영 OFF일 때 안내 토스트
+  const [publishHint, setPublishHint] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
 
   const [isPublished, setIsPublished] = useState(false);
@@ -772,6 +774,25 @@ export function AdminApp({ initial }: { initial: Initial }) {
     router.push("/login");
   }
 
+  // 홈페이지 버튼 클릭. 사이트 운영이 OFF면 이동을 막고 안내한다.
+  // 모바일은 설정 페이지로 이동(거기서 켤 수 있음), 데스크톱은 안내만(헤더 토글이 바로 보임).
+  function onClickGoHome(e: React.MouseEvent, mobile: boolean) {
+    if (!isPublished) {
+      e.preventDefault();
+      setPublishHint(
+        !allRequiredFilled
+          ? "필수 단계를 모두 완료하면 사이트 운영을 켤 수 있어요."
+          : mobile
+            ? "사이트 운영을 켜야 홈페이지가 공개돼요. 설정에서 켜주세요."
+            : "사이트 운영을 켜야 홈페이지가 공개돼요. 우측 상단 토글로 켜주세요.",
+      );
+      setTimeout(() => setPublishHint(""), 3200);
+      if (mobile) { setActiveSection("settings"); setMobileDetail(false); }
+      return;
+    }
+    if (slug.trim()) saveSessionChurch(slug.trim());
+  }
+
   // 공개/비공개 토글. 처리 후 최종 공개 여부를 반환한다(시작하기의 '사이트 오픈'에서 사용).
   async function onTogglePublish(): Promise<boolean> {
     if (publishLoading) return isPublished;
@@ -958,6 +979,20 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {saveToast}
         </div>
       )}
+      {publishHint && (
+        <div
+          role="status"
+          style={{
+            position: "fixed", left: "50%", bottom: 88, transform: "translateX(-50%)", zIndex: 2000,
+            background: "oklch(0.6 0.16 50)", color: "#fff", padding: "12px 18px", borderRadius: 16,
+            fontSize: 13.5, fontWeight: 600, boxShadow: "0 8px 24px oklch(0 0 0 / 0.25)",
+            display: "inline-flex", alignItems: "center", gap: 8, maxWidth: "calc(100vw - 32px)",
+          }}
+        >
+          <span aria-hidden="true">⚠️</span>
+          {publishHint}
+        </div>
+      )}
       <header className={`admin-topbar ${onboardingDone ? "onboarded" : ""}`}>
         <div className="admin-topbar-inner">
           <Link href="/admin" className="brand">
@@ -1000,7 +1035,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   href={previewHref}
                   className="btn btn-secondary"
                   target="_blank"
-                  onClick={() => { if (slug.trim()) saveSessionChurch(slug.trim()); }}
+                  onClick={(e) => onClickGoHome(e, false)}
                 >
                   <Icon.arrow style={{ width: 14, height: 14 }} />
                   <span className="admin-action-label">홈페이지 바로가기</span>
@@ -1015,7 +1050,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               href={previewHref}
               className="btn btn-secondary admin-topbar-home-mobile"
               target="_blank"
-              onClick={() => { if (slug.trim()) saveSessionChurch(slug.trim()); }}
+              onClick={(e) => onClickGoHome(e, true)}
             >
               <Icon.arrow style={{ width: 14, height: 14 }} />
               홈페이지
