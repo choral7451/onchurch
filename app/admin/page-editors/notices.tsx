@@ -192,7 +192,7 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
         attachments: draft.attachments ?? [],
         author: draft.author?.trim() || null,
         isPinned: !!draft.isPinned,
-        isActive: !!draft.isActive,
+        isActive: true, // 소식은 공개/비공개 구분 없이 항상 공개
         publishedAt: draft.publishedAt ?? null,
       };
       if (editingId === 0 || editingId === null) {
@@ -285,16 +285,6 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
                 <span>상단 고정</span>
               </label>
             </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input
-                  type="checkbox"
-                  checked={draft.isActive}
-                  onChange={(e) => setDraft((d) => ({ ...d, isActive: e.target.checked }))}
-                />
-                <span>공개</span>
-              </label>
-            </div>
             <div className="form-row full">
               <label htmlFor="nt-content">본문</label>
               <textarea
@@ -359,9 +349,9 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
           <p style={{ color: "var(--muted)" }}>등록된 공지가 없습니다. 새 공지를 작성해보세요.</p>
         )}
         {notices.map((n) => (
-          <div key={n.id} className={`admin-banner-card ${n.isActive ? "" : "inactive"}`}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <div key={n.id} className="admin-banner-card">
+            <div className="banner-meta">
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 {n.isPinned && (
                   <span className="admin-sidebar-pill incomplete" style={{ fontSize: 10 }}>고정</span>
                 )}
@@ -369,9 +359,6 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
                   <span style={{ color: "var(--muted)", fontSize: 12 }}>[{n.category}]</span>
                 )}
                 <strong>{n.title}</strong>
-                <span className={`admin-sidebar-pill ${n.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {n.isActive ? "공개" : "비공개"}
-                </span>
               </div>
               <div style={{ color: "var(--muted)", fontSize: 13 }}>
                 {n.author ?? "—"} · {(n.publishedAt ?? n.createdAt).slice(0, 10)}
@@ -382,7 +369,7 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
                 </div>
               )}
             </div>
-            <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
+            <div className="banner-actions">
               <button type="button" className="btn btn-ghost" onClick={() => startEdit(n)} disabled={editingId !== null}>
                 편집
               </button>

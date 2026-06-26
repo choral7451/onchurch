@@ -775,7 +775,7 @@ main { flex: 1; }
 .banner-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .banner-meta { flex: 1; min-width: 0; }
 .banner-link { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.banner-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.banner-actions { display: flex; gap: 6px; flex-shrink: 0; align-self: flex-start; }
 
 /* 회원 관리 */
 .member-search { width: 240px; max-width: 100%; }
