@@ -1123,6 +1123,14 @@ main { flex: 1; }
     font-size: 14px; font-weight: 600; color: var(--ink-2);
   }
   .admin-layout.mobile-detail .admin-mobile-back:hover { color: var(--primary); }
+  /* 모바일 메뉴(목록)에서는 특정 항목을 미리 선택된 것처럼 강조하지 않는다.
+     (상세 진입 시엔 사이드바가 숨겨지므로 active 강조는 목록에서만 보였다) */
+  .admin-sidebar-item.active { background: transparent; color: var(--ink); font-weight: 500; border-color: transparent; }
+  .admin-sidebar-item.is-incomplete.active { border-color: oklch(0.65 0.16 28 / 0.35); background: oklch(0.65 0.16 28 / 0.05); }
+  .admin-sidebar-item.is-complete.active { border-color: oklch(0.6 0.14 145 / 0.3); }
+  .admin-sidebar-item-billing.active { border-color: transparent; }
+  .admin-sidebar-page.active { background: transparent; border-color: transparent; }
+  .admin-sidebar-page.active .admin-sidebar-page-label { color: var(--ink); font-weight: 500; }
   /* 설정 화면 행: 좌측 라벨 + 우측 컨트롤 */
   .admin-settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
   .admin-settings-row-label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
