@@ -225,19 +225,19 @@ export function BannersEditor() {
             >
               <DragHandle disabled={dragDisabled} />
               {b.imageUrl && (
-                <div style={{ width: 120, height: 68, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)", flexShrink: 0 }}>
+                <div className="banner-thumb">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={b.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={b.imageUrl} alt="" />
                 </div>
               )}
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="banner-meta">
                 {b.linkUrl ? (
-                  <div style={{ color: "var(--muted)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>→ {b.linkUrl}</div>
+                  <div className="banner-link">→ {b.linkUrl}</div>
                 ) : (
-                  <div style={{ color: "var(--muted)", fontSize: 12 }}>이동 링크 없음</div>
+                  <div className="banner-link">이동 링크 없음</div>
                 )}
               </div>
-              <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
+              <div className="banner-actions">
                 <button type="button" className="btn btn-ghost" onClick={() => startEdit(b)} disabled={editingId !== null}>
                   편집
                 </button>

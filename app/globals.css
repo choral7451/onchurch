@@ -767,9 +767,15 @@ main { flex: 1; }
 .top-banner-dots { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 2; }
 .top-banner-dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: oklch(1 0 0 / 0.5); cursor: pointer; padding: 0; transition: background 0.15s ease, transform 0.15s ease; }
 .top-banner-dot.active { background: white; transform: scale(1.25); }
-.admin-banner-card { display: flex; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
-.admin-banner-card.editing { flex-direction: column; background: var(--bg-tinted); }
+.admin-banner-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
+.admin-banner-card.editing { flex-direction: column; align-items: stretch; background: var(--bg-tinted); }
 .admin-banner-card.inactive { opacity: 0.55; }
+/* 등록된 배너 목록 카드 구성요소(썸네일 · 링크 · 편집/삭제) */
+.banner-thumb { width: 120px; height: 68px; border-radius: var(--r-sm); overflow: hidden; background: var(--surface-2); flex-shrink: 0; }
+.banner-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.banner-meta { flex: 1; min-width: 0; }
+.banner-link { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.banner-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
 /* 회원 관리 */
 .member-search { width: 240px; max-width: 100%; }
@@ -1143,6 +1149,13 @@ main { flex: 1; }
   /* 배지는 줄어들지 않게 해 D-day가 개행되지 않도록(긴 설명 텍스트가 대신 줄바꿈). */
   .admin-settings-row .admin-sub-badge { flex-shrink: 0; }
   .admin-settings-logout { justify-content: center; margin-top: 4px; }
+
+  /* 등록된 배너 카드(모바일): 1줄 = 핸들+썸네일+링크, 2줄 = 편집/삭제(전체폭 우측). */
+  .admin-banner-card:not(.editing) { flex-wrap: wrap; row-gap: 10px; padding: 12px; }
+  .admin-banner-card:not(.editing) .banner-thumb { width: 104px; height: 58px; }
+  .admin-banner-card:not(.editing) .banner-meta { flex: 1 1 80px; }
+  .admin-banner-card:not(.editing) .banner-actions { flex: 1 0 100%; justify-content: flex-end; }
+  .admin-banner-card:not(.editing) .banner-actions .btn { padding: 7px 14px; font-size: 13px; }
 
   .admin-publish-toggle { padding: 5px 8px 5px 10px; gap: 8px; }
   .admin-publish-toggle-label { font-size: 12px; gap: 6px; }
