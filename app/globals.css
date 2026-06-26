@@ -1138,6 +1138,8 @@ main { flex: 1; }
   .admin-settings-row-label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .admin-settings-row-label strong { font-size: 14px; font-weight: 700; color: var(--ink); }
   .admin-settings-row-label span { font-size: 12px; color: var(--muted); }
+  /* 배지는 줄어들지 않게 해 D-day가 개행되지 않도록(긴 설명 텍스트가 대신 줄바꿈). */
+  .admin-settings-row .admin-sub-badge { flex-shrink: 0; }
   .admin-settings-logout { justify-content: center; margin-top: 4px; }
 
   .admin-publish-toggle { padding: 5px 8px 5px 10px; gap: 8px; }
