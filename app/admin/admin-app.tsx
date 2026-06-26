@@ -1023,7 +1023,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
           {onboardingDone && (
           <aside className="admin-sidebar">
-            <div className="admin-sidebar-switch" style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+            <div className="admin-sidebar-switch">
               <button
                 type="button"
                 className={`btn ${navGroup === "home" ? "btn-primary" : "btn-secondary"}`}
