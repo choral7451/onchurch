@@ -1,45 +1,39 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { onchurchGallery } from "@/lib/api-client";
+import { onchurchGallery, type GalleryGroup } from "@/lib/api-client";
 
 type Category = { id: number; name: string; isAll: boolean };
-type Gallery = {
-  id: number;
-  categoryId: number | null;
-  title: string;
-  date: string | null;
-  photoUrl: string | null;
-  grad: string | null;
-};
 type Layout = { col: number; row: number };
 
 type Props = {
   slug: string;
   categories: Category[];
-  initialGalleries: Gallery[];
+  initialGroups: GalleryGroup[];
   totalCount: number;
   pageSize: number;
   layout: Layout[];
 };
 
-export function GalleryView({ slug, categories, initialGalleries, totalCount, pageSize, layout }: Props) {
+export function GalleryView({ slug, categories, initialGroups, totalCount, pageSize, layout }: Props) {
   // '전체'(isAll) 카테고리가 있으면 그것을, 없으면(삭제한 교회) 첫 카테고리를 기본 선택.
   const allCat = useMemo(() => categories.find((c) => c.isAll) ?? null, [categories]);
   const initialFilter = allCat ? allCat.id : categories[0]?.id ?? null;
 
-  const [items, setItems] = useState<Gallery[]>(initialGalleries);
+  const [groups, setGroups] = useState<GalleryGroup[]>(initialGroups);
   const [total, setTotal] = useState<number>(totalCount);
   const [page, setPage] = useState<number>(1);
   const [filterId, setFilterId] = useState<number | null>(initialFilter);
   const [loading, setLoading] = useState(false);
   // 카테고리 전환 중 표시 — 클릭 즉시 스켈레톤으로 바꿔 "바로 넘어간 것처럼" 보이게 한다.
   const [switching, setSwitching] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // 라이트박스: 열려 있는 묶음과 그 안에서의 현재 사진 인덱스.
+  const [activeGroup, setActiveGroup] = useState<GalleryGroup | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   // 카테고리를 빠르게 연속 클릭할 때, 가장 마지막 요청의 응답만 반영하도록 하는 가드.
   const reqIdRef = useRef(0);
 
-  const hasMore = items.length < total;
+  const hasMore = groups.length < total;
 
   // 선택된 카테고리를 조회용 categoryId로 변환. '전체'(isAll)는 필터 없이 전부 조회(null).
   const queryCategoryId = useCallback(
@@ -63,7 +57,7 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
           size: pageSize,
         });
         if (myId !== reqIdRef.current) return; // 더 최신 클릭이 있으면 이 응답은 버린다.
-        setItems(res.galleries ?? []);
+        setGroups(res.groups ?? []);
         setTotal(res.totalCount ?? 0);
         setPage(1);
       } catch {
@@ -111,7 +105,7 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
         size: pageSize,
       });
       if (myId !== reqIdRef.current) return; // 그 사이 카테고리가 바뀌었으면 버린다.
-      setItems((prev) => [...prev, ...(res.galleries ?? [])]);
+      setGroups((prev) => [...prev, ...(res.groups ?? [])]);
       setTotal(res.totalCount ?? total);
       setPage(nextPage);
     } catch {
@@ -135,23 +129,24 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
     return () => io.disconnect();
   }, [loadMore]);
 
-  const lightboxItems = useMemo(
-    () => items.filter((g): g is Gallery & { photoUrl: string } => !!g.photoUrl),
-    [items],
+  // 라이트박스에서 넘겨볼 수 있는 사진 = 열린 묶음의 사진 중 URL 있는 것.
+  const lightboxPhotos = useMemo(
+    () => (activeGroup ? activeGroup.photos.filter((p) => !!p.photoUrl) : []),
+    [activeGroup],
   );
 
-  const close = useCallback(() => setActiveIndex(null), []);
+  const close = useCallback(() => setActiveGroup(null), []);
   const prev = useCallback(
-    () => setActiveIndex((i) => (i == null ? i : (i - 1 + lightboxItems.length) % lightboxItems.length)),
-    [lightboxItems.length],
+    () => setActiveIndex((i) => (lightboxPhotos.length === 0 ? 0 : (i - 1 + lightboxPhotos.length) % lightboxPhotos.length)),
+    [lightboxPhotos.length],
   );
   const next = useCallback(
-    () => setActiveIndex((i) => (i == null ? i : (i + 1) % lightboxItems.length)),
-    [lightboxItems.length],
+    () => setActiveIndex((i) => (lightboxPhotos.length === 0 ? 0 : (i + 1) % lightboxPhotos.length)),
+    [lightboxPhotos.length],
   );
 
   useEffect(() => {
-    if (activeIndex == null) return;
+    if (!activeGroup) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
       else if (e.key === "ArrowLeft") prev();
@@ -163,15 +158,15 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
-  }, [activeIndex, close, prev, next]);
+  }, [activeGroup, close, prev, next]);
 
-  function openFor(g: Gallery) {
-    if (!g.photoUrl) return;
-    const idx = lightboxItems.findIndex((x) => x.id === g.id);
-    if (idx >= 0) setActiveIndex(idx);
+  function openGroup(g: GalleryGroup) {
+    if (!g.photos.some((p) => p.photoUrl)) return;
+    setActiveGroup(g);
+    setActiveIndex(0);
   }
 
-  const active = activeIndex != null ? lightboxItems[activeIndex] : null;
+  const active = activeGroup ? lightboxPhotos[activeIndex] ?? null : null;
 
   return (
     <>
@@ -201,33 +196,33 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
                 />
               );
             })
-          : items.map((g, i) => {
+          : groups.map((g, i) => {
           const l = layout[i % layout.length] ?? { col: 4, row: 1 };
-          const clickable = !!g.photoUrl;
+          const clickable = g.photos.some((p) => p.photoUrl);
           return (
             <div
-              key={g.id}
+              key={g.groupKey}
               className="gallery-item"
               style={{ gridColumn: `span ${l.col}`, gridRow: `span ${l.row}`, cursor: clickable ? "pointer" : "default" }}
               role={clickable ? "button" : undefined}
               tabIndex={clickable ? 0 : undefined}
-              onClick={clickable ? () => openFor(g) : undefined}
+              onClick={clickable ? () => openGroup(g) : undefined}
               onKeyDown={
                 clickable
                   ? (e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        openFor(g);
+                        openGroup(g);
                       }
                     }
                   : undefined
               }
             >
-              {g.photoUrl ? (
+              {g.coverUrl ? (
                 <div
                   className="placeholder-img"
                   style={{
-                    backgroundImage: `url(${g.photoUrl})`,
+                    backgroundImage: `url(${g.coverUrl})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -239,6 +234,15 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
                   {g.date && <span className="placeholder-img-tag">PHOTO · {g.date}</span>}
                 </div>
               )}
+              {g.count > 1 && (
+                <span className="gallery-count-badge" aria-label={`사진 ${g.count}장`}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M3 15l5-5 4 4 3-3 6 6" />
+                  </svg>
+                  {g.count}
+                </span>
+              )}
               <div className="gallery-overlay">
                 <div className="gallery-cap-title">{g.title}</div>
                 {g.date && <div className="gallery-cap-meta">{g.date}</div>}
@@ -248,7 +252,7 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
         })}
       </div>
 
-      {!switching && items.length === 0 && !loading && (
+      {!switching && groups.length === 0 && !loading && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 40 }}>
           이 카테고리에 사진이 없습니다.
         </div>
@@ -279,7 +283,7 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
           >
             ×
           </button>
-          {lightboxItems.length > 1 && (
+          {lightboxPhotos.length > 1 && (
             <button
               type="button"
               className="gallery-lightbox-nav prev"
@@ -291,17 +295,17 @@ export function GalleryView({ slug, categories, initialGalleries, totalCount, pa
           )}
           <div className="gallery-lightbox-content" onClick={(e) => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={active.photoUrl} alt={active.title} className="gallery-lightbox-img" />
+            <img src={active.photoUrl ?? ""} alt={active.title} className="gallery-lightbox-img" />
             <div className="gallery-lightbox-meta">
               <div className="gallery-lightbox-title">{active.title}</div>
-              {lightboxItems.length > 1 && (
+              {lightboxPhotos.length > 1 && (
                 <div className="gallery-lightbox-count">
-                  {activeIndex! + 1} / {lightboxItems.length}
+                  {activeIndex + 1} / {lightboxPhotos.length}
                 </div>
               )}
             </div>
           </div>
-          {lightboxItems.length > 1 && (
+          {lightboxPhotos.length > 1 && (
             <button
               type="button"
               className="gallery-lightbox-nav next"

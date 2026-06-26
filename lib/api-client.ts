@@ -1433,6 +1433,26 @@ export const onchurchGalleryCategory = {
     request<unknown>(`/onchurch/gallery-categories/me/${id}`, { method: "DELETE", auth: true }),
 };
 
+export type GalleryGroupPhoto = {
+  id: number;
+  photoUrl: string | null;
+  grad: string | null;
+  title: string;
+  date: string | null;
+};
+
+// 공개 갤러리 카드 = batch_id로 묶인 사진 묶음(앨범). 묶지 않은 사진은 1장짜리 묶음.
+export type GalleryGroup = {
+  groupKey: string;
+  categoryId: number | null;
+  title: string;
+  date: string | null;
+  coverUrl: string | null;
+  grad: string | null;
+  count: number;
+  photos: GalleryGroupPhoto[];
+};
+
 export const onchurchGallery = {
   listMine: () =>
     request<{ galleries: GalleryItemRow[] }>("/onchurch/galleries/me", { method: "GET", auth: true }).then(
@@ -1451,7 +1471,7 @@ export const onchurchGallery = {
     if (opts?.size) qs.set("size", String(opts.size));
     const query = qs.toString();
     const path = `/onchurch/sites/${encodeURIComponent(slug)}/galleries${query ? `?${query}` : ""}`;
-    return request<{ categories: GalleryCategoryItem[]; galleries: GalleryItemRow[]; totalCount: number }>(path, {
+    return request<{ categories: GalleryCategoryItem[]; groups: GalleryGroup[]; totalCount: number }>(path, {
       method: "GET",
     });
   },

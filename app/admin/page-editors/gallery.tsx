@@ -108,8 +108,9 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
   const [uploading, setUploading] = useState(false);
+  // 사진들을 하나의 앨범(묶음)으로 보여줄지 여부. 기본은 묶지 않음(각 사진 개별 노출).
+  const [draftGrouped, setDraftGrouped] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
-  const isNew = editingKey === "new";
   // '전체' 보기가 없으면 미분류(categoryId null) 사진은 공개되지 않으므로 카테고리 선택을 강제한다.
   const hasAll = categories.some((c) => c.isAll);
   const categoryRequired = !hasAll && draftCategoryId == null;
@@ -131,10 +132,12 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     setDraftCategoryId(null);
     setDraftPhotos([]);
     setRemovedIds([]);
+    setDraftGrouped(false);
     setErrMsg("");
   }
   function startEdit(g: GalleryGroup) {
     setEditingKey(g.key);
+    setDraftGrouped(!!g.batchId); // 이미 묶음(batchId 있음)이면 체크 상태로 시작.
     setDraftTitle(g.items[0].title);
     setDraftCategoryId(g.items[0].categoryId);
     setDraftPhotos(g.items.map((it) => ({ id: it.id, url: it.photoUrl ?? "", grad: it.grad })));
@@ -143,7 +146,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   }
   function cancel() {
     setEditingKey(null);
-    setDraftTitle(""); setDraftCategoryId(null); setDraftPhotos([]); setRemovedIds([]); setErrMsg("");
+    setDraftTitle(""); setDraftCategoryId(null); setDraftPhotos([]); setRemovedIds([]); setDraftGrouped(false); setErrMsg("");
   }
 
   async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
@@ -187,36 +190,30 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     try {
       const title = draftTitle.trim();
       const categoryId = draftCategoryId ?? null;
-      const editingGroup = !isNew ? groups.find((g) => g.key === editingKey) : null;
-      const batchId =
-        isNew || !editingGroup ? makeBatchId() : (editingGroup.batchId ?? makeBatchId());
+      // 묶기 체크 시: 사진들이 같은 batchId를 공유 → 공개 페이지에서 앨범 1장(커버+장수)으로.
+      // 묶지 않으면: batchId=null → 각 사진이 개별 카드로 평면 노출.
+      const grouped = draftGrouped && remaining.length > 1;
+      const sharedBatchId = makeBatchId();
 
       for (const removedId of removedIds) {
         await onchurchGallery.remove(removedId);
       }
+      let order = 0;
       for (const p of remaining) {
+        const payload = {
+          categoryId,
+          batchId: grouped ? sharedBatchId : null,
+          title,
+          date: null,
+          photoUrl: p.url,
+          grad: p.grad,
+          sortOrder: grouped ? order++ : 0,
+          isActive: true,
+        };
         if (p.id != null) {
-          await onchurchGallery.update(p.id, {
-            categoryId,
-            batchId,
-            title,
-            date: null,
-            photoUrl: p.url,
-            grad: p.grad,
-            sortOrder: 0,
-            isActive: true,
-          });
+          await onchurchGallery.update(p.id, payload);
         } else {
-          await onchurchGallery.create({
-            categoryId,
-            batchId,
-            title,
-            date: null,
-            photoUrl: p.url,
-            grad: p.grad,
-            sortOrder: 0,
-            isActive: true,
-          });
+          await onchurchGallery.create(payload);
         }
       }
       cancel(); await load();
@@ -311,10 +308,27 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
               <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder="2026 신년 감사예배" required />
               {draftPhotos.length > 1 && (
                 <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
-                  묶음 안 {draftPhotos.length}장 모두에 동일한 제목으로 적용됩니다.
+                  {draftPhotos.length}장 모두에 동일한 제목으로 적용됩니다.
                 </span>
               )}
             </div>
+            {draftPhotos.length > 1 && (
+              <div className="form-row full">
+                <label className="checkbox-row" style={{ cursor: "pointer", gap: 12 }}>
+                  <input
+                    type="checkbox"
+                    checked={draftGrouped}
+                    onChange={(e) => setDraftGrouped(e.target.checked)}
+                  />
+                  <span>사진 묶어서 보여주기 (앨범)</span>
+                </label>
+                <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
+                  {draftGrouped
+                    ? "갤러리 목록엔 대표 1장 + 장수로 표시되고, 눌러서 넘겨봅니다."
+                    : "체크하지 않으면 사진이 각각 따로 노출됩니다. (기본)"}
+                </span>
+              </div>
+            )}
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>

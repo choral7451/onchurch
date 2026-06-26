@@ -25,34 +25,37 @@ const LAYOUT = [
 ];
 
 type ApiCategory = { id: number; name: string; isActive: boolean; isAll: boolean };
-type ApiGallery = {
-  id: number;
+type ApiGroupPhoto = { id: number; photoUrl: string | null; grad: string | null; title: string; date: string | null };
+type ApiGroup = {
+  groupKey: string;
   categoryId: number | null;
   title: string;
   date: string | null;
-  photoUrl: string | null;
+  coverUrl: string | null;
   grad: string | null;
+  count: number;
+  photos: ApiGroupPhoto[];
 };
 
 const PAGE_SIZE = 12;
 
 async function fetchGalleryFirstPage(
   slug: string,
-): Promise<{ categories: ApiCategory[]; galleries: ApiGallery[]; totalCount: number }> {
+): Promise<{ categories: ApiCategory[]; groups: ApiGroup[]; totalCount: number }> {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
   try {
     const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/galleries?page=1&size=${PAGE_SIZE}`, {
       cache: "no-store",
     });
-    if (!res.ok) return { categories: [], galleries: [], totalCount: 0 };
+    if (!res.ok) return { categories: [], groups: [], totalCount: 0 };
     const body = await res.json();
     return {
       categories: (body?.item?.categories ?? []) as ApiCategory[],
-      galleries: (body?.item?.galleries ?? []) as ApiGallery[],
+      groups: (body?.item?.groups ?? []) as ApiGroup[],
       totalCount: (body?.item?.totalCount ?? 0) as number,
     };
   } catch {
-    return { categories: [], galleries: [], totalCount: 0 };
+    return { categories: [], groups: [], totalCount: 0 };
   }
 }
 
@@ -62,7 +65,7 @@ async function GalleryContent({ tenant }: { tenant: string }) {
     <GalleryView
       slug={tenant}
       categories={data.categories}
-      initialGalleries={data.galleries}
+      initialGroups={data.groups}
       totalCount={data.totalCount}
       pageSize={PAGE_SIZE}
       layout={LAYOUT}
