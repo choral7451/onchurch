@@ -999,8 +999,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
             href="/admin"
             className="brand"
             onClick={(e) => {
-              // 온보딩 완료 후엔 새로고침 없이 첫 화면(홈 그룹·모바일 메뉴 목록)으로 리셋한다.
-              if (onboardingDone) { e.preventDefault(); selectNavGroup("home"); }
+              // 새로고침 없이 첫 화면으로 리셋: 홈 그룹 + 모바일은 메뉴 목록(상세에 있더라도 빠져나온다).
+              e.preventDefault();
+              setNavGroup("home");
+              setMobileDetail(false);
+              setActiveSection(onboardingDone ? "site" : "start");
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
