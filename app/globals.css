@@ -1150,12 +1150,16 @@ main { flex: 1; }
   .admin-settings-row .admin-sub-badge { flex-shrink: 0; }
   .admin-settings-logout { justify-content: center; margin-top: 4px; }
 
-  /* 등록된 배너 카드(모바일): 1줄 = 핸들+썸네일+링크, 2줄 = 편집/삭제(전체폭 우측). */
+  /* 등록된 배너 카드(모바일): 1줄 = 핸들+썸네일, 2줄 = 편집/삭제(전체폭 우측). */
   .admin-banner-card:not(.editing) { flex-wrap: wrap; row-gap: 10px; padding: 12px; }
-  .admin-banner-card:not(.editing) .banner-thumb { width: 104px; height: 58px; }
+  /* 홈배너: 모바일에선 이동 링크(메타)를 숨기고 썸네일이 남은 폭을 채운다. */
+  .admin-banner-card:not(.editing) .banner-meta:has(.banner-link) { display: none; }
+  .admin-banner-card:not(.editing) .banner-thumb { flex: 1 1 0; min-width: 0; width: auto; height: auto; aspect-ratio: 16 / 9; }
+  /* 소식 등 링크 없는 메타는 그대로 한 줄 차지 */
   .admin-banner-card:not(.editing) .banner-meta { flex: 1 1 80px; }
   .admin-banner-card:not(.editing) .banner-actions { flex: 1 0 100%; justify-content: flex-end; }
-  .admin-banner-card:not(.editing) .banner-actions .btn { padding: 7px 14px; font-size: 13px; }
+  /* 모바일은 호버가 없어 ghost 버튼이 잘 안 보이므로 테두리를 줘 또렷한 버튼으로. */
+  .admin-banner-card:not(.editing) .banner-actions .btn { padding: 7px 16px; font-size: 13px; border-color: var(--line); background: var(--surface); color: var(--ink); }
 
   .admin-publish-toggle { padding: 5px 8px 5px 10px; gap: 8px; }
   .admin-publish-toggle-label { font-size: 12px; gap: 6px; }

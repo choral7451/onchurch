@@ -995,7 +995,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
       )}
       <header className={`admin-topbar ${onboardingDone ? "onboarded" : ""}`}>
         <div className="admin-topbar-inner">
-          <Link href="/admin" className="brand">
+          <Link
+            href="/admin"
+            className="brand"
+            onClick={(e) => {
+              // 온보딩 완료 후엔 새로고침 없이 첫 화면(홈 그룹·모바일 메뉴 목록)으로 리셋한다.
+              if (onboardingDone) { e.preventDefault(); selectNavGroup("home"); }
+            }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/everychurch-logo.jpeg" alt="온교회" className="brand-logo" />
             <div className="brand-text">
