@@ -1071,13 +1071,16 @@ main { flex: 1; }
 
   /* Admin */
   /* 모바일 헤더: 위(브랜드) / 아래(액션 툴바) 2단 배치로 정돈한다. */
-  .admin-topbar-inner { padding: 9px 14px; height: auto; min-height: 56px; gap: 8px 12px; flex-wrap: wrap; }
+  /* 행 간격(8px)은 액션 툴바의 margin-top으로 둔다 → 스크롤 시 접으면 간격까지 함께 사라진다. */
+  .admin-topbar-inner { padding: 9px 14px; height: auto; min-height: 56px; gap: 0 12px; flex-wrap: wrap; }
   .brand-logo { width: 32px; height: 32px; }
   .brand-name { font-size: 15px; }
   .brand-eng { font-size: 9px; letter-spacing: 0.14em; }
   /* 윗줄: 브랜드(좌) — 로그아웃(우). 아랫줄: 액션 툴바(기간·스위치·홈페이지) 전체폭. */
   .admin-logout { order: 2; }
-  .admin-topbar-actions { order: 3; flex: 1 1 100%; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+  .admin-topbar-actions { order: 3; flex: 1 1 100%; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-top: 8px; overflow: hidden; max-height: 140px; opacity: 1; transition: max-height 0.28s ease, opacity 0.2s ease, margin-top 0.28s ease; }
+  /* 아래로 스크롤하면 액션 행을 접고(높이·여백·투명도 0), 위로 올리면 다시 펼친다. */
+  .admin-topbar.actions-collapsed .admin-topbar-actions { max-height: 0; opacity: 0; margin-top: 0; pointer-events: none; }
   .admin-publish-toggle { padding: 5px 8px 5px 10px; gap: 8px; }
   .admin-publish-toggle-label { font-size: 12px; gap: 6px; }
   .admin-sub-badge { padding: 5px 8px; gap: 6px; font-size: 11px; }

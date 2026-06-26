@@ -292,6 +292,21 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [aboutFilled, setAboutFilled] = useState(false);
   const [worshipFilled, setWorshipFilled] = useState(false);
 
+  // 모바일 헤더: 스크롤을 내리면 액션 행(기간·홈페이지·사이트 운영)을 접고, 올리면 다시 펼친다.
+  const [topActionsHidden, setTopActionsHidden] = useState(false);
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - lastY) < 6) return; // 미세 흔들림 무시
+      if (y > lastY && y > 72) setTopActionsHidden(true); // 아래로 스크롤 → 접기
+      else if (y < lastY) setTopActionsHidden(false); // 위로 스크롤 → 펼치기
+      lastY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   // 시작하기 단계의 초록 체크는 '저장된 값' 기준으로 표시한다(입력 중에는 변하지 않음).
   const [savedRequired, setSavedRequired] = useState({ slug: "", name: "", phone: "", email: "", address: "" });
 
@@ -949,7 +964,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {saveToast}
         </div>
       )}
-      <header className="admin-topbar">
+      <header className={`admin-topbar ${topActionsHidden ? "actions-collapsed" : ""}`}>
         <div className="admin-topbar-inner">
           <Link href="/admin" className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
