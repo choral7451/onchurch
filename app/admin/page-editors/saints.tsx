@@ -14,6 +14,7 @@ import {
   type SaintTag,
   type Visitation,
 } from "@/lib/api-client";
+import { Pager } from "@/components/admin-pager";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -672,6 +673,7 @@ export function SaintsEditor({
   const [errMsg, setErrMsg] = useState("");
   const [query, setQuery] = useState("");
   const [showTags, setShowTags] = useState(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     void load();
@@ -831,6 +833,12 @@ export function SaintsEditor({
         (s.position ?? "").toLowerCase().includes(q),
     );
   }, [saints, query]);
+
+  const PAGE_SIZE = 50;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => { setPage(1); }, [query]);
+  useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
 
   const editingSaint = editing && editing > 0 ? saints.find((s) => s.id === editing) ?? null : null;
   const detailSaint = detailId != null ? saints.find((s) => s.id === detailId) ?? null : null;
@@ -1018,7 +1026,7 @@ export function SaintsEditor({
           <p style={{ color: "var(--muted)" }}>{saints.length === 0 ? "아직 등록된 성도가 없습니다." : "검색 결과가 없습니다."}</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {filtered.map((s) => (
+            {pageItems.map((s) => (
               <button
                 key={s.id}
                 type="button"
@@ -1043,6 +1051,7 @@ export function SaintsEditor({
                 <span aria-hidden="true" style={{ color: "var(--muted-2)", fontSize: 18, flexShrink: 0 }}>›</span>
               </button>
             ))}
+            <Pager page={page} pageCount={pageCount} onChange={setPage} />
           </div>
         ))}
         </>

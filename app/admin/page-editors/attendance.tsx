@@ -7,10 +7,10 @@ import {
   onchurchChurchSaint,
   onchurchWorshipService,
   type AttendanceSession,
-  type AttendanceStats,
   type ChurchSaint,
   type WorshipServiceItem,
 } from "@/lib/api-client";
+import { Pager } from "@/components/admin-pager";
 
 function todayStr(): string {
   const d = new Date();
@@ -105,201 +105,8 @@ function SummaryCard({ label, value, sub }: { label: string; value: string; sub?
   );
 }
 
-function StatsView() {
-  const [weeks, setWeeks] = useState(4);
-  const [stats, setStats] = useState<AttendanceStats | null>(null);
-  const [saints, setSaints] = useState<ChurchSaint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [errMsg, setErrMsg] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setErrMsg("");
-      try {
-        const [st, roster] = await Promise.all([onchurchAttendance.stats(weeks), onchurchChurchSaint.listMine()]);
-        if (cancelled) return;
-        setStats(st);
-        setSaints(roster);
-      } catch (err) {
-        if (!cancelled) setErrMsg(err instanceof ApiError ? err.message : "통계를 불러오지 못했습니다.");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [weeks]);
-
-  const view = useMemo(() => {
-    if (!stats) return null;
-    const total = saints.length;
-    const trend = stats.trend;
-    const latest = trend.length ? trend[trend.length - 1] : null;
-    const prev = trend.length > 1 ? trend[trend.length - 2] : null;
-    const delta = latest && prev ? latest.count - prev.count : null;
-
-    const cutoff = cutoffStr(weeks);
-    const windowTrend = trend.filter((t) => t.date >= cutoff);
-    const avg = windowTrend.length
-      ? Math.round(windowTrend.reduce((a, t) => a + t.count, 0) / windowTrend.length)
-      : 0;
-
-    const countMap = new Map(stats.perSaint.map((p) => [p.saintId, p.count]));
-    const absentees = saints
-      .filter((s) => !countMap.has(s.id))
-      .sort((a, b) => a.name.localeCompare(b.name, "ko"));
-    const perSaint = saints
-      .map((s) => ({ saint: s, count: countMap.get(s.id) ?? 0 }))
-      .sort((a, b) => a.count - b.count || a.saint.name.localeCompare(b.saint.name, "ko"));
-    const byService = stats.byService.map((s) => ({
-      ...s,
-      avg: s.occurrences ? Math.round(s.total / s.occurrences) : 0,
-    }));
-
-    return { total, trend, latest, delta, avg, windowDates: stats.windowDates, absentees, perSaint, byService };
-  }, [stats, saints, weeks]);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      <div className="chips">
-        {[4, 8, 12].map((w) => (
-          <div key={w} className={`chip ${weeks === w ? "active" : ""}`} onClick={() => setWeeks(w)}>최근 {w}주</div>
-        ))}
-      </div>
-
-      {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
-      {loading || !view ? (
-        <p style={{ color: "var(--muted)" }}>불러오는 중...</p>
-      ) : (
-        <>
-          {/* 1. 요약 카드 */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <SummaryCard
-              label="최근 예배 출석"
-              value={`${view.latest?.count ?? 0}명`}
-              sub={
-                <span>
-                  {view.latest ? view.latest.date : "기록 없음"}
-                  {view.delta !== null && view.delta !== 0 && (
-                    <span style={{ color: view.delta > 0 ? "var(--primary)" : "oklch(0.6 0.18 28)", marginLeft: 6, fontWeight: 700 }}>
-                      {view.delta > 0 ? `▲${view.delta}` : `▼${Math.abs(view.delta)}`}
-                    </span>
-                  )}
-                </span>
-              }
-            />
-            <SummaryCard
-              label="출석률"
-              value={view.total ? `${Math.round(((view.latest?.count ?? 0) / view.total) * 100)}%` : "—"}
-              sub={<span style={{ color: "var(--muted)" }}>전체 {view.total}명 기준</span>}
-            />
-            <SummaryCard label={`최근 ${weeks}주 평균`} value={`${view.avg}명`} sub={<span style={{ color: "var(--muted)" }}>예배 {view.windowDates}회</span>} />
-            <SummaryCard label="장기 결석" value={`${view.absentees.length}명`} sub={<span style={{ color: "var(--muted)" }}>{weeks}주간 무출석</span>} />
-          </div>
-
-          {/* 3. 주별 출석 추이 */}
-          <div>
-            <h3 style={{ fontSize: 15, margin: "0 0 10px" }}>출석 추이</h3>
-            {view.trend.length === 0 ? (
-              <p style={{ color: "var(--muted)", fontSize: 13 }}>출석 기록이 없습니다.</p>
-            ) : (
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 8, overflowX: "auto", padding: "8px 4px", minHeight: 140 }}>
-                {(() => {
-                  const max = Math.max(1, ...view.trend.map((t) => t.count));
-                  return view.trend.map((t, i) => (
-                    <div key={`${t.date}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, minWidth: 34 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700 }}>{t.count}</span>
-                      <div
-                        title={`${t.date} · ${t.count}명`}
-                        style={{ width: 22, height: Math.round((t.count / max) * 96) + 4, background: "var(--primary)", borderRadius: "6px 6px 0 0" }}
-                      />
-                      <span style={{ fontSize: 10, color: "var(--muted)" }}>{mmdd(t.date)}</span>
-                    </div>
-                  ));
-                })()}
-              </div>
-            )}
-          </div>
-
-          {/* 4. 예배별 출석 */}
-          <div>
-            <h3 style={{ fontSize: 15, margin: "0 0 10px" }}>예배별 출석 (최근 {weeks}주)</h3>
-            {view.byService.length === 0 ? (
-              <p style={{ color: "var(--muted)", fontSize: 13 }}>기록이 없습니다.</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {view.byService.map((s) => (
-                  <div key={s.serviceType} className="admin-banner-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-                    <strong style={{ fontSize: 14 }}>{s.serviceType}</strong>
-                    <span style={{ fontSize: 13, color: "var(--muted)" }}>
-                      평균 <b style={{ color: "var(--ink)" }}>{s.avg}명</b> · {s.occurrences}회 · 누적 {s.total}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 2. 장기 결석자 */}
-          <div>
-            <h3 style={{ fontSize: 15, margin: "0 0 10px" }}>장기 결석자 <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: 13 }}>· 최근 {weeks}주 한 번도 출석 안 함</span></h3>
-            {view.absentees.length === 0 ? (
-              <p style={{ color: "var(--muted)", fontSize: 13 }}>없습니다. 👏</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {view.absentees.map((s) => (
-                  <div key={s.id} className="admin-banner-card" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <Avatar url={s.photoUrl} name={s.name} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <strong style={{ fontSize: 14 }}>{s.name}</strong>
-                        {s.position && <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>{s.position}</span>}
-                      </div>
-                      {s.phone && <div style={{ color: "var(--muted)", fontSize: 12, marginTop: 2 }}>{s.phone}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 5. 성도별 출석률 */}
-          <div>
-            <h3 style={{ fontSize: 15, margin: "0 0 10px" }}>성도별 출석 <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: 13 }}>· 최근 {weeks}주 (예배 {view.windowDates}회 기준)</span></h3>
-            {view.perSaint.length === 0 ? (
-              <p style={{ color: "var(--muted)", fontSize: 13 }}>성도 명부가 비어 있습니다.</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {view.perSaint.map(({ saint, count }) => {
-                  const rate = view.windowDates ? Math.round((count / view.windowDates) * 100) : 0;
-                  const full = view.windowDates > 0 && count === view.windowDates;
-                  return (
-                    <div key={saint.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)" }}>
-                      <strong style={{ fontSize: 13.5, flex: 1, minWidth: 0 }}>
-                        {saint.name}
-                        {saint.position && <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{saint.position}</span>}
-                      </strong>
-                      {full && <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>개근</span>}
-                      <span style={{ fontSize: 13, color: count === 0 ? "oklch(0.6 0.18 28)" : "var(--muted)" }}>
-                        {count}/{view.windowDates}회 · {rate}%
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 export function AttendanceEditor() {
-  const [view, setView] = useState<"check" | "stats" | "history">("check");
+  const [view, setView] = useState<"check" | "history">("check");
   const [date, setDate] = useState(todayStr());
   const [serviceType, setServiceType] = useState("");
 
@@ -312,6 +119,7 @@ export function AttendanceEditor() {
 
   const [query, setQuery] = useState("");
   const [posFilter, setPosFilter] = useState("");
+  const [page, setPage] = useState(1);
 
   // 명단 + 예배안내(예배 종류) 로드 — 예배 종류는 홈페이지 예배안내에서 가져온다
   useEffect(() => {
@@ -400,6 +208,14 @@ export function AttendanceEditor() {
       });
   }, [saints, query, posFilter]);
 
+  const PAGE_SIZE = 50;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // 검색·필터가 바뀌면 1페이지로. 페이지 수가 줄면 범위 보정.
+  useEffect(() => { setPage(1); }, [query, posFilter]);
+  useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
+
   async function toggleFavorite(saint: ChurchSaint) {
     const next = !saint.isFavorite;
     // 낙관적 업데이트
@@ -412,10 +228,10 @@ export function AttendanceEditor() {
     }
   }
 
-  async function setAll(targetPresent: boolean) {
-    const changed = filtered.filter((s) => present.has(s.id) !== targetPresent);
+  async function markMany(targets: ChurchSaint[], targetPresent: boolean, confirmMsg?: string) {
+    const changed = targets.filter((s) => present.has(s.id) !== targetPresent);
     if (changed.length === 0) return;
-    if (targetPresent && changed.length > 30 && !confirm(`${changed.length}명을 모두 출석 처리할까요?`)) return;
+    if (confirmMsg && !confirm(confirmMsg.replace("{n}", String(changed.length)))) return;
     // 낙관적 업데이트
     setPresent((prev) => {
       const s = new Set(prev);
@@ -436,6 +252,20 @@ export function AttendanceEditor() {
     }
   }
 
+  function setAll(targetPresent: boolean) {
+    return markMany(filtered, targetPresent, targetPresent ? "{n}명을 모두 출석 처리할까요?" : undefined);
+  }
+
+  // 즐겨찾기한 성도만 일괄 출석.
+  function markFavorites() {
+    const favorites = filtered.filter((s) => s.isFavorite);
+    if (favorites.length === 0) {
+      setErrMsg("즐겨찾기한 성도가 없습니다.");
+      return;
+    }
+    return markMany(favorites, true, "즐겨찾기 {n}명을 모두 출석 처리할까요?");
+  }
+
   return (
     <section className="admin-section">
       <div className="admin-section-head">
@@ -447,15 +277,12 @@ export function AttendanceEditor() {
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div className="chips">
           <div className={`chip ${view === "check" ? "active" : ""}`} onClick={() => setView("check")}>출석체크</div>
-          <div className={`chip ${view === "stats" ? "active" : ""}`} onClick={() => setView("stats")}>통계</div>
           <div className={`chip ${view === "history" ? "active" : ""}`} onClick={() => setView("history")}>출석 이력</div>
         </div>
 
         {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
 
-        {view === "stats" ? (
-          <StatsView />
-        ) : view === "history" ? (
+        {view === "history" ? (
           <HistoryView />
         ) : (
           <>
@@ -499,7 +326,8 @@ export function AttendanceEditor() {
               <strong style={{ fontSize: 15 }}>
                 출석 <span style={{ color: "var(--primary)" }}>{present.size}</span> / 전체 {saints.length}명
               </strong>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <button type="button" className="btn btn-secondary" onClick={markFavorites} disabled={loadingSession || !serviceType}>★ 즐겨찾기 출석</button>
                 <button type="button" className="btn btn-secondary" onClick={() => setAll(true)} disabled={loadingSession || !serviceType}>전체 출석</button>
                 <button type="button" className="btn btn-ghost" onClick={() => setAll(false)} disabled={loadingSession || !serviceType}>전체 해제</button>
               </div>
@@ -533,7 +361,7 @@ export function AttendanceEditor() {
               <p style={{ color: "var(--muted)" }}>검색 결과가 없습니다.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {filtered.map((s) => {
+                {pageItems.map((s) => {
                   const on = present.has(s.id);
                   return (
                     <button
@@ -601,6 +429,7 @@ export function AttendanceEditor() {
                     </button>
                   );
                 })}
+                <Pager page={page} pageCount={pageCount} onChange={setPage} />
               </div>
             )}
           </>

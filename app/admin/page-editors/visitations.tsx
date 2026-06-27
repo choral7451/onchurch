@@ -10,6 +10,7 @@ import {
   type VisitationType,
   type ChurchSaint,
 } from "@/lib/api-client";
+import { Pager } from "@/components/admin-pager";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -168,6 +169,7 @@ export function VisitationsEditor({
   const [errMsg, setErrMsg] = useState("");
   const [query, setQuery] = useState("");
   const [showTypes, setShowTypes] = useState(false);
+  const [page, setPage] = useState(1);
   // 성도 상세에서 넘어온 심방 상세인지 — '뒤로'를 성도 상세로 보낼지 판단.
   const [arrivedFromSaint, setArrivedFromSaint] = useState(false);
 
@@ -324,6 +326,12 @@ export function VisitationsEditor({
     if (draft.type && !names.includes(draft.type)) return [draft.type, ...names];
     return names;
   }, [types, draft.type]);
+
+  const PAGE_SIZE = 50;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => { setPage(1); }, [query]);
+  useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
 
   const busy = status === "saving" || status === "deleting";
   const detailVisit = detailId != null ? visitations.find((v) => v.id === detailId) ?? null : null;
@@ -484,7 +492,7 @@ export function VisitationsEditor({
           <p style={{ color: "var(--muted)" }}>{visitations.length === 0 ? "아직 등록된 심방 기록이 없습니다." : "검색 결과가 없습니다."}</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {filtered.map((v) => (
+            {pageItems.map((v) => (
               <button
                 key={v.id}
                 type="button"
@@ -499,6 +507,7 @@ export function VisitationsEditor({
                 <span aria-hidden="true" style={{ color: "var(--muted-2)", fontSize: 18, flexShrink: 0 }}>›</span>
               </button>
             ))}
+            <Pager page={page} pageCount={pageCount} onChange={setPage} />
           </div>
         ))}
         </>
