@@ -120,6 +120,7 @@ export function AttendanceEditor() {
   const [query, setQuery] = useState("");
   const [posFilter, setPosFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   // 명단 + 예배안내(예배 종류) 로드 — 예배 종류는 홈페이지 예배안내에서 가져온다
   useEffect(() => {
@@ -208,12 +209,11 @@ export function AttendanceEditor() {
       });
   }, [saints, query, posFilter]);
 
-  const PAGE_SIZE = 50;
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  // 검색·필터가 바뀌면 1페이지로. 페이지 수가 줄면 범위 보정.
-  useEffect(() => { setPage(1); }, [query, posFilter]);
+  // 검색·필터·페이지크기가 바뀌면 1페이지로. 페이지 수가 줄면 범위 보정.
+  useEffect(() => { setPage(1); }, [query, posFilter, pageSize]);
   useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
 
   async function toggleFavorite(saint: ChurchSaint) {
@@ -429,7 +429,7 @@ export function AttendanceEditor() {
                     </button>
                   );
                 })}
-                <Pager page={page} pageCount={pageCount} onChange={setPage} />
+                <Pager page={page} pageCount={pageCount} onChange={setPage} pageSize={pageSize} onPageSizeChange={setPageSize} />
               </div>
             )}
           </>

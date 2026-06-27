@@ -1,14 +1,20 @@
 "use client";
 
-// 관리자 목록용 간단 페이지네이션. 페이지가 1개 이하면 아무것도 그리지 않는다.
+// 관리자 목록용 간단 페이지네이션 + 페이지당 개수 선택.
 export function Pager({
   page,
   pageCount,
   onChange,
+  pageSize,
+  onPageSizeChange,
+  pageSizeOptions = [10, 30, 50],
 }: {
   page: number;
   pageCount: number;
   onChange: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
+  pageSizeOptions?: number[];
 }) {
   if (pageCount < 1) return null;
 
@@ -45,7 +51,7 @@ export function Pager({
   );
 
   return (
-    <div style={{ display: "flex", gap: 6, justifyContent: "center", alignItems: "center", flexWrap: "wrap", marginTop: 4 }}>
+    <div style={{ position: "relative", display: "flex", gap: 6, justifyContent: "center", alignItems: "center", flexWrap: "wrap", marginTop: 4 }}>
       {btn("‹", page - 1, page <= 1)}
       {start > 1 && (
         <>
@@ -61,6 +67,29 @@ export function Pager({
         </>
       )}
       {btn("›", page + 1, page >= pageCount)}
+      {pageSize != null && onPageSizeChange && (
+        <select
+          value={pageSize}
+          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          aria-label="페이지당 개수"
+          style={{
+            marginLeft: 8,
+            height: 34,
+            padding: "0 8px",
+            borderRadius: "var(--r-sm)",
+            border: "1px solid var(--line)",
+            background: "var(--surface)",
+            color: "var(--ink)",
+            fontSize: 13,
+            fontFamily: "inherit",
+            cursor: "pointer",
+          }}
+        >
+          {pageSizeOptions.map((n) => (
+            <option key={n} value={n}>{n}개씩</option>
+          ))}
+        </select>
+      )}
     </div>
   );
 }

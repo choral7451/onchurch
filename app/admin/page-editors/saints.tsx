@@ -674,6 +674,7 @@ export function SaintsEditor({
   const [query, setQuery] = useState("");
   const [showTags, setShowTags] = useState(false);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   useEffect(() => {
     void load();
@@ -834,10 +835,9 @@ export function SaintsEditor({
     );
   }, [saints, query]);
 
-  const PAGE_SIZE = 50;
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  useEffect(() => { setPage(1); }, [query]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+  useEffect(() => { setPage(1); }, [query, pageSize]);
   useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
 
   const editingSaint = editing && editing > 0 ? saints.find((s) => s.id === editing) ?? null : null;
@@ -1051,7 +1051,7 @@ export function SaintsEditor({
                 <span aria-hidden="true" style={{ color: "var(--muted-2)", fontSize: 18, flexShrink: 0 }}>›</span>
               </button>
             ))}
-            <Pager page={page} pageCount={pageCount} onChange={setPage} />
+            <Pager page={page} pageCount={pageCount} onChange={setPage} pageSize={pageSize} onPageSizeChange={setPageSize} />
           </div>
         ))}
         </>
