@@ -550,7 +550,7 @@ main { flex: 1; }
 .landing-hero-inner { max-width: 1080px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; text-align: center; }
 .landing-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px; background: oklch(0.62 0.14 245 / 0.08); border: 1px solid oklch(0.62 0.14 245 / 0.18); font-family: var(--font-display); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: var(--primary); margin-bottom: 32px; }
 .landing-eyebrow .pulse { width: 6px; height: 6px; background: oklch(0.65 0.18 145); border-radius: 50%; box-shadow: 0 0 0 0 oklch(0.65 0.18 145 / 0.6); animation: pulse 2s ease-in-out infinite; }
-.landing-h1 { font-family: var(--font-display); font-size: 72px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.05; color: var(--primary-deep); margin: 0 0 28px; text-wrap: balance; }
+.landing-h1 { font-family: var(--font-display); font-size: 72px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.22; color: var(--primary-deep); margin: 0 0 28px; text-wrap: balance; }
 .landing-h1-accent { background: linear-gradient(120deg, var(--primary) 0%, var(--accent) 60%, var(--accent-glow) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .landing-sub { font-size: 18px; color: var(--muted); line-height: 1.7; margin: 0 auto 40px; max-width: 680px; text-wrap: pretty; }
 .landing-sub-line { display: block; text-wrap: balance; }
@@ -644,7 +644,7 @@ main { flex: 1; }
 .cta-banner { padding: 120px 0; background: linear-gradient(160deg, var(--primary-deep) 0%, oklch(0.18 0.06 252) 100%); color: white; position: relative; overflow: hidden; }
 .cta-banner-inner { max-width: 880px; margin: 0 auto; padding: 0 32px; text-align: center; position: relative; z-index: 1; }
 .cta-banner-eyebrow { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: 0.25em; color: var(--accent-glow); text-transform: uppercase; margin-bottom: 20px; }
-.cta-banner-title { font-family: var(--font-display); font-size: 56px; font-weight: 700; letter-spacing: -0.035em; line-height: 1.08; margin: 0 0 22px; text-wrap: balance; color: oklch(0.98 0.005 245); }
+.cta-banner-title { font-family: var(--font-display); font-size: 56px; font-weight: 700; letter-spacing: -0.035em; line-height: 1.25; margin: 0 0 22px; text-wrap: balance; color: oklch(0.98 0.005 245); }
 .cta-banner-desc { font-size: 17px; opacity: 0.82; margin: 0 0 40px; }
 .cta-banner-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
@@ -1262,7 +1262,7 @@ main { flex: 1; }
   .landing-hero { padding: 56px 0 64px; }
   .landing-hero-inner { padding: 0 16px; }
   .landing-eyebrow { font-size: 11px; padding: 6px 12px; margin-bottom: 20px; }
-  .landing-h1 { font-size: 36px; margin: 0 0 20px; line-height: 1.12; }
+  .landing-h1 { font-size: 36px; margin: 0 0 20px; line-height: 1.28; }
   .landing-sub { font-size: 15px; margin: 0 auto 28px; line-height: 1.7; }
   .landing-sub-line + .landing-sub-line { margin-top: 12px; }
   .landing-cta { gap: 10px; margin-bottom: 32px; flex-direction: column; align-items: stretch; }
