@@ -692,6 +692,7 @@ export type ChurchSaint = {
   ordinationDate: string | null;
   faithLevel: string | null;
   memo: string | null;
+  isFavorite: boolean;
 };
 
 export type SaintPrayer = {
@@ -746,6 +747,8 @@ export const onchurchChurchSaint = {
     request<unknown>(`/onchurch/saints/me/relations/${relationId}`, { method: "DELETE", auth: true }),
   updateMemo: (saintId: number, memo: string | null) =>
     request<ChurchSaint>(`/onchurch/saints/me/${saintId}/memo`, { method: "PUT", auth: true, body: JSON.stringify({ memo }) }),
+  updateFavorite: (saintId: number, isFavorite: boolean) =>
+    request<ChurchSaint>(`/onchurch/saints/me/${saintId}/favorite`, { method: "PUT", auth: true, body: JSON.stringify({ isFavorite }) }),
   listPrayers: (saintId: number) =>
     request<{ prayers: SaintPrayer[] }>(`/onchurch/saints/me/${saintId}/prayers`, { method: "GET", auth: true }).then(
       (r) => r.prayers ?? [],

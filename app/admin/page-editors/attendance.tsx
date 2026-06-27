@@ -387,12 +387,30 @@ export function AttendanceEditor() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return saints.filter((s) => {
-      if (posFilter && s.position !== posFilter) return false;
-      if (!q) return true;
-      return s.name.toLowerCase().includes(q) || (s.phone ?? "").includes(q);
-    });
+    return saints
+      .filter((s) => {
+        if (posFilter && s.position !== posFilter) return false;
+        if (!q) return true;
+        return s.name.toLowerCase().includes(q) || (s.phone ?? "").includes(q);
+      })
+      // 즐겨찾기 먼저, 각 그룹 안에서는 이름 가나다순.
+      .sort((a, b) => {
+        if (!!a.isFavorite !== !!b.isFavorite) return a.isFavorite ? -1 : 1;
+        return a.name.localeCompare(b.name, "ko");
+      });
   }, [saints, query, posFilter]);
+
+  async function toggleFavorite(saint: ChurchSaint) {
+    const next = !saint.isFavorite;
+    // 낙관적 업데이트
+    setSaints((prev) => prev.map((s) => (s.id === saint.id ? { ...s, isFavorite: next } : s)));
+    try {
+      await onchurchChurchSaint.updateFavorite(saint.id, next);
+    } catch (err) {
+      setSaints((prev) => prev.map((s) => (s.id === saint.id ? { ...s, isFavorite: !next } : s)));
+      setErrMsg(err instanceof ApiError ? err.message : "즐겨찾기 저장에 실패했습니다.");
+    }
+  }
 
   async function setAll(targetPresent: boolean) {
     const changed = filtered.filter((s) => present.has(s.id) !== targetPresent);
@@ -537,6 +555,24 @@ export function AttendanceEditor() {
                         transition: "all 0.12s ease",
                       }}
                     >
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        aria-label={s.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}
+                        aria-pressed={s.isFavorite}
+                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(s); }}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); void toggleFavorite(s); } }}
+                        style={{
+                          flexShrink: 0,
+                          fontSize: 18,
+                          lineHeight: 1,
+                          cursor: "pointer",
+                          color: s.isFavorite ? "oklch(0.78 0.16 85)" : "var(--muted-2)",
+                          userSelect: "none",
+                        }}
+                      >
+                        {s.isFavorite ? "★" : "☆"}
+                      </span>
                       <Avatar url={s.photoUrl} name={s.name} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
