@@ -262,7 +262,6 @@ export default async function LandingPage() {
                   "출석 관리 — 예배별 출석 체크·성도별 현황",
                   "서브도메인 즉시 발급 + SSL 자동",
                   "사이트 운영 토글 한 번으로 공개",
-                  "이메일 우선 응답 지원",
                 ].map((f) => (
                   <li key={f}>
                     <span className="price-feature-check"><Icon.arrow style={{ width: 12, height: 12 }} /></span>
