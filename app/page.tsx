@@ -103,7 +103,7 @@ const STEPS: { n: string; title: string; desc: string }[] = [
 
 const FAQ: { q: string; a: string }[] = [
   { q: "어떤 페이지들을 만들 수 있나요?", a: "교회 소개, 예배 안내, 말씀, 공지, 일정, 갤러리, 부서, 기도 요청, 통독 — 총 9종의 페이지를 제공합니다. 모든 페이지는 관리자 콘솔에서 토글로 켜고 끌 수 있어 우리 교회에 필요한 것만 운영할 수 있습니다." },
-  { q: "도메인은 어떻게 발급되나요?", a: "신청 즉시 yourchurch.everychurch.co.kr 형태의 서브도메인이 발급되며 SSL이 자동 적용됩니다. 발급된 슬러그는 관리자 콘솔에서 언제든 변경할 수 있습니다." },
+  { q: "도메인은 어떻게 발급되나요?", a: "가입 즉시 yourchurch.everychurch.co.kr 형태의 서브도메인이 발급되며 SSL이 자동 적용됩니다. 발급된 슬러그는 관리자 콘솔에서 언제든 변경할 수 있습니다." },
   { q: "사이트는 언제부터 공개되나요?", a: "기본 정보(이름·연락처·주소)를 입력한 뒤 관리자 콘솔 상단의 \"사이트 운영\" 토글을 ON 하시면 즉시 공개됩니다. 작성 중에는 OFF로 두고 충분히 준비한 뒤 공개하셔도 됩니다." },
   { q: "가격은 어떻게 되나요?", a: "교회 규모와 무관하게 월 단돈 1만원입니다. 모든 기능이 포함되어 있으며 추가 결제는 없습니다. 사이트 운영을 시작하면 7일 무료 체험이 자동으로 시작되어 자유롭게 둘러보실 수 있습니다." },
 ];
@@ -311,7 +311,7 @@ export default async function LandingPage() {
             우리 교회의 다음 사역,<br />
             홈페이지에서 시작하세요
           </h2>
-          <p className="cta-banner-desc">월 1만원, 첫 7일 무료. 신청 후 5분이면 발급됩니다.</p>
+          <p className="cta-banner-desc">월 1만원, 첫 7일 무료. 가입하면 5분 만에 직접 만들 수 있습니다.</p>
           <HideWhenAuthed>
             <div className="cta-banner-buttons">
               <Link href="/signup" className="btn btn-primary btn-lg" style={{ background: "white", color: "var(--primary-deep)" }}>
