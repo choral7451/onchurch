@@ -783,6 +783,12 @@ main { flex: 1; }
 /* 회원 관리 */
 .member-search { width: 240px; max-width: 100%; }
 
+/* 관리자 목록 페이지네이션 */
+.admin-pager { position: relative; display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.admin-pager-nums { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
+/* 모바일에서만 노출되는 '현재/전체' 표시 */
+.admin-pager-status { display: none; min-width: 64px; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+
 /* 관리자 - 행 드래그 핸들 */
 .drag-handle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--r-sm); color: var(--muted); cursor: grab; flex-shrink: 0; transition: all 0.15s ease; user-select: none; }
 .drag-handle:hover { background: var(--bg-tinted); color: var(--ink); }
@@ -1240,6 +1246,16 @@ main { flex: 1; }
   .member-row { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
   .member-row > div:last-child { justify-content: flex-end; }
   .member-row .btn { flex: 1; }
+
+  /* 페이지네이션 — 번호 나열 대신 큰 이전/다음 버튼 + '현재/전체' 표시.
+     좁은 화면에서 번호 버튼이 여러 줄로 깨지는 문제와 작은 터치 타깃을 해결한다. */
+  .admin-pager { gap: 10px; }
+  .admin-pager-nums { display: none; }
+  .admin-pager-status { display: inline-block; }
+  .admin-pager-btn { min-width: 36px; height: 34px; }
+  .admin-pager-arrow { min-width: 64px; height: 42px; font-size: 18px; flex: 0 0 auto; }
+  /* 페이지당 개수 선택도 터치하기 좋게 */
+  .admin-pager-size { height: 40px; }
 
   /* Landing page */
   .landing-nav-inner { padding: 0 16px; height: 64px; }

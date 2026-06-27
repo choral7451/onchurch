@@ -15,6 +15,7 @@ export function PageSizeSelect({
       value={pageSize}
       onChange={(e) => onChange(Number(e.target.value))}
       aria-label="페이지당 개수"
+      className="admin-pager-size"
       style={{
         height: 34,
         padding: "0 8px",
@@ -60,12 +61,13 @@ export function Pager({
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const btn = (label: string, target: number, disabled: boolean, active = false) => (
+  const btn = (label: string, target: number, disabled: boolean, active = false, cls = "") => (
     <button
       key={`${label}-${target}`}
       type="button"
       onClick={() => go(target)}
       disabled={disabled}
+      className={`admin-pager-btn ${cls}`.trim()}
       style={{
         minWidth: 34,
         height: 34,
@@ -85,22 +87,26 @@ export function Pager({
   );
 
   return (
-    <div style={{ position: "relative", display: "flex", gap: 6, justifyContent: "center", alignItems: "center", flexWrap: "wrap", marginTop: 4 }}>
-      {btn("‹", page - 1, page <= 1)}
-      {start > 1 && (
-        <>
-          {btn("1", 1, false, page === 1)}
-          {start > 2 && <span style={{ color: "var(--muted-2)", padding: "0 2px" }}>…</span>}
-        </>
-      )}
-      {pages.map((p) => btn(String(p), p, false, p === page))}
-      {end < pageCount && (
-        <>
-          {end < pageCount - 1 && <span style={{ color: "var(--muted-2)", padding: "0 2px" }}>…</span>}
-          {btn(String(pageCount), pageCount, false, page === pageCount)}
-        </>
-      )}
-      {btn("›", page + 1, page >= pageCount)}
+    <div className="admin-pager">
+      {btn("‹", page - 1, page <= 1, false, "admin-pager-arrow")}
+      {/* 데스크톱: 번호 클릭형 / 모바일(CSS): 번호는 숨기고 '현재/전체'만 표시 */}
+      <div className="admin-pager-nums">
+        {start > 1 && (
+          <>
+            {btn("1", 1, false, page === 1)}
+            {start > 2 && <span style={{ color: "var(--muted-2)", padding: "0 2px" }}>…</span>}
+          </>
+        )}
+        {pages.map((p) => btn(String(p), p, false, p === page))}
+        {end < pageCount && (
+          <>
+            {end < pageCount - 1 && <span style={{ color: "var(--muted-2)", padding: "0 2px" }}>…</span>}
+            {btn(String(pageCount), pageCount, false, page === pageCount)}
+          </>
+        )}
+      </div>
+      <span className="admin-pager-status" aria-hidden="true">{page} / {pageCount}</span>
+      {btn("›", page + 1, page >= pageCount, false, "admin-pager-arrow")}
     </div>
   );
 }
