@@ -609,7 +609,7 @@ main { flex: 1; }
 .feature-desc { font-size: 14px; color: var(--muted); line-height: 1.7; text-wrap: pretty; }
 
 /* Steps */
-.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: step; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: step; }
 .step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px; position: relative; overflow: hidden; }
 .step::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: var(--r-lg) var(--r-lg) 0 0; }
 .step-num { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 0.1em; }

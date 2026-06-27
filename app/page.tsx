@@ -90,19 +90,15 @@ const JSON_LD = {
 };
 
 const FEATURES: { ic: IconKey; title: string; desc: string }[] = [
-  { ic: "building", title: "교회 전용 페이지 9종", desc: "교회 소개·예배 안내·말씀·공지·일정·갤러리·부서·기도 요청·통독 — 처음부터 교회를 위해 설계되었습니다." },
-  { ic: "filter", title: "페이지 ON/OFF 자유롭게", desc: "필요한 페이지만 켜고 운영하세요. 관리자 콘솔의 토글 한 번으로 메뉴와 노출 여부가 즉시 반영됩니다." },
-  { ic: "users", title: "담임목사 인사 · 비전 · 연혁", desc: "교회 소개 페이지를 풍부하게. 담임목사 인사말과 사진, 비전, 교회 연혁, 섬김의 사람들 명단을 한 곳에." },
-  { ic: "video", title: "설교 영상", desc: "유튜브 영상을 임베드하고, 카테고리 필터와 키워드 검색으로 지난 설교까지 한 흐름에." },
-  { ic: "calendar", title: "행사 캘린더 · 공지", desc: "다가오는 일정을 캘린더로, 새 소식은 카테고리별 공지로. 홈에 자동 노출됩니다." },
-  { ic: "mapPin", title: "서브도메인 + 사이트 운영 ON", desc: "yourchurch.everychurch.co.kr 형태로 즉시 발급. 관리자 토글 하나로 사이트가 공개됩니다." },
+  { ic: "home", title: "홈페이지", desc: "소개·예배·말씀·공지·일정·갤러리·부서·기도·통독 9종 페이지를 토글 한 번으로 켜고 끄며, 우리 교회에 필요한 것만 운영합니다." },
+  { ic: "users", title: "성도 관리", desc: "성도 명부와 직분·신급·가족관계, 심방 기록까지 한 곳에서 관리합니다." },
+  { ic: "calendar", title: "출석 관리", desc: "예배별 출석을 간편하게 체크하고, 성도별 출석 현황을 한눈에 확인합니다." },
 ];
 
 const STEPS: { n: string; title: string; desc: string }[] = [
-  { n: "01", title: "신청", desc: "교회명과 담당자 정보만 입력하면 5분 안에 슬러그가 발급됩니다." },
-  { n: "02", title: "기본 세팅", desc: "로고, 연락처, 주소를 입력하고 홈 상단에 띄울 배너 이미지를 등록합니다." },
-  { n: "03", title: "콘텐츠 입력", desc: "예배 시간, 담임 인사, 공지, 설교 영상 — 사용할 페이지만 켜고 차근차근 채웁니다." },
-  { n: "04", title: "공개", desc: "관리자 콘솔의 \"사이트 운영\" 토글을 ON 하면 즉시 공개. SSL과 모바일 대응은 기본." },
+  { n: "01", title: "회원가입", desc: "교회명과 담당자 정보만 입력하면 바로 시작됩니다." },
+  { n: "02", title: "기본 세팅", desc: "로고·연락처·주소를 입력하고 사용할 페이지를 켭니다." },
+  { n: "03", title: "공개", desc: "\"사이트 운영\" 토글을 ON 하면 즉시 공개. SSL과 모바일 대응은 기본." },
 ];
 
 const FAQ: { q: string; a: string }[] = [
@@ -135,20 +131,19 @@ export default async function LandingPage() {
         <div className="landing-hero-inner">
           <div className="landing-eyebrow">
             <span className="pulse" />
-            교회 홈페이지 빌더
+            5분이면 충분합니다
           </div>
           <h1 className="landing-h1">
             교회의 디지털 사역을<br />
             <span className="landing-h1-accent">5분 만에 시작</span>합니다
           </h1>
           <p className="landing-sub">
-            <span className="landing-sub-line">복잡한 디자인·코딩 없이, 우리 교회의 이름과 콘텐츠를 그대로 담은 홈페이지.</span>
-            <span className="landing-sub-line">필요한 페이지만 켜서 운영하는, 처음부터 교회를 위해 설계된 빌더.</span>
+            <span className="landing-sub-line">홈페이지부터 성도·출석 관리까지, 한 곳에서.</span>
           </p>
           <div className="landing-cta">
-            <Link href="#demo" className="btn btn-primary btn-lg">
+            <Link href="/signup" className="btn btn-primary btn-lg">
               <Icon.arrow style={{ width: 16, height: 16 }} />
-              운영 중인 사이트 보기
+              바로 시작하기
             </Link>
             <a href="#features" className="btn btn-secondary btn-lg">
               기능 둘러보기 <Icon.arrow style={{ width: 14, height: 14 }} />
@@ -204,7 +199,7 @@ export default async function LandingPage() {
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
               <span className="eyebrow">Features</span>
-              <h2>교회를 위한, 교회만의 컴포넌트</h2>
+              <h2>홈페이지부터 출석까지, 한 곳에서</h2>
             </div>
           </div>
           <div className="feature-grid">
@@ -227,7 +222,7 @@ export default async function LandingPage() {
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
               <span className="eyebrow">How It Works</span>
-              <h2>4단계로 시작합니다</h2>
+              <h2>3단계로 시작합니다</h2>
             </div>
           </div>
           <div className="steps">
