@@ -240,6 +240,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
     if (group === "saints") setActiveSection("saints-roster");
     else setActiveSection("site");
   }
+
+  // 모바일 바텀 네비 탭 시 스크롤을 맨 위로 올린다.
+  function scrollToTop() {
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   // 시작하기 화면에서 현재 펼쳐진 단계(아코디언). 기본은 첫 단계.
   const [openStep, setOpenStep] = useState<SectionKey | null>("site");
 
@@ -1884,7 +1889,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           <button
             type="button"
             className={`admin-bottom-nav-item ${activeSection !== "settings" && navGroup === "home" ? "active" : ""}`}
-            onClick={() => selectNavGroup("home")}
+            onClick={() => { selectNavGroup("home"); scrollToTop(); }}
           >
             <Icon.home />
             <span>홈페이지 설정</span>
@@ -1892,7 +1897,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           <button
             type="button"
             className={`admin-bottom-nav-item ${activeSection !== "settings" && navGroup === "saints" ? "active" : ""}`}
-            onClick={() => selectNavGroup("saints")}
+            onClick={() => { selectNavGroup("saints"); scrollToTop(); }}
           >
             <Icon.users />
             <span>성도관리</span>
@@ -1900,7 +1905,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           <button
             type="button"
             className={`admin-bottom-nav-item ${activeSection === "settings" ? "active" : ""}`}
-            onClick={() => { setActiveSection("settings"); setMobileDetail(false); }}
+            onClick={() => { setActiveSection("settings"); setMobileDetail(false); scrollToTop(); }}
           >
             <Icon.gear />
             <span>설정</span>
