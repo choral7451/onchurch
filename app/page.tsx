@@ -311,7 +311,7 @@ export default async function LandingPage() {
             우리 교회의 다음 사역,<br />
             홈페이지에서 시작하세요
           </h2>
-          <p className="cta-banner-desc">월 1만원, 첫 7일 무료. 가입하면 5분 만에 직접 만들 수 있습니다.</p>
+          <p className="cta-banner-desc">월 1만원, 첫 7일 무료. 가입 후 5분이면 시작할 수 있습니다.</p>
           <HideWhenAuthed>
             <div className="cta-banner-buttons">
               <Link href="/signup" className="btn btn-primary btn-lg" style={{ background: "white", color: "var(--primary-deep)" }}>
