@@ -13,9 +13,13 @@ import {
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
-const EMPTY_DRAFT: VisitationWriteInput = {
+// 저장 전에는 대상 성도가 비어있을 수 있으므로 saintId는 null 허용(저장 시 검증).
+type Draft = Omit<VisitationWriteInput, "saintId"> & { saintId: number | null };
+
+const EMPTY_DRAFT: Draft = {
   saintId: null,
   saintName: "",
+  participants: null,
   minister: "",
   type: "",
   date: "",
@@ -150,7 +154,7 @@ export function VisitationsEditor() {
   const [types, setTypes] = useState<VisitationType[]>([]);
   const [saints, setSaints] = useState<ChurchSaint[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
-  const [draft, setDraft] = useState<VisitationWriteInput>(EMPTY_DRAFT);
+  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
   const [query, setQuery] = useState("");
@@ -199,6 +203,7 @@ export function VisitationsEditor() {
     setDraft({
       saintId: v.saintId,
       saintName: v.saintName,
+      participants: v.participants,
       minister: v.minister,
       type: v.type,
       date: v.date,
@@ -213,8 +218,8 @@ export function VisitationsEditor() {
   }
 
   async function save() {
-    if (!draft.saintName.trim()) {
-      setErrMsg("성도(심방 대상)를 입력해주세요.");
+    if (draft.saintId == null) {
+      setErrMsg("심방 대상 성도를 성도명부에서 선택해주세요.");
       return;
     }
     if (!draft.minister.trim()) {
@@ -235,6 +240,7 @@ export function VisitationsEditor() {
       const payload: VisitationWriteInput = {
         saintId: draft.saintId,
         saintName: draft.saintName.trim(),
+        participants: draft.participants?.trim() || null,
         minister: draft.minister.trim(),
         type: draft.type.trim(),
         date: draft.date.trim(),
@@ -327,16 +333,16 @@ export function VisitationsEditor() {
             {errMsg && <div className="phone-msg phone-msg-error" style={{ marginBottom: 12 }}>{errMsg}</div>}
             <div className="form-grid">
               <div className="form-row">
-                <label>성도명부에서 선택</label>
+                <label>심방 대상 성도 <span className="required-mark" aria-hidden="true">*</span></label>
                 <select
                   value={draft.saintId ?? ""}
                   onChange={(e) => {
                     const id = e.target.value ? Number(e.target.value) : null;
                     const picked = saints.find((s) => s.id === id);
-                    setDraft({ ...draft, saintId: id, saintName: picked ? picked.name : draft.saintName });
+                    setDraft({ ...draft, saintId: id, saintName: picked ? picked.name : "" });
                   }}
                 >
-                  <option value="">직접 입력</option>
+                  <option value="">성도명부에서 선택</option>
                   {saints.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
@@ -346,12 +352,11 @@ export function VisitationsEditor() {
                 </select>
               </div>
               <div className="form-row">
-                <label>성도 <span className="required-mark" aria-hidden="true">*</span></label>
+                <label>참여 성도</label>
                 <input
-                  value={draft.saintName}
-                  onChange={(e) => setDraft({ ...draft, saintName: e.target.value, saintId: null })}
-                  placeholder="홍길동"
-                  required
+                  value={draft.participants ?? ""}
+                  onChange={(e) => setDraft({ ...draft, participants: e.target.value })}
+                  placeholder="심방에 참여한 성도 (예: 홍길동, 김영희)"
                 />
               </div>
               <div className="form-row">
@@ -426,6 +431,7 @@ export function VisitationsEditor() {
                 <div className="saint-detail-grid">
                   <DetailItem label="교역자" value={v.minister} />
                   <DetailItem label="심방 종류" value={v.type} />
+                  <DetailItem label="참여 성도" value={v.participants} full />
                   <DetailItem label="내용" value={v.content ? <span style={{ whiteSpace: "pre-wrap" }}>{v.content}</span> : null} full />
                 </div>
               </div>

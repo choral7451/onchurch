@@ -4,11 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ApiError,
   onchurchChurchSaint,
+  onchurchVisitation,
   uploadImages,
   type ChurchSaint,
   type ChurchSaintWriteInput,
   type SaintGender,
   type SaintRelation,
+  type Visitation,
 } from "@/lib/api-client";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
@@ -328,6 +330,8 @@ function SaintDetail({
 }) {
   const [relations, setRelations] = useState<SaintRelation[]>([]);
   const [loadingRel, setLoadingRel] = useState(true);
+  const [visitations, setVisitations] = useState<Visitation[]>([]);
+  const [loadingVisit, setLoadingVisit] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -340,6 +344,17 @@ function SaintDetail({
         if (!cancelled) setRelations([]);
       } finally {
         if (!cancelled) setLoadingRel(false);
+      }
+    })();
+    (async () => {
+      setLoadingVisit(true);
+      try {
+        const v = await onchurchVisitation.listBySaint(saint.id);
+        if (!cancelled) setVisitations(v);
+      } catch {
+        if (!cancelled) setVisitations([]);
+      } finally {
+        if (!cancelled) setLoadingVisit(false);
       }
     })();
     return () => {
@@ -398,6 +413,33 @@ function SaintDetail({
                 <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>{r.relation}</span>
                 <span aria-hidden="true" style={{ marginLeft: "auto", color: "var(--muted-2)", fontSize: 16 }}>›</span>
               </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 10 }}>
+        <strong style={{ fontSize: 14 }}>심방 기록</strong>
+        {loadingVisit ? (
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>불러오는 중...</p>
+        ) : visitations.length === 0 ? (
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>등록된 심방 기록이 없습니다.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {visitations.map((v) => (
+              <div
+                key={v.id}
+                style={{ display: "flex", flexDirection: "column", gap: 6, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>{v.type}</span>
+                  <span style={{ color: "var(--muted)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{v.date}</span>
+                  <span style={{ color: "var(--muted)", fontSize: 12 }}>· {v.minister}</span>
+                </div>
+                {v.content && (
+                  <p style={{ fontSize: 13, color: "var(--ink)", margin: 0, whiteSpace: "pre-wrap" }}>{v.content}</p>
+                )}
+              </div>
             ))}
           </div>
         )}

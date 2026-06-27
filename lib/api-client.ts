@@ -743,6 +743,7 @@ export type Visitation = {
   id: number;
   saintId: number | null;
   saintName: string;
+  participants: string | null;
   minister: string;
   type: string;
   date: string;
@@ -750,8 +751,9 @@ export type Visitation = {
 };
 
 export type VisitationWriteInput = {
-  saintId: number | null;
+  saintId: number;
   saintName: string;
+  participants: string | null;
   minister: string;
   type: string;
   date: string;
@@ -766,6 +768,10 @@ export type VisitationType = {
 export const onchurchVisitation = {
   listMine: () =>
     request<{ visitations: Visitation[] }>("/onchurch/visitations/me", { method: "GET", auth: true }).then(
+      (r) => r.visitations ?? [],
+    ),
+  listBySaint: (saintId: number) =>
+    request<{ visitations: Visitation[] }>(`/onchurch/visitations/me/by-saint/${saintId}`, { method: "GET", auth: true }).then(
       (r) => r.visitations ?? [],
     ),
   create: (input: VisitationWriteInput) =>
