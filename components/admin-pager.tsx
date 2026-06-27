@@ -10,7 +10,7 @@ export function Pager({
   pageCount: number;
   onChange: (page: number) => void;
 }) {
-  if (pageCount <= 1) return null;
+  if (pageCount < 1) return null;
 
   // 현재 페이지 주변으로 최대 5개 번호만 노출.
   const windowSize = 5;
