@@ -10,7 +10,7 @@ import {
   type VisitationType,
   type ChurchSaint,
 } from "@/lib/api-client";
-import { Pager } from "@/components/admin-pager";
+import { Pager, PageSizeSelect } from "@/components/admin-pager";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -170,7 +170,7 @@ export function VisitationsEditor({
   const [query, setQuery] = useState("");
   const [showTypes, setShowTypes] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(10);
   // 성도 상세에서 넘어온 심방 상세인지 — '뒤로'를 성도 상세로 보낼지 판단.
   const [arrivedFromSaint, setArrivedFromSaint] = useState(false);
 
@@ -386,7 +386,10 @@ export function VisitationsEditor({
 
         {editing === null && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <span style={{ color: "var(--muted)", fontSize: 13 }}>총 {visitations.length}건</span>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <span style={{ color: "var(--muted)", fontSize: 13 }}>총 {visitations.length}건</span>
+              <PageSizeSelect pageSize={pageSize} onChange={setPageSize} />
+            </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <input
                 value={query}
@@ -507,7 +510,7 @@ export function VisitationsEditor({
                 <span aria-hidden="true" style={{ color: "var(--muted-2)", fontSize: 18, flexShrink: 0 }}>›</span>
               </button>
             ))}
-            <Pager page={page} pageCount={pageCount} onChange={setPage} pageSize={pageSize} onPageSizeChange={setPageSize} />
+            <Pager page={page} pageCount={pageCount} onChange={setPage} />
           </div>
         ))}
         </>

@@ -14,7 +14,7 @@ import {
   type SaintTag,
   type Visitation,
 } from "@/lib/api-client";
-import { Pager } from "@/components/admin-pager";
+import { Pager, PageSizeSelect } from "@/components/admin-pager";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -674,7 +674,7 @@ export function SaintsEditor({
   const [query, setQuery] = useState("");
   const [showTags, setShowTags] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     void load();
@@ -869,7 +869,10 @@ export function SaintsEditor({
 
         {editing === null && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <span style={{ color: "var(--muted)", fontSize: 13 }}>총 {saints.length}명</span>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span style={{ color: "var(--muted)", fontSize: 13 }}>총 {saints.length}명</span>
+            <PageSizeSelect pageSize={pageSize} onChange={setPageSize} />
+          </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <input
               value={query}
@@ -1051,7 +1054,7 @@ export function SaintsEditor({
                 <span aria-hidden="true" style={{ color: "var(--muted-2)", fontSize: 18, flexShrink: 0 }}>›</span>
               </button>
             ))}
-            <Pager page={page} pageCount={pageCount} onChange={setPage} pageSize={pageSize} onPageSizeChange={setPageSize} />
+            <Pager page={page} pageCount={pageCount} onChange={setPage} />
           </div>
         ))}
         </>

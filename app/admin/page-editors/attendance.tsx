@@ -10,7 +10,7 @@ import {
   type ChurchSaint,
   type WorshipServiceItem,
 } from "@/lib/api-client";
-import { Pager } from "@/components/admin-pager";
+import { Pager, PageSizeSelect } from "@/components/admin-pager";
 
 function todayStr(): string {
   const d = new Date();
@@ -120,7 +120,7 @@ export function AttendanceEditor() {
   const [query, setQuery] = useState("");
   const [posFilter, setPosFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(10);
 
   // 명단 + 예배안내(예배 종류) 로드 — 예배 종류는 홈페이지 예배안내에서 가져온다
   useEffect(() => {
@@ -349,6 +349,7 @@ export function AttendanceEditor() {
                   ))}
                 </select>
               )}
+              <PageSizeSelect pageSize={pageSize} onChange={setPageSize} />
             </div>
 
             {loadingRoster ? (
@@ -429,7 +430,7 @@ export function AttendanceEditor() {
                     </button>
                   );
                 })}
-                <Pager page={page} pageCount={pageCount} onChange={setPage} pageSize={pageSize} onPageSizeChange={setPageSize} />
+                <Pager page={page} pageCount={pageCount} onChange={setPage} />
               </div>
             )}
           </>

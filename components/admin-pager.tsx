@@ -1,20 +1,48 @@
 "use client";
 
-// 관리자 목록용 간단 페이지네이션 + 페이지당 개수 선택.
+// 페이지당 개수 선택 드롭다운(목록 상단에 배치).
+export function PageSizeSelect({
+  pageSize,
+  onChange,
+  options = [10, 30, 50],
+}: {
+  pageSize: number;
+  onChange: (size: number) => void;
+  options?: number[];
+}) {
+  return (
+    <select
+      value={pageSize}
+      onChange={(e) => onChange(Number(e.target.value))}
+      aria-label="페이지당 개수"
+      style={{
+        height: 34,
+        padding: "0 8px",
+        borderRadius: 999,
+        border: "1px solid var(--line)",
+        background: "var(--surface)",
+        color: "var(--ink)",
+        fontSize: 13,
+        fontFamily: "inherit",
+        cursor: "pointer",
+      }}
+    >
+      {options.map((n) => (
+        <option key={n} value={n}>{n}개씩</option>
+      ))}
+    </select>
+  );
+}
+
+// 관리자 목록용 간단 페이지네이션(번호 클릭형).
 export function Pager({
   page,
   pageCount,
   onChange,
-  pageSize,
-  onPageSizeChange,
-  pageSizeOptions = [10, 30, 50],
 }: {
   page: number;
   pageCount: number;
   onChange: (page: number) => void;
-  pageSize?: number;
-  onPageSizeChange?: (size: number) => void;
-  pageSizeOptions?: number[];
 }) {
   if (pageCount < 1) return null;
 
@@ -73,29 +101,6 @@ export function Pager({
         </>
       )}
       {btn("›", page + 1, page >= pageCount)}
-      {pageSize != null && onPageSizeChange && (
-        <select
-          value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          aria-label="페이지당 개수"
-          style={{
-            marginLeft: 8,
-            height: 34,
-            padding: "0 8px",
-            borderRadius: "var(--r-sm)",
-            border: "1px solid var(--line)",
-            background: "var(--surface)",
-            color: "var(--ink)",
-            fontSize: 13,
-            fontFamily: "inherit",
-            cursor: "pointer",
-          }}
-        >
-          {pageSizeOptions.map((n) => (
-            <option key={n} value={n}>{n}개씩</option>
-          ))}
-        </select>
-      )}
     </div>
   );
 }
