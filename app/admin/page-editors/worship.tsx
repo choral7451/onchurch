@@ -52,6 +52,7 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
   const [draft, setDraft] = useState<WorshipServiceWriteInput>(EMPTY_SERVICE);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<WorshipServiceItem | null>(null);
   const dragDisabled = editing !== null || status === "saving" || status === "deleting";
   const { getItemProps } = useDragSort(items.length, (f, t) => void move(f, t));
 
@@ -103,10 +104,12 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
     finally { setStatus("idle"); }
   }
 
-  async function remove(id: number) {
-    if (!confirm("이 예배 항목을 삭제할까요?")) return;
+  async function confirmRemove() {
+    const target = pendingDelete;
+    if (!target) return;
+    setPendingDelete(null);
     setStatus("deleting"); setErrMsg("");
-    try { await onchurchWorshipService.remove(id); await load(); onChanged?.(); }
+    try { await onchurchWorshipService.remove(target.id); await load(); onChanged?.(); }
     catch (err) { setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다."); }
     finally { setStatus("idle"); }
   }
@@ -201,11 +204,27 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
             </div>
             <div style={{ display: "flex", gap: 6, alignSelf: "flex-start" }}>
               <button type="button" className="btn btn-ghost" onClick={() => startEdit(it)} disabled={editing !== null}>편집</button>
-              <button type="button" className="btn btn-ghost" onClick={() => remove(it.id)} disabled={status === "deleting"}>삭제</button>
+              <button type="button" className="btn btn-ghost" onClick={() => setPendingDelete(it)} disabled={status === "deleting"}>삭제</button>
             </div>
           </div>
         ))}
       </div>
+
+      {pendingDelete && (
+        <div className="admin-modal-backdrop" role="dialog" aria-modal="true" onClick={() => setPendingDelete(null)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="admin-modal-title">예배를 삭제할까요?</h3>
+            <p className="admin-modal-body">
+              <strong>{pendingDelete.name}</strong> 예배를 삭제하면, 이 예배와 관련된 <strong>성도 출석 정보도 함께 삭제</strong>됩니다.<br />
+              <span style={{ color: "var(--muted)", fontSize: 13 }}>삭제된 출석 기록은 복구할 수 없습니다.</span>
+            </p>
+            <div className="admin-modal-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setPendingDelete(null)}>취소</button>
+              <button type="button" className="btn btn-primary" onClick={() => void confirmRemove()}>삭제</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
