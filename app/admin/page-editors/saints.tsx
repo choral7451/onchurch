@@ -10,6 +10,7 @@ import {
   type ChurchSaintWriteInput,
   type SaintGender,
   type SaintRelation,
+  type SaintPrayer,
   type Visitation,
 } from "@/lib/api-client";
 
@@ -334,9 +335,19 @@ function SaintDetail({
   const [loadingRel, setLoadingRel] = useState(true);
   const [visitations, setVisitations] = useState<Visitation[]>([]);
   const [loadingVisit, setLoadingVisit] = useState(true);
+  const [prayers, setPrayers] = useState<SaintPrayer[]>([]);
+  const [loadingPrayer, setLoadingPrayer] = useState(true);
+  const [prayerInput, setPrayerInput] = useState("");
+  const [prayerBusy, setPrayerBusy] = useState(false);
+  const [memoText, setMemoText] = useState(saint.memo ?? "");
+  const [memoSaving, setMemoSaving] = useState(false);
+  const [memoSaved, setMemoSaved] = useState(false);
+  const [tab, setTab] = useState<"visitation" | "prayer" | "memo">("visitation");
 
   useEffect(() => {
     let cancelled = false;
+    setMemoText(saint.memo ?? "");
+    setMemoSaved(false);
     (async () => {
       setLoadingRel(true);
       try {
@@ -359,10 +370,64 @@ function SaintDetail({
         if (!cancelled) setLoadingVisit(false);
       }
     })();
+    void loadPrayers(cancelled);
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saint.id]);
+
+  async function loadPrayers(cancelled = false) {
+    setLoadingPrayer(true);
+    try {
+      const p = await onchurchChurchSaint.listPrayers(saint.id);
+      if (!cancelled) setPrayers(p);
+    } catch {
+      if (!cancelled) setPrayers([]);
+    } finally {
+      if (!cancelled) setLoadingPrayer(false);
+    }
+  }
+
+  async function addPrayer() {
+    const content = prayerInput.trim();
+    if (!content) return;
+    setPrayerBusy(true);
+    try {
+      await onchurchChurchSaint.addPrayer(saint.id, content);
+      setPrayerInput("");
+      await loadPrayers();
+    } catch {
+      /* noop */
+    } finally {
+      setPrayerBusy(false);
+    }
+  }
+
+  async function removePrayer(prayerId: number) {
+    setPrayerBusy(true);
+    try {
+      await onchurchChurchSaint.removePrayer(prayerId);
+      await loadPrayers();
+    } catch {
+      /* noop */
+    } finally {
+      setPrayerBusy(false);
+    }
+  }
+
+  async function saveMemo() {
+    setMemoSaving(true);
+    setMemoSaved(false);
+    try {
+      await onchurchChurchSaint.updateMemo(saint.id, memoText.trim() || null);
+      setMemoSaved(true);
+    } catch {
+      /* noop */
+    } finally {
+      setMemoSaving(false);
+    }
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -420,27 +485,94 @@ function SaintDetail({
         )}
       </div>
 
-      <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 10 }}>
-        <strong style={{ fontSize: 14 }}>심방 기록</strong>
-        {loadingVisit ? (
-          <p style={{ color: "var(--muted)", fontSize: 13 }}>불러오는 중...</p>
-        ) : visitations.length === 0 ? (
-          <p style={{ color: "var(--muted)", fontSize: 13 }}>등록된 심방 기록이 없습니다.</p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {visitations.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => onOpenVisitation(v.id)}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", background: "var(--surface)" }}
-              >
-                <span className="admin-sidebar-pill optional" style={{ fontSize: 10, flexShrink: 0 }}>{v.type}</span>
-                <span style={{ color: "var(--muted)", fontSize: 12, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{v.date}</span>
-                <span style={{ color: "var(--muted)", fontSize: 12, flexShrink: 0 }}>· {v.minister}</span>
-                <span aria-hidden="true" style={{ marginLeft: "auto", color: "var(--muted-2)", fontSize: 16, flexShrink: 0 }}>›</span>
+      <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 14 }}>
+        <div className="saint-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected={tab === "visitation"} className={`saint-tab ${tab === "visitation" ? "active" : ""}`} onClick={() => setTab("visitation")}>
+            심방목록{visitations.length > 0 ? ` (${visitations.length})` : ""}
+          </button>
+          <button type="button" role="tab" aria-selected={tab === "prayer"} className={`saint-tab ${tab === "prayer" ? "active" : ""}`} onClick={() => setTab("prayer")}>
+            기도목록{prayers.length > 0 ? ` (${prayers.length})` : ""}
+          </button>
+          <button type="button" role="tab" aria-selected={tab === "memo"} className={`saint-tab ${tab === "memo" ? "active" : ""}`} onClick={() => setTab("memo")}>
+            메모
+          </button>
+        </div>
+
+        {tab === "visitation" && (
+          loadingVisit ? (
+            <p style={{ color: "var(--muted)", fontSize: 13 }}>불러오는 중...</p>
+          ) : visitations.length === 0 ? (
+            <p style={{ color: "var(--muted)", fontSize: 13 }}>등록된 심방 기록이 없습니다.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {visitations.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => onOpenVisitation(v.id)}
+                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", background: "var(--surface)" }}
+                >
+                  <span className="admin-sidebar-pill optional" style={{ fontSize: 10, flexShrink: 0 }}>{v.type}</span>
+                  <span style={{ color: "var(--muted)", fontSize: 12, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{v.date}</span>
+                  <span style={{ color: "var(--muted)", fontSize: 12, flexShrink: 0 }}>· {v.minister}</span>
+                  <span aria-hidden="true" style={{ marginLeft: "auto", color: "var(--muted-2)", fontSize: 16, flexShrink: 0 }}>›</span>
+                </button>
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === "prayer" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                value={prayerInput}
+                onChange={(e) => setPrayerInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void addPrayer(); } }}
+                placeholder="기도제목을 입력하세요"
+                maxLength={2000}
+                style={{ flex: 1, minWidth: 0, padding: "9px 14px", fontSize: 13, border: "1px solid var(--line)", borderRadius: "var(--r-md)", background: "var(--surface)", fontFamily: "inherit" }}
+              />
+              <button type="button" className="btn btn-secondary" onClick={addPrayer} disabled={prayerBusy || !prayerInput.trim()}>
+                {prayerBusy ? "처리 중..." : "추가"}
               </button>
-            ))}
+            </div>
+            {loadingPrayer ? (
+              <p style={{ color: "var(--muted)", fontSize: 13 }}>불러오는 중...</p>
+            ) : prayers.length === 0 ? (
+              <p style={{ color: "var(--muted)", fontSize: 13 }}>등록된 기도제목이 없습니다.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {prayers.map((p) => (
+                  <div
+                    key={p.id}
+                    style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 10px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)" }}
+                  >
+                    <span style={{ fontSize: 13, flex: 1, minWidth: 0, whiteSpace: "pre-wrap" }}>{p.content}</span>
+                    <span style={{ color: "var(--muted-2)", fontSize: 11, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{p.createdAt.slice(0, 10)}</span>
+                    <button type="button" className="btn btn-ghost" onClick={() => removePrayer(p.id)} disabled={prayerBusy} style={{ flexShrink: 0 }}>삭제</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "memo" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <textarea
+              value={memoText}
+              onChange={(e) => { setMemoText(e.target.value); setMemoSaved(false); }}
+              placeholder="이 성도에 대한 메모를 자유롭게 남기세요."
+              rows={6}
+              style={{ width: "100%", padding: "12px 14px", fontSize: 14, border: "1px solid var(--line)", borderRadius: "var(--r-md)", background: "var(--surface)", fontFamily: "inherit", resize: "vertical" }}
+            />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "flex-end" }}>
+              {memoSaved && <span style={{ color: "var(--muted)", fontSize: 12 }}>저장되었습니다.</span>}
+              <button type="button" className="btn btn-primary" onClick={saveMemo} disabled={memoSaving}>
+                {memoSaving ? "저장 중..." : "메모 저장"}
+              </button>
+            </div>
           </div>
         )}
       </div>

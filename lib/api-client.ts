@@ -691,6 +691,13 @@ export type ChurchSaint = {
   position: string | null;
   ordinationDate: string | null;
   faithLevel: string | null;
+  memo: string | null;
+};
+
+export type SaintPrayer = {
+  id: number;
+  content: string;
+  createdAt: string;
 };
 
 export type ChurchSaintWriteInput = {
@@ -737,6 +744,16 @@ export const onchurchChurchSaint = {
     }),
   removeRelation: (relationId: number) =>
     request<unknown>(`/onchurch/saints/me/relations/${relationId}`, { method: "DELETE", auth: true }),
+  updateMemo: (saintId: number, memo: string | null) =>
+    request<ChurchSaint>(`/onchurch/saints/me/${saintId}/memo`, { method: "PUT", auth: true, body: JSON.stringify({ memo }) }),
+  listPrayers: (saintId: number) =>
+    request<{ prayers: SaintPrayer[] }>(`/onchurch/saints/me/${saintId}/prayers`, { method: "GET", auth: true }).then(
+      (r) => r.prayers ?? [],
+    ),
+  addPrayer: (saintId: number, content: string) =>
+    request<unknown>(`/onchurch/saints/me/${saintId}/prayers`, { method: "POST", auth: true, body: JSON.stringify({ content }) }),
+  removePrayer: (prayerId: number) =>
+    request<unknown>(`/onchurch/saints/me/prayers/${prayerId}`, { method: "DELETE", auth: true }),
 };
 
 export type Visitation = {
