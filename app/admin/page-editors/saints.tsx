@@ -302,11 +302,11 @@ function RelationsEditor({ saint, others }: { saint: ChurchSaint; others: Church
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+function DetailItem({ label, value, full }: { label: string; value: React.ReactNode; full?: boolean }) {
   return (
-    <div style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
-      <span style={{ width: 84, flexShrink: 0, color: "var(--muted)", fontSize: 13 }}>{label}</span>
-      <span style={{ fontSize: 13.5, fontWeight: 500 }}>{value || <span style={{ color: "var(--muted-2)" }}>—</span>}</span>
+    <div className={`saint-detail-item${full ? " full" : ""}`}>
+      <span className="saint-detail-k">{label}</span>
+      <span className="saint-detail-v">{value || <span style={{ color: "var(--muted-2)" }}>—</span>}</span>
     </div>
   );
 }
@@ -357,28 +357,25 @@ function SaintDetail({
         </div>
       </div>
 
-      <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+      <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <SaintAvatar url={saint.photoUrl} name={saint.name} size={72} />
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <strong style={{ fontSize: 20 }}>{saint.name}</strong>
-              {saint.position && <span className="admin-sidebar-pill optional" style={{ fontSize: 11 }}>{saint.position}</span>}
-            </div>
-            <div style={{ color: "var(--muted)", fontSize: 13, marginTop: 4 }}>
-              {[saint.gender ? GENDER_LABEL[saint.gender] : null, saint.faithLevel].filter(Boolean).join(" · ") || ""}
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <strong style={{ fontSize: 20 }}>{saint.name}</strong>
+            {saint.position && <span className="admin-sidebar-pill optional" style={{ fontSize: 11 }}>{saint.position}</span>}
           </div>
         </div>
 
-        <DetailRow label="생년월일" value={saint.birthDate} />
-        <DetailRow label="성별" value={saint.gender ? GENDER_LABEL[saint.gender] : null} />
-        <DetailRow label="연락처" value={saint.phone} />
-        <DetailRow label="이메일" value={saint.email} />
-        <DetailRow label="주소" value={saint.address} />
-        <DetailRow label="직분" value={saint.position} />
-        <DetailRow label="임직일" value={saint.ordinationDate} />
-        <DetailRow label="신급" value={saint.faithLevel} />
+        <div className="saint-detail-grid">
+          <DetailItem label="생년월일" value={saint.birthDate} />
+          <DetailItem label="성별" value={saint.gender ? GENDER_LABEL[saint.gender] : null} />
+          <DetailItem label="연락처" value={saint.phone} />
+          <DetailItem label="이메일" value={saint.email} />
+          <DetailItem label="직분" value={saint.position} />
+          <DetailItem label="임직일" value={saint.ordinationDate} />
+          <DetailItem label="신급" value={saint.faithLevel} />
+          <DetailItem label="주소" value={saint.address} full />
+        </div>
       </div>
 
       <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
