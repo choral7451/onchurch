@@ -448,7 +448,15 @@ function SaintDetail({
   );
 }
 
-export function SaintsEditor({ onOpenVisitation }: { onOpenVisitation: (visitationId: number) => void }) {
+export function SaintsEditor({
+  focusSaintId = null,
+  onFocusConsumed,
+  onOpenVisitation,
+}: {
+  focusSaintId?: number | null;
+  onFocusConsumed?: () => void;
+  onOpenVisitation: (visitationId: number, saintId: number) => void;
+}) {
   const [saints, setSaints] = useState<ChurchSaint[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
@@ -460,6 +468,16 @@ export function SaintsEditor({ onOpenVisitation }: { onOpenVisitation: (visitati
   useEffect(() => {
     void load();
   }, []);
+
+  // 심방 상세에서 '뒤로'로 돌아온 경우 해당 성도 상세를 바로 연다(한 번만 소비).
+  useEffect(() => {
+    if (focusSaintId == null) return;
+    setDetailId(focusSaintId);
+    setEditing(null);
+    setErrMsg("");
+    onFocusConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusSaintId]);
 
   async function load() {
     setStatus("loading");
@@ -611,7 +629,7 @@ export function SaintsEditor({ onOpenVisitation }: { onOpenVisitation: (visitati
             onRemove={() => remove(detailSaint)}
             onBack={() => setDetailId(null)}
             onOpenSaint={(id) => { setDetailId(id); setEditing(null); setErrMsg(""); }}
-            onOpenVisitation={onOpenVisitation}
+            onOpenVisitation={(vid) => onOpenVisitation(vid, detailSaint.id)}
             busy={busy}
           />
         ) : (

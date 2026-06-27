@@ -152,9 +152,11 @@ function DetailItem({ label, value, full }: { label: string; value: React.ReactN
 export function VisitationsEditor({
   focusId = null,
   onFocusConsumed,
+  onBackToOrigin,
 }: {
   focusId?: number | null;
   onFocusConsumed?: () => void;
+  onBackToOrigin?: () => void;
 } = {}) {
   const [visitations, setVisitations] = useState<Visitation[]>([]);
   const [types, setTypes] = useState<VisitationType[]>([]);
@@ -166,6 +168,8 @@ export function VisitationsEditor({
   const [errMsg, setErrMsg] = useState("");
   const [query, setQuery] = useState("");
   const [showTypes, setShowTypes] = useState(false);
+  // 성도 상세에서 넘어온 심방 상세인지 — '뒤로'를 성도 상세로 보낼지 판단.
+  const [arrivedFromSaint, setArrivedFromSaint] = useState(false);
 
   useEffect(() => {
     void load();
@@ -176,6 +180,7 @@ export function VisitationsEditor({
     if (focusId == null) return;
     setDetailId(focusId);
     setEditing(null);
+    setArrivedFromSaint(true);
     onFocusConsumed?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusId]);
@@ -211,6 +216,7 @@ export function VisitationsEditor({
     setDetailId(null);
     setEditing(0);
     setErrMsg("");
+    setArrivedFromSaint(false);
     setDraft({ ...EMPTY_DRAFT, type: types[0]?.name ?? "" });
   }
 
@@ -218,6 +224,7 @@ export function VisitationsEditor({
     setDetailId(v.id);
     setEditing(null);
     setErrMsg("");
+    setArrivedFromSaint(false);
   }
 
   function startEdit(v: Visitation) {
@@ -333,7 +340,16 @@ export function VisitationsEditor({
         {detailVisit && editing === null ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <button type="button" className="btn btn-ghost" onClick={() => setDetailId(null)}>← 목록</button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => {
+                  if (arrivedFromSaint && onBackToOrigin) onBackToOrigin();
+                  else setDetailId(null);
+                }}
+              >
+                {arrivedFromSaint && onBackToOrigin ? "← 성도 상세" : "← 목록"}
+              </button>
               <div style={{ display: "flex", gap: 8 }}>
                 <button type="button" className="btn btn-primary" onClick={() => startEdit(detailVisit)} disabled={busy}>편집</button>
                 <button type="button" className="btn btn-ghost" onClick={() => remove(detailVisit)} disabled={busy}>삭제</button>

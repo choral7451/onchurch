@@ -224,7 +224,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   // 사이드바 항목 탭 → 해당 섹션 열고 모바일에선 상세 화면으로 진입.
   // 성도 상세에서 심방 행을 누르면 심방 관리로 이동하며 해당 심방 상세를 연다.
+  // 그 심방 상세에서 '뒤로'를 누르면 다시 원래 성도 상세로 돌아간다.
   const [visitationFocusId, setVisitationFocusId] = useState<number | null>(null);
+  const [visitationReturnSaintId, setVisitationReturnSaintId] = useState<number | null>(null);
+  const [saintFocusId, setSaintFocusId] = useState<number | null>(null);
 
   function openSection(key: SectionKey) {
     setActiveSection(key);
@@ -1775,8 +1778,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
               {activeSection === "saints-roster" && (
                 <SaintsEditor
-                  onOpenVisitation={(id) => {
-                    setVisitationFocusId(id);
+                  focusSaintId={saintFocusId}
+                  onFocusConsumed={() => setSaintFocusId(null)}
+                  onOpenVisitation={(visitationId, saintId) => {
+                    setVisitationFocusId(visitationId);
+                    setVisitationReturnSaintId(saintId);
                     openSection("visitations");
                   }}
                 />
@@ -1786,6 +1792,16 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 <VisitationsEditor
                   focusId={visitationFocusId}
                   onFocusConsumed={() => setVisitationFocusId(null)}
+                  onBackToOrigin={
+                    visitationReturnSaintId != null
+                      ? () => {
+                          const sid = visitationReturnSaintId;
+                          setVisitationReturnSaintId(null);
+                          setSaintFocusId(sid);
+                          openSection("saints-roster");
+                        }
+                      : undefined
+                  }
                 />
               )}
 
