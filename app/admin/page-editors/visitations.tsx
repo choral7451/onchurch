@@ -154,6 +154,7 @@ export function VisitationsEditor() {
   const [types, setTypes] = useState<VisitationType[]>([]);
   const [saints, setSaints] = useState<ChurchSaint[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
+  const [detailId, setDetailId] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
@@ -192,9 +193,16 @@ export function VisitationsEditor() {
   }
 
   function startNew() {
+    setDetailId(null);
     setEditing(0);
     setErrMsg("");
     setDraft({ ...EMPTY_DRAFT, type: types[0]?.name ?? "" });
+  }
+
+  function openDetail(v: Visitation) {
+    setDetailId(v.id);
+    setEditing(null);
+    setErrMsg("");
   }
 
   function startEdit(v: Visitation) {
@@ -248,8 +256,10 @@ export function VisitationsEditor() {
       };
       if (editing === 0 || editing === null) {
         await onchurchVisitation.create(payload);
+        setDetailId(null);
       } else {
         await onchurchVisitation.update(editing, payload);
+        setDetailId(editing); // 수정 후에는 해당 심방 상세로 복귀
       }
       await load();
       setEditing(null);
@@ -266,6 +276,7 @@ export function VisitationsEditor() {
     setErrMsg("");
     try {
       await onchurchVisitation.remove(v.id);
+      if (detailId === v.id) setDetailId(null);
       await load();
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다.");
@@ -293,6 +304,7 @@ export function VisitationsEditor() {
   }, [types, draft.type]);
 
   const busy = status === "saving" || status === "deleting";
+  const detailVisit = detailId != null ? visitations.find((v) => v.id === detailId) ?? null : null;
 
   return (
     <section className="admin-section">
@@ -303,6 +315,34 @@ export function VisitationsEditor() {
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {detailVisit && editing === null ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <button type="button" className="btn btn-ghost" onClick={() => setDetailId(null)}>← 목록</button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" className="btn btn-primary" onClick={() => startEdit(detailVisit)} disabled={busy}>편집</button>
+                <button type="button" className="btn btn-ghost" onClick={() => remove(detailVisit)} disabled={busy}>삭제</button>
+              </div>
+            </div>
+
+            <div className="admin-banner-card" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <strong style={{ fontSize: 20 }}>{detailVisit.saintName}</strong>
+                <span className="admin-sidebar-pill optional" style={{ fontSize: 11 }}>{detailVisit.type}</span>
+                <span style={{ color: "var(--muted)", fontSize: 13, fontVariantNumeric: "tabular-nums" }}>{detailVisit.date}</span>
+              </div>
+              <div className="saint-detail-grid">
+                <DetailItem label="심방 대상" value={detailVisit.saintName} />
+                <DetailItem label="교역자" value={detailVisit.minister} />
+                <DetailItem label="심방 종류" value={detailVisit.type} />
+                <DetailItem label="날짜" value={detailVisit.date} />
+                <DetailItem label="참여 성도" value={detailVisit.participants} full />
+                <DetailItem label="내용" value={detailVisit.content ? <span style={{ whiteSpace: "pre-wrap" }}>{detailVisit.content}</span> : null} full />
+              </div>
+            </div>
+          </div>
+        ) : (
+        <>
         {errMsg && editing === null && <div className="phone-msg phone-msg-error">{errMsg}</div>}
 
         {editing === null && (
@@ -412,32 +452,26 @@ export function VisitationsEditor() {
         ) : filtered.length === 0 ? (
           <p style={{ color: "var(--muted)" }}>{visitations.length === 0 ? "아직 등록된 심방 기록이 없습니다." : "검색 결과가 없습니다."}</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {filtered.map((v) => (
-              <div
+              <button
                 key={v.id}
+                type="button"
+                onClick={() => openDetail(v)}
                 className="admin-banner-card"
-                style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 10 }}
+                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", background: "var(--surface)", padding: "10px 14px" }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <strong style={{ fontSize: 15 }}>{v.saintName}</strong>
-                  <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>{v.type}</span>
-                  <span style={{ color: "var(--muted)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{v.date}</span>
-                  <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-                    <button type="button" className="btn btn-secondary" onClick={() => startEdit(v)} disabled={busy}>편집</button>
-                    <button type="button" className="btn btn-ghost" onClick={() => remove(v)} disabled={busy}>삭제</button>
-                  </div>
-                </div>
-                <div className="saint-detail-grid">
-                  <DetailItem label="교역자" value={v.minister} />
-                  <DetailItem label="심방 종류" value={v.type} />
-                  <DetailItem label="참여 성도" value={v.participants} full />
-                  <DetailItem label="내용" value={v.content ? <span style={{ whiteSpace: "pre-wrap" }}>{v.content}</span> : null} full />
-                </div>
-              </div>
+                <strong style={{ fontSize: 14, flexShrink: 0 }}>{v.saintName}</strong>
+                <span className="admin-sidebar-pill optional" style={{ fontSize: 10, flexShrink: 0 }}>{v.type}</span>
+                <span style={{ color: "var(--muted)", fontSize: 12, flexShrink: 0 }}>{v.minister}</span>
+                <span style={{ color: "var(--muted)", fontSize: 12, fontVariantNumeric: "tabular-nums", marginLeft: "auto", flexShrink: 0 }}>{v.date}</span>
+                <span aria-hidden="true" style={{ color: "var(--muted-2)", fontSize: 18, flexShrink: 0 }}>›</span>
+              </button>
             ))}
           </div>
         ))}
+        </>
+        )}
       </div>
     </section>
   );
