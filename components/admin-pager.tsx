@@ -26,11 +26,17 @@ export function Pager({
   const pages: number[] = [];
   for (let p = start; p <= end; p++) pages.push(p);
 
+  // 페이지 이동 시 목록 상단이 보이도록 맨 위로 스크롤.
+  const go = (target: number) => {
+    onChange(target);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const btn = (label: string, target: number, disabled: boolean, active = false) => (
     <button
       key={`${label}-${target}`}
       type="button"
-      onClick={() => onChange(target)}
+      onClick={() => go(target)}
       disabled={disabled}
       style={{
         minWidth: 34,
