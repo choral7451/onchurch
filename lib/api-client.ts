@@ -739,6 +739,51 @@ export const onchurchChurchSaint = {
     request<unknown>(`/onchurch/saints/me/relations/${relationId}`, { method: "DELETE", auth: true }),
 };
 
+export type Visitation = {
+  id: number;
+  saintId: number | null;
+  saintName: string;
+  minister: string;
+  type: string;
+  date: string;
+  content: string | null;
+};
+
+export type VisitationWriteInput = {
+  saintId: number | null;
+  saintName: string;
+  minister: string;
+  type: string;
+  date: string;
+  content: string | null;
+};
+
+export type VisitationType = {
+  id: number;
+  name: string;
+};
+
+export const onchurchVisitation = {
+  listMine: () =>
+    request<{ visitations: Visitation[] }>("/onchurch/visitations/me", { method: "GET", auth: true }).then(
+      (r) => r.visitations ?? [],
+    ),
+  create: (input: VisitationWriteInput) =>
+    request<Visitation>("/onchurch/visitations/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: VisitationWriteInput) =>
+    request<Visitation>(`/onchurch/visitations/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/visitations/me/${id}`, { method: "DELETE", auth: true }),
+  listTypes: () =>
+    request<{ types: VisitationType[] }>("/onchurch/visitations/me/types", { method: "GET", auth: true }).then(
+      (r) => r.types ?? [],
+    ),
+  createType: (name: string) =>
+    request<VisitationType>("/onchurch/visitations/me/types", { method: "POST", auth: true, body: JSON.stringify({ name }) }),
+  removeType: (id: number) =>
+    request<unknown>(`/onchurch/visitations/me/types/${id}`, { method: "DELETE", auth: true }),
+};
+
 export type AttendanceSession = {
   date: string;
   serviceType: string;

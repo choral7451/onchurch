@@ -37,6 +37,7 @@ import { GalleryEditor } from "./page-editors/gallery";
 import { CommunityEditor } from "./page-editors/community";
 import { MembersEditor } from "./page-editors/members";
 import { SaintsEditor } from "./page-editors/saints";
+import { VisitationsEditor } from "./page-editors/visitations";
 import { AttendanceEditor } from "./page-editors/attendance";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
@@ -90,7 +91,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "attendance" | "settings" | `page:${string}`;
+type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}`;
 
 type NavGroup = "home" | "saints";
 
@@ -1258,6 +1259,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
               </button>
               <button
                 type="button"
+                className={`admin-sidebar-item ${activeSection === "visitations" ? "active" : ""}`}
+                onClick={() => openSection("visitations")}
+              >
+                <span className="admin-sidebar-item-label">심방 관리</span>
+                <span className="admin-sidebar-pill optional">심방</span>
+              </button>
+              <button
+                type="button"
                 className={`admin-sidebar-item ${activeSection === "attendance" ? "active" : ""}`}
                 onClick={() => openSection("attendance")}
               >
@@ -1762,6 +1771,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {activeSection === "members" && <MembersEditor />}
 
               {activeSection === "saints-roster" && <SaintsEditor />}
+
+              {activeSection === "visitations" && <VisitationsEditor />}
 
               {activeSection === "attendance" && <AttendanceEditor />}
 
