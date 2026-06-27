@@ -1496,7 +1496,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       </div>
                       <div className="form-row full">
                         <label htmlFor="ad-tagline">태그라인</label>
-                        <input id="ad-tagline" type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="은혜와 진리가 흐르는 공동체" />
+                        <input id="ad-tagline" type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="은혜와 진리가 흐르는 공동체" maxLength={20} />
+                        <span className="form-hint" style={{ marginTop: 4, textAlign: "right", color: tagline.length >= 20 ? "oklch(0.55 0.18 28)" : undefined }}>{tagline.length}/20자</span>
                       </div>
                     </div>
                     {sectionSaveBar}
