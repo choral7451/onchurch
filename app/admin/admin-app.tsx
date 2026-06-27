@@ -1100,7 +1100,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 onClick={() => selectNavGroup("saints")}
               >
                 성도관리
-                <span style={{ fontSize: 10, fontWeight: 700, opacity: 0.7, marginLeft: 4 }}>(Beta)</span>
               </button>
             </div>
 
