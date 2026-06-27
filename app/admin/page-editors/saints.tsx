@@ -11,6 +11,7 @@ import {
   type SaintGender,
   type SaintRelation,
   type SaintPrayer,
+  type SaintTag,
   type Visitation,
 } from "@/lib/api-client";
 
@@ -33,6 +34,7 @@ const EMPTY_SAINT: ChurchSaintWriteInput = {
   position: null,
   ordinationDate: null,
   faithLevel: null,
+  tagIds: [],
 };
 
 // 한국 전화번호 형식으로 자동 정리(숫자만 추출 후 하이픈 삽입).
@@ -445,6 +447,9 @@ function SaintDetail({
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <strong style={{ fontSize: 20 }}>{saint.name}</strong>
             {saint.position && <span className="admin-sidebar-pill optional" style={{ fontSize: 11 }}>{saint.position}</span>}
+            {saint.tags.map((t) => (
+              <span key={t.id} className="saint-tag-chip">{t.name}</span>
+            ))}
           </div>
         </div>
 
@@ -580,6 +585,75 @@ function SaintDetail({
   );
 }
 
+// 성도 태그 종류 추가·삭제 관리 패널.
+function TagManager({ tags, onChanged }: { tags: SaintTag[]; onChanged: () => void }) {
+  const [name, setName] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [errMsg, setErrMsg] = useState("");
+
+  async function add() {
+    const v = name.trim();
+    if (!v) return;
+    setStatus("saving");
+    setErrMsg("");
+    try {
+      await onchurchChurchSaint.createTag(v);
+      setName("");
+      onChanged();
+    } catch (err) {
+      setErrMsg(err instanceof ApiError ? err.message : "추가에 실패했습니다.");
+    } finally {
+      setStatus("idle");
+    }
+  }
+
+  async function remove(id: number) {
+    if (!confirm("이 태그를 삭제할까요? 성도에 연결된 태그도 함께 해제됩니다.")) return;
+    setStatus("deleting");
+    setErrMsg("");
+    try {
+      await onchurchChurchSaint.removeTag(id);
+      onChanged();
+    } catch (err) {
+      setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다.");
+    } finally {
+      setStatus("idle");
+    }
+  }
+
+  return (
+    <div style={{ padding: 16, border: "1px solid var(--line)", borderRadius: "var(--r-md)", background: "var(--surface)", display: "flex", flexDirection: "column", gap: 12 }}>
+      <strong style={{ fontSize: 14 }}>태그 관리</strong>
+      {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {tags.length === 0 ? (
+          <span style={{ color: "var(--muted)", fontSize: 13 }}>등록된 태그가 없습니다.</span>
+        ) : (
+          tags.map((t) => (
+            <span key={t.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 8px 5px 12px", border: "1px solid var(--line)", borderRadius: 999, fontSize: 13, background: "var(--surface-2)" }}>
+              {t.name}
+              <button type="button" aria-label={`${t.name} 삭제`} onClick={() => remove(t.id)} disabled={status === "deleting"} style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--muted)", fontSize: 15, lineHeight: 1, padding: "0 2px" }}>×</button>
+            </span>
+          ))
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void add(); } }}
+          placeholder="새 태그 (예: 찬양대)"
+          maxLength={40}
+          style={{ flex: "1 1 160px", minWidth: 140, padding: "9px 14px", fontSize: 13, border: "1px solid var(--line)", borderRadius: "var(--r-md)", background: "var(--surface)", fontFamily: "inherit" }}
+        />
+        <button type="button" className="btn btn-secondary" onClick={add} disabled={status === "saving" || !name.trim()}>
+          {status === "saving" ? "추가 중..." : "태그 추가"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function SaintsEditor({
   focusSaintId = null,
   onFocusConsumed,
@@ -590,12 +664,14 @@ export function SaintsEditor({
   onOpenVisitation: (visitationId: number, saintId: number) => void;
 }) {
   const [saints, setSaints] = useState<ChurchSaint[]>([]);
+  const [tags, setTags] = useState<SaintTag[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
   const [draft, setDraft] = useState<ChurchSaintWriteInput>(EMPTY_SAINT);
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState("");
   const [query, setQuery] = useState("");
+  const [showTags, setShowTags] = useState(false);
 
   useEffect(() => {
     void load();
@@ -615,11 +691,24 @@ export function SaintsEditor({
     setStatus("loading");
     setErrMsg("");
     try {
-      setSaints(await onchurchChurchSaint.listMine());
+      const [roster, tagList] = await Promise.all([
+        onchurchChurchSaint.listMine(),
+        onchurchChurchSaint.listTags(),
+      ]);
+      setSaints(roster);
+      setTags(tagList);
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "성도 목록을 불러오지 못했습니다.");
     } finally {
       setStatus("idle");
+    }
+  }
+
+  async function reloadTags() {
+    try {
+      setTags(await onchurchChurchSaint.listTags());
+    } catch {
+      /* noop */
     }
   }
 
@@ -650,6 +739,7 @@ export function SaintsEditor({
       position: s.position,
       ordinationDate: s.ordinationDate,
       faithLevel: s.faithLevel,
+      tagIds: s.tags.map((t) => t.id),
     });
   }
 
@@ -694,6 +784,7 @@ export function SaintsEditor({
         position: draft.position?.trim() || null,
         ordinationDate: draft.ordinationDate || null,
         faithLevel: draft.faithLevel?.trim() || null,
+        tagIds: draft.tagIds,
       };
       if (editing === 0 || editing === null) {
         const created = await onchurchChurchSaint.create(payload);
@@ -779,12 +870,17 @@ export function SaintsEditor({
               className="member-search"
               style={{ padding: "9px 14px", fontSize: 13, border: "1px solid var(--line)", borderRadius: 999, background: "var(--surface)", fontFamily: "inherit" }}
             />
+            <button type="button" className="btn btn-secondary" onClick={() => setShowTags((v) => !v)}>
+              {showTags ? "태그 닫기" : "태그 관리"}
+            </button>
             <button type="button" className="btn btn-primary" onClick={startNew} disabled={editing !== null}>
               + 성도 추가
             </button>
           </div>
         </div>
         )}
+
+        {editing === null && showTags && <TagManager tags={tags} onChanged={reloadTags} />}
 
         {editing !== null && (
           <div className="admin-banner-card editing">
@@ -859,6 +955,43 @@ export function SaintsEditor({
                 <label>주소</label>
                 <input value={draft.address ?? ""} onChange={(e) => setDraft({ ...draft, address: e.target.value })} placeholder="서울특별시 강남구 ..." />
               </div>
+              <div className="form-row full">
+                <label>태그 <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: 11 }}>(복수 선택)</span></label>
+                {tags.length === 0 ? (
+                  <span className="form-hint" style={{ fontSize: 12 }}>등록된 태그가 없습니다. 목록 화면의 &lsquo;태그 관리&rsquo;에서 추가하세요.</span>
+                ) : (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {tags.map((t) => {
+                      const on = draft.tagIds.includes(t.id);
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() =>
+                            setDraft({
+                              ...draft,
+                              tagIds: on ? draft.tagIds.filter((id) => id !== t.id) : [...draft.tagIds, t.id],
+                            })
+                          }
+                          style={{
+                            padding: "6px 12px",
+                            borderRadius: 999,
+                            fontSize: 13,
+                            fontFamily: "inherit",
+                            cursor: "pointer",
+                            border: `1px solid ${on ? "var(--primary)" : "var(--line)"}`,
+                            background: on ? "color-mix(in oklch, var(--primary) 12%, var(--surface))" : "var(--surface)",
+                            color: on ? "var(--primary-deep)" : "var(--ink)",
+                            fontWeight: on ? 600 : 400,
+                          }}
+                        >
+                          {on ? "✓ " : ""}{t.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
               <PhotoUploadField value={draft.photoUrl} onChange={(url) => setDraft({ ...draft, photoUrl: url })} />
             </div>
 
@@ -899,6 +1032,9 @@ export function SaintsEditor({
                     <strong style={{ fontSize: 14 }}>{s.name}</strong>
                     {s.position && <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>{s.position}</span>}
                     {s.faithLevel && <span style={{ color: "var(--muted)", fontSize: 12 }}>{s.faithLevel}</span>}
+                    {s.tags.map((t) => (
+                      <span key={t.id} className="saint-tag-chip">{t.name}</span>
+                    ))}
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: 12, marginTop: 4 }}>
                     {[s.gender ? GENDER_LABEL[s.gender] : null, s.phone, s.birthDate].filter(Boolean).join(" · ") || "정보 없음"}

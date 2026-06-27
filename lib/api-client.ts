@@ -693,6 +693,12 @@ export type ChurchSaint = {
   faithLevel: string | null;
   memo: string | null;
   isFavorite: boolean;
+  tags: SaintTag[];
+};
+
+export type SaintTag = {
+  id: number;
+  name: string;
 };
 
 export type SaintPrayer = {
@@ -712,6 +718,7 @@ export type ChurchSaintWriteInput = {
   position: string | null;
   ordinationDate: string | null;
   faithLevel: string | null;
+  tagIds: number[];
 };
 
 export type SaintRelation = {
@@ -749,6 +756,14 @@ export const onchurchChurchSaint = {
     request<ChurchSaint>(`/onchurch/saints/me/${saintId}/memo`, { method: "PUT", auth: true, body: JSON.stringify({ memo }) }),
   updateFavorite: (saintId: number, isFavorite: boolean) =>
     request<ChurchSaint>(`/onchurch/saints/me/${saintId}/favorite`, { method: "PUT", auth: true, body: JSON.stringify({ isFavorite }) }),
+  listTags: () =>
+    request<{ tags: SaintTag[] }>("/onchurch/saints/me/tags", { method: "GET", auth: true }).then((r) => r.tags ?? []),
+  createTag: (name: string) =>
+    request<SaintTag>("/onchurch/saints/me/tags", { method: "POST", auth: true, body: JSON.stringify({ name }) }),
+  removeTag: (tagId: number) =>
+    request<unknown>(`/onchurch/saints/me/tags/${tagId}`, { method: "DELETE", auth: true }),
+  setTags: (saintId: number, tagIds: number[]) =>
+    request<unknown>(`/onchurch/saints/me/${saintId}/tags`, { method: "PUT", auth: true, body: JSON.stringify({ tagIds }) }),
   listPrayers: (saintId: number) =>
     request<{ prayers: SaintPrayer[] }>(`/onchurch/saints/me/${saintId}/prayers`, { method: "GET", auth: true }).then(
       (r) => r.prayers ?? [],
