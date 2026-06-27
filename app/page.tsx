@@ -257,6 +257,7 @@ export default async function LandingPage() {
               <p className="price-summary">교회 규모와 무관하게 동일한 가격. 모든 기능이 포함되어 있고, 추가 결제는 없습니다.</p>
               <ul className="price-features">
                 {[
+                  "네이버·구글 등 포털 사이트 검색 최적화(SEO)",
                   "홈페이지 9종 (소개·예배·말씀·공지·일정·갤러리·부서·기도·통독) · ON/OFF 토글",
                   "성도 관리 — 명부·직분·신급·가족관계·심방 기록",
                   "출석 관리 — 예배별 출석 체크·성도별 현황",
