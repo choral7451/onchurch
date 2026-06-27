@@ -149,7 +149,13 @@ function DetailItem({ label, value, full }: { label: string; value: React.ReactN
   );
 }
 
-export function VisitationsEditor() {
+export function VisitationsEditor({
+  focusId = null,
+  onFocusConsumed,
+}: {
+  focusId?: number | null;
+  onFocusConsumed?: () => void;
+} = {}) {
   const [visitations, setVisitations] = useState<Visitation[]>([]);
   const [types, setTypes] = useState<VisitationType[]>([]);
   const [saints, setSaints] = useState<ChurchSaint[]>([]);
@@ -164,6 +170,15 @@ export function VisitationsEditor() {
   useEffect(() => {
     void load();
   }, []);
+
+  // 성도 상세에서 넘어온 경우 해당 심방 상세를 바로 연다(한 번만 소비).
+  useEffect(() => {
+    if (focusId == null) return;
+    setDetailId(focusId);
+    setEditing(null);
+    onFocusConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusId]);
 
   async function load() {
     setStatus("loading");

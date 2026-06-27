@@ -319,6 +319,7 @@ function SaintDetail({
   onRemove,
   onBack,
   onOpenSaint,
+  onOpenVisitation,
   busy,
 }: {
   saint: ChurchSaint;
@@ -326,6 +327,7 @@ function SaintDetail({
   onRemove: () => void;
   onBack: () => void;
   onOpenSaint: (saintId: number) => void;
+  onOpenVisitation: (visitationId: number) => void;
   busy: boolean;
 }) {
   const [relations, setRelations] = useState<SaintRelation[]>([]);
@@ -425,21 +427,19 @@ function SaintDetail({
         ) : visitations.length === 0 ? (
           <p style={{ color: "var(--muted)", fontSize: 13 }}>등록된 심방 기록이 없습니다.</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {visitations.map((v) => (
-              <div
+              <button
                 key={v.id}
-                style={{ display: "flex", flexDirection: "column", gap: 6, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)" }}
+                type="button"
+                onClick={() => onOpenVisitation(v.id)}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid var(--line)", borderRadius: "var(--r-sm)", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", background: "var(--surface)" }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>{v.type}</span>
-                  <span style={{ color: "var(--muted)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{v.date}</span>
-                  <span style={{ color: "var(--muted)", fontSize: 12 }}>· {v.minister}</span>
-                </div>
-                {v.content && (
-                  <p style={{ fontSize: 13, color: "var(--ink)", margin: 0, whiteSpace: "pre-wrap" }}>{v.content}</p>
-                )}
-              </div>
+                <span className="admin-sidebar-pill optional" style={{ fontSize: 10, flexShrink: 0 }}>{v.type}</span>
+                <span style={{ color: "var(--muted)", fontSize: 12, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{v.date}</span>
+                <span style={{ color: "var(--muted)", fontSize: 12, flexShrink: 0 }}>· {v.minister}</span>
+                <span aria-hidden="true" style={{ marginLeft: "auto", color: "var(--muted-2)", fontSize: 16, flexShrink: 0 }}>›</span>
+              </button>
             ))}
           </div>
         )}
@@ -448,7 +448,7 @@ function SaintDetail({
   );
 }
 
-export function SaintsEditor() {
+export function SaintsEditor({ onOpenVisitation }: { onOpenVisitation: (visitationId: number) => void }) {
   const [saints, setSaints] = useState<ChurchSaint[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
@@ -611,6 +611,7 @@ export function SaintsEditor() {
             onRemove={() => remove(detailSaint)}
             onBack={() => setDetailId(null)}
             onOpenSaint={(id) => { setDetailId(id); setEditing(null); setErrMsg(""); }}
+            onOpenVisitation={onOpenVisitation}
             busy={busy}
           />
         ) : (

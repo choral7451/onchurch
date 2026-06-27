@@ -223,6 +223,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [mobileDetail, setMobileDetail] = useState(false);
 
   // 사이드바 항목 탭 → 해당 섹션 열고 모바일에선 상세 화면으로 진입.
+  // 성도 상세에서 심방 행을 누르면 심방 관리로 이동하며 해당 심방 상세를 연다.
+  const [visitationFocusId, setVisitationFocusId] = useState<number | null>(null);
+
   function openSection(key: SectionKey) {
     setActiveSection(key);
     setMobileDetail(true);
@@ -1770,9 +1773,21 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
               {activeSection === "members" && <MembersEditor />}
 
-              {activeSection === "saints-roster" && <SaintsEditor />}
+              {activeSection === "saints-roster" && (
+                <SaintsEditor
+                  onOpenVisitation={(id) => {
+                    setVisitationFocusId(id);
+                    openSection("visitations");
+                  }}
+                />
+              )}
 
-              {activeSection === "visitations" && <VisitationsEditor />}
+              {activeSection === "visitations" && (
+                <VisitationsEditor
+                  focusId={visitationFocusId}
+                  onFocusConsumed={() => setVisitationFocusId(null)}
+                />
+              )}
 
               {activeSection === "attendance" && <AttendanceEditor />}
 
