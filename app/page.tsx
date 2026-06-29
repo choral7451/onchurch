@@ -167,7 +167,7 @@ export default async function LandingPage() {
               </h3>
             </div>
             <div className="live-grid">
-              {churches.map((c) => (
+              {churches.slice(0, 4).map((c) => (
                 <a
                   key={c.id}
                   href={churchUrl(c.slug)}
