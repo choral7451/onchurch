@@ -162,9 +162,7 @@ export default async function LandingPage() {
           <div className="container">
             <div className="live-sites-head">
               <span className="eyebrow">Live Sites</span>
-              <h3 className="live-sites-title">
-                지금 운영 중인 교회 <span className="live-sites-count">{churches.length}</span>
-              </h3>
+              <h3 className="live-sites-title">지금 운영 중인 교회</h3>
             </div>
             <div className="live-grid">
               {churches.slice(0, 4).map((c) => (
