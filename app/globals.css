@@ -592,9 +592,9 @@ main { flex: 1; }
 .live-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .live-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 32px 22px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); transition: all 0.15s ease; min-width: 0; }
 .live-card:hover { border-color: oklch(0.62 0.14 245 / 0.4); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.live-card-logo { flex-shrink: 0; width: 72px; height: 72px; border-radius: 18px; overflow: hidden; background: linear-gradient(135deg, var(--primary), var(--accent)); display: grid; place-items: center; color: white; font-family: var(--font-display); font-weight: 700; font-size: 30px; }
+.live-card-logo { flex-shrink: 0; width: 72px; height: 72px; border-radius: 18px; overflow: hidden; background: white; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 30px; }
 .live-card-logo img { width: 100%; height: 100%; object-fit: cover; }
-.live-card-logo-fallback { line-height: 1; }
+.live-card-logo-fallback { line-height: 1; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .live-card-body { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; width: 100%; }
 .live-card-name { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--primary-deep); letter-spacing: -0.01em; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .live-card-slug { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
