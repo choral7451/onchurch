@@ -762,10 +762,13 @@ main { flex: 1; }
 .top-banner-inner { max-width: 1120px; margin: 0 auto; width: 100%; }
 .top-banner-title { font-size: 26px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.02em; }
 .top-banner-desc { font-size: 15px; opacity: 0.9; margin: 0; line-height: 1.55; }
-.top-banner-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%; border: none; background: oklch(0 0 0 / 0.42); color: white; font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; transition: background 0.15s ease; z-index: 2; }
-.top-banner-nav:hover { background: oklch(0 0 0 / 0.62); }
-.top-banner-nav.prev { left: 12px; }
-.top-banner-nav.next { right: 12px; }
+.top-banner-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.45); background: oklch(1 0 0 / 0.18); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: white; cursor: pointer; display: grid; place-items: center; box-shadow: 0 2px 8px oklch(0 0 0 / 0.18); opacity: 0; transition: opacity 0.2s ease, background 0.2s ease, transform 0.2s ease; z-index: 2; }
+.top-banner-slider:hover .top-banner-nav { opacity: 1; }
+.top-banner-nav:hover { background: oklch(1 0 0 / 0.32); }
+.top-banner-nav:active { transform: translateY(-50%) scale(0.94); }
+.top-banner-nav svg { display: block; }
+.top-banner-nav.prev { left: 14px; }
+.top-banner-nav.next { right: 14px; }
 .top-banner-dots { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 2; }
 .top-banner-dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: oklch(1 0 0 / 0.5); cursor: pointer; padding: 0; transition: background 0.15s ease, transform 0.15s ease; }
 .top-banner-dot.active { background: white; transform: scale(1.25); }
@@ -1048,7 +1051,8 @@ main { flex: 1; }
   .top-banner-section { padding: 16px; }
   /* 모바일에서는 배너 텍스트(제목·설명)를 노출하지 않는다. 데스크탑에서만 보인다. */
   .top-banner-inner { display: none; }
-  .top-banner-nav { width: 32px; height: 32px; font-size: 18px; }
+  .top-banner-nav { width: 34px; height: 34px; opacity: 1; }
+  .top-banner-nav svg { width: 18px; height: 18px; }
   .top-banner-nav.prev { left: 8px; }
   .top-banner-nav.next { right: 8px; }
   .top-banner-dots { bottom: 8px; }
