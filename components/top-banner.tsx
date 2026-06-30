@@ -18,6 +18,8 @@ export function TopBanner({ banners }: { banners: PublicBanner[] }) {
   const total = banners?.length ?? 0;
   const hasSlider = total > 1;
   const pausedRef = useRef(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const swipingRef = useRef(false);
 
   useEffect(() => {
     if (!hasSlider) return;
@@ -38,12 +40,47 @@ export function TopBanner({ banners }: { banners: PublicBanner[] }) {
     setIndex(((i % total) + total) % total);
   }
 
+  const SWIPE_THRESHOLD = 40;
+
+  function onTouchStart(e: React.TouchEvent) {
+    if (!hasSlider) return;
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY };
+    swipingRef.current = false;
+    pausedRef.current = true;
+  }
+
+  function onTouchMove(e: React.TouchEvent) {
+    const start = touchStartRef.current;
+    if (!start) return;
+    const t = e.touches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    // 가로 움직임이 세로보다 크면 가로 스와이프로 간주
+    if (!swipingRef.current && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+      swipingRef.current = true;
+    }
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    pausedRef.current = false;
+    if (!start || !swipingRef.current) return;
+    const dx = e.changedTouches[0].clientX - start.x;
+    if (dx <= -SWIPE_THRESHOLD) goTo(index + 1);
+    else if (dx >= SWIPE_THRESHOLD) goTo(index - 1);
+  }
+
   return (
     <section
       className="top-banner-section"
       aria-label="홈 배너"
       onMouseEnter={() => { pausedRef.current = true; }}
       onMouseLeave={() => { pausedRef.current = false; }}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
       <div className={`top-banner-slider ${hasSlider ? "" : "is-single"}`}>
         <div
