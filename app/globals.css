@@ -25,8 +25,8 @@
   --line: oklch(0.91 0.008 250);
   --line-2: oklch(0.95 0.006 250);
 
-  --font-display: "Pretendard Variable", "Pretendard", var(--font-inter-tight), system-ui, sans-serif;
-  --font-body: "Pretendard Variable", "Pretendard", var(--font-inter-tight), system-ui, sans-serif;
+  --font-display: var(--font-pretendard), var(--font-inter-tight), system-ui, sans-serif;
+  --font-body: var(--font-pretendard), var(--font-inter-tight), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   --r-sm: 8px;

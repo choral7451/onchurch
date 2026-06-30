@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import { AuthBootstrap } from "@/components/shell/auth-bootstrap";
 import { resolveHost } from "@/lib/seo";
@@ -18,6 +19,14 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+});
+
+// Pretendard 자체 호스팅(variable woff2). 외부 CDN(jsdelivr) 장애로 전 페이지가 멈추던 문제 해결.
+const pretendard = localFont({
+  src: "../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2",
+  variable: "--font-pretendard",
+  display: "swap",
+  weight: "45 920",
 });
 
 export const metadata: Metadata = {
@@ -101,13 +110,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { kind } = await resolveHost();
   const isLanding = kind === "root";
   return (
-    <html lang="ko" className={`${interTight.variable} ${jetbrainsMono.variable}`}>
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendard-dynamic-subset.min.css"
-        />
-      </head>
+    <html lang="ko" className={`${pretendard.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
       <body>
         <AuthBootstrap />
         {children}
