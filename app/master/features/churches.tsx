@@ -297,13 +297,23 @@ export function ChurchesFeature() {
                       <PaidUntilEditor church={c} onUpdated={handlePaidUpdated} />
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={() => setTransferTarget(c)}
-                        className="whitespace-nowrap rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
-                      >
-                        오너 이관
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={`https://${c.slug}.everychurch.co.kr`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="whitespace-nowrap rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
+                        >
+                          홈페이지
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => setTransferTarget(c)}
+                          className="whitespace-nowrap rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
+                        >
+                          오너 이관
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
