@@ -55,7 +55,16 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
     <>
     <nav className="nav">
       <div className="nav-inner">
-        <Link href={link("/")} className="brand">
+        <Link
+          href={link("/")}
+          className="brand"
+          onClick={() => {
+            // 이미 루트 페이지에 있으면 네비게이션이 일어나지 않아 스크롤이 그대로 멈춤 → 맨 위로 올림
+            if (isActive("/")) {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+        >
           {brand.logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={brand.logoUrl} alt="" className="brand-logo" />
