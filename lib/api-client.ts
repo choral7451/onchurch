@@ -528,6 +528,13 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ paidUntil }),
     }),
+  // 교회 네이버 사이트 인증 코드 설정. 빈 문자열/null이면 해제. 응답으로 정규화된 값 반환.
+  updateChurchNaverVerification: (churchId: number, naverVerification: string | null) =>
+    request<{ naverVerification: string | null }>(`/onchurch/master/churches/${churchId}/naver-verification`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ naverVerification }),
+    }),
   // 오너 이관 대상 후보 검색(마스터 제외). 검색어가 비면 빈 목록.
   searchUsers: (keyword: string) => {
     const query = new URLSearchParams();
@@ -593,6 +600,7 @@ export type ChurchOverview = {
   paidUntil: string | null;
   isFreeTrialActive: boolean;
   isPaidActive: boolean;
+  naverVerification: string | null;
 };
 
 export type OwnerCandidate = {

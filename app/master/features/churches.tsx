@@ -123,6 +123,64 @@ function PaidUntilEditor({
   );
 }
 
+function NaverVerificationEditor({
+  church,
+  onUpdated,
+}: {
+  church: ChurchOverview;
+  onUpdated: (id: number, naverVerification: string | null) => void;
+}) {
+  const [draft, setDraft] = useState(church.naverVerification ?? "");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  const dirty = draft.trim() !== (church.naverVerification ?? "");
+
+  async function save(value: string | null) {
+    setSaving(true);
+    setErr("");
+    try {
+      const res = await onchurchMaster.updateChurchNaverVerification(church.id, value);
+      onUpdated(church.id, res.naverVerification);
+      setDraft(res.naverVerification ?? "");
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "변경에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const btn = "rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-40";
+
+  return (
+    <div className="flex min-w-[240px] flex-col gap-1.5">
+      <div className="flex items-center gap-1">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="네이버 인증 코드"
+          className="w-[180px] rounded border border-gray-300 px-2 py-1 text-xs focus:border-gray-900 focus:outline-none"
+        />
+        <button type="button" onClick={() => save(draft.trim() || null)} disabled={saving || !dirty} className={btn}>
+          저장
+        </button>
+        {church.naverVerification && (
+          <button
+            type="button"
+            onClick={() => save(null)}
+            disabled={saving}
+            className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-red-500 transition hover:bg-red-50 disabled:opacity-40"
+          >
+            해제
+          </button>
+        )}
+      </div>
+      {err && <span className="text-[11px] text-red-600">{err}</span>}
+    </div>
+  );
+}
+
 export function ChurchesFeature() {
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState(""); // 디바운스된 실제 검색어
@@ -206,6 +264,11 @@ export function ChurchesFeature() {
     setItems((prev) => prev.map((c) => (c.id === id ? { ...c, paidUntil, isPaidActive } : c)));
   }, []);
 
+  // 네이버 인증 코드 변경 후 해당 행만 갱신
+  const handleNaverUpdated = useCallback((id: number, naverVerification: string | null) => {
+    setItems((prev) => prev.map((c) => (c.id === id ? { ...c, naverVerification } : c)));
+  }, []);
+
   // 소유자 이관 모달 대상 교회
   const [transferTarget, setTransferTarget] = useState<ChurchOverview | null>(null);
 
@@ -260,6 +323,7 @@ export function ChurchesFeature() {
                   <th className="px-4 py-3">소유자 연락처</th>
                   <th className="px-4 py-3">프리티어 기간</th>
                   <th className="px-4 py-3">결제기간</th>
+                  <th className="px-4 py-3">네이버 인증</th>
                   <th className="px-4 py-3">관리</th>
                 </tr>
               </thead>
@@ -295,6 +359,9 @@ export function ChurchesFeature() {
                     </td>
                     <td className="px-4 py-3">
                       <PaidUntilEditor church={c} onUpdated={handlePaidUpdated} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <NaverVerificationEditor church={c} onUpdated={handleNaverUpdated} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
