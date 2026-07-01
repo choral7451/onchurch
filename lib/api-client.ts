@@ -564,6 +564,18 @@ export const onchurchMaster = {
   },
   deleteLedgerEntry: (id: number) =>
     request<unknown>(`/onchurch/master/ledger/${id}`, { method: "DELETE", auth: true }),
+
+  getDashboard: (month: string) => {
+    const query = new URLSearchParams({ month });
+    return request<MasterDashboard>(`/onchurch/master/dashboard?${query.toString()}`, { method: "GET", auth: true });
+  },
+};
+
+export type MasterDashboard = {
+  month: string;
+  ledger: { totalIncome: number; totalExpense: number };
+  funnel: { signups: number; createdChurch: number; paid: number };
+  paidChurchInflow: { date: string; count: number }[];
 };
 
 export type LedgerType = "income" | "expense";

@@ -7,6 +7,7 @@ import { ApiError, clearTokens, onchurchUser } from "@/lib/api-client";
 import { BulkEmailFeature } from "./features/bulk-email";
 import { BulkSmsFeature } from "./features/bulk-sms";
 import { ChurchesFeature } from "./features/churches";
+import { DashboardFeature } from "./features/dashboard";
 import { LedgerFeature } from "./features/ledger";
 
 // 사이드바 메뉴 + 렌더링할 화면. 새 기능은 여기 한 줄과 render()의 case만 추가하면 된다.
@@ -19,15 +20,6 @@ const SECTIONS: { key: SectionKey; label: string; icon: (typeof Icon)[keyof type
   { key: "bulk-email", label: "대량 메일 발송", icon: Icon.mail },
   { key: "bulk-sms", label: "대량 문자 발송", icon: Icon.phone },
 ];
-
-function Dashboard() {
-  return (
-    <div className="max-w-3xl">
-      <h2 className="text-xl font-bold text-gray-900">대시보드</h2>
-      <p className="mt-1 text-sm text-gray-500">온교회 마스터 콘솔입니다. 왼쪽 메뉴에서 기능을 선택하세요.</p>
-    </div>
-  );
-}
 
 export function MasterApp() {
   const router = useRouter();
@@ -126,7 +118,7 @@ export function MasterApp() {
           <h1 className="text-base font-bold text-gray-900">{SECTIONS.find((s) => s.key === section)?.label}</h1>
         </header>
         <div className="p-8">
-          {section === "dashboard" && <Dashboard />}
+          {section === "dashboard" && <DashboardFeature />}
           {section === "churches" && <ChurchesFeature />}
           {section === "ledger" && <LedgerFeature />}
           {section === "bulk-email" && <BulkEmailFeature />}
