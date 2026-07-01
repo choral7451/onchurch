@@ -136,15 +136,13 @@ async function TopBannerSection({ slug }: { slug: string }) {
 }
 
 function pickUpcoming(events: PublicEvent[]): PublicEvent[] {
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
-  const cutoff = startOfToday.getTime();
+  // "현재 시각 이후로 가장 가까운 일정"부터. 이미 시작 시각이 지난 일정은 제외.
+  const cutoff = Date.now();
   return events
     .filter((e) => {
-      // "오늘로부터 가장 가까운 일정" = 시작일이 오늘 이후(오늘 포함)인 일정만.
-      // (이미 시작해서 진행 중인 다일 일정은 hero 후보에서 제외)
       const ref = new Date(e.startAt);
       if (Number.isNaN(ref.getTime())) return false;
+      // 종일 일정은 그 날 하루 동안은 계속 다가오는 일정으로 노출.
       if (e.isAllDay) ref.setHours(23, 59, 59, 999);
       return ref.getTime() >= cutoff;
     })

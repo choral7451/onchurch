@@ -98,12 +98,11 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
 
   const upcoming = useMemo(() => {
     // 캘린더에서 보고 있는 달의 일정만 (startAt 기준).
-    // 현재 달을 보는 경우엔 오늘 이후 일정만으로 좁혀, 지나간 일정은 제외.
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    const todayMs = startOfToday.getTime();
+    // 현재 달을 보는 경우엔 현재 시각 이후 일정만으로 좁혀, 지나간 일정은 제외.
+    const now = new Date();
+    const nowMs = now.getTime();
     const isViewingCurrentMonth =
-      view.year === startOfToday.getFullYear() && view.month === startOfToday.getMonth() + 1;
+      view.year === now.getFullYear() && view.month === now.getMonth() + 1;
     return events
       .filter((e) => {
         const d = new Date(e.startAt);
@@ -111,8 +110,9 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
         if (d.getFullYear() !== view.year || d.getMonth() + 1 !== view.month) return false;
         if (!isViewingCurrentMonth) return true;
         const ref = new Date(d);
+        // 종일 일정은 그 날 하루 동안은 계속 노출.
         if (e.isAllDay) ref.setHours(23, 59, 59, 999);
-        return ref.getTime() >= todayMs;
+        return ref.getTime() >= nowMs;
       })
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
   }, [events, view]);
