@@ -1104,7 +1104,6 @@ export type EventItem = {
   startAt: string;
   endAt: string | null;
   isAllDay: boolean;
-  isActive: boolean;
 };
 
 export type EventWriteInput = {
@@ -1114,7 +1113,6 @@ export type EventWriteInput = {
   startAt: string;
   endAt?: string | null;
   isAllDay: boolean;
-  isActive: boolean;
 };
 
 export const onchurchEvent = {
@@ -1131,7 +1129,6 @@ export const onchurchEvent = {
         startAt: input.startAt,
         endAt: input.endAt ?? null,
         isAllDay: input.isAllDay,
-        isActive: input.isActive,
       }),
     }),
   update: (id: number, input: EventWriteInput) =>
@@ -1145,7 +1142,6 @@ export const onchurchEvent = {
         startAt: input.startAt,
         endAt: input.endAt ?? null,
         isAllDay: input.isAllDay,
-        isActive: input.isActive,
       }),
     }),
   remove: (id: number) =>
@@ -1185,7 +1181,6 @@ export type VisionItem = {
   en: string | null;
   description: string | null;
   sortOrder: number;
-  isActive: boolean;
 };
 
 export type VisionWriteInput = {
@@ -1193,7 +1188,6 @@ export type VisionWriteInput = {
   en?: string | null;
   description?: string | null;
   sortOrder: number;
-  isActive: boolean;
 };
 
 export type HistoryItem = {
@@ -1202,7 +1196,6 @@ export type HistoryItem = {
   title: string;
   description: string | null;
   sortOrder: number;
-  isActive: boolean;
 };
 
 export type HistoryWriteInput = {
@@ -1210,7 +1203,6 @@ export type HistoryWriteInput = {
   title: string;
   description?: string | null;
   sortOrder: number;
-  isActive: boolean;
 };
 
 export type StaffMember = {
@@ -1219,8 +1211,9 @@ export type StaffMember = {
   role: string | null;
   area: string | null;
   photoUrl: string | null;
+  phone: string | null;
+  email: string | null;
   sortOrder: number;
-  isActive: boolean;
 };
 
 export type StaffWriteInput = {
@@ -1228,8 +1221,9 @@ export type StaffWriteInput = {
   role?: string | null;
   area?: string | null;
   photoUrl?: string | null;
+  phone?: string | null;
+  email?: string | null;
   sortOrder: number;
-  isActive: boolean;
 };
 
 export type PublicAbout = {

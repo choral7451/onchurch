@@ -12,7 +12,6 @@ const EMPTY_INPUT: EventWriteInput = {
   startAt: "",
   endAt: "",
   isAllDay: false,
-  isActive: true,
 };
 
 function toLocalInput(iso: string | null | undefined): string {
@@ -89,7 +88,6 @@ export function ScheduleEditor() {
       startAt: toLocalInput(ev.startAt),
       endAt: toLocalInput(ev.endAt),
       isAllDay: ev.isAllDay,
-      isActive: ev.isActive,
     });
   }
 
@@ -119,7 +117,6 @@ export function ScheduleEditor() {
         startAt: startIso,
         endAt: fromLocalInput(draft.endAt ?? ""),
         isAllDay: !!draft.isAllDay,
-        isActive: !!draft.isActive,
       };
       if (editingId === 0 || editingId === null) {
         await onchurchEvent.create(payload);
@@ -218,14 +215,6 @@ export function ScheduleEditor() {
                   />
                   <span>종일</span>
                 </label>
-                <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 4, gap: 12 }}>
-                  <input
-                    type="checkbox"
-                    checked={draft.isActive}
-                    onChange={(e) => setDraft((d) => ({ ...d, isActive: e.target.checked }))}
-                  />
-                  <span>공개</span>
-                </label>
               </div>
               <div className="form-row full">
                 <label htmlFor="ev-desc">설명</label>
@@ -255,13 +244,10 @@ export function ScheduleEditor() {
             <p style={{ color: "var(--muted)" }}>등록된 일정이 없습니다.</p>
           )}
           {events.map((ev) => (
-            <div key={ev.id} className={`admin-banner-card ${ev.isActive ? "" : "inactive"}`}>
+            <div key={ev.id} className="admin-banner-card">
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <strong>{ev.title}</strong>
-                  <span className={`admin-sidebar-pill ${ev.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                    {ev.isActive ? "공개" : "비공개"}
-                  </span>
                   {ev.isAllDay && <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>종일</span>}
                 </div>
                 <div style={{ color: "var(--muted)", fontSize: 13 }}>

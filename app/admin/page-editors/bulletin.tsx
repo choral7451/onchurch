@@ -129,7 +129,6 @@ export function BulletinEditor() {
           .filter((s) => s.isActive)
           .map((s) => ({ name: s.name, time: s.time, meta: s.meta })),
         staff: staff
-          .filter((s) => s.isActive)
           .map((s) => ({ name: s.name, role: s.role, area: s.area })),
         news: (noticeRes.notices ?? [])
           .filter((n) => n.isActive)

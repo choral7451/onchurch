@@ -49,6 +49,8 @@ type StaffMember = {
   role: string | null;
   area: string | null;
   photoUrl: string | null;
+  phone: string | null;
+  email: string | null;
 };
 
 type AboutData = {

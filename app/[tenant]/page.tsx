@@ -41,7 +41,6 @@ type PublicEvent = {
   startAt: string;
   endAt: string | null;
   isAllDay: boolean;
-  isActive: boolean;
 };
 
 type PublicWorshipService = {
@@ -141,7 +140,6 @@ function pickUpcoming(events: PublicEvent[]): PublicEvent[] {
   startOfToday.setHours(0, 0, 0, 0);
   const cutoff = startOfToday.getTime();
   return events
-    .filter((e) => e.isActive !== false)
     .filter((e) => {
       // "오늘로부터 가장 가까운 일정" = 시작일이 오늘 이후(오늘 포함)인 일정만.
       // (이미 시작해서 진행 중인 다일 일정은 hero 후보에서 제외)

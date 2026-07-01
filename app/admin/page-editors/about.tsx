@@ -39,9 +39,9 @@ const EMPTY_PASTOR: PastorWriteInput = {
   photoUrl: "",
 };
 
-const EMPTY_VISION: VisionWriteInput = { ko: "", en: "", description: "", sortOrder: 0, isActive: true };
-const EMPTY_HISTORY: HistoryWriteInput = { year: "", title: "", description: "", sortOrder: 0, isActive: true };
-const EMPTY_STAFF: StaffWriteInput = { name: "", role: "", area: "", photoUrl: "", sortOrder: 0, isActive: true };
+const EMPTY_VISION: VisionWriteInput = { ko: "", en: "", description: "", sortOrder: 0 };
+const EMPTY_HISTORY: HistoryWriteInput = { year: "", title: "", description: "", sortOrder: 0 };
+const EMPTY_STAFF: StaffWriteInput = { name: "", role: "", area: "", photoUrl: "", phone: "", email: "", sortOrder: 0 };
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -330,7 +330,7 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
   function startNew() { setEditing(0); setDraft({ ...EMPTY_VISION, sortOrder: items.length }); }
   function startEdit(it: VisionItem) {
     setEditing(it.id);
-    setDraft({ ko: it.ko, en: it.en ?? "", description: it.description ?? "", sortOrder: it.sortOrder, isActive: it.isActive });
+    setDraft({ ko: it.ko, en: it.en ?? "", description: it.description ?? "", sortOrder: it.sortOrder });
   }
   function cancel() { setEditing(null); setDraft(EMPTY_VISION); setErrMsg(""); }
 
@@ -343,7 +343,6 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
         en: (draft.en ?? "").trim() || null,
         description: draft.description ?? null,
         sortOrder: Number(draft.sortOrder) || 0,
-        isActive: !!draft.isActive,
       };
       if (editing === 0 || editing === null) await onchurchVision.create(payload);
       else await onchurchVision.update(editing, payload);
@@ -369,7 +368,6 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
           en: it.en ?? null,
           description: it.description ?? null,
           sortOrder: next,
-          isActive: it.isActive,
         }),
       );
       await load();
@@ -395,12 +393,6 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
               <label>영문</label>
               <input value={draft.en ?? ""} onChange={(e) => setDraft({ ...draft, en: e.target.value })} placeholder="WORSHIP" />
             </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
-              </label>
-            </div>
             <div className="form-row full">
               <label>설명</label>
               <textarea rows={3} value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
@@ -422,7 +414,7 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
         {items.map((it, idx) => (
           <div
             key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            className="admin-banner-card"
             {...(dragDisabled ? {} : getItemProps(idx))}
           >
             <DragHandle disabled={dragDisabled} />
@@ -430,9 +422,6 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.ko}</strong>
                 {it.en && <span style={{ color: "var(--muted)", fontSize: 12 }}>· {it.en}</span>}
-                <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {it.isActive ? "공개" : "비공개"}
-                </span>
               </div>
               {it.description && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.description}</div>}
             </div>
@@ -468,7 +457,7 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
   function startNew() { setEditing(0); setDraft({ ...EMPTY_HISTORY, sortOrder: items.length }); }
   function startEdit(it: HistoryItem) {
     setEditing(it.id);
-    setDraft({ year: it.year, title: it.title, description: it.description ?? "", sortOrder: it.sortOrder, isActive: it.isActive });
+    setDraft({ year: it.year, title: it.title, description: it.description ?? "", sortOrder: it.sortOrder });
   }
   function cancel() { setEditing(null); setDraft(EMPTY_HISTORY); setErrMsg(""); }
 
@@ -481,7 +470,6 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
         title: draft.title.trim(),
         description: draft.description ?? null,
         sortOrder: Number(draft.sortOrder) || 0,
-        isActive: !!draft.isActive,
       };
       if (editing === 0 || editing === null) await onchurchHistory.create(payload);
       else await onchurchHistory.update(editing, payload);
@@ -507,7 +495,6 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
           title: it.title,
           description: it.description ?? null,
           sortOrder: next,
-          isActive: it.isActive,
         }),
       );
       await load();
@@ -533,12 +520,6 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
               <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
               <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="교회 설립" required />
             </div>
-            <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
-              </label>
-            </div>
             <div className="form-row full">
               <label>설명</label>
               <textarea rows={3} value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
@@ -560,7 +541,7 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
         {items.map((it, idx) => (
           <div
             key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            className="admin-banner-card"
             {...(dragDisabled ? {} : getItemProps(idx))}
           >
             <DragHandle disabled={dragDisabled} />
@@ -568,9 +549,6 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.year}</strong>
                 <span>· {it.title}</span>
-                <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {it.isActive ? "공개" : "비공개"}
-                </span>
               </div>
               {it.description && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.description}</div>}
             </div>
@@ -606,7 +584,7 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
   function startNew() { setEditing(0); setDraft({ ...EMPTY_STAFF, sortOrder: items.length }); }
   function startEdit(it: StaffMember) {
     setEditing(it.id);
-    setDraft({ name: it.name, role: it.role ?? "", area: it.area ?? "", photoUrl: it.photoUrl ?? "", sortOrder: it.sortOrder, isActive: it.isActive });
+    setDraft({ name: it.name, role: it.role ?? "", area: it.area ?? "", photoUrl: it.photoUrl ?? "", phone: it.phone ?? "", email: it.email ?? "", sortOrder: it.sortOrder });
   }
   function cancel() { setEditing(null); setDraft(EMPTY_STAFF); setErrMsg(""); }
 
@@ -619,8 +597,9 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
         role: (draft.role ?? "").trim() || null,
         area: (draft.area ?? "").trim() || null,
         photoUrl: (draft.photoUrl ?? "").trim() || null,
+        phone: (draft.phone ?? "").trim() || null,
+        email: (draft.email ?? "").trim() || null,
         sortOrder: Number(draft.sortOrder) || 0,
-        isActive: !!draft.isActive,
       };
       if (editing === 0 || editing === null) await onchurchStaff.create(payload);
       else await onchurchStaff.update(editing, payload);
@@ -646,8 +625,9 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
           role: it.role ?? null,
           area: it.area ?? null,
           photoUrl: it.photoUrl ?? null,
+          phone: it.phone ?? null,
+          email: it.email ?? null,
           sortOrder: next,
-          isActive: it.isActive,
         }),
       );
       await load();
@@ -678,10 +658,12 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
               <input value={draft.area ?? ""} onChange={(e) => setDraft({ ...draft, area: e.target.value })} placeholder="청년부" />
             </div>
             <div className="form-row">
-              <label className="checkbox-row" style={{ cursor: "pointer", marginTop: 28, gap: 12 }}>
-                <input type="checkbox" checked={draft.isActive} onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })} />
-                <span>활성</span>
-              </label>
+              <label>연락처</label>
+              <input value={draft.phone ?? ""} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} placeholder="010-1234-5678" />
+            </div>
+            <div className="form-row">
+              <label>이메일</label>
+              <input type="email" value={draft.email ?? ""} onChange={(e) => setDraft({ ...draft, email: e.target.value })} placeholder="name@church.org" />
             </div>
             <PhotoUploadField
               label="사진"
@@ -705,7 +687,7 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
         {items.map((it, idx) => (
           <div
             key={it.id}
-            className={`admin-banner-card ${it.isActive ? "" : "inactive"}`}
+            className="admin-banner-card"
             {...(dragDisabled ? {} : getItemProps(idx))}
           >
             <DragHandle disabled={dragDisabled} />
@@ -713,9 +695,6 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                 <strong>{it.name}</strong>
                 {it.role && <span style={{ color: "var(--muted)", fontSize: 12 }}>· {it.role}</span>}
-                <span className={`admin-sidebar-pill ${it.isActive ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
-                  {it.isActive ? "공개" : "비공개"}
-                </span>
               </div>
               {it.area && <div style={{ color: "var(--muted)", fontSize: 13 }}>{it.area}</div>}
             </div>

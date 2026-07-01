@@ -14,7 +14,6 @@ type CalendarEvent = {
   startAt: string;
   endAt: string | null;
   isAllDay: boolean;
-  isActive: boolean;
 };
 
 function fmtUpcomingDate(iso: string): string {
@@ -84,7 +83,6 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
   const eventsByDay = useMemo(() => {
     const map = new Map<number, CalendarEvent[]>();
     for (const e of events) {
-      if (e.isActive === false) continue;
       const d = new Date(e.startAt);
       if (d.getFullYear() === view.year && d.getMonth() + 1 === view.month) {
         const arr = map.get(d.getDate()) ?? [];
@@ -107,7 +105,6 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
     const isViewingCurrentMonth =
       view.year === startOfToday.getFullYear() && view.month === startOfToday.getMonth() + 1;
     return events
-      .filter((e) => e.isActive !== false)
       .filter((e) => {
         const d = new Date(e.startAt);
         if (Number.isNaN(d.getTime())) return false;
