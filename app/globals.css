@@ -1371,7 +1371,7 @@ main { flex: 1; }
 .history-desc { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
 
 .staff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.staff-card { text-align: center; padding: 24px; }
+.staff-card { text-align: center; padding: 24px; min-width: 0; }
 .staff-photo { width: 96px; height: 96px; margin: 0 auto 16px; border-radius: 50%; background: repeating-linear-gradient(45deg, oklch(0.94 0.01 245) 0 6px, oklch(0.92 0.012 245) 6px 12px); display: grid; place-items: center; border: 1px solid var(--line); }
 .staff-photo-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
 .staff-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--primary-deep); }
