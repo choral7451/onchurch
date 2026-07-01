@@ -97,22 +97,12 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
   }, [events, view]);
 
   const upcoming = useMemo(() => {
-    // 캘린더에서 보고 있는 달의 일정만 (startAt 기준).
-    // 현재 달을 보는 경우엔 현재 시각 이후 일정만으로 좁혀, 지나간 일정은 제외.
-    const now = new Date();
-    const nowMs = now.getTime();
-    const isViewingCurrentMonth =
-      view.year === now.getFullYear() && view.month === now.getMonth() + 1;
+    // 캘린더에서 보고 있는 달의 일정은 지난 일정 포함 모두 표시 (startAt 기준).
     return events
       .filter((e) => {
         const d = new Date(e.startAt);
         if (Number.isNaN(d.getTime())) return false;
-        if (d.getFullYear() !== view.year || d.getMonth() + 1 !== view.month) return false;
-        if (!isViewingCurrentMonth) return true;
-        const ref = new Date(d);
-        // 종일 일정은 그 날 하루 동안은 계속 노출.
-        if (e.isAllDay) ref.setHours(23, 59, 59, 999);
-        return ref.getTime() >= nowMs;
+        return d.getFullYear() === view.year && d.getMonth() + 1 === view.month;
       })
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
   }, [events, view]);
