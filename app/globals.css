@@ -484,7 +484,11 @@ main { flex: 1; }
 /* Chips */
 .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
 .chip { padding: 8px 16px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; font-weight: 500; color: var(--ink-2); cursor: pointer; transition: all 0.15s ease; }
-.chip:hover { border-color: var(--accent); }
+/* hover 스타일이 있으면 iOS에서 첫 탭은 hover만, 실제 클릭은 두 번째 탭에서 발동됨 → 마우스 기기에서만 적용 */
+@media (hover: hover) {
+  .chip:hover { border-color: var(--accent); }
+}
+.chip { touch-action: manipulation; }
 .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
 /* Gallery */
