@@ -1377,8 +1377,8 @@ main { flex: 1; }
 .staff-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--primary-deep); }
 .staff-role { font-size: 12px; color: var(--accent); font-weight: 600; margin: 4px 0; letter-spacing: 0.05em; }
 .staff-area { font-size: 12.5px; color: var(--muted); }
-.staff-contact { font-size: 12.5px; margin-top: 2px; }
-.staff-contact a { color: var(--muted); text-decoration: none; }
+.staff-contact { font-size: 12.5px; margin-top: 2px; overflow-wrap: anywhere; word-break: break-word; }
+.staff-contact a { color: var(--muted); text-decoration: none; overflow-wrap: anywhere; }
 .staff-contact a:hover { color: var(--accent); text-decoration: underline; }
 
 /* =====================================================
