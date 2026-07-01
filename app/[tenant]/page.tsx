@@ -122,6 +122,13 @@ function dateParts(iso: string | null, fallbackIso: string): { day: string; mon:
   return { day: String(p.day).padStart(2, "0"), mon: months[p.month - 1] };
 }
 
+// 일정 페이지가 해당 일정의 월(KST 기준)을 바로 열도록 넘길 쿼리스트링(?ym=YYYY-MM).
+function schedulePath(basePath: string, iso: string): string {
+  const p = seoulParts(iso);
+  if (!p) return basePath;
+  return `${basePath}?ym=${p.year}-${String(p.month).padStart(2, "0")}`;
+}
+
 // ------ Streaming sections ------
 
 async function TopBannerSection({ slug }: { slug: string }) {
@@ -196,7 +203,7 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
           )}
         </div>
         <div>
-          <Link href={url("/schedule")} className="news-feature-cta">
+          <Link href={url(schedulePath("/schedule", head.startAt))} className="news-feature-cta">
             전체 일정 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
           </Link>
         </div>
@@ -226,7 +233,7 @@ async function UpcomingEventsListSection({ slug, url }: { slug: string; url: (p:
               : "";
           return (
             <li key={item.id} className="news-item">
-              <Link href={url("/schedule")} style={{ display: "contents" }}>
+              <Link href={url(schedulePath("/schedule", item.startAt))} style={{ display: "contents" }}>
                 <div className="news-item-date">
                   <span className="day">{day}</span>
                   <span className="mon">{mon}</span>

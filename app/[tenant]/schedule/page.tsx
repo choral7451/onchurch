@@ -43,17 +43,24 @@ async function fetchEvents(slug: string): Promise<EventItem[]> {
   }
 }
 
-async function ScheduleContent({ tenant }: { tenant: string }) {
+async function ScheduleContent({ tenant, initialYm }: { tenant: string; initialYm?: string }) {
   const events = await fetchEvents(tenant);
-  return <Calendar events={events} />;
+  return <Calendar events={events} initialYm={initialYm} />;
 }
 
 function ScheduleSkeleton() {
   return <span className="skel" style={{ width: "100%", height: 520 }} />;
 }
 
-export default async function SchedulePage({ params }: { params: Promise<{ tenant: string }> }) {
+export default async function SchedulePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ tenant: string }>;
+  searchParams: Promise<{ ym?: string }>;
+}) {
   const { tenant } = await params;
+  const { ym } = await searchParams;
   return (
     <div>
       <PageHeader
@@ -64,7 +71,7 @@ export default async function SchedulePage({ params }: { params: Promise<{ tenan
       <section className="section">
         <div className="container">
           <Suspense fallback={<ScheduleSkeleton />}>
-            <ScheduleContent tenant={tenant} />
+            <ScheduleContent tenant={tenant} initialYm={ym} />
           </Suspense>
         </div>
       </section>

@@ -56,9 +56,22 @@ function fmtRange(ev: CalendarEvent): string {
 
 const UPCOMING_PREVIEW_LIMIT = 8;
 
-export function Calendar({ events }: { events: CalendarEvent[] }) {
+// "YYYY-MM"(예: "2026-04") 파싱. 홈페이지에서 특정 일정을 클릭해 넘어온 경우 그 달을 연다.
+function parseYm(ym: string | undefined): { year: number; month: number } | null {
+  if (!ym) return null;
+  const m = /^(\d{4})-(\d{1,2})$/.exec(ym);
+  if (!m) return null;
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  if (month < 1 || month > 12) return null;
+  return { year, month };
+}
+
+export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initialYm?: string }) {
   const today = new Date();
-  const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() + 1 });
+  const [view, setView] = useState(
+    parseYm(initialYm) ?? { year: today.getFullYear(), month: today.getMonth() + 1 },
+  );
   const [activeEvents, setActiveEvents] = useState<CalendarEvent[] | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
