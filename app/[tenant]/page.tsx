@@ -88,11 +88,38 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   }
 }
 
+// 서버 렌더링 시 런타임 로컬 타임존(보통 UTC)이 아니라 한국 시간(KST) 기준으로 시각을 표시해야 한다.
+const SEOUL_TZ = "Asia/Seoul";
+
+function seoulParts(iso: string): { year: number; month: number; day: number; hours: number; minutes: number } | null {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: SEOUL_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(d).reduce<Record<string, string>>((acc, p) => {
+    acc[p.type] = p.value;
+    return acc;
+  }, {});
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    hours: parts.hour === "24" ? 0 : Number(parts.hour),
+    minutes: Number(parts.minute),
+  };
+}
+
 function dateParts(iso: string | null, fallbackIso: string): { day: string; mon: string } {
-  const d = new Date(iso ?? fallbackIso);
-  if (Number.isNaN(d.getTime())) return { day: "—", mon: "—" };
+  const p = seoulParts(iso ?? fallbackIso);
+  if (!p) return { day: "—", mon: "—" };
   const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-  return { day: String(d.getDate()).padStart(2, "0"), mon: months[d.getMonth()] };
+  return { day: String(p.day).padStart(2, "0"), mon: months[p.month - 1] };
 }
 
 // ------ Streaming sections ------
@@ -144,12 +171,14 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
     );
   }
 
-  const start = new Date(head.startAt);
   const { day, mon } = dateParts(head.startAt, head.startAt);
-  const dateStr = `${start.getFullYear()}.${String(start.getMonth() + 1).padStart(2, "0")}.${String(start.getDate()).padStart(2, "0")}`;
+  const p = seoulParts(head.startAt);
+  const dateStr = p ? `${p.year}.${String(p.month).padStart(2, "0")}.${String(p.day).padStart(2, "0")}` : "";
   const timeStr = head.isAllDay
     ? "종일"
-    : `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
+    : p
+      ? `${String(p.hours).padStart(2, "0")}:${String(p.minutes).padStart(2, "0")}`
+      : "";
 
   return (
     <div className="news-feature">
@@ -189,10 +218,12 @@ async function UpcomingEventsListSection({ slug, url }: { slug: string; url: (p:
       ) : (
         upcoming.map((item) => {
           const { day, mon } = dateParts(item.startAt, item.startAt);
-          const start = new Date(item.startAt);
+          const p = seoulParts(item.startAt);
           const timeStr = item.isAllDay
             ? "종일"
-            : `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
+            : p
+              ? `${String(p.hours).padStart(2, "0")}:${String(p.minutes).padStart(2, "0")}`
+              : "";
           return (
             <li key={item.id} className="news-item">
               <Link href={url("/schedule")} style={{ display: "contents" }}>
