@@ -158,8 +158,8 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
                 <div className="staff-name">{s.name}</div>
                 {s.role && <div className="staff-role">{s.role}</div>}
                 {s.area && <div className="staff-area">{s.area}</div>}
-                {s.phone && <div className="staff-contact"><a href={`tel:${s.phone}`}>{s.phone}</a></div>}
-                {s.email && <div className="staff-contact"><a href={`mailto:${s.email}`}>{s.email}</a></div>}
+                {s.phone && <div className="staff-contact">{s.phone}</div>}
+                {s.email && <div className="staff-contact">{s.email}</div>}
               </div>
             ))}
           </div>
