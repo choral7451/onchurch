@@ -573,6 +573,7 @@ export const onchurchMaster = {
 
 export type MasterDashboard = {
   month: string;
+  overall: { paidChurchTotal: number; totalIncome: number; totalExpense: number };
   ledger: { totalIncome: number; totalExpense: number };
   funnel: { signups: number; createdChurch: number; paid: number };
   paidChurchInflow: { date: string; count: number }[];

@@ -71,8 +71,29 @@ export function DashboardFeature() {
       {status === "loading" && <p className="mt-8 text-sm text-gray-500">불러오는 중…</p>}
       {status === "error" && <div className="mt-8 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
-      {status === "done" && ledger && funnel && (
+      {status === "done" && ledger && funnel && data && (
         <div className="mt-6 space-y-8">
+          {/* 전체 누적(월 무관) */}
+          <section>
+            <h3 className="text-sm font-bold text-gray-700">전체 누적</h3>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
+                <div className="text-xs text-gray-500">결제한 교회 총수</div>
+                <div className="mt-1 text-lg font-bold text-gray-900">
+                  {data.overall.paidChurchTotal.toLocaleString("ko-KR")}개
+                </div>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
+                <div className="text-xs text-gray-500">전체 수입</div>
+                <div className="mt-1 text-lg font-bold text-green-700">{won(data.overall.totalIncome)}</div>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
+                <div className="text-xs text-gray-500">전체 지출</div>
+                <div className="mt-1 text-lg font-bold text-red-600">{won(data.overall.totalExpense)}</div>
+              </div>
+            </div>
+          </section>
+
           {/* 재무 */}
           <section>
             <h3 className="text-sm font-bold text-gray-700">이 달의 재무</h3>
