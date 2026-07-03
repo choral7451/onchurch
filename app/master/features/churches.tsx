@@ -18,7 +18,7 @@ function formatDate(iso: string | null): string {
 // 구독 기간 문자열만 표시(활성 여부는 별도 '상태' 컬럼에서 표시).
 function PeriodCell({ text, hasValue }: { text: string; hasValue: boolean }) {
   if (!hasValue) return <span className="text-gray-400">—</span>;
-  return <span className="text-gray-700">{text}</span>;
+  return <span className="whitespace-nowrap text-gray-700">{text}</span>;
 }
 
 // 상태 배지: 프리티어 또는 결제 중 하나라도 유효하면 활성.
@@ -81,7 +81,7 @@ function PaidUntilEditor({
     <div className="flex min-w-[230px] flex-col gap-1.5">
       <div className="flex items-center gap-1.5">
         {church.paidUntil ? (
-          <span className="text-gray-700">~ {formatDate(church.paidUntil)}</span>
+          <span className="whitespace-nowrap text-gray-700">~ {formatDate(church.paidUntil)}</span>
         ) : (
           <span className="text-gray-400">미설정</span>
         )}
@@ -315,7 +315,7 @@ export function ChurchesFeature() {
           <div className="overflow-x-auto rounded-lg border border-gray-200">
             <table className="w-full min-w-[1280px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500">
+                <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500 [&>th]:whitespace-nowrap">
                   <th className="px-4 py-3">교회이름</th>
                   <th className="px-4 py-3">상태</th>
                   <th className="px-4 py-3">주소</th>
@@ -332,7 +332,7 @@ export function ChurchesFeature() {
                   <tr key={c.id} className="border-b border-gray-100 last:border-0 align-top">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-gray-900">{c.name}</span>
+                        <span className="whitespace-nowrap font-semibold text-gray-900">{c.name}</span>
                         {!c.isPublished && (
                           <span className="inline-flex shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500">
                             미운영
@@ -349,8 +349,8 @@ export function ChurchesFeature() {
                         {c.address ?? "—"}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-700">{c.ownerName ?? "—"}</td>
-                    <td className="px-4 py-3 text-gray-700">{c.ownerPhone ?? "—"}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">{c.ownerName ?? "—"}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">{c.ownerPhone ?? "—"}</td>
                     <td className="px-4 py-3">
                       <PeriodCell
                         hasValue={!!c.freeTrialUntil}
