@@ -968,9 +968,8 @@ main { flex: 1; }
 .onboard-optional-item svg { color: var(--muted); }
 .onboard-optional-item:hover svg { color: var(--accent); }
 
-/* 온보딩 위저드: 진행 상태를 상단에 고정하고 한 단계씩 노출 */
-.admin-onboard { overflow: visible; } /* sticky 자식이 동작하도록 (기본 admin-section은 overflow:hidden) */
-.onboard-sticky { position: sticky; top: 68px; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; }
+/* 온보딩 위저드: 진행 상태를 상단에 표시하고 한 단계씩 노출 */
+.onboard-sticky { background: var(--surface); border-bottom: 1px solid var(--line); }
 .onboard-sticky-inner { padding: 18px 32px; display: flex; flex-direction: column; gap: 12px; }
 .onboard-stepper { list-style: none; margin: 2px 0 0; padding: 0; display: flex; gap: 8px; }
 .onboard-stepper-item { flex: 1 1 0; min-width: 0; }
@@ -1265,7 +1264,6 @@ main { flex: 1; }
   .admin-section-body { padding: 18px 20px 24px; gap: 14px; }
   .onboard-progress-top { flex-wrap: wrap; gap: 8px; }
   .onboard-progress-top strong { font-size: 14px; }
-  .onboard-sticky { top: 56px; }
   .onboard-sticky-inner { padding: 14px 20px; gap: 10px; }
   .onboard-stepper { gap: 6px; }
   .onboard-stepper-item button { padding: 7px 6px; font-size: 0; gap: 0; }
