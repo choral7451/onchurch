@@ -25,7 +25,7 @@ function PeriodCell({ text, hasValue }: { text: string; hasValue: boolean }) {
 function StatusBadge({ active }: { active: boolean }) {
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
+      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${
         active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
       }`}
     >
