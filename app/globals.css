@@ -44,6 +44,8 @@
 @layer base {
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
+  /* 가로 넘침으로 화면이 좌우로 흔들리는 것 방지. clip은 스크롤 컨테이너를 만들지 않아 sticky를 깨지 않는다. */
+  html, body { overflow-x: clip; max-width: 100%; }
   body {
     font-family: var(--font-body);
     background: var(--bg);
