@@ -287,7 +287,7 @@ async function WorshipScheduleSection({ slug, url }: { slug: string; url: (p: st
         <div className="section-head">
           <div>
             <span className="eyebrow">Worship Schedule</span>
-            <h2>예배는 우리 공동체의<br />가장 중요한 시간입니다</h2>
+            <h2>예배는 가장 중요한 시간입니다</h2>
           </div>
           <div className="section-head-action">
             <Link href={url("/worship")}>전체 예배 안내 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
