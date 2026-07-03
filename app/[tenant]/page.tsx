@@ -542,6 +542,8 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
       {sectionOrder.map((key) => {
         const node = sections[key];
         if (!node) return null;
+        // 배너는 최상단이라 리빌 애니메이션 없이 바로 노출한다.
+        if (key === "banner") return <div key={key}>{node}</div>;
         return <Reveal key={key}>{node}</Reveal>;
       })}
     </div>
