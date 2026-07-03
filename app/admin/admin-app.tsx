@@ -460,6 +460,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
     setOpenStep(next);
   }, [loaded, siteRequiredFilled, contactRequiredFilled, aboutFilled, worshipFilled]);
 
+  // 온보딩: 단계가 바뀌면(다음 단계로 넘어가면) 상단으로 스크롤해 현재 단계가 바로 보이게 한다.
+  useEffect(() => {
+    if (activeSection !== "start") return;
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [openStep, activeSection]);
+
   useEffect(() => {
     if (!loaded) return;
     if (slugLocked) {
@@ -1345,54 +1351,66 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </section>
               )}
               {activeSection === "start" && (
-                <section className="admin-section">
-                  <div className="admin-section-head">
-                    <div className="admin-section-eyebrow">START</div>
-                    <h2>{isPublished ? "사이트 운영 중" : "환영합니다 👋"}</h2>
-                    <p>
-                      {isPublished
-                        ? "필수 설정이 완료되어 사이트가 공개되어 있습니다. 아래에서 언제든 내용을 보강하세요."
-                        : "처음이라 할 게 많아 보여도 괜찮아요. 사이트 공개에 꼭 필요한 건 아래 4가지뿐입니다."}
-                    </p>
-                  </div>
-                  <div className="admin-section-body">
-                    <div className="onboard-progress">
-                      <div className="onboard-progress-top">
-                        <strong>사이트 공개까지 {requiredDoneCount}/4 단계</strong>
-                        <span className={`onboard-progress-pill ${allRequiredFilled ? "done" : ""}`}>
-                          {allRequiredFilled ? "준비 완료" : `${4 - requiredDoneCount}개 남음`}
-                        </span>
-                      </div>
-                      <div className="onboard-progress-bar">
-                        <div className="onboard-progress-fill" style={{ width: `${(requiredDoneCount / 4) * 100}%` }} />
+                <section className="admin-section admin-onboard">
+                  <div className="onboard-sticky">
+                    <div className="onboard-sticky-inner">
+                      <div className="admin-section-eyebrow">START</div>
+                      <div className="onboard-progress">
+                        <div className="onboard-progress-top">
+                          <strong>사이트 공개까지 {requiredDoneCount}/4 단계</strong>
+                          <span className={`onboard-progress-pill ${allRequiredFilled ? "done" : ""}`}>
+                            {allRequiredFilled ? "준비 완료" : `${4 - requiredDoneCount}개 남음`}
+                          </span>
+                        </div>
+                        <div className="onboard-progress-bar">
+                          <div className="onboard-progress-fill" style={{ width: `${(requiredDoneCount / 4) * 100}%` }} />
+                        </div>
+                        <ol className="onboard-stepper">
+                          {requiredSteps.map((s, i) => {
+                            const current = openStep === s.target;
+                            return (
+                              <li key={s.target} className={`onboard-stepper-item ${s.done ? "done" : ""} ${current ? "current" : ""}`}>
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenStep(s.target)}
+                                  aria-current={current ? "step" : undefined}
+                                >
+                                  <span className="onboard-stepper-num">{s.done ? "✓" : i + 1}</span>
+                                  <span className="onboard-stepper-label">{s.label}</span>
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ol>
                       </div>
                     </div>
-
-                    <ol className="onboard-steps">
-                      {requiredSteps.map((s, i) => {
-                        const open = openStep === s.target;
+                  </div>
+                  <div className="admin-section-body">
+                    {(() => {
+                      const stepIndex = requiredSteps.findIndex((s) => s.target === openStep);
+                      const step = stepIndex >= 0 ? requiredSteps[stepIndex] : null;
+                      if (!step) {
                         return (
-                          <li key={s.target} className={`onboard-step ${s.done ? "done" : ""} ${open ? "open" : ""}`}>
-                            <button
-                              type="button"
-                              className="onboard-step-head"
-                              onClick={() => setOpenStep(open ? null : s.target)}
-                              aria-expanded={open}
-                            >
-                              <span className="onboard-step-num">{s.done ? "✓" : i + 1}</span>
-                              <span className="onboard-step-body">
-                                <strong>{s.label}</strong>
-                                {s.desc && <span>{s.desc}</span>}
-                              </span>
-                              <span className="onboard-step-toggle">
-                                {open ? "닫기 ▲" : s.done ? "수정 ▾" : "입력 ▾"}
-                              </span>
-                            </button>
-                            {open && <div className="onboard-step-panel">{stepPanelContent(s.target)}</div>}
-                          </li>
+                          <div className="onboard-alldone">
+                            <div className="onboard-alldone-emoji" aria-hidden="true">🎉</div>
+                            <h2>필수 단계를 모두 완료했어요</h2>
+                            <p>이제 아래 버튼으로 사이트를 오픈할 수 있습니다.</p>
+                          </div>
                         );
-                      })}
-                    </ol>
+                      }
+                      return (
+                        <div className="onboard-step-view">
+                          <div className="onboard-step-view-head">
+                            <span className="onboard-step-view-num">{stepIndex + 1}</span>
+                            <div className="onboard-step-view-title">
+                              <h2>{step.label}</h2>
+                              {step.desc && <p>{step.desc}</p>}
+                            </div>
+                          </div>
+                          <div className="onboard-step-panel">{stepPanelContent(step.target)}</div>
+                        </div>
+                      );
+                    })()}
 
                     <div className={`onboard-cta ${allRequiredFilled ? "ready" : "locked"}`}>
                       <div className="onboard-cta-text">

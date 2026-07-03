@@ -968,6 +968,30 @@ main { flex: 1; }
 .onboard-optional-item svg { color: var(--muted); }
 .onboard-optional-item:hover svg { color: var(--accent); }
 
+/* 온보딩 위저드: 진행 상태를 상단에 고정하고 한 단계씩 노출 */
+.admin-onboard { overflow: visible; } /* sticky 자식이 동작하도록 (기본 admin-section은 overflow:hidden) */
+.onboard-sticky { position: sticky; top: 68px; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; }
+.onboard-sticky-inner { padding: 18px 32px; display: flex; flex-direction: column; gap: 12px; }
+.onboard-stepper { list-style: none; margin: 2px 0 0; padding: 0; display: flex; gap: 8px; }
+.onboard-stepper-item { flex: 1 1 0; min-width: 0; }
+.onboard-stepper-item button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease; }
+.onboard-stepper-item button:hover { border-color: var(--accent); color: var(--accent); }
+.onboard-stepper-num { display: inline-grid; place-items: center; width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; font-size: 12px; font-weight: 700; background: var(--surface-2); color: var(--muted); }
+.onboard-stepper-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.onboard-stepper-item.current button { border-color: var(--accent); color: var(--accent); background: oklch(0.62 0.14 245 / 0.08); }
+.onboard-stepper-item.current .onboard-stepper-num { background: var(--accent); color: white; }
+.onboard-stepper-item.done button { color: oklch(0.38 0.16 145); }
+.onboard-stepper-item.done .onboard-stepper-num { background: oklch(0.6 0.14 145); color: white; }
+.onboard-step-view { display: flex; flex-direction: column; gap: 18px; }
+.onboard-step-view-head { display: flex; align-items: center; gap: 14px; }
+.onboard-step-view-num { display: inline-grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; font-size: 15px; font-weight: 700; background: oklch(0.62 0.14 245 / 0.1); color: var(--accent); }
+.onboard-step-view-title h2 { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: var(--primary-deep); margin: 0 0 3px; }
+.onboard-step-view-title p { font-size: 13px; color: var(--muted); margin: 0; }
+.onboard-alldone { text-align: center; padding: 24px 12px 8px; }
+.onboard-alldone-emoji { font-size: 40px; line-height: 1; }
+.onboard-alldone h2 { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--primary-deep); margin: 12px 0 6px; }
+.onboard-alldone p { font-size: 13.5px; color: var(--muted); margin: 0; }
+
 .form-hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
 .slug-input { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 0 14px; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
@@ -1241,6 +1265,13 @@ main { flex: 1; }
   .admin-section-body { padding: 18px 20px 24px; gap: 14px; }
   .onboard-progress-top { flex-wrap: wrap; gap: 8px; }
   .onboard-progress-top strong { font-size: 14px; }
+  .onboard-sticky { top: 56px; }
+  .onboard-sticky-inner { padding: 14px 20px; gap: 10px; }
+  .onboard-stepper { gap: 6px; }
+  .onboard-stepper-item button { padding: 7px 6px; font-size: 0; gap: 0; }
+  .onboard-stepper-label { display: none; }
+  .onboard-step-view-num { width: 30px; height: 30px; font-size: 14px; }
+  .onboard-step-view-title h2 { font-size: 17px; }
   .onboard-steps { gap: 8px; }
   .onboard-step-head { padding: 14px 14px; gap: 11px; }
   .onboard-step-num { width: 26px; height: 26px; }
