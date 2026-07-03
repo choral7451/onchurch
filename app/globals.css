@@ -109,7 +109,8 @@
 @keyframes nav-drawer-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
 /* 홈 섹션 스크롤 리빌: 아래에서 위로 살짝 올라오며 페이드인 */
-.reveal { opacity: 0; transform: translateY(52px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); will-change: opacity, transform; }
+/* 페이드는 빨리 끝내고 이동은 길고 크게 → "없다가 나타남"보다 "밑에서 위로 올라옴"이 강조됨 */
+.reveal { opacity: 0; transform: translateY(80px); transition: opacity 0.4s ease, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1); will-change: opacity, transform; }
 .reveal.is-visible { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
