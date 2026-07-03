@@ -577,6 +577,7 @@ export type MasterDashboard = {
   ledger: { totalIncome: number; totalExpense: number };
   funnel: { signups: number; createdChurch: number; paid: number };
   paidChurchInflow: { date: string; count: number }[];
+  monthlyPaidChurches: { month: string; count: number }[];
 };
 
 export type LedgerType = "income" | "expense";

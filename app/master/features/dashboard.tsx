@@ -14,6 +14,17 @@ function won(n: number): string {
   return `${n.toLocaleString("ko-KR")}원`;
 }
 
+// 전월 대비 증감률 표시. 이전 달이 0이면 비율 계산이 불가하므로 신규/유지로 표기.
+function momLabel(cur: number, prev: number): { text: string; tone: "up" | "down" | "flat" } {
+  if (prev === 0) {
+    if (cur === 0) return { text: "0%", tone: "flat" };
+    return { text: "신규", tone: "up" };
+  }
+  const pct = Math.round(((cur - prev) / prev) * 100);
+  if (pct === 0) return { text: "0%", tone: "flat" };
+  return { text: `${pct > 0 ? "▲" : "▼"} ${Math.abs(pct)}%`, tone: pct > 0 ? "up" : "down" };
+}
+
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 function formatDay(iso: string): string {
@@ -92,6 +103,54 @@ export function DashboardFeature() {
                 <div className="mt-1 text-lg font-bold text-red-600">{won(data.overall.totalExpense)}</div>
               </div>
             </div>
+          </section>
+
+          {/* 최근 1년 결제 추이 (월별) */}
+          <section>
+            {(() => {
+              const monthly = data.monthlyPaidChurches;
+              const cur = monthly[monthly.length - 1]?.count ?? 0;
+              const prev = monthly[monthly.length - 2]?.count ?? 0;
+              const mom = momLabel(cur, prev);
+              const max = Math.max(...monthly.map((m) => m.count), 1);
+              const CHART_H = 120;
+              const toneClass =
+                mom.tone === "up" ? "text-green-600" : mom.tone === "down" ? "text-red-600" : "text-gray-400";
+              return (
+                <>
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 className="text-sm font-bold text-gray-700">최근 1년 결제 추이 (월별)</h3>
+                    <span className="text-xs text-gray-500">
+                      이번 달 <span className="font-bold text-gray-900">{cur}건</span>
+                      <span className={`ml-2 font-bold ${toneClass}`}>전월 대비 {mom.text}</span>
+                    </span>
+                  </div>
+                  <div className="mt-3 rounded-xl border border-gray-200 bg-white px-4 py-5">
+                    <div className="flex items-end gap-1.5">
+                      {monthly.map((m, i) => {
+                        const barH = Math.round((m.count / max) * CHART_H);
+                        const isLast = i === monthly.length - 1;
+                        const rowMom = i > 0 ? momLabel(m.count, monthly[i - 1].count).text : "-";
+                        return (
+                          <div
+                            key={m.month}
+                            className="flex flex-1 flex-col items-center justify-end gap-1"
+                            title={`${m.month} · ${m.count}건 (전월 대비 ${rowMom})`}
+                          >
+                            <span className="text-[11px] font-bold text-gray-700">{m.count}</span>
+                            <div
+                              className={`w-full max-w-[26px] rounded-t ${isLast ? "bg-gray-900" : "bg-gray-300"}`}
+                              style={{ height: m.count > 0 ? Math.max(barH, 4) : 2 }}
+                            />
+                            <span className="mt-1 text-[10px] text-gray-400">{Number(m.month.slice(5, 7))}월</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </section>
 
           {/* 재무 */}
