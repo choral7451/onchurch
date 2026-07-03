@@ -10,6 +10,7 @@ import { Icon } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { SermonFeatureGrid } from "@/components/sermon-feature-grid";
 import { TopBanner } from "@/components/top-banner";
+import { Reveal } from "@/components/reveal";
 import type { Sermon } from "@/lib/types";
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS } from "@/lib/quick-links";
@@ -538,7 +539,11 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   return (
     <div>
       {sermonsEnabled && <LiveBadge slug={tenant} sermonsHref={url("/sermons")} initialLive={initialLive} />}
-      {sectionOrder.map((key) => <div key={key}>{sections[key]}</div>)}
+      {sectionOrder.map((key) => {
+        const node = sections[key];
+        if (!node) return null;
+        return <Reveal key={key}>{node}</Reveal>;
+      })}
     </div>
   );
 }
