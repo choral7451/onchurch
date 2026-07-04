@@ -304,8 +304,8 @@ export default async function LandingPage() {
           <HideWhenAuthed>
             <div className="cta-banner-buttons">
               <Link href="/signup" className="btn btn-primary btn-lg" style={{ background: "white", color: "var(--primary-deep)" }}>
-                <Icon.mail style={{ width: 16, height: 16 }} />
-                지금 시작하기
+                <Icon.arrow style={{ width: 16, height: 16 }} />
+                체험 시작하기
               </Link>
             </div>
           </HideWhenAuthed>
