@@ -141,8 +141,8 @@ export default async function LandingPage() {
             <Link href="/signup" className="btn btn-primary btn-lg">
               체험 시작하기
             </Link>
-            <a href="#features" className="btn btn-secondary btn-lg">
-              기능 둘러보기
+            <a href="#demo" className="btn btn-secondary btn-lg">
+              운영 중인 교회 보기
             </a>
           </div>
         </div>
