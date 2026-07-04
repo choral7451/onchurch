@@ -182,6 +182,7 @@ export function SignupForm() {
 
   return (
     <form className="auth-form" onSubmit={onFormSubmit} noValidate>
+      <div key={step} className="signup-step">
       {step === 0 && (
         <div className="form-row full">
           <label htmlFor="signup-name">이름</label>
@@ -287,14 +288,14 @@ export function SignupForm() {
               className="btn btn-secondary"
               onClick={sendCode}
               disabled={phoneStatus === "verified" || phoneSending || digitsOnly(phone).length < 10}
-              style={{ whiteSpace: "nowrap" }}
+              style={{ whiteSpace: "nowrap", width: 96, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }}
             >
-              {phoneSending ? "발송 중..." : phoneStatus === "idle" ? "인증번호 발송" : "재발송"}
+              {phoneSending ? "발송 중" : phoneStatus === "idle" ? "인증 발송" : "재발송"}
             </button>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", display: "flex" }}>
               <input
                 ref={codeInputRef}
                 type="text"
@@ -327,9 +328,9 @@ export function SignupForm() {
               className="btn btn-primary"
               onClick={verifyCode}
               disabled={code.length < 6 || secondsLeft <= 0 || phoneStatus === "verifying" || phoneStatus === "verified"}
-              style={{ whiteSpace: "nowrap" }}
+              style={{ whiteSpace: "nowrap", width: 96, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }}
             >
-              {phoneStatus === "verified" ? "인증됨" : phoneStatus === "verifying" ? "확인 중..." : "확인"}
+              {phoneStatus === "verified" ? "인증됨" : phoneStatus === "verifying" ? "확인 중" : "확인"}
             </button>
           </div>
 
@@ -355,6 +356,7 @@ export function SignupForm() {
         </label>
         </>
       )}
+      </div>
 
       {status === "error" && errorMsg && <div className="auth-error">{errorMsg}</div>}
 

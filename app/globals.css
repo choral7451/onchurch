@@ -718,6 +718,10 @@ main { flex: 1; }
 
 /* 회원가입 하단 액션(이전/다음) */
 .signup-actions { display: flex; gap: 10px; margin-top: 4px; }
+/* 단계 전환 시 부드럽게 나타나기(각 단계 내부 필드 간격 유지) */
+.signup-step { display: flex; flex-direction: column; gap: 16px; animation: signupStepIn 0.28s ease; }
+@keyframes signupStepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .signup-step { animation: none; } }
 
 .phone-msg { font-size: 12.5px; line-height: 1.5; padding: 10px 12px; border-radius: var(--r-md); border: 1px solid; }
 .phone-msg-info { background: oklch(0.62 0.14 245 / 0.08); border-color: oklch(0.62 0.14 245 / 0.25); color: var(--primary); }
