@@ -138,7 +138,7 @@ export default async function LandingPage() {
             아직도 <span className="landing-h1-accent">비싸다고</span> 생각하시나요?
           </h1>
           <p className="landing-sub">
-            <span className="landing-sub-line">홈페이지부터 성도·출석 관리까지, 한 곳에서.</span>
+            <span className="landing-sub-line">제작비 무료, 월 1만원이면 충분합니다.</span>
           </p>
           <div className="landing-cta">
             <Link href="/signup" className="btn btn-primary btn-lg">
