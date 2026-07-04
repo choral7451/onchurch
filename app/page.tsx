@@ -134,8 +134,8 @@ export default async function LandingPage() {
             5분이면 충분합니다
           </div>
           <h1 className="landing-h1">
-            교회의 디지털 사역을<br />
-            <span className="landing-h1-accent">5분 만에 시작</span>합니다
+            교회 홈페이지<br />
+            아직도 <span className="landing-h1-accent">비싸다고</span> 생각하시나요?
           </h1>
           <p className="landing-sub">
             <span className="landing-sub-line">홈페이지부터 성도·출석 관리까지, 한 곳에서.</span>
