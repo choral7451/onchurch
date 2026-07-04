@@ -18,7 +18,7 @@ const REFERRAL_OPTIONS: { value: Exclude<ReferralSource, ""> ; label: string }[]
 ];
 
 // 스텝 순서 — 한 화면에 한 가지(논리적으로 묶인) 입력만 노출한다.
-const STEPS = ["이름", "아이디", "비밀번호", "연락처 인증", "유입경로", "약관 동의"] as const;
+const STEPS = ["이름", "아이디", "비밀번호", "연락처 인증", "유입경로 · 약관 동의"] as const;
 const LAST_STEP = STEPS.length - 1;
 
 function formatPhone(raw: string) {
@@ -120,9 +120,7 @@ export function SignupForm() {
       case 3:
         return phoneStatus === "verified";
       case 4:
-        return !!referralSource && (referralSource !== "etc" || !!referralEtc.trim());
-      case 5:
-        return agree;
+        return !!referralSource && (referralSource !== "etc" || !!referralEtc.trim()) && agree;
       default:
         return false;
     }
@@ -355,52 +353,52 @@ export function SignupForm() {
       )}
 
       {step === 4 && (
-        <div className="form-row full">
-          <label htmlFor="signup-referral">유입경로</label>
-          <select
-            id="signup-referral"
-            value={referralSource}
-            onChange={(e) => setReferralSource(e.target.value as ReferralSource)}
-            autoFocus
-            required
-          >
-            <option value="" disabled>
-              가입 경로를 선택해주세요
-            </option>
-            {REFERRAL_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          {referralSource === "etc" && (
-            <input
-              type="text"
-              placeholder="유입경로를 직접 입력해주세요"
-              value={referralEtc}
-              onChange={(e) => setReferralEtc(e.target.value)}
-              maxLength={200}
+        <>
+          <div className="form-row full">
+            <label htmlFor="signup-referral">유입경로</label>
+            <select
+              id="signup-referral"
+              value={referralSource}
+              onChange={(e) => setReferralSource(e.target.value as ReferralSource)}
+              autoFocus
               required
-              style={{ marginTop: 8 }}
-            />
-          )}
-        </div>
-      )}
+            >
+              <option value="" disabled>
+                가입 경로를 선택해주세요
+              </option>
+              {REFERRAL_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {referralSource === "etc" && (
+              <input
+                type="text"
+                placeholder="유입경로를 직접 입력해주세요"
+                value={referralEtc}
+                onChange={(e) => setReferralEtc(e.target.value)}
+                maxLength={200}
+                required
+                style={{ marginTop: 8 }}
+              />
+            )}
+          </div>
 
-      {step === 5 && (
-        <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
-          <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-          <span>
-            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
-              이용약관
-            </a>{" "}
-            ·{" "}
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
-              개인정보 처리방침
-            </a>{" "}
-            동의
-          </span>
-        </label>
+          <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
+            <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+            <span>
+              <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+                이용약관
+              </a>{" "}
+              ·{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+                개인정보 처리방침
+              </a>{" "}
+              동의
+            </span>
+          </label>
+        </>
       )}
 
       {status === "error" && errorMsg && <div className="auth-error">{errorMsg}</div>}
