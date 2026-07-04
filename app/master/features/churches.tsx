@@ -39,7 +39,7 @@ function ymd(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-// 결제 만료일 편집: 날짜 직접 선택(적용) + 현재 기준 1일/1달/1년 연장 + 해제.
+// 결제 만료일 편집: 날짜 직접 선택 또는 1일/1달/1년 버튼으로 입력칸에 채운 뒤 '적용'으로 저장 + 해제.
 function PaidUntilEditor({
   church,
   onUpdated,
@@ -65,18 +65,22 @@ function PaidUntilEditor({
     }
   }
 
-  // 연장 기준:
-  // 1) 결제 남은 기간이 있으면(결제일이 미래) 그 결제일에 더한다.
-  // 2) 없으면 프리티어 마지막일에 더한다(지난 날짜여도 그 날짜 기준으로 더한다).
-  // 3) 프리티어 날짜도 없으면 오늘부터 더한다.
+  // 연장은 바로 저장하지 않고 날짜 입력칸(draft)에만 반영한다. '적용'을 눌러야 저장된다.
+  // 기준:
+  // 1) 입력칸에 이미 날짜가 있으면 그 값에 더한다(+버튼 연속 클릭 시 누적).
+  // 2) 비어 있으면 결제 남은 기간(결제일이 미래)에 더한다.
+  // 3) 결제 잔여가 없으면 프리티어 마지막일에 더한다(지난 날짜여도 그 날짜 기준).
+  // 4) 프리티어 날짜도 없으면 오늘부터 더한다.
   function extend(unit: "day" | "month" | "year") {
     const now = new Date();
     const paidFuture = church.paidUntil && new Date(church.paidUntil) > now ? new Date(church.paidUntil) : null;
-    const base = paidFuture ?? (church.freeTrialUntil ? new Date(church.freeTrialUntil) : now);
+    const base = draft
+      ? new Date(draft)
+      : paidFuture ?? (church.freeTrialUntil ? new Date(church.freeTrialUntil) : now);
     if (unit === "day") base.setDate(base.getDate() + 1);
     if (unit === "month") base.setMonth(base.getMonth() + 1);
     if (unit === "year") base.setFullYear(base.getFullYear() + 1);
-    void save(ymd(base));
+    setDraft(ymd(base));
   }
 
   const btn = "rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-40";
