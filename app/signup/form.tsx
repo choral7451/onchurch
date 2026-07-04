@@ -6,19 +6,12 @@ import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
 
 type PhoneStatus = "idle" | "code-sent" | "verifying" | "verified";
 type FormStatus = "idle" | "submitting" | "error" | "success";
-type ReferralSource = "" | "naver" | "instagram" | "mail" | "etc";
 
 const CODE_TTL_SECONDS = 300;
 
-const REFERRAL_OPTIONS: { value: Exclude<ReferralSource, ""> ; label: string }[] = [
-  { value: "naver", label: "네이버" },
-  { value: "instagram", label: "인스타그램" },
-  { value: "mail", label: "메일" },
-  { value: "etc", label: "기타" },
-];
-
 // 스텝 순서 — 한 화면에 한 가지(논리적으로 묶인) 입력만 노출한다.
-const STEPS = ["이름", "아이디", "비밀번호", "연락처 인증", "유입경로 · 약관 동의"] as const;
+// 마지막 단계(연락처 인증)에서 약관 동의까지 함께 처리한다.
+const STEPS = ["이름", "아이디", "비밀번호", "연락처 인증"] as const;
 const LAST_STEP = STEPS.length - 1;
 
 function formatPhone(raw: string) {
@@ -41,8 +34,6 @@ export function SignupForm() {
   const [phoneSending, setPhoneSending] = useState(false);
   const [phoneMsg, setPhoneMsg] = useState<{ kind: "info" | "error" | "success"; text: string } | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [referralSource, setReferralSource] = useState<ReferralSource>("");
-  const [referralEtc, setReferralEtc] = useState("");
   const [agree, setAgree] = useState(false);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -98,9 +89,7 @@ export function SignupForm() {
     try {
       await onchurchAuth.verifyCode(phone, code);
       setPhoneStatus("verified");
-      setPhoneMsg({ kind: "success", text: "연락처 인증이 완료되었습니다." });
-      // 인증 완료 시 바로 다음 단계로.
-      setStep((s) => (s === 3 ? Math.min(LAST_STEP, s + 1) : s));
+      setPhoneMsg({ kind: "success", text: "연락처 인증이 완료되었습니다. 약관 동의 후 시작하세요." });
     } catch (err) {
       setPhoneStatus("code-sent");
       setPhoneMsg({
@@ -120,9 +109,7 @@ export function SignupForm() {
       case 2:
         return pw.length >= 8 && pwConfirm.length >= 8 && pw === pwConfirm;
       case 3:
-        return phoneStatus === "verified";
-      case 4:
-        return !!referralSource && (referralSource !== "etc" || !!referralEtc.trim()) && agree;
+        return phoneStatus === "verified" && agree;
       default:
         return false;
     }
@@ -170,8 +157,6 @@ export function SignupForm() {
         name,
         phone,
         marketingConsent: false,
-        referralSource,
-        referralSourceEtc: referralSource === "etc" ? referralEtc.trim() : null,
       });
       saveTokens(tokens);
       setStatus("success");
@@ -276,6 +261,7 @@ export function SignupForm() {
       )}
 
       {step === 3 && (
+        <>
         <div className="form-row full">
           <label htmlFor="signup-phone">
             연락처
@@ -352,41 +338,8 @@ export function SignupForm() {
             </div>
           )}
         </div>
-      )}
 
-      {step === 4 && (
-        <>
-          <div className="form-row full">
-            <label htmlFor="signup-referral">유입경로</label>
-            <select
-              id="signup-referral"
-              value={referralSource}
-              onChange={(e) => setReferralSource(e.target.value as ReferralSource)}
-              autoFocus
-              required
-            >
-              <option value="" disabled>
-                가입 경로를 선택해주세요
-              </option>
-              {REFERRAL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {referralSource === "etc" && (
-              <input
-                type="text"
-                placeholder="유입경로를 직접 입력해주세요"
-                value={referralEtc}
-                onChange={(e) => setReferralEtc(e.target.value)}
-                maxLength={200}
-                required
-                style={{ marginTop: 8 }}
-              />
-            )}
-          </div>
-
+        {phoneStatus === "verified" && (
           <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
             <span>
@@ -400,6 +353,7 @@ export function SignupForm() {
               동의
             </span>
           </label>
+        )}
         </>
       )}
 
