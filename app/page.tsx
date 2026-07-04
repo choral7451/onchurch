@@ -183,7 +183,27 @@ export default async function LandingPage() {
         </section>
       )}
 
-      <section id="features" className="section">
+      <section className="section">
+        <div className="container">
+          <div className="section-head" style={{ marginBottom: 56 }}>
+            <div>
+              <span className="eyebrow">How It Works</span>
+              <h2>3단계로 시작합니다</h2>
+            </div>
+          </div>
+          <div className="steps">
+            {STEPS.map((s) => (
+              <div key={s.n} className="step">
+                <div className="step-num">{s.n}</div>
+                <div className="step-title">{s.title}</div>
+                <div className="step-desc">{s.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="features" className="section section-tinted">
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -202,26 +222,6 @@ export default async function LandingPage() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      <section className="section section-tinted">
-        <div className="container">
-          <div className="section-head" style={{ marginBottom: 56 }}>
-            <div>
-              <span className="eyebrow">How It Works</span>
-              <h2>3단계로 시작합니다</h2>
-            </div>
-          </div>
-          <div className="steps">
-            {STEPS.map((s) => (
-              <div key={s.n} className="step">
-                <div className="step-num">{s.n}</div>
-                <div className="step-title">{s.title}</div>
-                <div className="step-desc">{s.desc}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
