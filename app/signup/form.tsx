@@ -319,7 +319,12 @@ export function SignupForm() {
 
       <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-        <span>이용약관 · 개인정보 처리방침 동의</span>
+        <span>
+          <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+            이용약관
+          </a>{" "}
+          · 개인정보 처리방침 동의
+        </span>
       </label>
 
       {status === "error" && errorMsg && <div className="auth-error">{errorMsg}</div>}
