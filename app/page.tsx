@@ -142,11 +142,10 @@ export default async function LandingPage() {
           </p>
           <div className="landing-cta">
             <Link href="/signup" className="btn btn-primary btn-lg">
-              <Icon.arrow style={{ width: 16, height: 16 }} />
-              바로 시작하기
+              체험 시작하기
             </Link>
             <a href="#features" className="btn btn-secondary btn-lg">
-              기능 둘러보기 <Icon.arrow style={{ width: 14, height: 14 }} />
+              기능 둘러보기
             </a>
           </div>
           <div className="landing-trust">
