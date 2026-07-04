@@ -129,10 +129,6 @@ export default async function LandingPage() {
           <Rings style={{ position: "absolute", top: -200, right: -200, width: 800, height: 800, color: "var(--accent)", opacity: 0.18 }} />
         </div>
         <div className="landing-hero-inner">
-          <div className="landing-eyebrow">
-            <span className="pulse" />
-            5분이면 충분합니다
-          </div>
           <h1 className="landing-h1">
             교회 홈페이지<br />
             아직도 <span className="landing-h1-accent">비싸다고</span> 생각하시나요?
