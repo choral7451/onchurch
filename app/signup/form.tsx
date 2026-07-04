@@ -152,12 +152,6 @@ export function SignupForm() {
     setStep((s) => Math.min(LAST_STEP, s + 1));
   }
 
-  function goBack() {
-    setErrorMsg("");
-    setStatus("idle");
-    setStep((s) => Math.max(0, s - 1));
-  }
-
   async function doSignup() {
     if (phoneStatus !== "verified") {
       setStep(3);
@@ -412,11 +406,6 @@ export function SignupForm() {
       {status === "error" && errorMsg && <div className="auth-error">{errorMsg}</div>}
 
       <div className="signup-actions">
-        {step > 0 && (
-          <button type="button" className="btn btn-secondary btn-lg" onClick={goBack} disabled={status === "submitting"}>
-            이전
-          </button>
-        )}
         <button
           type="submit"
           className="btn btn-primary btn-lg"
