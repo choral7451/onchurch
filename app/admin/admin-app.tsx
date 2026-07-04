@@ -446,7 +446,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const requiredSteps: { label: string; desc: string; done: boolean; target: SectionKey }[] = [
     { label: "기본 정보", desc: "서브도메인 · 교회 이름", done: siteRequiredFilled, target: "site" },
     { label: "연락처", desc: "전화 · 이메일 · 주소", done: contactRequiredFilled, target: "contact" },
-    { label: "담임목사", desc: "담임목사 성함만 입력하면 돼요", done: aboutFilled, target: "page:about" },
+    { label: "담임목사", desc: "담임목사 성함을 입력해주세요", done: aboutFilled, target: "page:about" },
     { label: "예배 안내", desc: "교회 예배시간을 등록해주세요", done: worshipFilled, target: "page:worship" },
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
