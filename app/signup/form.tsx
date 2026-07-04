@@ -99,6 +99,8 @@ export function SignupForm() {
       await onchurchAuth.verifyCode(phone, code);
       setPhoneStatus("verified");
       setPhoneMsg({ kind: "success", text: "연락처 인증이 완료되었습니다." });
+      // 인증 완료 시 바로 다음 단계로.
+      setStep((s) => (s === 3 ? Math.min(LAST_STEP, s + 1) : s));
     } catch (err) {
       setPhoneStatus("code-sent");
       setPhoneMsg({
