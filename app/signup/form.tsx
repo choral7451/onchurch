@@ -293,19 +293,20 @@ export function SignupForm() {
             </button>
           </div>
 
-          {(phoneStatus === "code-sent" || phoneStatus === "verifying") && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
-              <div style={{ position: "relative" }}>
-                <input
-                  ref={codeInputRef}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  placeholder="6자리 인증번호"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
-                  style={{ paddingRight: 64, width: "100%", letterSpacing: "0.2em", fontVariantNumeric: "tabular-nums" }}
-                />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
+            <div style={{ position: "relative" }}>
+              <input
+                ref={codeInputRef}
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="6자리 인증번호"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
+                disabled={phoneStatus === "idle" || phoneStatus === "verified"}
+                style={{ paddingRight: 64, width: "100%", letterSpacing: "0.2em", fontVariantNumeric: "tabular-nums" }}
+              />
+              {secondsLeft > 0 && (
                 <span
                   style={{
                     position: "absolute",
@@ -319,18 +320,18 @@ export function SignupForm() {
                 >
                   {mmss}
                 </span>
-              </div>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={verifyCode}
-                disabled={code.length < 6 || secondsLeft <= 0 || phoneStatus === "verifying"}
-                style={{ whiteSpace: "nowrap" }}
-              >
-                {phoneStatus === "verifying" ? "확인 중..." : "확인"}
-              </button>
+              )}
             </div>
-          )}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={verifyCode}
+              disabled={code.length < 6 || secondsLeft <= 0 || phoneStatus === "verifying" || phoneStatus === "verified"}
+              style={{ whiteSpace: "nowrap" }}
+            >
+              {phoneStatus === "verified" ? "인증됨" : phoneStatus === "verifying" ? "확인 중..." : "확인"}
+            </button>
+          </div>
 
           {phoneMsg && (
             <div className={`phone-msg phone-msg-${phoneMsg.kind}`} style={{ marginTop: 8 }}>
@@ -339,21 +340,19 @@ export function SignupForm() {
           )}
         </div>
 
-        {phoneStatus === "verified" && (
-          <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
-            <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-            <span>
-              <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
-                이용약관
-              </a>{" "}
-              ·{" "}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
-                개인정보 처리방침
-              </a>{" "}
-              동의
-            </span>
-          </label>
-        )}
+        <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
+          <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+          <span>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+              이용약관
+            </a>{" "}
+            ·{" "}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+              개인정보 처리방침
+            </a>{" "}
+            동의
+          </span>
+        </label>
         </>
       )}
 
