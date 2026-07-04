@@ -447,7 +447,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     { label: "기본 정보", desc: "서브도메인 · 교회 이름", done: siteRequiredFilled, target: "site" },
     { label: "연락처", desc: "전화 · 이메일 · 주소", done: contactRequiredFilled, target: "contact" },
     { label: "담임목사", desc: "담임목사 성함만 입력하면 돼요", done: aboutFilled, target: "page:about" },
-    { label: "예배 안내", desc: "예배 시간 하나만 등록하면 돼요", done: worshipFilled, target: "page:worship" },
+    { label: "예배 안내", desc: "교회 예배시간을 등록해주세요", done: worshipFilled, target: "page:worship" },
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
 
