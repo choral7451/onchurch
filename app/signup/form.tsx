@@ -323,7 +323,11 @@ export function SignupForm() {
           <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
             이용약관
           </a>{" "}
-          · 개인정보 처리방침 동의
+          ·{" "}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+            개인정보 처리방침
+          </a>{" "}
+          동의
         </span>
       </label>
 
