@@ -67,13 +67,12 @@ function PaidUntilEditor({
 
   // 연장 기준:
   // 1) 결제 남은 기간이 있으면(결제일이 미래) 그 결제일에 더한다.
-  // 2) 없으면 프리티어 마지막일에 더한다(프리티어도 아직 남아 있는 경우).
-  // 3) 둘 다 지났거나 없으면 오늘부터 더한다.
+  // 2) 없으면 프리티어 마지막일에 더한다(지난 날짜여도 그 날짜 기준으로 더한다).
+  // 3) 프리티어 날짜도 없으면 오늘부터 더한다.
   function extend(unit: "day" | "month" | "year") {
     const now = new Date();
     const paidFuture = church.paidUntil && new Date(church.paidUntil) > now ? new Date(church.paidUntil) : null;
-    const trialFuture = church.freeTrialUntil && new Date(church.freeTrialUntil) > now ? new Date(church.freeTrialUntil) : null;
-    const base = paidFuture ?? trialFuture ?? now;
+    const base = paidFuture ?? (church.freeTrialUntil ? new Date(church.freeTrialUntil) : now);
     if (unit === "day") base.setDate(base.getDate() + 1);
     if (unit === "month") base.setMonth(base.getMonth() + 1);
     if (unit === "year") base.setFullYear(base.getFullYear() + 1);
