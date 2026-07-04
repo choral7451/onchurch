@@ -220,8 +220,20 @@ function JoinPane({ slug, churchName, onDone }: { slug: string; churchName: stri
       </div>
       <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-        <span>이용약관 · 개인정보 처리방침 동의</span>
+        <span>
+          <a href="https://everychurch.co.kr/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+            이용약관
+          </a>{" "}
+          ·{" "}
+          <a href="https://everychurch.co.kr/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+            개인정보 처리방침
+          </a>{" "}
+          동의
+        </span>
       </label>
+      <p className="form-hint" style={{ margin: "-4px 0 0" }}>
+        가입 시 입력하신 정보는 소속 교회(<strong>{churchName}</strong>)에 제공됩니다.
+      </p>
       {errMsg && <div className="auth-error">{errMsg}</div>}
       <button type="submit" className="btn btn-primary btn-lg" disabled={!canSubmit} style={{ width: "100%", justifyContent: "center", opacity: canSubmit ? 1 : 0.6 }}>
         {submitting ? "가입 중..." : "가입하고 시작하기"}
