@@ -184,16 +184,8 @@ export function SignupForm() {
 
   return (
     <form className="auth-form" onSubmit={onFormSubmit} noValidate>
-      {/* 진행 표시 */}
-      <div className="signup-progress">
-        <div className="signup-progress-top">
-          <span className="signup-progress-step">STEP {step + 1} / {STEPS.length}</span>
-          <span className="signup-progress-label">{STEPS[step]}</span>
-        </div>
-        <div className="signup-progress-bar">
-          <div className="signup-progress-fill" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
-        </div>
-      </div>
+      {/* 현재 단계명만 표시(전체 단계 수는 노출하지 않음) */}
+      <div className="signup-step-label">{STEPS[step]}</div>
 
       {step === 0 && (
         <div className="form-row full">
