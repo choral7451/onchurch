@@ -301,11 +301,11 @@ export function SignupForm() {
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
-                placeholder="6자리 인증번호"
+                placeholder="인증번호"
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
                 disabled={phoneStatus === "idle" || phoneStatus === "verified"}
-                style={{ paddingRight: 64, width: "100%", letterSpacing: "0.2em", fontVariantNumeric: "tabular-nums" }}
+                style={{ paddingRight: secondsLeft > 0 ? 48 : 14, width: "100%", letterSpacing: "0.15em", fontVariantNumeric: "tabular-nums" }}
               />
               {secondsLeft > 0 && (
                 <span
@@ -373,7 +373,7 @@ export function SignupForm() {
               : "다음"
             : status === "submitting"
               ? "신청 중..."
-              : "7일 무료로 시작하기"}
+              : "시작하기"}
         </button>
       </div>
     </form>
