@@ -46,6 +46,8 @@ export function SignupForm() {
   const [agree, setAgree] = useState(false);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [idChecking, setIdChecking] = useState(false);
+  const [idError, setIdError] = useState("");
 
   const codeInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,8 +128,25 @@ export function SignupForm() {
     }
   }
 
-  function goNext() {
-    if (!stepValid(step)) return;
+  async function goNext() {
+    if (!stepValid(step) || idChecking) return;
+    // 아이디 단계: 다음으로 넘어가기 전에 중복 확인.
+    if (step === 1) {
+      setIdChecking(true);
+      setIdError("");
+      try {
+        const res = await onchurchAuth.checkLoginId(userId.trim());
+        if (!res.available) {
+          setIdError("이미 사용 중인 아이디입니다.");
+          return;
+        }
+      } catch (err) {
+        setIdError(err instanceof ApiError ? err.message : "아이디 확인에 실패했습니다.");
+        return;
+      } finally {
+        setIdChecking(false);
+      }
+    }
     setErrorMsg("");
     setStatus("idle");
     setStep((s) => Math.min(LAST_STEP, s + 1));
@@ -173,20 +192,17 @@ export function SignupForm() {
   function onFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (step < LAST_STEP) {
-      goNext();
+      void goNext();
       return;
     }
     void doSignup();
   }
 
-  const nextDisabled = !stepValid(step) || status === "submitting";
+  const nextDisabled = !stepValid(step) || status === "submitting" || idChecking;
   const mmss = `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
   return (
     <form className="auth-form" onSubmit={onFormSubmit} noValidate>
-      {/* 현재 단계명만 표시(전체 단계 수는 노출하지 않음) */}
-      <div className="signup-step-label">{STEPS[step]}</div>
-
       {step === 0 && (
         <div className="form-row full">
           <label htmlFor="signup-name">이름</label>
@@ -212,11 +228,19 @@ export function SignupForm() {
             autoComplete="username"
             placeholder="영문/숫자 4자 이상"
             value={userId}
-            onChange={(e) => setUserId(e.target.value)}
+            onChange={(e) => {
+              setUserId(e.target.value);
+              setIdError("");
+            }}
             minLength={4}
             autoFocus
             required
           />
+          {idError && (
+            <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>
+              {idError}
+            </span>
+          )}
         </div>
       )}
 
@@ -399,7 +423,13 @@ export function SignupForm() {
           disabled={nextDisabled}
           style={{ flex: 1, justifyContent: "center", opacity: nextDisabled ? 0.6 : 1, cursor: nextDisabled ? "not-allowed" : "pointer" }}
         >
-          {step < LAST_STEP ? "다음" : status === "submitting" ? "신청 중..." : "7일 무료로 시작하기"}
+          {step < LAST_STEP
+            ? idChecking && step === 1
+              ? "확인 중..."
+              : "다음"
+            : status === "submitting"
+              ? "신청 중..."
+              : "7일 무료로 시작하기"}
         </button>
       </div>
     </form>

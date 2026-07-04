@@ -370,6 +370,12 @@ export const onchurchAuth = {
       method: "PUT",
       body: JSON.stringify({ phone, code }),
     }),
+  // 아이디 중복 확인 — available=true면 사용 가능.
+  checkLoginId: (loginId: string) =>
+    request<{ available: boolean }>("/onchurch/auths/check-id", {
+      method: "POST",
+      body: JSON.stringify({ loginId }),
+    }),
   signup: (params: {
     userId: string;
     password: string;

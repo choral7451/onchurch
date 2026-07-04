@@ -713,8 +713,7 @@ main { flex: 1; }
 
 .auth-error { background: oklch(0.96 0.04 28 / 0.6); border: 1px solid oklch(0.7 0.13 28 / 0.4); color: oklch(0.4 0.18 28); border-radius: var(--r-md); padding: 12px 14px; font-size: 13px; line-height: 1.5; }
 
-/* 회원가입: 현재 단계명 · 하단 액션 (전체 단계 수는 노출하지 않음) */
-.signup-step-label { font-size: 15px; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px; }
+/* 회원가입 하단 액션(이전/다음) */
 .signup-actions { display: flex; gap: 10px; margin-top: 4px; }
 
 .phone-msg { font-size: 12.5px; line-height: 1.5; padding: 10px 12px; border-radius: var(--r-md); border: 1px solid; }
