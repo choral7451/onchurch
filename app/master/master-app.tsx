@@ -21,6 +21,14 @@ const SECTIONS: { key: SectionKey; label: string; icon: (typeof Icon)[keyof type
   { key: "bulk-sms", label: "대량 문자 발송", icon: Icon.phone },
 ];
 
+// 모바일 하단 바텀 네비에 노출할 4개 섹션(대시보드는 상단 '온교회' 브랜드로 이동).
+const BOTTOM_NAV: { key: SectionKey; label: string; icon: (typeof Icon)[keyof typeof Icon] }[] = [
+  { key: "churches", label: "교회확인", icon: Icon.users },
+  { key: "ledger", label: "재무관리", icon: Icon.wallet },
+  { key: "bulk-email", label: "메일 발송", icon: Icon.mail },
+  { key: "bulk-sms", label: "문자 발송", icon: Icon.phone },
+];
+
 export function MasterApp() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
@@ -69,8 +77,8 @@ export function MasterApp() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* 사이드바 */}
-      <aside className="flex w-60 shrink-0 flex-col border-r border-gray-200 bg-white">
+      {/* 사이드바 (모바일에서는 숨기고 하단 바텀 네비로 대체) */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-gray-200 bg-white md:flex">
         <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-5">
           <span className="text-lg font-bold text-gray-900">온교회</span>
           <span className="rounded bg-gray-900 px-1.5 py-0.5 text-[10px] font-bold text-white">MASTER</span>
@@ -114,10 +122,41 @@ export function MasterApp() {
 
       {/* 콘텐츠 */}
       <main className="flex-1 overflow-auto">
-        <header className="flex h-16 items-center border-b border-gray-200 bg-white px-8">
-          <h1 className="text-base font-bold text-gray-900">{SECTIONS.find((s) => s.key === section)?.label}</h1>
+        <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">
+          {/* 모바일: '온교회' 브랜드 → 대시보드 */}
+          <button
+            type="button"
+            onClick={() => setSection("dashboard")}
+            className="flex items-center gap-2 md:hidden"
+            aria-label="대시보드로 이동"
+          >
+            <span className="text-lg font-bold text-gray-900">온교회</span>
+            <span className="rounded bg-gray-900 px-1.5 py-0.5 text-[10px] font-bold text-white">MASTER</span>
+          </button>
+          {/* 데스크톱: 현재 섹션 라벨 */}
+          <h1 className="hidden text-base font-bold text-gray-900 md:block">
+            {SECTIONS.find((s) => s.key === section)?.label}
+          </h1>
+          {/* 모바일: 관리자 페이지 · 로그아웃 (데스크톱은 사이드바에 있음) */}
+          <div className="flex items-center gap-1 md:hidden">
+            <button
+              type="button"
+              onClick={() => router.push("/admin")}
+              className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+              aria-label="관리자 페이지"
+            >
+              {Icon.building({ width: 18, height: 18 })}
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg px-2 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-100"
+            >
+              로그아웃
+            </button>
+          </div>
         </header>
-        <div className="p-8">
+        <div className="p-4 pb-24 md:p-8">
           {section === "dashboard" && <DashboardFeature />}
           {section === "churches" && <ChurchesFeature />}
           {section === "ledger" && <LedgerFeature />}
@@ -125,6 +164,34 @@ export function MasterApp() {
           {section === "bulk-sms" && <BulkSmsFeature />}
         </div>
       </main>
+
+      {/* 모바일 하단 바텀 네비 */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-50 flex border-t border-gray-200 bg-white md:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        aria-label="모바일 메뉴"
+      >
+        {BOTTOM_NAV.map((item) => {
+          const active = item.key === section;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => {
+                setSection(item.key);
+                if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+              }}
+              className={`flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-semibold transition ${
+                active ? "text-gray-900" : "text-gray-400"
+              }`}
+              aria-current={active ? "page" : undefined}
+            >
+              <span className="shrink-0">{item.icon({ width: 22, height: 22 })}</span>
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
