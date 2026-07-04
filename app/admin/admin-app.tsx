@@ -190,6 +190,19 @@ function PaymentAccountCard() {
         </div>
       </div>
       <p className="payment-account-note">{PAYMENT_INFO.note}</p>
+
+      <div className="payment-refund">
+        <div className="payment-refund-title">환불 정책</div>
+        <ul className="payment-refund-list">
+          <li>무료 체험 기간에는 요금이 청구되지 않아 환불 대상이 없습니다.</li>
+          <li>결제 후 이용을 개시하지 않았다면 전액 환불됩니다.</li>
+          <li>이용 개시 후 중도 해지 시 <strong>결제액 − (이용 개월 × 10,000원)</strong>을 환불합니다. 이용을 시작한 달은 1개월로 계산합니다.</li>
+          <li>연간 결제(10만원)는 정가 기준 10개월분으로, 10개월 이상 이용 시 환불액은 0원입니다.</li>
+        </ul>
+        <a href="/terms#refund" target="_blank" rel="noopener noreferrer" className="payment-refund-link">
+          환불 정책 자세히 보기 →
+        </a>
+      </div>
     </div>
   );
 }
