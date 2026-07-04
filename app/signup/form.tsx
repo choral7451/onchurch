@@ -89,7 +89,7 @@ export function SignupForm() {
     try {
       await onchurchAuth.verifyCode(phone, code);
       setPhoneStatus("verified");
-      setPhoneMsg({ kind: "success", text: "연락처 인증이 완료되었습니다. 약관 동의 후 시작하세요." });
+      setPhoneMsg(null);
     } catch (err) {
       setPhoneStatus("code-sent");
       setPhoneMsg({
@@ -294,7 +294,8 @@ export function SignupForm() {
             </button>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
+          <div className={`signup-otp${phoneStatus === "verified" ? " is-hidden" : ""}`}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
             <div style={{ position: "relative", display: "flex" }}>
               <input
                 ref={codeInputRef}
@@ -332,6 +333,7 @@ export function SignupForm() {
             >
               {phoneStatus === "verified" ? "인증됨" : phoneStatus === "verifying" ? "확인 중" : "확인"}
             </button>
+          </div>
           </div>
 
           {phoneMsg && (
