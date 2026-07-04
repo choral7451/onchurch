@@ -131,7 +131,8 @@ export default async function LandingPage() {
         <div className="landing-hero-inner">
           <h1 className="landing-h1">
             교회 홈페이지<br />
-            아직도 <span className="landing-h1-accent">비싸다고</span> 생각하시나요?
+            아직도 <span className="landing-h1-accent">비싸다고</span>{" "}
+            <br className="landing-h1-br-mobile" />생각하시나요?
           </h1>
           <p className="landing-sub">
             <span className="landing-sub-line">제작비 무료, 월 1만원이면 충분합니다.</span>
@@ -143,11 +144,6 @@ export default async function LandingPage() {
             <a href="#features" className="btn btn-secondary btn-lg">
               기능 둘러보기
             </a>
-          </div>
-          <div className="landing-trust">
-            <span>월 <strong>1만원</strong></span>
-            <span className="landing-trust-divider" />
-            <span>7일 무료 체험</span>
           </div>
         </div>
       </section>

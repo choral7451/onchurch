@@ -570,6 +570,9 @@ main { flex: 1; }
 .landing-eyebrow .pulse { width: 6px; height: 6px; background: oklch(0.65 0.18 145); border-radius: 50%; box-shadow: 0 0 0 0 oklch(0.65 0.18 145 / 0.6); animation: pulse 2s ease-in-out infinite; }
 .landing-h1 { font-family: var(--font-display); font-size: 72px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.22; color: var(--primary-deep); margin: 0 0 28px; text-wrap: balance; }
 .landing-h1-accent { background: linear-gradient(120deg, var(--primary) 0%, var(--accent) 60%, var(--accent-glow) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* '생각하시나요?' 앞 줄바꿈은 모바일에서만 노출 */
+.landing-h1-br-mobile { display: none; }
+@media (max-width: 640px) { .landing-h1-br-mobile { display: inline; } }
 .landing-sub { font-size: 18px; color: var(--muted); line-height: 1.7; margin: 0 auto 40px; max-width: 680px; text-wrap: pretty; }
 .landing-sub-line { display: block; text-wrap: balance; }
 .landing-sub-line + .landing-sub-line { margin-top: 6px; }
