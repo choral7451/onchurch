@@ -96,6 +96,13 @@ const FEATURES: { ic: IconKey; title: string; desc: string }[] = [
   { ic: "calendar", title: "출석 관리", desc: "예배별 출석을 간편하게 체크하고, 성도별 출석 현황을 한눈에 확인합니다." },
 ];
 
+const PROBLEMS: { ic: IconKey; title: string; desc: string }[] = [
+  { ic: "wallet", title: "제작비 수백만원, 게다가 매달 유지비", desc: "외주 제작은 기본 수백만 원. 만든 뒤에도 수정할 때마다 비용이 붙습니다. 작은 교회 예산엔 큰 부담이죠." },
+  { ic: "gear", title: "만들 줄 아는 사람이 없어요", desc: "코딩·디자인을 아는 사람이 없어 결국 외주. 담당 간사·청년이 바뀌면 아무도 손대지 못하고 방치됩니다." },
+  { ic: "calendar", title: "진짜 문제는 '만든 다음'", desc: "주보·공지·설교 영상은 매주 올려야 하는데, 업데이트가 번거로워 결국 몇 달째 멈춘 홈페이지가 됩니다." },
+  { ic: "search", title: "검색해도 안 나오고, 폰에선 깨져요", desc: "네이버·구글에 검색되지 않고, 오래된 홈페이지는 모바일에서 레이아웃이 깨집니다. 정작 성도·새가족은 폰으로 보는데 말이죠." },
+];
+
 const STEPS: { n: string; title: string; desc: string }[] = [
   { n: "01", title: "회원가입", desc: "교회명과 담당자 정보만 입력하면 바로 시작됩니다." },
   { n: "02", title: "기본 세팅", desc: "로고·연락처·주소를 입력하고 사용할 페이지를 켭니다." },
@@ -149,8 +156,31 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      <section className="section" data-section="problem" data-section-index={1}>
+        <div className="container">
+          <div className="section-head" style={{ marginBottom: 56 }}>
+            <div>
+              <span className="eyebrow">Why 온교회</span>
+              <h2>교회 홈페이지, 만드는 것보다 유지가 더 어렵습니다</h2>
+            </div>
+          </div>
+          <div className="problem-grid">
+            {PROBLEMS.map((p) => {
+              const ProblemIcon = Icon[p.ic];
+              return (
+                <div key={p.title} className="feature-card">
+                  <div className="feature-icon"><ProblemIcon width={24} height={24} /></div>
+                  <div className="feature-title">{p.title}</div>
+                  <div className="feature-desc">{p.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {churches.length > 0 && (
-        <section id="demo" className="live-sites" data-section="demo" data-section-index={1}>
+        <section id="demo" className="live-sites" data-section="demo" data-section-index={2}>
           <div className="container">
             <div className="live-sites-head">
               <span className="eyebrow">Live Sites</span>
@@ -184,7 +214,7 @@ export default async function LandingPage() {
         </section>
       )}
 
-      <section className="section" data-section="how" data-section-index={2}>
+      <section className="section" data-section="how" data-section-index={3}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -204,7 +234,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="section section-tinted" data-section="features" data-section-index={3}>
+      <section id="features" className="section section-tinted" data-section="features" data-section-index={4}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -227,7 +257,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="section" data-section="pricing" data-section-index={4}>
+      <section id="pricing" className="section" data-section="pricing" data-section-index={5}>
         <div className="container" style={{ maxWidth: 720 }}>
           <div className="section-head" style={{ marginBottom: 40, justifyContent: "center", textAlign: "center" }}>
             <div>
@@ -271,7 +301,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="section section-tinted" data-section="faq" data-section-index={5}>
+      <section className="section section-tinted" data-section="faq" data-section-index={6}>
         <div className="container" style={{ maxWidth: 880 }}>
           <div className="section-head" style={{ marginBottom: 40 }}>
             <div>
@@ -293,7 +323,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="cta" className="cta-banner" data-section="cta" data-section-index={6}>
+      <section id="cta" className="cta-banner" data-section="cta" data-section-index={7}>
         <LightRays style={{ position: "absolute", inset: 0, width: "100%", height: "100%", color: "white", opacity: 0.5 }} />
         <div className="cta-banner-inner">
           <div className="cta-banner-eyebrow">START NOW</div>
