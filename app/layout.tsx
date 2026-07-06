@@ -13,10 +13,11 @@ const GA_MEASUREMENT_ID = "G-4VY1Z87L9H";
 // 프로젝트 ID는 클라이언트에 그대로 노출되는 공개 값이라 상수로 둔다(GA_MEASUREMENT_ID와 동일).
 const CLARITY_PROJECT_ID = "xhysr63erg";
 
+// Pretendard 뒤의 폴백 전용(거의 렌더되지 않음). 미리 로드하는 파일 수를 줄이려 굵기 최소화.
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({

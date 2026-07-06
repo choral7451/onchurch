@@ -191,14 +191,12 @@ export default async function LandingPage() {
                 <a
                   key={c.id}
                   href={churchUrl(c.slug)}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="live-card"
                 >
                   <div className="live-card-logo">
                     {c.logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.logoUrl} alt="" />
+                      <img src={c.logoUrl} alt="" loading="lazy" decoding="async" />
                     ) : (
                       <span className="live-card-logo-fallback">{c.name.slice(0, 1)}</span>
                     )}
