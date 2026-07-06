@@ -4,6 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 type PhoneStatus = "idle" | "code-sent" | "verifying" | "verified";
 type FormStatus = "idle" | "submitting" | "error" | "success";
 
@@ -13,6 +19,10 @@ const CODE_TTL_SECONDS = 300;
 // 마지막 단계(연락처 인증)에서 약관 동의까지 함께 처리한다.
 const STEPS = ["이름", "아이디", "비밀번호", "연락처 인증"] as const;
 const LAST_STEP = STEPS.length - 1;
+
+// GA4 가입 퍼널용 단계 식별자(step_index와 1:1). gtag는 랜딩 도메인에서만 로드되므로
+// 없으면 조용히 무시된다. GA 탐색에서 signup_step(step_id 순서) → sign_up 으로 이탈 단계를 본다.
+const SIGNUP_STEP_IDS = ["name", "userid", "password", "phone"] as const;
 
 function formatPhone(raw: string) {
   const d = raw.replace(/[^0-9]/g, "").slice(0, 11);
@@ -41,6 +51,14 @@ export function SignupForm() {
   const [idError, setIdError] = useState("");
 
   const codeInputRef = useRef<HTMLInputElement>(null);
+
+  // 각 가입 단계가 화면에 뜰 때 signup_step 이벤트 전송 → 어느 단계에서 이탈하는지 측정.
+  useEffect(() => {
+    window.gtag?.("event", "signup_step", {
+      step_id: SIGNUP_STEP_IDS[step] ?? String(step),
+      step_index: step,
+    });
+  }, [step]);
 
   useEffect(() => {
     if (phoneStatus !== "code-sent" || secondsLeft <= 0) return;
@@ -160,6 +178,8 @@ export function SignupForm() {
       });
       saveTokens(tokens);
       setStatus("success");
+      // GA4 전환 이벤트 — 가입 완료. 퍼널의 마지막 단계이자 광고 전환 최적화 기준.
+      window.gtag?.("event", "sign_up", { method: "onchurch" });
       router.push("/admin");
     } catch (err) {
       setStatus("error");
