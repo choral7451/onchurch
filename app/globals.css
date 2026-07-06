@@ -889,6 +889,19 @@ main { flex: 1; }
 .admin-sub-badge.expired .admin-sub-badge-label { color: oklch(0.55 0.18 30); }
 .admin-sub-badge.expired .admin-sub-badge-rem { background: oklch(0.7 0.16 30 / 0.16); color: oklch(0.5 0.18 30); }
 
+/* 대시보드 달력 - 구독 종료일 요약 칩 */
+.admin-cal-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.admin-cal-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); font-size: 12px; font-weight: 600; line-height: 1; }
+.admin-cal-chip-label { font-weight: 700; color: var(--ink); }
+.admin-cal-chip-date { font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.admin-cal-chip-dday { font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.02em; }
+.admin-cal-chip.trial { border-color: oklch(0.6 0.14 145 / 0.3); background: oklch(0.6 0.14 145 / 0.06); }
+.admin-cal-chip.trial .admin-cal-chip-dday { background: oklch(0.6 0.14 145 / 0.16); color: oklch(0.42 0.16 145); }
+.admin-cal-chip.paid { border-color: oklch(0.62 0.14 245 / 0.32); background: oklch(0.62 0.14 245 / 0.06); }
+.admin-cal-chip.paid .admin-cal-chip-dday { background: oklch(0.62 0.14 245 / 0.14); color: var(--primary); }
+.admin-cal-chip.expired { border-color: oklch(0.7 0.16 30 / 0.34); background: oklch(0.7 0.16 30 / 0.06); }
+.admin-cal-chip.expired .admin-cal-chip-dday { background: oklch(0.7 0.16 30 / 0.16); color: oklch(0.5 0.18 30); }
+
 .admin-publish-toggle { display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
 .admin-publish-toggle-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink); }
 .admin-publish-state { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 999px; letter-spacing: 0.04em; }
