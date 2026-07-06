@@ -30,7 +30,6 @@ import {
 import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
 import { ScheduleEditor } from "./page-editors/schedule";
-import { CalendarView } from "./page-editors/calendar";
 import { AboutEditor } from "./page-editors/about";
 import { OnboardPastorName, OnboardFirstWorship } from "./page-editors/onboard-mini";
 import { DirectionsEditor } from "./page-editors/directions";
@@ -92,7 +91,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "calendar" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}`;
+type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}`;
 
 type NavGroup = "home" | "saints";
 
@@ -1189,18 +1188,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
 
             <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">일정</div>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "calendar" ? "active" : ""}`}
-                onClick={() => openSection("calendar")}
-              >
-                <span className="admin-sidebar-item-label">달력</span>
-                <span className="admin-sidebar-pill optional">일정</span>
-              </button>
-            </div>
-
-            <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">결제</div>
               <button
                 type="button"
@@ -1804,8 +1791,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </div>
                 );
               })()}
-
-              {activeSection === "calendar" && <CalendarView subscription={subscription} />}
 
               {activeSection === "billing" && (
                 <section className="admin-section">

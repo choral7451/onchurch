@@ -9,21 +9,24 @@ import { BulkSmsFeature } from "./features/bulk-sms";
 import { ChurchesFeature } from "./features/churches";
 import { DashboardFeature } from "./features/dashboard";
 import { LedgerFeature } from "./features/ledger";
+import { CalendarFeature } from "./features/calendar";
 
 // 사이드바 메뉴 + 렌더링할 화면. 새 기능은 여기 한 줄과 render()의 case만 추가하면 된다.
-type SectionKey = "dashboard" | "churches" | "ledger" | "bulk-email" | "bulk-sms";
+type SectionKey = "dashboard" | "churches" | "calendar" | "ledger" | "bulk-email" | "bulk-sms";
 
 const SECTIONS: { key: SectionKey; label: string; icon: (typeof Icon)[keyof typeof Icon] }[] = [
   { key: "dashboard", label: "대시보드", icon: Icon.building },
   { key: "churches", label: "교회 확인", icon: Icon.users },
+  { key: "calendar", label: "결제 달력", icon: Icon.calendar },
   { key: "ledger", label: "재무 관리", icon: Icon.wallet },
   { key: "bulk-email", label: "대량 메일 발송", icon: Icon.mail },
   { key: "bulk-sms", label: "대량 문자 발송", icon: Icon.phone },
 ];
 
-// 모바일 하단 바텀 네비에 노출할 4개 섹션(대시보드는 상단 '온교회' 브랜드로 이동).
+// 모바일 하단 바텀 네비에 노출할 섹션(대시보드는 상단 '온교회' 브랜드로 이동).
 const BOTTOM_NAV: { key: SectionKey; label: string; icon: (typeof Icon)[keyof typeof Icon] }[] = [
   { key: "churches", label: "교회확인", icon: Icon.users },
+  { key: "calendar", label: "결제달력", icon: Icon.calendar },
   { key: "ledger", label: "재무관리", icon: Icon.wallet },
   { key: "bulk-email", label: "메일 발송", icon: Icon.mail },
   { key: "bulk-sms", label: "문자 발송", icon: Icon.phone },
@@ -159,6 +162,7 @@ export function MasterApp() {
         <div className="p-4 pb-24 md:p-8">
           {section === "dashboard" && <DashboardFeature />}
           {section === "churches" && <ChurchesFeature />}
+          {section === "calendar" && <CalendarFeature />}
           {section === "ledger" && <LedgerFeature />}
           {section === "bulk-email" && <BulkEmailFeature />}
           {section === "bulk-sms" && <BulkSmsFeature />}
