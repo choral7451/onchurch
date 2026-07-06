@@ -60,5 +60,5 @@ export function proxy(req: NextRequest) {
 export const config = {
   // naver\w+\.html: 네이버 서치어드바이저 소유확인 파일은 서브도메인에서도
   // tenant 경로로 rewrite되지 않고 public/ 정적 파일 그대로 서빙되어야 함
-  matcher: ["/((?!_next/|api/|favicon.ico|robots.txt|sitemap.xml|naver\\w+\\.html).*)"],
+  matcher: ["/((?!_next/|api/|favicon.ico|robots.txt|sitemap.xml|feed.xml|naver\\w+\\.html).*)"],
 };
