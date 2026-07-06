@@ -9,6 +9,10 @@ import "./globals.css";
 // Google Analytics — 서비스 랜딩 도메인(everychurch.co.kr)에서만 로드. 교회 서브도메인 제외.
 const GA_MEASUREMENT_ID = "G-K9XZMTLYRB";
 
+// Microsoft Clarity — 히트맵·세션 리플레이. clarity.microsoft.com에서 발급받은
+// 프로젝트 ID를 NEXT_PUBLIC_CLARITY_ID 환경변수에 넣으면 랜딩 도메인에서만 로드된다.
+const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
   subsets: ["latin"],
@@ -126,6 +130,15 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', '${GA_MEASUREMENT_ID}');`}
             </Script>
+            {CLARITY_PROJECT_ID && (
+              <Script id="ms-clarity" strategy="afterInteractive">
+                {`(function(c,l,a,r,i,t,y){
+c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");`}
+              </Script>
+            )}
           </>
         )}
       </body>

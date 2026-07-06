@@ -4,6 +4,7 @@ import { LandingNav } from "@/components/marketing/landing-nav";
 import { LandingFooter } from "@/components/marketing/landing-footer";
 import { HideWhenAuthed } from "@/components/marketing/hide-when-authed";
 import { ContactSticky } from "@/components/marketing/contact-sticky";
+import { SectionTracker } from "@/components/marketing/section-tracker";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { fetchPublicChurchList } from "@/lib/public-site";
@@ -123,7 +124,7 @@ export default async function LandingPage() {
       />
       <LandingNav />
 
-      <section className="landing-hero">
+      <section className="landing-hero" data-section="hero" data-section-index={0}>
         <div className="landing-hero-bg">
           <Mesh style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
           <Rings style={{ position: "absolute", top: -200, right: -200, width: 800, height: 800, color: "var(--accent)", opacity: 0.18 }} />
@@ -149,7 +150,7 @@ export default async function LandingPage() {
       </section>
 
       {churches.length > 0 && (
-        <section id="demo" className="live-sites">
+        <section id="demo" className="live-sites" data-section="demo" data-section-index={1}>
           <div className="container">
             <div className="live-sites-head">
               <span className="eyebrow">Live Sites</span>
@@ -183,7 +184,7 @@ export default async function LandingPage() {
         </section>
       )}
 
-      <section className="section">
+      <section className="section" data-section="how" data-section-index={2}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -203,7 +204,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="section section-tinted">
+      <section id="features" className="section section-tinted" data-section="features" data-section-index={3}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -226,7 +227,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="section">
+      <section id="pricing" className="section" data-section="pricing" data-section-index={4}>
         <div className="container" style={{ maxWidth: 720 }}>
           <div className="section-head" style={{ marginBottom: 40, justifyContent: "center", textAlign: "center" }}>
             <div>
@@ -270,7 +271,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="section section-tinted">
+      <section className="section section-tinted" data-section="faq" data-section-index={5}>
         <div className="container" style={{ maxWidth: 880 }}>
           <div className="section-head" style={{ marginBottom: 40 }}>
             <div>
@@ -292,7 +293,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="cta" className="cta-banner">
+      <section id="cta" className="cta-banner" data-section="cta" data-section-index={6}>
         <LightRays style={{ position: "absolute", inset: 0, width: "100%", height: "100%", color: "white", opacity: 0.5 }} />
         <div className="cta-banner-inner">
           <div className="cta-banner-eyebrow">START NOW</div>
@@ -314,6 +315,7 @@ export default async function LandingPage() {
 
       <LandingFooter />
       <ContactSticky />
+      <SectionTracker />
     </div>
   );
 }
