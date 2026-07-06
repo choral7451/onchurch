@@ -117,7 +117,8 @@ const FAQ: { q: string; a: string }[] = [
 ];
 
 function churchUrl(slug: string): string {
-  return `https://${slug}.everychurch.co.kr`;
+  // ?from=landing → 데모로 넘어온 방문자에게만 교회 사이트에서 무료체험 스티키를 띄우기 위한 표시.
+  return `https://${slug}.everychurch.co.kr?from=landing`;
 }
 
 export default async function LandingPage() {

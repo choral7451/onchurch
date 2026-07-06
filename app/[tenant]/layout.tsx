@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { UtilBar } from "@/components/shell/util-bar";
 import { Nav } from "@/components/shell/nav";
 import { Footer } from "@/components/shell/footer";
+import { DemoCtaSticky } from "@/components/shell/demo-cta-sticky";
 import { fetchPublicChurch, brandFromChurch, PUBLIC_NAV, PUBLIC_FOOTER_NAV } from "@/lib/public-site";
 import { getPathPrefix } from "@/lib/path-prefix";
 import {
@@ -54,6 +55,7 @@ export default async function TenantLayout({
       <Nav tenant={tenant} brand={brand} nav={PUBLIC_NAV} pathPrefix={pathPrefix} enabledPages={church.enabledPages} />
       <main>{children}</main>
       <Footer brand={brand} nav={PUBLIC_NAV} footerNav={PUBLIC_FOOTER_NAV} pathPrefix={pathPrefix} enabledPages={church.enabledPages} />
+      <DemoCtaSticky />
     </div>
   );
 }

@@ -586,6 +586,13 @@ main { flex: 1; }
 .contact-sticky:hover { transform: translateY(-2px); box-shadow: 0 12px 28px oklch(0 0 0 / 0.24); }
 @media (max-width: 640px) { .contact-sticky { right: 16px; bottom: 16px; padding: 12px 16px; font-size: 13px; } }
 
+/* 데모 교회 사이트에서 랜딩 유입 방문자에게만 뜨는 "무료 체험" 스티키.
+   교회별 브랜드 색(--primary override)에 영향받지 않도록 온교회 색을 고정값으로 둔다. */
+.demo-cta-sticky { position: fixed; right: 20px; bottom: 20px; z-index: 100; display: inline-flex; align-items: center; gap: 8px; padding: 14px 20px; border-radius: 999px; background: oklch(0.62 0.14 245); color: #fff; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 6px 22px oklch(0.32 0.08 250 / 0.32); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.demo-cta-sticky:hover { transform: translateY(-2px); box-shadow: 0 10px 30px oklch(0.32 0.08 250 / 0.4); }
+.demo-cta-sticky-icon { font-size: 16px; line-height: 1; }
+@media (max-width: 640px) { .demo-cta-sticky { right: 14px; bottom: 14px; padding: 12px 16px; font-size: 13.5px; } }
+
 /* Demo grid */
 .demo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .demo-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-xl); overflow: hidden; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; }
