@@ -32,7 +32,7 @@ export function DemoCtaSticky() {
   return (
     <a href={SIGNUP_URL} className="demo-cta-sticky" aria-label="온교회 무료 체험 시작하기">
       <span className="demo-cta-sticky-icon" aria-hidden="true">✨</span>
-      <span>우리 교회도 만들기 · 무료 체험</span>
+      <span>무료체험 시작하기</span>
     </a>
   );
 }
