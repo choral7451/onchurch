@@ -172,7 +172,10 @@ export async function buildChurchMetadata(
     keywords,
     applicationName: church.name,
     authors: church.representative ? [{ name: church.representative }] : undefined,
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      types: { "application/rss+xml": `${origin}/feed.xml` },
+    },
     robots: church.isPublished
       ? { index: true, follow: true, googleBot: { index: true, follow: true } }
       : { index: false, follow: false },
