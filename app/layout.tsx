@@ -9,9 +9,9 @@ import "./globals.css";
 // Google Analytics — 서비스 랜딩 도메인(everychurch.co.kr)에서만 로드. 교회 서브도메인 제외.
 const GA_MEASUREMENT_ID = "G-K9XZMTLYRB";
 
-// Microsoft Clarity — 히트맵·세션 리플레이. clarity.microsoft.com에서 발급받은
-// 프로젝트 ID를 NEXT_PUBLIC_CLARITY_ID 환경변수에 넣으면 랜딩 도메인에서만 로드된다.
-const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+// Microsoft Clarity — 히트맵·세션 리플레이. GA와 동일하게 랜딩 도메인에서만 로드.
+// 프로젝트 ID는 클라이언트에 그대로 노출되는 공개 값이라 상수로 둔다(GA_MEASUREMENT_ID와 동일).
+const CLARITY_PROJECT_ID = "xhysr63erg";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
