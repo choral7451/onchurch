@@ -1,21 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/api-client";
 
 export function LandingNav() {
-  const [authed, setAuthed] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    setAuthed(!!getAccessToken());
-    const onStorage = (e: StorageEvent) => {
-      if (e.key && e.key.startsWith("onchurch.")) setAuthed(!!getAccessToken());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
   return (
     <nav className="landing-nav">
       <div className="landing-nav-inner">
@@ -31,13 +18,6 @@ export function LandingNav() {
           <a href="/#demo">실제 사례</a>
           <a href="/#features">기능</a>
           <a href="/#pricing">가격</a>
-        </div>
-        <div className="nav-cta">
-          {authed ? (
-            <Link href="/admin" className="btn btn-secondary">
-              관리자 페이지
-            </Link>
-          ) : null}
         </div>
       </div>
     </nav>
