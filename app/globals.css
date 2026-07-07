@@ -728,6 +728,10 @@ main { flex: 1; }
 
 /* 회원가입 하단 액션(이전/다음) */
 .signup-actions { display: flex; gap: 10px; margin-top: 4px; }
+/* 위저드 진행 표시 점 */
+.signup-progress { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+.signup-progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: background 0.2s ease, transform 0.2s ease; }
+.signup-progress-dot.is-active { background: var(--primary); transform: scale(1.15); }
 /* 단계 전환 시 부드럽게 나타나기(각 단계 내부 필드 간격 유지) */
 .signup-step { display: flex; flex-direction: column; gap: 16px; animation: signupStepIn 0.28s ease; }
 /* 인증번호 입력 행: 인증 완료 시 부드럽게 접힘 */

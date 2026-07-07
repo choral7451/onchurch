@@ -390,6 +390,22 @@ export const onchurchAuth = {
       method: "POST",
       body: JSON.stringify(params),
     }),
+  // 랜딩 위저드 통합 가입 — 교회 정보 입력 후 계정 자동 생성(아이디=서브도메인, 임시비밀번호는 문자 발송).
+  signupWithChurch: (params: {
+    slug: string;
+    churchName: string;
+    phone: string;
+    email: string;
+    address: string;
+    pastorName: string;
+    worshipName: string;
+    worshipTime: string;
+    agree: boolean;
+  }) =>
+    request<AuthTokens>("/onchurch/auths/sign-up-with-church", {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
   login: (userId: string, password: string, churchSlug?: string | null) =>
     request<AuthTokens>("/onchurch/auths/login", {
       method: "POST",

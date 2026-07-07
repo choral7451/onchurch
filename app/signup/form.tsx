@@ -15,9 +15,10 @@ type FormStatus = "idle" | "submitting" | "error" | "success";
 
 const CODE_TTL_SECONDS = 300;
 
-// 스텝 순서 — 한 화면에 한 가지(논리적으로 묶인) 입력만 노출한다.
-// 마지막 단계(연락처 인증)에서 약관 동의까지 함께 처리한다.
-const STEPS = ["이름", "아이디", "비밀번호", "연락처 인증"] as const;
+// 회원가입 절차를 없애고, 가입 후 나오던 '시작 가이드' 4단계를 앞으로 당긴 통합 위저드.
+// 4단계(기본정보·연락처·담임목사·예배)를 채운 뒤 휴대폰 인증 + 약관 동의만 받아
+// 그 정보로 계정을 자동 생성한다(아이디=서브도메인, 이름=교회이름, 비밀번호=임시비번은 문자 발송).
+const STEPS = ["기본 정보", "연락처", "담임목사", "예배 안내", "인증"] as const;
 const LAST_STEP = STEPS.length - 1;
 
 // GA4 가입 퍼널용 단계 식별자(step_index와 1:1). gtag는 랜딩 도메인에서만 로드되므로
@@ -31,24 +32,42 @@ function formatPhone(raw: string) {
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
+function digitsOnly(s: string) {
+  return s.replace(/[^0-9]/g, "");
+}
+
+// 서브도메인 = 로그인 아이디. 소문자/숫자/하이픈, 4자 이상(처음·끝은 하이픈 불가).
+const SLUG_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function SignupForm() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [name, setName] = useState("");
-  const [userId, setUserId] = useState("");
-  const [pw, setPw] = useState("");
-  const [pwConfirm, setPwConfirm] = useState("");
+
+  // 4단계 입력값
+  const [slug, setSlug] = useState("");
+  const [churchName, setChurchName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [pastorName, setPastorName] = useState("");
+  const [worshipName, setWorshipName] = useState("주일예배");
+  const [worshipTime, setWorshipTime] = useState("");
+
+  // 서브도메인 중복확인
+  const [slugChecking, setSlugChecking] = useState(false);
+  const [slugError, setSlugError] = useState("");
+
+  // 휴대폰 인증
   const [code, setCode] = useState("");
   const [phoneStatus, setPhoneStatus] = useState<PhoneStatus>("idle");
   const [phoneSending, setPhoneSending] = useState(false);
   const [phoneMsg, setPhoneMsg] = useState<{ kind: "info" | "error" | "success"; text: string } | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [agree, setAgree] = useState(false);
+
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [idChecking, setIdChecking] = useState(false);
-  const [idError, setIdError] = useState("");
 
   const codeInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,9 +85,13 @@ export function SignupForm() {
     return () => clearInterval(t);
   }, [phoneStatus, secondsLeft]);
 
-  function digitsOnly(s: string) {
-    return s.replace(/[^0-9]/g, "");
-  }
+  // 연락처(전화)가 바뀌면 인증 상태를 초기화한다.
+  useEffect(() => {
+    setPhoneStatus("idle");
+    setPhoneMsg(null);
+    setSecondsLeft(0);
+    setCode("");
+  }, [phone]);
 
   async function sendCode() {
     if (digitsOnly(phone).length < 10) {
@@ -84,10 +107,7 @@ export function SignupForm() {
       setPhoneMsg({ kind: "info", text: "인증번호가 발송되었습니다. 5분 안에 입력해주세요." });
       setTimeout(() => codeInputRef.current?.focus(), 50);
     } catch (err) {
-      setPhoneMsg({
-        kind: "error",
-        text: err instanceof ApiError ? err.message : "인증번호 발송에 실패했습니다.",
-      });
+      setPhoneMsg({ kind: "error", text: err instanceof ApiError ? err.message : "인증번호 발송에 실패했습니다." });
     } finally {
       setPhoneSending(false);
     }
@@ -110,23 +130,22 @@ export function SignupForm() {
       setPhoneMsg(null);
     } catch (err) {
       setPhoneStatus("code-sent");
-      setPhoneMsg({
-        kind: "error",
-        text: err instanceof ApiError ? err.message : "인증번호 검증에 실패했습니다.",
-      });
+      setPhoneMsg({ kind: "error", text: err instanceof ApiError ? err.message : "인증번호 검증에 실패했습니다." });
     }
   }
 
-  // 현재 스텝의 입력이 유효한지 — '다음' 버튼 활성화 및 진행 조건.
+  // 현재 스텝 입력이 유효한지 — '다음' 버튼 활성화 및 진행 조건.
   function stepValid(s: number): boolean {
     switch (s) {
       case 0:
-        return !!name.trim();
+        return slug.length >= 4 && SLUG_RE.test(slug) && !!churchName.trim();
       case 1:
-        return userId.length >= 4;
+        return digitsOnly(phone).length >= 10 && EMAIL_RE.test(email.trim()) && !!address.trim();
       case 2:
-        return pw.length >= 8 && pwConfirm.length >= 8 && pw === pwConfirm;
+        return !!pastorName.trim();
       case 3:
+        return !!worshipName.trim() && !!worshipTime.trim();
+      case 4:
         return phoneStatus === "verified" && agree;
       default:
         return false;
@@ -134,22 +153,22 @@ export function SignupForm() {
   }
 
   async function goNext() {
-    if (!stepValid(step) || idChecking) return;
-    // 아이디 단계: 다음으로 넘어가기 전에 중복 확인.
-    if (step === 1) {
-      setIdChecking(true);
-      setIdError("");
+    if (!stepValid(step) || slugChecking) return;
+    // 서브도메인 단계: 다음으로 넘어가기 전에 아이디(=서브도메인) 중복 확인.
+    if (step === 0) {
+      setSlugChecking(true);
+      setSlugError("");
       try {
-        const res = await onchurchAuth.checkLoginId(userId.trim());
+        const res = await onchurchAuth.checkLoginId(slug);
         if (!res.available) {
-          setIdError("이미 사용 중인 아이디입니다.");
+          setSlugError("이미 사용 중인 서브도메인입니다.");
           return;
         }
       } catch (err) {
-        setIdError(err instanceof ApiError ? err.message : "아이디 확인에 실패했습니다.");
+        setSlugError(err instanceof ApiError ? err.message : "서브도메인 확인에 실패했습니다.");
         return;
       } finally {
-        setIdChecking(false);
+        setSlugChecking(false);
       }
     }
     setErrorMsg("");
@@ -158,23 +177,20 @@ export function SignupForm() {
   }
 
   async function doSignup() {
-    if (phoneStatus !== "verified") {
-      setStep(3);
-      return;
-    }
-    if (pw !== pwConfirm) {
-      setStep(2);
-      return;
-    }
+    if (phoneStatus !== "verified" || !agree) return;
     setStatus("submitting");
     setErrorMsg("");
     try {
-      const tokens = await onchurchAuth.signup({
-        userId,
-        password: pw,
-        name,
+      const tokens = await onchurchAuth.signupWithChurch({
+        slug,
+        churchName: churchName.trim(),
         phone,
-        marketingConsent: false,
+        email: email.trim(),
+        address: address.trim(),
+        pastorName: pastorName.trim(),
+        worshipName: worshipName.trim(),
+        worshipTime: worshipTime.trim(),
+        agree,
       });
       saveTokens(tokens);
       setStatus("success");
@@ -183,11 +199,10 @@ export function SignupForm() {
       router.push("/admin");
     } catch (err) {
       setStatus("error");
-      setErrorMsg(err instanceof ApiError ? err.message : "회원가입에 실패했습니다.");
+      setErrorMsg(err instanceof ApiError ? err.message : "가입에 실패했습니다.");
     }
   }
 
-  // Enter / 버튼: 마지막 스텝이면 제출, 아니면 다음 스텝.
   function onFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (step < LAST_STEP) {
@@ -197,192 +212,260 @@ export function SignupForm() {
     void doSignup();
   }
 
-  const nextDisabled = !stepValid(step) || status === "submitting" || idChecking;
+  const nextDisabled = !stepValid(step) || status === "submitting" || slugChecking;
   const mmss = `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
   return (
     <form className="auth-form" onSubmit={onFormSubmit} noValidate>
+      <div className="signup-progress" aria-hidden="true">
+        {STEPS.map((label, i) => (
+          <span key={label} className={`signup-progress-dot${i <= step ? " is-active" : ""}`} title={label} />
+        ))}
+      </div>
+
       <div key={step} className="signup-step">
-      {step === 0 && (
-        <div className="form-row full">
-          <label htmlFor="signup-name">이름</label>
-          <input
-            id="signup-name"
-            type="text"
-            autoComplete="name"
-            placeholder="홍길동"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoFocus
-            required
-          />
-        </div>
-      )}
-
-      {step === 1 && (
-        <div className="form-row full">
-          <label htmlFor="signup-id">아이디</label>
-          <input
-            id="signup-id"
-            type="text"
-            autoComplete="username"
-            placeholder="영문/숫자 4자 이상"
-            value={userId}
-            onChange={(e) => {
-              setUserId(e.target.value);
-              setIdError("");
-            }}
-            minLength={4}
-            autoFocus
-            required
-          />
-          {idError && (
-            <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>
-              {idError}
-            </span>
-          )}
-        </div>
-      )}
-
-      {step === 2 && (
-        <>
-          <div className="form-row full">
-            <label htmlFor="signup-pw">비밀번호</label>
-            <input
-              id="signup-pw"
-              type="password"
-              autoComplete="new-password"
-              placeholder="8자 이상"
-              value={pw}
-              onChange={(e) => setPw(e.target.value)}
-              minLength={8}
-              autoFocus
-              required
-            />
-          </div>
-          <div className="form-row full">
-            <label htmlFor="signup-pw-confirm">비밀번호 확인</label>
-            <input
-              id="signup-pw-confirm"
-              type="password"
-              autoComplete="new-password"
-              placeholder="비밀번호를 다시 입력해주세요"
-              value={pwConfirm}
-              onChange={(e) => setPwConfirm(e.target.value)}
-              minLength={8}
-              required
-            />
-            {pwConfirm.length > 0 && pw !== pwConfirm && (
-              <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>
-                비밀번호가 일치하지 않습니다.
-              </span>
-            )}
-          </div>
-        </>
-      )}
-
-      {step === 3 && (
-        <>
-        <div className="form-row full">
-          <label htmlFor="signup-phone">
-            연락처
-            {phoneStatus === "verified" && (
-              <span style={{ marginLeft: 8, color: "oklch(0.5 0.13 145)", fontWeight: 600 }}>· 인증 완료</span>
-            )}
-          </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
-            <input
-              id="signup-phone"
-              type="tel"
-              autoComplete="tel"
-              inputMode="numeric"
-              placeholder="010-0000-0000"
-              value={phone}
-              onChange={(e) => setPhone(formatPhone(e.target.value))}
-              required
-              disabled={phoneStatus === "verified"}
-              autoFocus
-            />
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={sendCode}
-              disabled={phoneStatus === "verified" || phoneSending || digitsOnly(phone).length < 10}
-              style={{ whiteSpace: "nowrap", width: 96, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }}
-            >
-              {phoneSending ? "발송 중" : phoneStatus === "idle" ? "인증 발송" : "재발송"}
-            </button>
-          </div>
-
-          <div className={`signup-otp${phoneStatus === "verified" ? " is-hidden" : ""}`}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
-            <div style={{ position: "relative", display: "flex" }}>
-              <input
-                ref={codeInputRef}
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="인증번호"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
-                disabled={phoneStatus === "idle" || phoneStatus === "verified"}
-                style={{ paddingRight: secondsLeft > 0 ? 48 : 14, width: "100%", letterSpacing: "0.15em", fontVariantNumeric: "tabular-nums" }}
-              />
-              {secondsLeft > 0 && (
-                <span
-                  style={{
-                    position: "absolute",
-                    right: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 12,
-                    color: secondsLeft <= 30 ? "oklch(0.55 0.15 28)" : "var(--muted)",
+        {step === 0 && (
+          <>
+            <div className="form-row full">
+              <label htmlFor="signup-slug">서브도메인 (=아이디)</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <input
+                  id="signup-slug"
+                  type="text"
+                  autoComplete="off"
+                  placeholder="sungdong"
+                  value={slug}
+                  onChange={(e) => {
+                    setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+                    setSlugError("");
                   }}
-                >
-                  {mmss}
-                </span>
+                  minLength={4}
+                  autoFocus
+                  required
+                  style={{ flex: 1 }}
+                />
+                <span style={{ color: "var(--muted)", whiteSpace: "nowrap", fontSize: 14 }}>.everychurch.co.kr</span>
+              </div>
+              <span className="form-hint">소문자·숫자·하이픈, 4자 이상. 이 주소가 로그인 아이디가 됩니다. (가입 후 변경 불가)</span>
+              {slugError && (
+                <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>{slugError}</span>
               )}
             </div>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={verifyCode}
-              disabled={code.length < 6 || secondsLeft <= 0 || phoneStatus === "verifying" || phoneStatus === "verified"}
-              style={{ whiteSpace: "nowrap", width: 96, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }}
-            >
-              {phoneStatus === "verified" ? "인증됨" : phoneStatus === "verifying" ? "확인 중" : "확인"}
-            </button>
-          </div>
-          </div>
-
-          {phoneMsg && (
-            <div className={`phone-msg phone-msg-${phoneMsg.kind}`} style={{ marginTop: 8 }}>
-              {phoneMsg.text}
+            <div className="form-row full">
+              <label htmlFor="signup-church-name">교회 이름</label>
+              <input
+                id="signup-church-name"
+                type="text"
+                placeholder="성동교회"
+                value={churchName}
+                onChange={(e) => setChurchName(e.target.value)}
+                required
+              />
             </div>
-          )}
-        </div>
+          </>
+        )}
 
-        <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
-          <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-          <span>
-            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
-              이용약관
-            </a>{" "}
-            ·{" "}
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
-              개인정보 처리방침
-            </a>{" "}
-            동의
-          </span>
-        </label>
-        </>
-      )}
+        {step === 1 && (
+          <>
+            <div className="form-row full">
+              <label htmlFor="signup-phone">연락처</label>
+              <input
+                id="signup-phone"
+                type="tel"
+                autoComplete="tel"
+                inputMode="numeric"
+                placeholder="010-0000-0000"
+                value={phone}
+                onChange={(e) => setPhone(formatPhone(e.target.value))}
+                autoFocus
+                required
+              />
+              <span className="form-hint">이 번호로 마지막에 본인 인증을 진행합니다.</span>
+            </div>
+            <div className="form-row full">
+              <label htmlFor="signup-email">이메일</label>
+              <input
+                id="signup-email"
+                type="email"
+                autoComplete="email"
+                placeholder="hello@church.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-row full">
+              <label htmlFor="signup-address">주소</label>
+              <input
+                id="signup-address"
+                type="text"
+                placeholder="서울특별시 성동구 ..."
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
+              />
+            </div>
+          </>
+        )}
+
+        {step === 2 && (
+          <div className="form-row full">
+            <label htmlFor="signup-pastor">담임목사 성함</label>
+            <input
+              id="signup-pastor"
+              type="text"
+              placeholder="홍길동"
+              value={pastorName}
+              onChange={(e) => setPastorName(e.target.value)}
+              autoFocus
+              required
+            />
+            <span className="form-hint">인사말·사진 등 나머지는 가입 후 관리자에서 추가할 수 있습니다.</span>
+          </div>
+        )}
+
+        {step === 3 && (
+          <>
+            <div className="form-row full">
+              <label htmlFor="signup-worship-name">예배 이름</label>
+              <input
+                id="signup-worship-name"
+                type="text"
+                placeholder="주일예배"
+                value={worshipName}
+                onChange={(e) => setWorshipName(e.target.value)}
+                autoFocus
+                required
+              />
+            </div>
+            <div className="form-row full">
+              <label htmlFor="signup-worship-time">예배 시간</label>
+              <input
+                id="signup-worship-time"
+                type="text"
+                placeholder="주일 오전 11:00"
+                value={worshipTime}
+                onChange={(e) => setWorshipTime(e.target.value)}
+                required
+              />
+              <span className="form-hint">대표 예배 하나만 입력하세요. 다른 예배는 가입 후 추가할 수 있습니다.</span>
+            </div>
+          </>
+        )}
+
+        {step === 4 && (
+          <>
+            <div className="form-row full">
+              <label htmlFor="signup-verify-phone">
+                휴대폰 인증
+                {phoneStatus === "verified" && (
+                  <span style={{ marginLeft: 8, color: "oklch(0.5 0.13 145)", fontWeight: 600 }}>· 인증 완료</span>
+                )}
+              </label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                <input
+                  id="signup-verify-phone"
+                  type="tel"
+                  inputMode="numeric"
+                  value={phone}
+                  disabled
+                  style={{ background: "var(--surface-2, #f5f5f5)" }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={sendCode}
+                  disabled={phoneStatus === "verified" || phoneSending || digitsOnly(phone).length < 10}
+                  style={{ whiteSpace: "nowrap", width: 96, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }}
+                >
+                  {phoneSending ? "발송 중" : phoneStatus === "idle" ? "인증 발송" : "재발송"}
+                </button>
+              </div>
+
+              <div className={`signup-otp${phoneStatus === "verified" ? " is-hidden" : ""}`}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
+                  <div style={{ position: "relative", display: "flex" }}>
+                    <input
+                      ref={codeInputRef}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="인증번호"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
+                      disabled={phoneStatus === "idle" || phoneStatus === "verified"}
+                      style={{ paddingRight: secondsLeft > 0 ? 48 : 14, width: "100%", letterSpacing: "0.15em", fontVariantNumeric: "tabular-nums" }}
+                    />
+                    {secondsLeft > 0 && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          right: 12,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 12,
+                          color: secondsLeft <= 30 ? "oklch(0.55 0.15 28)" : "var(--muted)",
+                        }}
+                      >
+                        {mmss}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={verifyCode}
+                    disabled={code.length < 6 || secondsLeft <= 0 || phoneStatus === "verifying" || phoneStatus === "verified"}
+                    style={{ whiteSpace: "nowrap", width: 96, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }}
+                  >
+                    {phoneStatus === "verified" ? "인증됨" : phoneStatus === "verifying" ? "확인 중" : "확인"}
+                  </button>
+                </div>
+              </div>
+
+              {phoneMsg && (
+                <div className={`phone-msg phone-msg-${phoneMsg.kind}`} style={{ marginTop: 8 }}>
+                  {phoneMsg.text}
+                </div>
+              )}
+            </div>
+
+            <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
+              <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+              <span>
+                <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+                  이용약관
+                </a>{" "}
+                ·{" "}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
+                  개인정보 처리방침
+                </a>{" "}
+                동의
+              </span>
+            </label>
+
+            <p className="form-hint" style={{ marginTop: 4 }}>
+              가입을 완료하면 <b>아이디와 임시 비밀번호</b>를 문자로 보내드립니다. 사이트는 즉시 공개되고 7일 무료 체험이 시작됩니다.
+            </p>
+          </>
+        )}
       </div>
 
       {status === "error" && errorMsg && <div className="auth-error">{errorMsg}</div>}
 
-      <div className="signup-actions">
+      <div className="signup-actions" style={{ display: "flex", gap: 8 }}>
+        {step > 0 && (
+          <button
+            type="button"
+            className="btn btn-secondary btn-lg"
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={status === "submitting"}
+            style={{ justifyContent: "center" }}
+          >
+            이전
+          </button>
+        )}
         <button
           type="submit"
           className="btn btn-primary btn-lg"
@@ -390,12 +473,12 @@ export function SignupForm() {
           style={{ flex: 1, justifyContent: "center", opacity: nextDisabled ? 0.6 : 1, cursor: nextDisabled ? "not-allowed" : "pointer" }}
         >
           {step < LAST_STEP
-            ? idChecking && step === 1
+            ? slugChecking && step === 0
               ? "확인 중..."
               : "다음"
             : status === "submitting"
-              ? "신청 중..."
-              : "시작하기"}
+              ? "가입 중..."
+              : "가입하고 시작하기"}
         </button>
       </div>
     </form>
