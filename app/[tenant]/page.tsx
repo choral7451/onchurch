@@ -539,13 +539,17 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   return (
     <div>
       {sermonsEnabled && <LiveBadge slug={tenant} sermonsHref={url("/sermons")} initialLive={initialLive} />}
-      {sectionOrder.map((key) => {
-        const node = sections[key];
-        if (!node) return null;
-        // 배너는 최상단이라 리빌 애니메이션 없이 바로 노출한다.
-        if (key === "banner") return <div key={key}>{node}</div>;
-        return <Reveal key={key}>{node}</Reveal>;
-      })}
+      {(() => {
+        // 실제로 렌더되는 첫 번째 섹션은 리빌 애니메이션 없이 바로 노출하고,
+        // 두 번째 섹션부터 애니메이션을 적용한다.
+        const firstRenderedKey = sectionOrder.find((key) => sections[key]);
+        return sectionOrder.map((key) => {
+          const node = sections[key];
+          if (!node) return null;
+          if (key === firstRenderedKey) return <div key={key}>{node}</div>;
+          return <Reveal key={key}>{node}</Reveal>;
+        });
+      })()}
     </div>
   );
 }
