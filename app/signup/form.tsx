@@ -251,7 +251,7 @@ export function SignupForm() {
                   id="signup-slug"
                   type="text"
                   autoComplete="off"
-                  placeholder="sungdong"
+                  placeholder="onchurch"
                   value={slug}
                   onChange={(e) => {
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
@@ -274,7 +274,7 @@ export function SignupForm() {
               <input
                 id="signup-church-name"
                 type="text"
-                placeholder="성동교회"
+                placeholder="온교회"
                 value={churchName}
                 onChange={(e) => setChurchName(e.target.value)}
                 required
