@@ -23,7 +23,7 @@ const LAST_STEP = STEPS.length - 1;
 
 // GA4 가입 퍼널용 단계 식별자(step_index와 1:1). gtag는 랜딩 도메인에서만 로드되므로
 // 없으면 조용히 무시된다. GA 탐색에서 signup_step(step_id 순서) → sign_up 으로 이탈 단계를 본다.
-const SIGNUP_STEP_IDS = ["name", "userid", "password", "phone"] as const;
+const SIGNUP_STEP_IDS = ["basic", "contact", "pastor", "worship", "verify"] as const;
 
 function formatPhone(raw: string) {
   const d = raw.replace(/[^0-9]/g, "").slice(0, 11);
