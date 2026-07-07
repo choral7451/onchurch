@@ -395,6 +395,7 @@ export const onchurchAuth = {
     slug: string;
     churchName: string;
     phone: string;
+    churchPhone: string;
     email: string;
     address: string;
     pastorName: string;

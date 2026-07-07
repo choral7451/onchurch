@@ -47,6 +47,7 @@ export function SignupForm() {
   // 4단계 입력값
   const [slug, setSlug] = useState("");
   const [churchName, setChurchName] = useState("");
+  const [churchPhone, setChurchPhone] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
@@ -140,7 +141,7 @@ export function SignupForm() {
       case 0:
         return slug.length >= 4 && SLUG_RE.test(slug) && !!churchName.trim();
       case 1:
-        return digitsOnly(phone).length >= 10 && EMAIL_RE.test(email.trim()) && !!address.trim();
+        return !!churchPhone.trim() && EMAIL_RE.test(email.trim()) && !!address.trim();
       case 2:
         return !!pastorName.trim();
       case 3:
@@ -185,6 +186,7 @@ export function SignupForm() {
         slug,
         churchName: churchName.trim(),
         phone,
+        churchPhone: churchPhone.trim(),
         email: email.trim(),
         address: address.trim(),
         pastorName: pastorName.trim(),
@@ -268,19 +270,18 @@ export function SignupForm() {
         {step === 1 && (
           <>
             <div className="form-row full">
-              <label htmlFor="signup-phone">교회 연락처</label>
+              <label htmlFor="signup-church-phone">교회 연락처</label>
               <input
-                id="signup-phone"
-                type="tel"
+                id="signup-church-phone"
+                type="text"
                 autoComplete="tel"
-                inputMode="numeric"
-                placeholder="010-0000-0000"
-                value={phone}
-                onChange={(e) => setPhone(formatPhone(e.target.value))}
+                placeholder="02-1234-5678"
+                value={churchPhone}
+                onChange={(e) => setChurchPhone(e.target.value)}
                 autoFocus
                 required
               />
-              <span className="form-hint">이 번호로 마지막에 본인 인증을 진행하니 휴대폰 번호를 입력해주세요.</span>
+              <span className="form-hint">홈페이지에 노출되는 교회 대표 연락처입니다.</span>
             </div>
             <div className="form-row full">
               <label htmlFor="signup-email">이메일</label>
@@ -357,7 +358,7 @@ export function SignupForm() {
           <>
             <div className="form-row full">
               <label htmlFor="signup-verify-phone">
-                휴대폰 인증
+                가입자 휴대폰
                 {phoneStatus === "verified" && (
                   <span style={{ marginLeft: 8, color: "oklch(0.5 0.13 145)", fontWeight: 600 }}>· 인증 완료</span>
                 )}
@@ -366,10 +367,13 @@ export function SignupForm() {
                 <input
                   id="signup-verify-phone"
                   type="tel"
+                  autoComplete="tel"
                   inputMode="numeric"
+                  placeholder="010-0000-0000"
                   value={phone}
-                  disabled
-                  style={{ background: "var(--surface-2, #f5f5f5)" }}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  disabled={phoneStatus === "verified"}
+                  autoFocus
                 />
                 <button
                   type="button"
