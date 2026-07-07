@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
+import { ApiError, onchurchAuth, saveSessionChurch, saveTokens } from "@/lib/api-client";
 import { AddressPicker } from "@/components/address-picker";
 import { buildChurchSiteUrl } from "@/lib/site-host";
 
@@ -197,6 +197,8 @@ export function SignupForm() {
         agree,
       });
       saveTokens(tokens);
+      // 방금 만든 교회에 로그인된 상태로 세션 스코프를 지정한다(서브도메인 이동 후에도 로그인 유지).
+      saveSessionChurch(slug);
       setStatus("success");
       // GA4 전환 이벤트 — 가입 완료. 퍼널의 마지막 단계이자 광고 전환 최적화 기준.
       window.gtag?.("event", "sign_up", { method: "onchurch" });
