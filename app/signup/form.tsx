@@ -345,7 +345,7 @@ export function SignupForm() {
               <input
                 id="signup-worship-time"
                 type="text"
-                placeholder="주일 오전 11:00"
+                placeholder="오전 11:00"
                 value={worshipTime}
                 onChange={(e) => setWorshipTime(e.target.value)}
                 required
