@@ -19,8 +19,10 @@ const CODE_TTL_SECONDS = 300;
 // 회원가입 절차를 없애고, 가입 후 나오던 '시작 가이드' 4단계를 앞으로 당긴 통합 위저드.
 // 4단계(기본정보·연락처·담임목사·예배)를 채운 뒤 휴대폰 인증 + 약관 동의만 받아
 // 그 정보로 계정을 자동 생성한다(아이디=서브도메인, 이름=교회이름, 비밀번호=임시비번은 문자 발송).
-const STEPS = ["기본 정보", "연락처", "담임목사", "예배 안내", "인증"] as const;
-const LAST_STEP = STEPS.length - 1;
+// 진행 표시는 교회 정보 4단계만. 마지막 인증+약관은 '가입 마무리' 별도 절차로 보여준다.
+const STEPS = ["기본 정보", "연락처", "담임목사", "예배 안내"] as const;
+const VERIFY_STEP = STEPS.length; // 4 — 본인 인증 및 약관 동의 단계
+const LAST_STEP = VERIFY_STEP;
 
 // GA4 가입 퍼널용 단계 식별자(step_index와 1:1). gtag는 랜딩 도메인에서만 로드되므로
 // 없으면 조용히 무시된다. GA 탐색에서 signup_step(step_id 순서) → sign_up 으로 이탈 단계를 본다.
@@ -220,11 +222,24 @@ export function SignupForm() {
 
   return (
     <form className="auth-form" onSubmit={onFormSubmit} noValidate>
-      <div className="signup-progress" aria-hidden="true">
-        {STEPS.map((label, i) => (
-          <span key={label} className={`signup-progress-dot${i <= step ? " is-active" : ""}`} title={label} />
-        ))}
-      </div>
+      {step < VERIFY_STEP ? (
+        <div className="signup-progress">
+          <div className="signup-progress-dots" aria-hidden="true">
+            {STEPS.map((label, i) => (
+              <span key={label} className={`signup-progress-dot${i <= step ? " is-active" : ""}`} title={label} />
+            ))}
+          </div>
+          <span className="signup-progress-label">
+            {step + 1} / {STEPS.length} · {STEPS[step]}
+          </span>
+        </div>
+      ) : (
+        <div className="signup-final-head">
+          <span className="signup-final-eyebrow">가입 마무리</span>
+          <h2 className="signup-final-title">본인 인증 및 약관 동의</h2>
+          <p className="signup-final-sub">교회 정보 입력이 끝났어요. 마지막으로 본인 인증만 하면 가입이 완료됩니다.</p>
+        </div>
+      )}
 
       <div key={step} className="signup-step">
         {step === 0 && (
