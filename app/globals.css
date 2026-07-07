@@ -1134,6 +1134,8 @@ main { flex: 1; }
   .form-grid { grid-template-columns: 1fr; }
   .nav-links, .landing-nav-links { display: none; }
   .nav-cta { display: none; }
+  /* 모바일에서는 랜딩 헤더를 고정하지 않는다(스크롤과 함께 올라감). PC는 sticky 유지. */
+  .landing-nav { position: static; }
   .landing-nav .nav-cta { display: inline-flex; gap: 6px; }
   .landing-nav .nav-cta .btn { padding: 8px 14px; font-size: 13px; }
   .nav-cta-desktop-only { display: none !important; }
