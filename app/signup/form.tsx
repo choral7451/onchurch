@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
+import { AddressPicker } from "@/components/address-picker";
 
 declare global {
   interface Window {
@@ -297,12 +298,12 @@ export function SignupForm() {
             </div>
             <div className="form-row full">
               <label htmlFor="signup-address">주소</label>
-              <input
+              <AddressPicker
                 id="signup-address"
-                type="text"
-                placeholder="서울특별시 성동구 ..."
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={setAddress}
+                placeholder="서울특별시 성동구 ..."
+                churchName={churchName}
                 required
               />
             </div>
