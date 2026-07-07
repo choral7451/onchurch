@@ -132,7 +132,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     setDraftCategoryId(null);
     setDraftPhotos([]);
     setRemovedIds([]);
-    setDraftGrouped(false);
+    setDraftGrouped(true); // 여러 장 등록 시 묶어서 보여주기를 기본 체크로 시작.
     setErrMsg("");
   }
   function startEdit(g: GalleryGroup) {
