@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ApiError, onchurchAuth, saveTokens } from "@/lib/api-client";
 import { AddressPicker } from "@/components/address-picker";
+import { buildChurchSiteUrl } from "@/lib/site-host";
 
 declare global {
   interface Window {
@@ -44,7 +44,6 @@ const SLUG_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SignupForm() {
-  const router = useRouter();
   const [step, setStep] = useState(0);
 
   // 4단계 입력값
@@ -201,7 +200,8 @@ export function SignupForm() {
       setStatus("success");
       // GA4 전환 이벤트 — 가입 완료. 퍼널의 마지막 단계이자 광고 전환 최적화 기준.
       window.gtag?.("event", "sign_up", { method: "onchurch" });
-      router.push("/admin");
+      // 가입 직후 사이트는 자동 공개되므로, 방금 만든 교회 홈페이지(서브도메인)로 이동한다.
+      window.location.href = buildChurchSiteUrl(slug);
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof ApiError ? err.message : "가입에 실패했습니다.");
