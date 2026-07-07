@@ -227,7 +227,7 @@ export function SignupForm() {
         {step === 0 && (
           <>
             <div className="form-row full">
-              <label htmlFor="signup-slug">서브도메인 (=아이디)</label>
+              <label htmlFor="signup-slug">서브도메인</label>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input
                   id="signup-slug"
@@ -246,7 +246,7 @@ export function SignupForm() {
                 />
                 <span style={{ color: "var(--muted)", whiteSpace: "nowrap", fontSize: 14 }}>.everychurch.co.kr</span>
               </div>
-              <span className="form-hint">소문자·숫자·하이픈, 4자 이상. 이 주소가 로그인 아이디가 됩니다. (가입 후 변경 불가)</span>
+              <span className="form-hint">소문자·숫자·하이픈, 4자 이상. 이 주소가 로그인 아이디가 됩니다.</span>
               {slugError && (
                 <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>{slugError}</span>
               )}
