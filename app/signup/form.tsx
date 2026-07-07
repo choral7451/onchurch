@@ -268,7 +268,7 @@ export function SignupForm() {
         {step === 1 && (
           <>
             <div className="form-row full">
-              <label htmlFor="signup-phone">연락처</label>
+              <label htmlFor="signup-phone">교회 연락처</label>
               <input
                 id="signup-phone"
                 type="tel"
@@ -280,7 +280,7 @@ export function SignupForm() {
                 autoFocus
                 required
               />
-              <span className="form-hint">이 번호로 마지막에 본인 인증을 진행합니다.</span>
+              <span className="form-hint">이 번호로 마지막에 본인 인증을 진행하니 휴대폰 번호를 입력해주세요.</span>
             </div>
             <div className="form-row full">
               <label htmlFor="signup-email">이메일</label>
