@@ -104,9 +104,9 @@ const PROBLEMS: { ic: IconKey; title: string; desc: string }[] = [
 ];
 
 const STEPS: { n: string; title: string; desc: string }[] = [
-  { n: "01", title: "회원가입", desc: "교회명과 담당자 정보만 입력하면 바로 시작됩니다." },
-  { n: "02", title: "기본 세팅", desc: "로고·연락처·주소를 입력하고 사용할 페이지를 켭니다." },
-  { n: "03", title: "공개", desc: "\"사이트 운영\" 토글을 ON 하면 즉시 공개. SSL과 모바일 대응은 기본." },
+  { n: "01", title: "교회 정보 입력", desc: "서브도메인·교회명·연락처·예배 안내를 순서대로 입력합니다. 약 5분이면 끝나요." },
+  { n: "02", title: "휴대폰 인증", desc: "본인 인증과 약관 동의만 하면 가입 완료. 아이디와 임시 비밀번호는 문자로 보내드립니다." },
+  { n: "03", title: "즉시 공개", desc: "가입과 동시에 우리 교회 홈페이지가 바로 공개됩니다. SSL과 모바일 대응은 기본." },
 ];
 
 const FAQ: { q: string; a: string }[] = [
