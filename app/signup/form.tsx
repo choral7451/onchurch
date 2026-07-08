@@ -17,16 +17,16 @@ type FormStatus = "idle" | "submitting" | "error" | "success";
 const CODE_TTL_SECONDS = 300;
 
 // 회원가입 절차를 없애고, 가입 후 나오던 '시작 가이드'를 앞으로 당긴 통합 위저드.
-// 2단계(기본정보[교회명·서브도메인·담임목사]·연락처)를 채운 뒤 휴대폰 인증 + 약관 동의만 받아
+// 기본정보[교회명·담임목사·서브도메인]·연락처를 채운 뒤 휴대폰 인증 + 약관 동의를 받아
 // 그 정보로 계정을 자동 생성한다(아이디=서브도메인, 이름=교회이름, 비밀번호=임시비번은 문자 발송).
 // 예배는 주일예배/오전 11:00 기본값으로 자동 전송하고 입력 단계는 두지 않는다.
-// 진행 표시는 교회 정보 2단계만 STEP n/2 로 보여주고(유저는 2단계로 인지),
-// 마지막 연락처 인증 + 약관 동의는 '가입 마무리' 별개 절차로 구분해서 보여준다.
+// 진행 표시는 인증까지 포함해 STEP n/3 하나의 스텝퍼로 보여준다(유저는 3단계로 인지).
 const STEPS = ["기본 정보", "연락처"] as const;
-const VERIFY_STEP = STEPS.length; // 2 — 본인 인증 및 약관 동의 단계(단계 카운트에서 제외)
+const VERIFY_STEP = STEPS.length; // 2 — 본인 인증 및 약관 동의 단계
 const LAST_STEP = VERIFY_STEP;
+const TOTAL_STEPS = LAST_STEP + 1; // 3 — 인증 포함 전체 단계 수
 
-// 각 단계 상단 헤더(제목 + 한 줄 설명). index 0~1은 2단계, index 2는 '가입 마무리'.
+// 각 단계 상단 헤더(제목 + 한 줄 설명). index 0~2가 3단계와 1:1.
 const STEP_HEAD: { title: string; sub: string }[] = [
   { title: "교회 기본 정보", sub: "교회 이름·담임목사님 성함과 사용할 인터넷 주소를 입력해주세요." },
   { title: "교회 연락처", sub: "홈페이지에 표시할 대표 연락처와 주소예요." },
@@ -230,24 +230,16 @@ export function SignupForm() {
 
   return (
     <form className="auth-form" onSubmit={onFormSubmit} noValidate>
-      {step < VERIFY_STEP ? (
-        <div className="signup-head">
-          <div className="signup-track" aria-hidden="true">
-            {STEPS.map((label, i) => (
-              <span key={label} className={`signup-track-seg${i <= step ? " is-active" : ""}`} />
-            ))}
-          </div>
-          <span className="signup-step-count">STEP {step + 1} / {STEPS.length}</span>
-          <h2 className="signup-step-title">{STEP_HEAD[step].title}</h2>
-          <p className="signup-step-sub">{STEP_HEAD[step].sub}</p>
+      <div className="signup-head">
+        <div className="signup-track" aria-hidden="true">
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+            <span key={i} className={`signup-track-seg${i <= step ? " is-active" : ""}`} />
+          ))}
         </div>
-      ) : (
-        <div className="signup-final-head">
-          <span className="signup-final-badge">마지막 · 가입 마무리</span>
-          <h2 className="signup-step-title">{STEP_HEAD[VERIFY_STEP].title}</h2>
-          <p className="signup-step-sub">교회 정보 입력이 끝났어요. 본인 인증과 약관 동의만 하면 가입이 완료됩니다.</p>
-        </div>
-      )}
+        <span className="signup-step-count">STEP {step + 1} / {TOTAL_STEPS}</span>
+        <h2 className="signup-step-title">{STEP_HEAD[step].title}</h2>
+        <p className="signup-step-sub">{STEP_HEAD[step].sub}</p>
+      </div>
 
       <div key={step} className="signup-step">
         {step === 0 && (
