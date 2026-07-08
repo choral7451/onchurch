@@ -16,27 +16,26 @@ type FormStatus = "idle" | "submitting" | "error" | "success";
 
 const CODE_TTL_SECONDS = 300;
 
-// 회원가입 절차를 없애고, 가입 후 나오던 '시작 가이드' 4단계를 앞으로 당긴 통합 위저드.
-// 4단계(기본정보·연락처·담임목사·예배)를 채운 뒤 휴대폰 인증 + 약관 동의만 받아
+// 회원가입 절차를 없애고, 가입 후 나오던 '시작 가이드'를 앞으로 당긴 통합 위저드.
+// 2단계(기본정보[교회명·서브도메인·담임목사]·연락처)를 채운 뒤 휴대폰 인증 + 약관 동의만 받아
 // 그 정보로 계정을 자동 생성한다(아이디=서브도메인, 이름=교회이름, 비밀번호=임시비번은 문자 발송).
-// 진행 표시는 교회 정보 4단계만 STEP n/4 로 보여주고(유저는 4단계로 인지),
+// 예배는 주일예배/오전 11:00 기본값으로 자동 전송하고 입력 단계는 두지 않는다.
+// 진행 표시는 교회 정보 2단계만 STEP n/2 로 보여주고(유저는 2단계로 인지),
 // 마지막 연락처 인증 + 약관 동의는 '가입 마무리' 별개 절차로 구분해서 보여준다.
-const STEPS = ["기본 정보", "연락처", "담임목사", "예배 안내"] as const;
-const VERIFY_STEP = STEPS.length; // 4 — 본인 인증 및 약관 동의 단계(4단계 카운트에서 제외)
+const STEPS = ["기본 정보", "연락처"] as const;
+const VERIFY_STEP = STEPS.length; // 2 — 본인 인증 및 약관 동의 단계(단계 카운트에서 제외)
 const LAST_STEP = VERIFY_STEP;
 
-// 각 단계 상단 헤더(제목 + 한 줄 설명). index 0~3은 4단계, index 4는 '가입 마무리'.
+// 각 단계 상단 헤더(제목 + 한 줄 설명). index 0~1은 2단계, index 2는 '가입 마무리'.
 const STEP_HEAD: { title: string; sub: string }[] = [
-  { title: "교회 기본 정보", sub: "교회 이름과 사용할 인터넷 주소를 정해주세요." },
+  { title: "교회 기본 정보", sub: "교회 이름·담임목사님 성함과 사용할 인터넷 주소를 입력해주세요." },
   { title: "교회 연락처", sub: "홈페이지에 표시할 대표 연락처와 주소예요." },
-  { title: "담임목사", sub: "담임목사님 성함을 입력해주세요." },
-  { title: "예배 안내", sub: "대표 예배 하나만 먼저 등록해요." },
   { title: "본인 인증 및 약관 동의", sub: "마지막이에요! 휴대폰 인증만 하면 가입이 완료됩니다." },
 ];
 
 // GA4 가입 퍼널용 단계 식별자(step_index와 1:1). gtag는 랜딩 도메인에서만 로드되므로
 // 없으면 조용히 무시된다. GA 탐색에서 signup_step(step_id 순서) → sign_up 으로 이탈 단계를 본다.
-const SIGNUP_STEP_IDS = ["basic", "contact", "pastor", "worship", "verify"] as const;
+const SIGNUP_STEP_IDS = ["basic", "contact", "verify"] as const;
 
 function formatPhone(raw: string) {
   const d = raw.replace(/[^0-9]/g, "").slice(0, 11);
@@ -64,8 +63,9 @@ export function SignupForm() {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [pastorName, setPastorName] = useState("");
-  const [worshipName, setWorshipName] = useState("주일예배");
-  const [worshipTime, setWorshipTime] = useState("");
+  // 예배는 입력 단계 없이 기본값으로 자동 전송한다.
+  const [worshipName] = useState("주일예배");
+  const [worshipTime] = useState("오전 11:00");
 
   // 서브도메인 중복확인
   const [slugChecking, setSlugChecking] = useState(false);
@@ -151,14 +151,10 @@ export function SignupForm() {
   function stepValid(s: number): boolean {
     switch (s) {
       case 0:
-        return slug.length >= 4 && SLUG_RE.test(slug) && !!churchName.trim();
+        return slug.length >= 4 && SLUG_RE.test(slug) && !!churchName.trim() && !!pastorName.trim();
       case 1:
         return !!churchPhone.trim() && EMAIL_RE.test(email.trim()) && !!address.trim();
       case 2:
-        return !!pastorName.trim();
-      case 3:
-        return !!worshipName.trim() && !!worshipTime.trim();
-      case 4:
         return phoneStatus === "verified" && agree;
       default:
         return false;
@@ -249,7 +245,7 @@ export function SignupForm() {
         <div className="signup-final-head">
           <span className="signup-final-badge">마지막 · 가입 마무리</span>
           <h2 className="signup-step-title">{STEP_HEAD[VERIFY_STEP].title}</h2>
-          <p className="signup-step-sub">교회 정보 4단계 입력이 끝났어요. 본인 인증과 약관 동의만 하면 가입이 완료됩니다.</p>
+          <p className="signup-step-sub">교회 정보 입력이 끝났어요. 본인 인증과 약관 동의만 하면 가입이 완료됩니다.</p>
         </div>
       )}
 
@@ -291,6 +287,18 @@ export function SignupForm() {
               {slugError && (
                 <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>{slugError}</span>
               )}
+            </div>
+            <div className="form-row full">
+              <label htmlFor="signup-pastor">담임목사 성함</label>
+              <input
+                id="signup-pastor"
+                type="text"
+                placeholder="홍길동"
+                value={pastorName}
+                onChange={(e) => setPastorName(e.target.value)}
+                required
+              />
+              <span className="form-hint">인사말·사진 등 나머지는 가입 후 관리자에서 추가할 수 있습니다.</span>
             </div>
           </>
         )}
@@ -338,51 +346,6 @@ export function SignupForm() {
         )}
 
         {step === 2 && (
-          <div className="form-row full">
-            <label htmlFor="signup-pastor">담임목사 성함</label>
-            <input
-              id="signup-pastor"
-              type="text"
-              placeholder="홍길동"
-              value={pastorName}
-              onChange={(e) => setPastorName(e.target.value)}
-              autoFocus
-              required
-            />
-            <span className="form-hint">인사말·사진 등 나머지는 가입 후 관리자에서 추가할 수 있습니다.</span>
-          </div>
-        )}
-
-        {step === 3 && (
-          <>
-            <div className="form-row full">
-              <label htmlFor="signup-worship-name">예배 이름</label>
-              <input
-                id="signup-worship-name"
-                type="text"
-                placeholder="주일예배"
-                value={worshipName}
-                onChange={(e) => setWorshipName(e.target.value)}
-                autoFocus
-                required
-              />
-            </div>
-            <div className="form-row full">
-              <label htmlFor="signup-worship-time">예배 시간</label>
-              <input
-                id="signup-worship-time"
-                type="text"
-                placeholder="오전 11:00"
-                value={worshipTime}
-                onChange={(e) => setWorshipTime(e.target.value)}
-                required
-              />
-              <span className="form-hint">대표 예배 하나만 입력하세요. 다른 예배는 가입 후 추가할 수 있습니다.</span>
-            </div>
-          </>
-        )}
-
-        {step === 4 && (
           <>
             <div className="form-row full">
               <label htmlFor="signup-verify-phone">
