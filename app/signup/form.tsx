@@ -247,6 +247,18 @@ export function SignupForm() {
         {step === 0 && (
           <>
             <div className="form-row full">
+              <label htmlFor="signup-church-name">교회 이름</label>
+              <input
+                id="signup-church-name"
+                type="text"
+                placeholder="온교회"
+                value={churchName}
+                onChange={(e) => setChurchName(e.target.value)}
+                autoFocus
+                required
+              />
+            </div>
+            <div className="form-row full">
               <label htmlFor="signup-slug">서브도메인</label>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input
@@ -260,7 +272,6 @@ export function SignupForm() {
                     setSlugError("");
                   }}
                   minLength={4}
-                  autoFocus
                   required
                   style={{ flex: 1 }}
                 />
@@ -270,17 +281,6 @@ export function SignupForm() {
               {slugError && (
                 <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>{slugError}</span>
               )}
-            </div>
-            <div className="form-row full">
-              <label htmlFor="signup-church-name">교회 이름</label>
-              <input
-                id="signup-church-name"
-                type="text"
-                placeholder="온교회"
-                value={churchName}
-                onChange={(e) => setChurchName(e.target.value)}
-                required
-              />
             </div>
           </>
         )}
