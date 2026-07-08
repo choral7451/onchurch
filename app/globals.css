@@ -558,6 +558,8 @@ main { flex: 1; }
 
 .landing-nav { position: sticky; top: 0; z-index: 50; background: oklch(1 0 0 / 0.85); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4); border-bottom: 1px solid var(--line); }
 .landing-nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+.landing-nav-right { display: flex; align-items: center; gap: 24px; }
+.landing-nav-admin { padding: 8px 16px; font-size: 13px; }
 .landing-nav-links { display: flex; gap: 28px; font-size: 14px; font-weight: 500; color: var(--ink-2); }
 .nav-cta-mobile-only { display: none; }
 .landing-nav-links a { transition: color 0.15s ease; }
