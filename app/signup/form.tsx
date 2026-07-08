@@ -265,6 +265,18 @@ export function SignupForm() {
               />
             </div>
             <div className="form-row full">
+              <label htmlFor="signup-pastor">담임목사 성함</label>
+              <input
+                id="signup-pastor"
+                type="text"
+                placeholder="홍길동"
+                value={pastorName}
+                onChange={(e) => setPastorName(e.target.value)}
+                required
+              />
+              <span className="form-hint">인사말·사진 등 나머지는 가입 후 관리자에서 추가할 수 있습니다.</span>
+            </div>
+            <div className="form-row full">
               <label htmlFor="signup-slug">서브도메인</label>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input
@@ -287,18 +299,6 @@ export function SignupForm() {
               {slugError && (
                 <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>{slugError}</span>
               )}
-            </div>
-            <div className="form-row full">
-              <label htmlFor="signup-pastor">담임목사 성함</label>
-              <input
-                id="signup-pastor"
-                type="text"
-                placeholder="홍길동"
-                value={pastorName}
-                onChange={(e) => setPastorName(e.target.value)}
-                required
-              />
-              <span className="form-hint">인사말·사진 등 나머지는 가입 후 관리자에서 추가할 수 있습니다.</span>
             </div>
           </>
         )}
