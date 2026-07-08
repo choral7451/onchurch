@@ -62,13 +62,13 @@ export function CalendarFeature() {
     const map = new Map<string, Marker[]>();
     for (const c of churches) {
       if (c.isTest) continue;
-      if (c.freeTrialUntil) {
-        const key = ymd(c.freeTrialUntil);
-        map.set(key, [...(map.get(key) ?? []), { church: c, kind: "trial" }]);
-      }
+      // 교회당 하나만 표시: 결제 종료일이 있으면 그것, 없으면 무료체험 종료일.
       if (c.paidUntil) {
         const key = ymd(c.paidUntil);
         map.set(key, [...(map.get(key) ?? []), { church: c, kind: "paid" }]);
+      } else if (c.freeTrialUntil) {
+        const key = ymd(c.freeTrialUntil);
+        map.set(key, [...(map.get(key) ?? []), { church: c, kind: "trial" }]);
       }
     }
     return map;
