@@ -637,6 +637,7 @@ export type ChurchOverview = {
   isFreeTrialActive: boolean;
   isPaidActive: boolean;
   naverVerification: string | null;
+  isTest: boolean;
 };
 
 export type OwnerCandidate = {

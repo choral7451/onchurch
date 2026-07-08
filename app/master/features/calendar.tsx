@@ -57,10 +57,11 @@ export function CalendarFeature() {
     };
   }, []);
 
-  // "YYYY-MM-DD" -> 그 날 만료되는 마커 목록
+  // "YYYY-MM-DD" -> 그 날 만료되는 마커 목록. 테스트 계정(owner.isTest)은 달력에서 제외.
   const markersByDay = useMemo(() => {
     const map = new Map<string, Marker[]>();
     for (const c of churches) {
+      if (c.isTest) continue;
       if (c.freeTrialUntil) {
         const key = ymd(c.freeTrialUntil);
         map.set(key, [...(map.get(key) ?? []), { church: c, kind: "trial" }]);
