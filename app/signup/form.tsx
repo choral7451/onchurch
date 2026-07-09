@@ -347,12 +347,12 @@ export function SignupForm() {
         {step === 0 && (
           <>
             <div className="form-row full">
-              <label htmlFor="signup-church-name">교회 이름</label>
               <input
                 id="signup-church-name"
                 ref={firstInputRef}
                 type="text"
-                placeholder="온교회"
+                placeholder="교회 이름"
+                aria-label="교회 이름"
                 value={churchName}
                 onChange={(e) => setChurchName(e.target.value)}
                 onBlur={syncFromDom}
@@ -361,11 +361,11 @@ export function SignupForm() {
               />
             </div>
             <div className="form-row full">
-              <label htmlFor="signup-pastor">담임목사 성함</label>
               <input
                 id="signup-pastor"
                 type="text"
-                placeholder="홍길동"
+                placeholder="담임목사 성함"
+                aria-label="담임목사 성함"
                 value={pastorName}
                 onChange={(e) => setPastorName(e.target.value)}
                 onBlur={syncFromDom}
@@ -374,13 +374,13 @@ export function SignupForm() {
               <span className="form-hint">인사말·사진 등 나머지는 가입 후 관리자에서 추가할 수 있습니다.</span>
             </div>
             <div className="form-row full">
-              <label htmlFor="signup-slug">서브도메인</label>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input
                   id="signup-slug"
                   type="text"
                   autoComplete="off"
-                  placeholder="onchurch"
+                  placeholder="서브도메인"
+                  aria-label="서브도메인"
                   value={slug}
                   onChange={(e) => {
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
@@ -404,13 +404,13 @@ export function SignupForm() {
         {step === 1 && (
           <>
             <div className="form-row full">
-              <label htmlFor="signup-church-phone">교회 연락처</label>
               <input
                 id="signup-church-phone"
                 ref={firstInputRef}
                 type="text"
                 autoComplete="tel"
-                placeholder="02-1234-5678"
+                placeholder="교회 연락처"
+                aria-label="교회 연락처"
                 value={churchPhone}
                 onChange={(e) => setChurchPhone(e.target.value)}
                 onBlur={syncFromDom}
@@ -419,12 +419,12 @@ export function SignupForm() {
               <span className="form-hint">홈페이지에 노출되는 교회 대표 연락처입니다.</span>
             </div>
             <div className="form-row full">
-              <label htmlFor="signup-email">이메일</label>
               <input
                 id="signup-email"
                 type="email"
                 autoComplete="email"
-                placeholder="hello@church.com"
+                placeholder="이메일"
+                aria-label="이메일"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={syncFromDom}
@@ -432,13 +432,13 @@ export function SignupForm() {
               />
             </div>
             <div className="form-row full">
-              <label htmlFor="signup-address">주소</label>
               <AddressPicker
                 id="signup-address"
                 value={address}
                 onChange={setAddress}
                 onBlur={syncFromDom}
-                placeholder="서울특별시 성동구 ..."
+                placeholder="주소"
+                aria-label="주소"
                 churchName={churchName}
                 required
               />

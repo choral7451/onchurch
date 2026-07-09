@@ -10,6 +10,7 @@ type Props = {
   onChange: (next: string) => void;
   onBlur?: () => void;
   placeholder?: string;
+  "aria-label"?: string;
   required?: boolean;
   churchName?: string;
   showPreview?: boolean;
@@ -21,6 +22,7 @@ export function AddressPicker({
   onChange,
   onBlur,
   placeholder,
+  "aria-label": ariaLabel,
   required,
   churchName,
   showPreview = true,
@@ -67,6 +69,7 @@ export function AddressPicker({
         // 자동완성 후보에서 Enter 선택 시 폼이 제출되지 않도록 막는다.
         onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
         placeholder={placeholder}
+        aria-label={ariaLabel}
         required={required}
         autoComplete="off"
       />
