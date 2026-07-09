@@ -8,6 +8,7 @@ type Props = {
   id?: string;
   value: string;
   onChange: (next: string) => void;
+  onBlur?: () => void;
   placeholder?: string;
   required?: boolean;
   churchName?: string;
@@ -18,6 +19,7 @@ export function AddressPicker({
   id,
   value,
   onChange,
+  onBlur,
   placeholder,
   required,
   churchName,
@@ -61,6 +63,7 @@ export function AddressPicker({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         // 자동완성 후보에서 Enter 선택 시 폼이 제출되지 않도록 막는다.
         onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
         placeholder={placeholder}

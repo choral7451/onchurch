@@ -83,6 +83,7 @@ export function SignupForm() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const codeInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // 각 가입 단계가 화면에 뜰 때 signup_step 이벤트 전송 → 어느 단계에서 이탈하는지 측정.
   useEffect(() => {
@@ -147,13 +148,51 @@ export function SignupForm() {
     }
   }
 
-  // 현재 스텝 입력이 유효한지 — '다음' 버튼 활성화 및 진행 조건.
-  function stepValid(s: number): boolean {
+  type StepValues = {
+    slug: string;
+    churchName: string;
+    pastorName: string;
+    churchPhone: string;
+    email: string;
+    address: string;
+  };
+
+  // in-app 브라우저(인스타그램 등)의 자동완성/구글 주소 위젯은 DOM input 에만 값을 쓰고
+  // React onChange 를 발생시키지 않는 경우가 있다. 그러면 화면엔 값이 보여도 state 는 비어
+  // 검증이 막혀 '다음' 버튼이 안 켜진다. → 검증·진행 직전(및 blur)에 실제 input 값을 읽어 동기화.
+  const readInput = (id: string): string | null => {
+    const el = formRef.current?.querySelector<HTMLInputElement>(`#${id}`);
+    return el ? el.value : null;
+  };
+
+  // 현재 렌더된 input 의 DOM 값을 읽어 state 에 반영하고, 반영된 값 묶음을 반환한다.
+  // (렌더되지 않은 단계의 필드는 querySelector 가 null → 기존 state 값을 유지)
+  function syncFromDom(): StepValues {
+    const rawSlug = readInput("signup-slug");
+    const v: StepValues = {
+      churchName: readInput("signup-church-name") ?? churchName,
+      pastorName: readInput("signup-pastor") ?? pastorName,
+      slug: rawSlug == null ? slug : rawSlug.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+      churchPhone: readInput("signup-church-phone") ?? churchPhone,
+      email: readInput("signup-email") ?? email,
+      address: readInput("signup-address") ?? address,
+    };
+    if (v.churchName !== churchName) setChurchName(v.churchName);
+    if (v.pastorName !== pastorName) setPastorName(v.pastorName);
+    if (v.slug !== slug) setSlug(v.slug);
+    if (v.churchPhone !== churchPhone) setChurchPhone(v.churchPhone);
+    if (v.email !== email) setEmail(v.email);
+    if (v.address !== address) setAddress(v.address);
+    return v;
+  }
+
+  // 값 묶음 기준 순수 검증 — 렌더(버튼 흐림 표시)와 클릭 검증에서 공용.
+  function isStepValid(s: number, v: StepValues): boolean {
     switch (s) {
       case 0:
-        return slug.length >= 4 && SLUG_RE.test(slug) && !!churchName.trim() && !!pastorName.trim();
+        return v.slug.length >= 4 && SLUG_RE.test(v.slug) && !!v.churchName.trim() && !!v.pastorName.trim();
       case 1:
-        return !!churchPhone.trim() && EMAIL_RE.test(email.trim()) && !!address.trim();
+        return !!v.churchPhone.trim() && EMAIL_RE.test(v.email.trim()) && !!v.address.trim();
       case 2:
         return phoneStatus === "verified" && agree;
       default:
@@ -161,14 +200,21 @@ export function SignupForm() {
     }
   }
 
+  // 현재 state 기준 검증 — 버튼 흐림 표시용.
+  const stepValid = (s: number): boolean =>
+    isStepValid(s, { slug, churchName, pastorName, churchPhone, email, address });
+
   async function goNext() {
-    if (!stepValid(step) || slugChecking) return;
+    if (slugChecking) return;
+    // 클릭 직전 실제 DOM 값으로 재동기화하고, 그 값 기준으로 검증한다(자동완성 대비).
+    const v = syncFromDom();
+    if (!isStepValid(step, v)) return;
     // 서브도메인 단계: 다음으로 넘어가기 전에 아이디(=서브도메인) 중복 확인.
     if (step === 0) {
       setSlugChecking(true);
       setSlugError("");
       try {
-        const res = await onchurchAuth.checkLoginId(slug);
+        const res = await onchurchAuth.checkLoginId(v.slug);
         if (!res.available) {
           setSlugError("이미 사용 중인 서브도메인입니다.");
           return;
@@ -225,11 +271,14 @@ export function SignupForm() {
     void doSignup();
   }
 
-  const nextDisabled = !stepValid(step) || status === "submitting" || slugChecking;
+  // 버튼은 stepValid 로 잠그지 않는다(자동완성으로 state 가 비어 보이는 경우 클릭조차 못 하는 트랩 방지).
+  // 실제 진행 가능 여부는 클릭 시 goNext/doSignup 이 DOM 값으로 재검증한다. 흐림은 시각적 힌트일 뿐.
+  const nextDisabled = status === "submitting" || slugChecking;
+  const nextDimmed = nextDisabled || !stepValid(step);
   const mmss = `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
   return (
-    <form className="auth-form" onSubmit={onFormSubmit} noValidate>
+    <form className="auth-form" onSubmit={onFormSubmit} noValidate ref={formRef}>
       <div className="signup-head">
         <div className="signup-track" aria-hidden="true">
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
@@ -252,6 +301,7 @@ export function SignupForm() {
                 placeholder="온교회"
                 value={churchName}
                 onChange={(e) => setChurchName(e.target.value)}
+                onBlur={syncFromDom}
                 autoFocus
                 required
               />
@@ -264,6 +314,7 @@ export function SignupForm() {
                 placeholder="홍길동"
                 value={pastorName}
                 onChange={(e) => setPastorName(e.target.value)}
+                onBlur={syncFromDom}
                 required
               />
               <span className="form-hint">인사말·사진 등 나머지는 가입 후 관리자에서 추가할 수 있습니다.</span>
@@ -281,6 +332,7 @@ export function SignupForm() {
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
                     setSlugError("");
                   }}
+                  onBlur={syncFromDom}
                   minLength={4}
                   required
                   style={{ flex: 1 }}
@@ -306,6 +358,7 @@ export function SignupForm() {
                 placeholder="02-1234-5678"
                 value={churchPhone}
                 onChange={(e) => setChurchPhone(e.target.value)}
+                onBlur={syncFromDom}
                 autoFocus
                 required
               />
@@ -320,6 +373,7 @@ export function SignupForm() {
                 placeholder="hello@church.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={syncFromDom}
                 required
               />
             </div>
@@ -329,6 +383,7 @@ export function SignupForm() {
                 id="signup-address"
                 value={address}
                 onChange={setAddress}
+                onBlur={syncFromDom}
                 placeholder="서울특별시 성동구 ..."
                 churchName={churchName}
                 required
@@ -457,7 +512,7 @@ export function SignupForm() {
           type="submit"
           className="btn btn-primary btn-lg"
           disabled={nextDisabled}
-          style={{ flex: 1, justifyContent: "center", opacity: nextDisabled ? 0.6 : 1, cursor: nextDisabled ? "not-allowed" : "pointer" }}
+          style={{ flex: 1, justifyContent: "center", opacity: nextDimmed ? 0.6 : 1, cursor: nextDisabled ? "not-allowed" : "pointer" }}
         >
           {step < LAST_STEP
             ? slugChecking && step === 0
