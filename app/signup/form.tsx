@@ -86,6 +86,9 @@ export function SignupForm() {
 
   const codeInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  // 서브도메인 중복 확인 결과 캐시(slug → 사용 가능 여부). '다음' 클릭 시 await 없이 동기로
+  // 읽어 넘어가기 위함 — 모바일 autoFocus는 탭 제스처의 동기 흐름 안에서만 caret을 띄운다.
+  const slugCheckCacheRef = useRef<Map<string, boolean>>(new Map());
 
   // 각 가입 단계가 화면에 뜰 때 signup_step 이벤트 전송 → 어느 단계에서 이탈하는지 측정.
   useEffect(() => {
@@ -99,6 +102,23 @@ export function SignupForm() {
   // 동기 실행 흐름(=클릭 커밋 중 autoFocus) 안에서만 caret/키보드를 띄우므로, setTimeout·
   // useEffect 같은 비동기 포커스로는 커서가 안 뜬다. autoFocus는 포커스한 input을 화면에
   // 스크롤로 노출하는 것까지 브라우저가 처리한다.
+
+  // 서브도메인을 입력하는 동안 미리 중복 확인해 결과를 캐시한다. 그래야 '다음' 클릭 시
+  // await 없이 넘어가 모바일에서 교회 연락처 입력란에 커서가 바로 뜬다(1→2단계).
+  useEffect(() => {
+    const s = slug.trim();
+    if (s.length < 4 || slugCheckCacheRef.current.has(s)) return;
+    const t = setTimeout(async () => {
+      try {
+        const res = await onchurchAuth.checkLoginId(s);
+        slugCheckCacheRef.current.set(s, res.available);
+        if (!res.available) setSlugError("이미 사용 중인 서브도메인입니다.");
+      } catch {
+        // 사전 확인 실패는 캐시하지 않는다 → goNext에서 다시 확인한다.
+      }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [slug]);
 
   useEffect(() => {
     if (phoneStatus !== "code-sent" || secondsLeft <= 0) return;
@@ -225,19 +245,29 @@ export function SignupForm() {
     }
     // 서브도메인 단계: 다음으로 넘어가기 전에 아이디(=서브도메인) 중복 확인.
     if (step === 0) {
-      setSlugChecking(true);
-      setSlugError("");
-      try {
-        const res = await onchurchAuth.checkLoginId(v.slug);
-        if (!res.available) {
-          setSlugError("이미 사용 중인 서브도메인입니다.");
-          return;
-        }
-      } catch (err) {
-        setSlugError(err instanceof ApiError ? err.message : "서브도메인 확인에 실패했습니다.");
+      const cached = slugCheckCacheRef.current.get(v.slug);
+      if (cached === false) {
+        setSlugError("이미 사용 중인 서브도메인입니다.");
         return;
-      } finally {
-        setSlugChecking(false);
+      }
+      // cached === true 이면 사전 확인에서 이미 통과 → await 없이 동기로 넘어가 모바일
+      // autoFocus가 탭 제스처 안에서 실행된다. 미확인(undefined)일 때만 여기서 대기한다.
+      if (cached === undefined) {
+        setSlugChecking(true);
+        setSlugError("");
+        try {
+          const res = await onchurchAuth.checkLoginId(v.slug);
+          slugCheckCacheRef.current.set(v.slug, res.available);
+          if (!res.available) {
+            setSlugError("이미 사용 중인 서브도메인입니다.");
+            return;
+          }
+        } catch (err) {
+          setSlugError(err instanceof ApiError ? err.message : "서브도메인 확인에 실패했습니다.");
+          return;
+        } finally {
+          setSlugChecking(false);
+        }
       }
     }
     setErrorMsg("");
