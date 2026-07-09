@@ -98,14 +98,28 @@ export function SignupForm() {
   }, [step]);
 
   // 단계가 바뀌면 해당 단계 첫 입력란에 포커스하고, 그 위치로 스크롤해 바로 입력할 수 있게 한다.
+  // 단, .signup-step 진입 애니메이션(transform)이 도는 동안 포커스하면 Chrome이 caret(커서)을
+  // 렌더하지 않으므로, 애니메이션이 끝나(transform 해제) caret이 보이는 시점에 포커스한다.
   useEffect(() => {
-    const t = setTimeout(() => {
-      const el = firstInputRef.current;
-      if (!el) return;
+    const el = firstInputRef.current;
+    if (!el || el.disabled) return;
+    let done = false;
+    const focusEl = () => {
+      if (done) return;
+      done = true;
       el.focus({ preventScroll: true });
+      const len = el.value.length;
+      try { el.setSelectionRange(len, len); } catch { /* 일부 input type은 미지원 */ }
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 50);
-    return () => clearTimeout(t);
+    };
+    const container = el.closest(".signup-step");
+    container?.addEventListener("animationend", focusEl, { once: true });
+    // 애니메이션이 없거나(reduced-motion) animationend를 놓친 경우 대비 폴백.
+    const t = setTimeout(focusEl, 350);
+    return () => {
+      container?.removeEventListener("animationend", focusEl);
+      clearTimeout(t);
+    };
   }, [step]);
 
   useEffect(() => {
