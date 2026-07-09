@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { ApiError, onchurchAuth, saveSessionChurch, saveTokens } from "@/lib/api-client";
 import { AddressPicker } from "@/components/address-picker";
 import { buildChurchSiteUrl } from "@/lib/site-host";
@@ -86,9 +87,19 @@ export function SignupForm() {
 
   const codeInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  // 한 번에 한 단계만 렌더되므로, 각 단계 첫 입력란에 이 ref를 달아 현재 단계 입력란을 가리킨다.
+  const firstInputRef = useRef<HTMLInputElement>(null);
   // 서브도메인 중복 확인 결과 캐시(slug → 사용 가능 여부). '다음' 클릭 시 await 없이 동기로
-  // 읽어 넘어가기 위함 — 모바일 autoFocus는 탭 제스처의 동기 흐름 안에서만 caret을 띄운다.
+  // 읽어 넘어가기 위함 — iOS Safari는 탭 제스처의 동기 흐름 안에서만 keyboard/caret을 띄운다.
   const slugCheckCacheRef = useRef<Map<string, boolean>>(new Map());
+
+  // flushSync로 단계 전환을 탭 핸들러 안에서 동기 커밋한 뒤, 곧바로 그 단계 첫 입력란에
+  // 포커스한다. iOS Safari는 사용자 제스처의 동기 호출 스택 안에서 focus()가 실행돼야만
+  // 키보드/커서를 띄우므로, setStep(비동기 렌더)+autoFocus로는 커서가 안 뜬다.
+  function advanceTo(next: number) {
+    flushSync(() => setStep(next));
+    firstInputRef.current?.focus();
+  }
 
   // 각 가입 단계가 화면에 뜰 때 signup_step 이벤트 전송 → 어느 단계에서 이탈하는지 측정.
   useEffect(() => {
@@ -98,10 +109,9 @@ export function SignupForm() {
     });
   }, [step]);
 
-  // 각 단계 첫 입력란 포커스는 JSX의 autoFocus로 처리한다. 모바일은 사용자 탭 제스처의
-  // 동기 실행 흐름(=클릭 커밋 중 autoFocus) 안에서만 caret/키보드를 띄우므로, setTimeout·
-  // useEffect 같은 비동기 포커스로는 커서가 안 뜬다. autoFocus는 포커스한 input을 화면에
-  // 스크롤로 노출하는 것까지 브라우저가 처리한다.
+  // 단계 전환 시 포커스는 advanceTo(flushSync + focus)가 탭 제스처 동기 흐름 안에서 처리한다.
+  // step 0 첫 입력란만 초기 페이지 로드 시(데스크톱) 포커스되도록 autoFocus를 유지한다
+  // — iOS는 제스처 없는 초기 로드에서 어차피 키보드를 안 띄운다.
 
   // 서브도메인을 입력하는 동안 미리 중복 확인해 결과를 캐시한다. 그래야 '다음' 클릭 시
   // await 없이 넘어가 모바일에서 교회 연락처 입력란에 커서가 바로 뜬다(1→2단계).
@@ -272,7 +282,9 @@ export function SignupForm() {
     }
     setErrorMsg("");
     setStatus("idle");
-    setStep((s) => Math.min(LAST_STEP, s + 1));
+    // 캐시된 서브도메인(await 없이 온 경우)이나 연락처→인증처럼 await가 없던 경로에서는
+    // 여기까지 탭 제스처 동기 흐름이 유지돼, advanceTo의 focus()가 iOS 키보드를 띄운다.
+    advanceTo(Math.min(LAST_STEP, step + 1));
   }
 
   async function doSignup() {
@@ -344,6 +356,7 @@ export function SignupForm() {
               <label htmlFor="signup-church-name">교회 이름</label>
               <input
                 id="signup-church-name"
+                ref={firstInputRef}
                 type="text"
                 placeholder="온교회"
                 value={churchName}
@@ -400,13 +413,13 @@ export function SignupForm() {
               <label htmlFor="signup-church-phone">교회 연락처</label>
               <input
                 id="signup-church-phone"
+                ref={firstInputRef}
                 type="text"
                 autoComplete="tel"
                 placeholder="02-1234-5678"
                 value={churchPhone}
                 onChange={(e) => setChurchPhone(e.target.value)}
                 onBlur={syncFromDom}
-                autoFocus
                 required
               />
               <span className="form-hint">홈페이지에 노출되는 교회 대표 연락처입니다.</span>
@@ -451,6 +464,7 @@ export function SignupForm() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
                 <input
                   id="signup-verify-phone"
+                  ref={firstInputRef}
                   type="tel"
                   autoComplete="tel"
                   inputMode="numeric"
@@ -458,7 +472,6 @@ export function SignupForm() {
                   value={phone}
                   onChange={(e) => setPhone(formatPhone(e.target.value))}
                   disabled={phoneStatus === "verified"}
-                  autoFocus
                 />
                 <button
                   type="button"
