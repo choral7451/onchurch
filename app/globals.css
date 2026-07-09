@@ -748,7 +748,9 @@ main { flex: 1; }
 /* 인증번호 입력 행: 인증 완료 시 부드럽게 접힘 */
 .signup-otp { overflow: hidden; max-height: 80px; opacity: 1; margin-top: 8px; transition: max-height 0.3s ease, opacity 0.25s ease, margin-top 0.3s ease; }
 .signup-otp.is-hidden { max-height: 0; opacity: 0; margin-top: 0; pointer-events: none; }
-@keyframes signupStepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* opacity:0에서 시작하지 않는다 — 단계 전환 직후 flushSync로 focus()할 때 입력란이
+   보이는 상태여야(opacity>0) iOS Safari가 키보드/커서를 띄운다. 슬라이드만 유지. */
+@keyframes signupStepIn { from { transform: translateY(8px); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .signup-step { animation: none; } }
 
 .phone-msg { font-size: 12.5px; line-height: 1.5; padding: 10px 12px; border-radius: var(--r-md); border: 1px solid; }

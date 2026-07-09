@@ -253,37 +253,31 @@ export function SignupForm() {
       setValidationErrors(errs);
       return;
     }
-    // 서브도메인 단계: 다음으로 넘어가기 전에 아이디(=서브도메인) 중복 확인.
+    // 서브도메인 단계: 아이디(=서브도메인) 중복 확인. iOS Safari는 focus()가 탭 제스처의
+    // 동기 흐름 안에서 실행돼야 키보드를 띄우므로, 여기서 절대 await하지 않는다(await는 제스처를
+    // 끊는다). 이미 사용 중임이 확인된 값이면 막고, 아직 모르면 백그라운드로 확인만 하고 바로
+    // 진행한다 — 사용 중이면 에러를 표시해 되돌아가 수정하게 하고, 최종 제출 시 서버가 재검증한다.
     if (step === 0) {
       const cached = slugCheckCacheRef.current.get(v.slug);
       if (cached === false) {
         setSlugError("이미 사용 중인 서브도메인입니다.");
         return;
       }
-      // cached === true 이면 사전 확인에서 이미 통과 → await 없이 동기로 넘어가 모바일
-      // autoFocus가 탭 제스처 안에서 실행된다. 미확인(undefined)일 때만 여기서 대기한다.
       if (cached === undefined) {
-        setSlugChecking(true);
-        setSlugError("");
-        try {
-          const res = await onchurchAuth.checkLoginId(v.slug);
-          slugCheckCacheRef.current.set(v.slug, res.available);
-          if (!res.available) {
-            setSlugError("이미 사용 중인 서브도메인입니다.");
-            return;
-          }
-        } catch (err) {
-          setSlugError(err instanceof ApiError ? err.message : "서브도메인 확인에 실패했습니다.");
-          return;
-        } finally {
-          setSlugChecking(false);
-        }
+        void onchurchAuth
+          .checkLoginId(v.slug)
+          .then((res) => {
+            slugCheckCacheRef.current.set(v.slug, res.available);
+            if (!res.available) setSlugError("이미 사용 중인 서브도메인입니다.");
+          })
+          .catch(() => {
+            /* 확인 실패는 무시 — 최종 제출 시 서버가 검증한다. */
+          });
       }
     }
     setErrorMsg("");
     setStatus("idle");
-    // 캐시된 서브도메인(await 없이 온 경우)이나 연락처→인증처럼 await가 없던 경로에서는
-    // 여기까지 탭 제스처 동기 흐름이 유지돼, advanceTo의 focus()가 iOS 키보드를 띄운다.
+    // 여기까지 탭 제스처 동기 흐름이 유지되므로 advanceTo의 focus()가 iOS 키보드를 띄운다.
     advanceTo(Math.min(LAST_STEP, step + 1));
   }
 
