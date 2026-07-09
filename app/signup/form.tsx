@@ -81,6 +81,8 @@ export function SignupForm() {
 
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  // '다음/가입' 클릭 시 충족 안 된 조건 목록 — 비어 있지 않으면 안내 모달을 띄운다.
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const codeInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -186,29 +188,36 @@ export function SignupForm() {
     return v;
   }
 
-  // 값 묶음 기준 순수 검증 — 렌더(버튼 흐림 표시)와 클릭 검증에서 공용.
-  function isStepValid(s: number, v: StepValues): boolean {
-    switch (s) {
-      case 0:
-        return v.slug.length >= 4 && SLUG_RE.test(v.slug) && !!v.churchName.trim() && !!v.pastorName.trim();
-      case 1:
-        return !!v.churchPhone.trim() && EMAIL_RE.test(v.email.trim()) && !!v.address.trim();
-      case 2:
-        return phoneStatus === "verified" && agree;
-      default:
-        return false;
+  // 값 묶음 기준으로 충족 안 된 조건 메시지를 모은다. 비어 있으면 통과.
+  // '다음'을 눌렀을 때 무엇이 빠졌는지 모달로 그대로 안내하는 데 쓴다.
+  function stepErrors(s: number, v: StepValues): string[] {
+    const errs: string[] = [];
+    if (s === 0) {
+      if (!v.churchName.trim()) errs.push("교회 이름을 입력해 주세요.");
+      if (!v.pastorName.trim()) errs.push("담임목사 성함을 입력해 주세요.");
+      if (!(v.slug.length >= 4 && SLUG_RE.test(v.slug)))
+        errs.push("서브도메인은 소문자·숫자·하이픈 4자 이상으로 입력해 주세요.");
+    } else if (s === 1) {
+      if (!v.churchPhone.trim()) errs.push("교회 연락처를 입력해 주세요.");
+      if (!v.email.trim()) errs.push("이메일을 입력해 주세요.");
+      else if (!EMAIL_RE.test(v.email.trim())) errs.push("이메일 형식이 올바르지 않습니다.");
+      if (!v.address.trim()) errs.push("주소를 입력해 주세요.");
+    } else if (s === 2) {
+      if (phoneStatus !== "verified") errs.push("휴대폰 본인 인증을 완료해 주세요.");
+      if (!agree) errs.push("이용약관·개인정보 처리방침에 동의해 주세요.");
     }
+    return errs;
   }
-
-  // 현재 state 기준 검증 — 버튼 흐림 표시용.
-  const stepValid = (s: number): boolean =>
-    isStepValid(s, { slug, churchName, pastorName, churchPhone, email, address });
 
   async function goNext() {
     if (slugChecking) return;
-    // 클릭 직전 실제 DOM 값으로 재동기화하고, 그 값 기준으로 검증한다(자동완성 대비).
+    // 클릭 직전 실제 DOM 값으로 재동기화하고(자동완성 대비), 그 값 기준으로 검증한다.
     const v = syncFromDom();
-    if (!isStepValid(step, v)) return;
+    const errs = stepErrors(step, v);
+    if (errs.length) {
+      setValidationErrors(errs);
+      return;
+    }
     // 서브도메인 단계: 다음으로 넘어가기 전에 아이디(=서브도메인) 중복 확인.
     if (step === 0) {
       setSlugChecking(true);
@@ -232,7 +241,11 @@ export function SignupForm() {
   }
 
   async function doSignup() {
-    if (phoneStatus !== "verified" || !agree) return;
+    const errs = stepErrors(LAST_STEP, syncFromDom());
+    if (errs.length) {
+      setValidationErrors(errs);
+      return;
+    }
     setStatus("submitting");
     setErrorMsg("");
     try {
@@ -271,10 +284,9 @@ export function SignupForm() {
     void doSignup();
   }
 
-  // 버튼은 stepValid 로 잠그지 않는다(자동완성으로 state 가 비어 보이는 경우 클릭조차 못 하는 트랩 방지).
-  // 실제 진행 가능 여부는 클릭 시 goNext/doSignup 이 DOM 값으로 재검증한다. 흐림은 시각적 힌트일 뿐.
+  // 버튼은 입력 조건으로 비활성/흐림 처리하지 않는다(항상 눌리는 상태). 조건 미충족은
+  // 클릭 시 goNext/doSignup 이 DOM 값으로 검증해 안내 모달로 알려준다. 처리 중일 때만 잠근다.
   const nextDisabled = status === "submitting" || slugChecking;
-  const nextDimmed = nextDisabled || !stepValid(step);
   const mmss = `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
   return (
@@ -512,7 +524,7 @@ export function SignupForm() {
           type="submit"
           className="btn btn-primary btn-lg"
           disabled={nextDisabled}
-          style={{ flex: 1, justifyContent: "center", opacity: nextDimmed ? 0.6 : 1, cursor: nextDisabled ? "not-allowed" : "pointer" }}
+          style={{ flex: 1, justifyContent: "center", opacity: nextDisabled ? 0.6 : 1, cursor: nextDisabled ? "not-allowed" : "pointer" }}
         >
           {step < LAST_STEP
             ? slugChecking && step === 0
@@ -523,6 +535,40 @@ export function SignupForm() {
               : "가입하고 시작하기"}
         </button>
       </div>
+
+      {validationErrors.length > 0 && (
+        <div
+          className="recovery-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setValidationErrors([])}
+        >
+          <div className="recovery-modal signup-validate-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="recovery-modal-close"
+              aria-label="닫기"
+              onClick={() => setValidationErrors([])}
+            >
+              ×
+            </button>
+            <h3 className="signup-validate-title">입력을 확인해 주세요</h3>
+            <ul className="signup-validate-list">
+              {validationErrors.map((msg, i) => (
+                <li key={i}>{msg}</li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="btn btn-primary btn-lg"
+              style={{ width: "100%", justifyContent: "center" }}
+              onClick={() => setValidationErrors([])}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
