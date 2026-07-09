@@ -86,6 +86,8 @@ export function SignupForm() {
 
   const codeInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  // 한 번에 한 단계만 렌더되므로, 각 단계 첫 입력란에 이 ref를 달아 현재 단계 입력란을 가리킨다.
+  const firstInputRef = useRef<HTMLInputElement>(null);
 
   // 각 가입 단계가 화면에 뜰 때 signup_step 이벤트 전송 → 어느 단계에서 이탈하는지 측정.
   useEffect(() => {
@@ -95,9 +97,15 @@ export function SignupForm() {
     });
   }, [step]);
 
-  // 단계가 바뀌면 스크롤을 맨 위로 올려 새 단계 상단부터 보이게 한다.
+  // 단계가 바뀌면 해당 단계 첫 입력란에 포커스하고, 그 위치로 스크롤해 바로 입력할 수 있게 한다.
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const t = setTimeout(() => {
+      const el = firstInputRef.current;
+      if (!el) return;
+      el.focus({ preventScroll: true });
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+    return () => clearTimeout(t);
   }, [step]);
 
   useEffect(() => {
@@ -314,12 +322,12 @@ export function SignupForm() {
               <label htmlFor="signup-church-name">교회 이름</label>
               <input
                 id="signup-church-name"
+                ref={firstInputRef}
                 type="text"
                 placeholder="온교회"
                 value={churchName}
                 onChange={(e) => setChurchName(e.target.value)}
                 onBlur={syncFromDom}
-                autoFocus
                 required
               />
             </div>
@@ -370,6 +378,7 @@ export function SignupForm() {
               <label htmlFor="signup-church-phone">교회 연락처</label>
               <input
                 id="signup-church-phone"
+                ref={firstInputRef}
                 type="text"
                 autoComplete="tel"
                 placeholder="02-1234-5678"
@@ -420,6 +429,7 @@ export function SignupForm() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
                 <input
                   id="signup-verify-phone"
+                  ref={firstInputRef}
                   type="tel"
                   autoComplete="tel"
                   inputMode="numeric"
@@ -427,7 +437,6 @@ export function SignupForm() {
                   value={phone}
                   onChange={(e) => setPhone(formatPhone(e.target.value))}
                   disabled={phoneStatus === "verified"}
-                  autoFocus
                 />
                 <button
                   type="button"
