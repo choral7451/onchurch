@@ -85,7 +85,6 @@ export function SignupForm() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const codeInputRef = useRef<HTMLInputElement>(null);
-  const churchPhoneRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   // 각 가입 단계가 화면에 뜰 때 signup_step 이벤트 전송 → 어느 단계에서 이탈하는지 측정.
@@ -96,11 +95,9 @@ export function SignupForm() {
     });
   }, [step]);
 
-  // 연락처(2단계)로 넘어오면 교회 연락처 input에 자동 포커스해 바로 입력할 수 있게 한다.
+  // 단계가 바뀌면 스크롤을 맨 위로 올려 새 단계 상단부터 보이게 한다.
   useEffect(() => {
-    if (step !== 1) return;
-    const t = setTimeout(() => churchPhoneRef.current?.focus(), 50);
-    return () => clearTimeout(t);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
   useEffect(() => {
@@ -373,7 +370,6 @@ export function SignupForm() {
               <label htmlFor="signup-church-phone">교회 연락처</label>
               <input
                 id="signup-church-phone"
-                ref={churchPhoneRef}
                 type="text"
                 autoComplete="tel"
                 placeholder="02-1234-5678"
