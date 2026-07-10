@@ -104,9 +104,9 @@ const PROBLEMS: { ic: IconKey; title: string; desc: string }[] = [
 ];
 
 const STEPS: { n: string; title: string; desc: string }[] = [
-  { n: "01", title: "교회 정보 입력", desc: "서브도메인·교회명·연락처·예배 안내를 순서대로 입력합니다. 약 5분이면 끝나요." },
+  { n: "01", title: "교회 정보 입력", desc: "교회 이름·연락처 등 기본 정보만 순서대로 입력하면 됩니다. 약 5분이면 끝나요." },
   { n: "02", title: "휴대폰 인증", desc: "본인 인증과 약관 동의만 하면 가입 완료. 아이디와 임시 비밀번호는 문자로 보내드립니다." },
-  { n: "03", title: "즉시 공개", desc: "가입과 동시에 우리 교회 홈페이지가 바로 공개됩니다. SSL과 모바일 대응은 기본." },
+  { n: "03", title: "즉시 공개", desc: "가입과 동시에 우리 교회 홈페이지가 바로 공개됩니다. 주소(SSL)와 모바일 대응은 기본." },
 ];
 
 const FAQ: { q: string; a: string }[] = [
@@ -123,6 +123,7 @@ function churchUrl(slug: string): string {
 
 export default async function LandingPage() {
   const churches = await fetchPublicChurchList();
+  const featured = churches[0] ?? null;
 
   return (
     <div className="landing">
@@ -137,48 +138,95 @@ export default async function LandingPage() {
           <Mesh style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
           <Rings style={{ position: "absolute", top: -200, right: -200, width: 800, height: 800, color: "var(--accent)", opacity: 0.18 }} />
         </div>
-        <div className="landing-hero-inner">
-          <h1 className="landing-h1">
-            교회 홈페이지<br />
-            아직도 <span className="landing-h1-accent">비싸다고</span>{" "}
-            <br className="landing-h1-br-mobile" />생각하시나요?
-          </h1>
-          <p className="landing-sub">
-            <span className="landing-sub-line">제작비 무료, 월 1만원이면 충분합니다.</span>
-          </p>
-          <div className="landing-cta">
-            <Link href="/signup" className="btn btn-primary btn-lg">
-              체험 시작하기
-            </Link>
-            <a href="#demo" className="btn btn-secondary btn-lg">
-              운영 중인 교회 보기
-            </a>
+        <div className={`landing-hero-inner${featured ? " landing-hero-split" : ""}`}>
+          <div className="landing-hero-copy">
+            <span className="landing-eyebrow">
+              <span className="pulse" />7일 무료 체험 · 카드 등록 없이 시작
+            </span>
+            <h1 className="landing-h1">
+              우리 교회 홈페이지,<br />
+              <span className="landing-h1-accent">5분이면 완성</span>됩니다
+            </h1>
+            <p className="landing-sub">
+              <span className="landing-sub-line">코딩도 디자인도 필요 없어요.</span>
+              <span className="landing-sub-line">예배 안내·설교·교회 소식을 담은 홈페이지가 그 자리에서 공개됩니다.</span>
+            </p>
+            <div className="landing-cta">
+              <Link href="/signup" className="btn btn-primary btn-lg">
+                무료로 시작하기
+              </Link>
+              <a href="#demo" className="btn btn-secondary btn-lg">
+                실제 교회 둘러보기
+              </a>
+            </div>
+            <div className="landing-trust">
+              {churches.length > 0 && (
+                <>
+                  <span><strong>{churches.length}개</strong> 교회 운영 중</span>
+                  <span className="landing-trust-divider" />
+                </>
+              )}
+              <span><strong>5분</strong> 만에 개설</span>
+              <span className="landing-trust-divider" />
+              <span><strong>월 1만원</strong> 단일 요금</span>
+            </div>
           </div>
+
+          {featured && (
+            <div className="landing-hero-visual">
+              <div className="hero-browser">
+                <div className="hero-browser-bar">
+                  <span className="hero-browser-dot" />
+                  <span className="hero-browser-dot" />
+                  <span className="hero-browser-dot" />
+                  <span className="hero-browser-url">{featured.slug}.everychurch.co.kr</span>
+                </div>
+                <div className="hero-browser-viewport">
+                  <iframe
+                    className="hero-browser-frame"
+                    src={`https://${featured.slug}.everychurch.co.kr`}
+                    title={`${featured.name} 홈페이지 미리보기`}
+                    loading="lazy"
+                    scrolling="no"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+                </div>
+                <a
+                  className="hero-browser-overlay"
+                  href={churchUrl(featured.slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${featured.name} 홈페이지 새 창에서 보기`}
+                />
+              </div>
+              <span className="hero-visual-tag">실시간 운영 중인 {featured.name}</span>
+            </div>
+          )}
         </div>
       </section>
 
-      <section className="section" data-section="problem" data-section-index={1}>
-        <div className="container">
-          <div className="section-head" style={{ marginBottom: 56 }}>
-            <div>
-              <span className="eyebrow">Why 온교회</span>
-              <h2>교회 홈페이지, 만드는 것보다 유지가 더 어렵습니다</h2>
+      {churches.length > 0 && (
+        <section className="trust-strip" data-section="social" data-section-index={1}>
+          <div className="trust-strip-inner">
+            <span className="trust-strip-label">
+              이미 <strong>{churches.length}개</strong> 교회가 온교회로 홈페이지를 운영하고 있어요
+            </span>
+            <div className="trust-strip-logos">
+              {churches.slice(0, 8).map((c) => (
+                <span key={c.id} className="trust-strip-logo" title={c.name}>
+                  {c.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.logoUrl} alt="" loading="lazy" decoding="async" />
+                  ) : (
+                    <span className="trust-strip-logo-fallback">{c.name.slice(0, 1)}</span>
+                  )}
+                </span>
+              ))}
             </div>
           </div>
-          <div className="problem-grid">
-            {PROBLEMS.map((p) => {
-              const ProblemIcon = Icon[p.ic];
-              return (
-                <div key={p.title} className="feature-card">
-                  <div className="feature-icon"><ProblemIcon width={24} height={24} /></div>
-                  <div className="feature-title">{p.title}</div>
-                  <div className="feature-desc">{p.desc}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {churches.length > 0 && (
         <section id="demo" className="live-sites" data-section="demo" data-section-index={2}>
@@ -213,12 +261,35 @@ export default async function LandingPage() {
         </section>
       )}
 
-      <section className="section" data-section="how" data-section-index={3}>
+      <section className="section" data-section="problem" data-section-index={3}>
+        <div className="container">
+          <div className="section-head" style={{ marginBottom: 56 }}>
+            <div>
+              <span className="eyebrow">Why 온교회</span>
+              <h2>교회 홈페이지, 만드는 것보다 유지가 더 어렵습니다</h2>
+            </div>
+          </div>
+          <div className="problem-grid">
+            {PROBLEMS.map((p) => {
+              const ProblemIcon = Icon[p.ic];
+              return (
+                <div key={p.title} className="feature-card">
+                  <div className="feature-icon"><ProblemIcon width={24} height={24} /></div>
+                  <div className="feature-title">{p.title}</div>
+                  <div className="feature-desc">{p.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="section" data-section="how" data-section-index={4}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
               <span className="eyebrow">How It Works</span>
-              <h2>3단계로 시작합니다</h2>
+              <h2>가입부터 공개까지, 딱 3단계</h2>
             </div>
           </div>
           <div className="steps">
@@ -233,7 +304,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="section section-tinted" data-section="features" data-section-index={4}>
+      <section id="features" className="section section-tinted" data-section="features" data-section-index={5}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -256,7 +327,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="section" data-section="pricing" data-section-index={5}>
+      <section id="pricing" className="section" data-section="pricing" data-section-index={6}>
         <div className="container" style={{ maxWidth: 720 }}>
           <div className="section-head" style={{ marginBottom: 40, justifyContent: "center", textAlign: "center" }}>
             <div>
@@ -300,7 +371,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="section section-tinted" data-section="faq" data-section-index={6}>
+      <section className="section section-tinted" data-section="faq" data-section-index={7}>
         <div className="container" style={{ maxWidth: 880 }}>
           <div className="section-head" style={{ marginBottom: 40 }}>
             <div>
@@ -322,7 +393,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="cta" className="cta-banner" data-section="cta" data-section-index={7}>
+      <section id="cta" className="cta-banner" data-section="cta" data-section-index={8}>
         <LightRays style={{ position: "absolute", inset: 0, width: "100%", height: "100%", color: "white", opacity: 0.5 }} />
         <div className="cta-banner-inner">
           <div className="cta-banner-eyebrow">START NOW</div>
