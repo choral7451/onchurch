@@ -210,18 +210,11 @@ export default async function LandingPage() {
         <section className="trust-strip" data-section="social" data-section-index={1}>
           <div className="trust-strip-inner">
             <span className="trust-strip-label">
-              이미 <strong>{churches.length}개</strong> 교회가 온교회로 홈페이지를 운영하고 있어요
+              이미 <strong>{churches.length}개</strong> 교회가 온교회로 운영하고 있어요
             </span>
-            <div className="trust-strip-logos">
-              {churches.slice(0, 8).map((c) => (
-                <span key={c.id} className="trust-strip-logo" title={c.name}>
-                  {c.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.logoUrl} alt="" loading="lazy" decoding="async" />
-                  ) : (
-                    <span className="trust-strip-logo-fallback">{c.name.slice(0, 1)}</span>
-                  )}
-                </span>
+            <div className="trust-strip-names">
+              {churches.slice(0, 12).map((c) => (
+                <span key={c.id} className="trust-strip-name">{c.name}</span>
               ))}
             </div>
           </div>
