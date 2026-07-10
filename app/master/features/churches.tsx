@@ -189,6 +189,54 @@ function NaverVerificationEditor({
   );
 }
 
+// 교회 운영 여부(공개/비공개) 온오프 토글. 마스터가 직접 전환한다.
+function PublishToggle({
+  church,
+  onUpdated,
+}: {
+  church: ChurchOverview;
+  onUpdated: (id: number, isPublished: boolean) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function toggle() {
+    setSaving(true);
+    setErr("");
+    try {
+      const res = await onchurchMaster.updateChurchPublished(church.id, !church.isPublished);
+      onUpdated(church.id, res.isPublished);
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "변경에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={church.isPublished}
+        onClick={toggle}
+        disabled={saving}
+        title={church.isPublished ? "운영중 — 누르면 비공개" : "미운영 — 누르면 공개"}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition disabled:opacity-40 ${
+          church.isPublished ? "bg-green-500" : "bg-gray-300"
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            church.isPublished ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
+      {err && <span className="text-[11px] text-red-600">{err}</span>}
+    </div>
+  );
+}
+
 export function ChurchesFeature() {
   const [keyword, setKeyword] = useState("");
   const [query, setQuery] = useState(""); // 디바운스된 실제 검색어
@@ -277,6 +325,11 @@ export function ChurchesFeature() {
     setItems((prev) => prev.map((c) => (c.id === id ? { ...c, naverVerification } : c)));
   }, []);
 
+  // 운영 여부(공개/비공개) 변경 후 해당 행만 갱신
+  const handlePublishedUpdated = useCallback((id: number, isPublished: boolean) => {
+    setItems((prev) => prev.map((c) => (c.id === id ? { ...c, isPublished } : c)));
+  }, []);
+
   // 소유자 이관 모달 대상 교회
   const [transferTarget, setTransferTarget] = useState<ChurchOverview | null>(null);
 
@@ -326,6 +379,7 @@ export function ChurchesFeature() {
                 <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500 [&>th]:whitespace-nowrap">
                   <th className="px-4 py-3">교회이름</th>
                   <th className="px-4 py-3">상태</th>
+                  <th className="px-4 py-3">운영</th>
                   <th className="px-4 py-3">주소</th>
                   <th className="px-4 py-3">교회소유자이름</th>
                   <th className="px-4 py-3">소유자 연락처</th>
@@ -351,6 +405,9 @@ export function ChurchesFeature() {
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge active={c.isFreeTrialActive || c.isPaidActive} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <PublishToggle church={c} onUpdated={handlePublishedUpdated} />
                     </td>
                     <td className="px-4 py-3 text-gray-600">
                       <div className="max-w-[220px] truncate" title={c.address ?? undefined}>

@@ -561,6 +561,13 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ naverVerification }),
     }),
+  // 교회 운영 여부(공개/비공개) 설정. 마스터 오버라이드. 응답으로 갱신된 상태 반환.
+  updateChurchPublished: (churchId: number, isPublished: boolean) =>
+    request<{ isPublished: boolean }>(`/onchurch/master/churches/${churchId}/published`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ isPublished }),
+    }),
   // 오너 이관 대상 후보 검색(마스터 제외). 검색어가 비면 빈 목록.
   searchUsers: (keyword: string) => {
     const query = new URLSearchParams();
