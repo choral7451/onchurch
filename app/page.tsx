@@ -5,6 +5,7 @@ import { LandingFooter } from "@/components/marketing/landing-footer";
 import { HideWhenAuthed } from "@/components/marketing/hide-when-authed";
 import { ContactSticky } from "@/components/marketing/contact-sticky";
 import { SectionTracker } from "@/components/marketing/section-tracker";
+import { HeroPreview } from "@/components/marketing/hero-preview";
 import { Icon, type IconKey } from "@/components/icons";
 import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { fetchPublicChurchList } from "@/lib/public-site";
@@ -173,35 +174,11 @@ export default async function LandingPage() {
           </div>
 
           {featured && (
-            <div className="landing-hero-visual">
-              <div className="hero-browser">
-                <div className="hero-browser-bar">
-                  <span className="hero-browser-dot" />
-                  <span className="hero-browser-dot" />
-                  <span className="hero-browser-dot" />
-                  <span className="hero-browser-url">{featured.slug}.everychurch.co.kr</span>
-                </div>
-                <div className="hero-browser-viewport">
-                  <iframe
-                    className="hero-browser-frame"
-                    src={`https://${featured.slug}.everychurch.co.kr`}
-                    title={`${featured.name} 홈페이지 미리보기`}
-                    loading="lazy"
-                    scrolling="no"
-                    tabIndex={-1}
-                    aria-hidden="true"
-                  />
-                </div>
-                <a
-                  className="hero-browser-overlay"
-                  href={churchUrl(featured.slug)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${featured.name} 홈페이지 새 창에서 보기`}
-                />
-              </div>
-              <span className="hero-visual-tag">실시간 운영 중인 {featured.name}</span>
-            </div>
+            <HeroPreview
+              slug={featured.slug}
+              name={featured.name}
+              href={churchUrl(featured.slug)}
+            />
           )}
         </div>
       </section>
