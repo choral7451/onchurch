@@ -1,41 +1,27 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  clearTokens,
-  getAccessToken,
-  getRefreshToken,
-  onchurchAuth,
-  saveTokens,
-} from "@/lib/api-client";
+import { getAccessToken, getRefreshToken, refreshTokens } from "@/lib/api-client";
 
 const REFRESH_INTERVAL_MS = 1000 * 60 * 20;
 
-async function tryRefresh(): Promise<boolean> {
-  const accessToken = getAccessToken();
-  const refreshToken = getRefreshToken();
-  if (!accessToken || !refreshToken) return false;
-  try {
-    const tokens = await onchurchAuth.refresh(accessToken, refreshToken);
-    saveTokens(tokens);
-    return true;
-  } catch {
-    clearTokens();
-    return false;
-  }
+// 토큰이 있을 때만 갱신 시도. 실패 처리(401→로그아웃, 일시 오류→유지)는 refreshTokens가 담당.
+function tryRefresh(): void {
+  if (!getAccessToken() || !getRefreshToken()) return;
+  void refreshTokens();
 }
 
 export function AuthBootstrap() {
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
 
-    void tryRefresh();
+    tryRefresh();
     timer = setInterval(() => {
-      void tryRefresh();
+      tryRefresh();
     }, REFRESH_INTERVAL_MS);
 
     const onVisibility = () => {
-      if (document.visibilityState === "visible") void tryRefresh();
+      if (document.visibilityState === "visible") tryRefresh();
     };
     document.addEventListener("visibilitychange", onVisibility);
 

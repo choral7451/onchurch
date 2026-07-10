@@ -265,29 +265,55 @@ async function rawRequest<T>(path: string, opts: RequestOpts, accessToken: strin
   return { ok: true, data: (body as CommonResponse<T>)?.item as T };
 }
 
+// 진행 중인 refresh 요청. 동시 호출(인라인 401 재시도 · 백그라운드 타이머 · 탭 포커스 · 다중 탭)을
+// 하나로 합쳐, 리프레시 토큰 회전(rotation) 레이스로 세션이 풀리는 것을 막는다.
+let refreshInFlight: Promise<AuthTokens | null> | null = null;
+
+// 액세스 토큰을 갱신한다. 동시 호출은 single-flight로 합쳐진다.
+// 진짜 인증 실패(401)일 때만 토큰을 지우고(=로그아웃), 네트워크 오류·5xx 등 일시적 실패는
+// 토큰을 유지한 채 null만 반환한다(다음 시도에서 회복 가능).
+export function refreshTokens(): Promise<AuthTokens | null> {
+  if (refreshInFlight) return refreshInFlight;
+
+  const accessToken = getAccessToken();
+  const refreshToken = getRefreshToken();
+  if (!accessToken || !refreshToken) return Promise.resolve(null);
+
+  const p = (async () => {
+    const result = await rawRequest<AuthTokens>(
+      "/onchurch/auths/refresh",
+      { method: "POST", body: JSON.stringify({ accessToken, refreshToken }) },
+      null,
+    );
+    if (result.ok) {
+      saveTokens(result.data);
+      return result.data;
+    }
+    // 401 = 리프레시 토큰이 실제로 무효 → 로그아웃. 그 외(status 0 네트워크, 5xx)는 세션 유지.
+    if (result.status === 401) clearTokens();
+    return null;
+  })();
+
+  refreshInFlight = p;
+  void p.finally(() => {
+    if (refreshInFlight === p) refreshInFlight = null;
+  });
+  return p;
+}
+
 async function request<T>(path: string, opts: RequestOpts = {}): Promise<T> {
   const accessToken = opts.auth ? getAccessToken() : null;
   const result = await rawRequest<T>(path, opts, accessToken);
 
   if (result.ok) return result.data;
 
-  // 401 + auth 요청이면 refresh 한 번 시도
+  // 401 + auth 요청이면 refresh 한 번 시도 (single-flight 공유)
   if (result.status === 401 && opts.auth) {
-    const refreshToken = getRefreshToken();
-    if (accessToken && refreshToken) {
-      const refreshResult = await rawRequest<AuthTokens>(
-        "/onchurch/auths/refresh",
-        { method: "POST", body: JSON.stringify({ accessToken, refreshToken }) },
-        null,
-      );
-      if (refreshResult.ok) {
-        saveTokens(refreshResult.data);
-        const retry = await rawRequest<T>(path, opts, refreshResult.data.accessToken);
-        if (retry.ok) return retry.data;
-        throw new ApiError(retry.message, retry.code, retry.status);
-      }
-      // refresh 실패 → 토큰 무효, 로그인 화면으로
-      clearTokens();
+    const refreshed = await refreshTokens();
+    if (refreshed) {
+      const retry = await rawRequest<T>(path, opts, refreshed.accessToken);
+      if (retry.ok) return retry.data;
+      throw new ApiError(retry.message, retry.code, retry.status);
     }
   }
 
