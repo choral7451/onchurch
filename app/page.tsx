@@ -4,6 +4,7 @@ import { LandingNav } from "@/components/marketing/landing-nav";
 import { LandingFooter } from "@/components/marketing/landing-footer";
 import { HideWhenAuthed } from "@/components/marketing/hide-when-authed";
 import { ContactSticky } from "@/components/marketing/contact-sticky";
+import { StartSticky } from "@/components/marketing/start-sticky";
 import { SectionTracker } from "@/components/marketing/section-tracker";
 import { HeroPreview } from "@/components/marketing/hero-preview";
 import { Icon, type IconKey } from "@/components/icons";
@@ -385,6 +386,9 @@ export default async function LandingPage() {
 
       <LandingFooter />
       <ContactSticky />
+      <HideWhenAuthed>
+        <StartSticky />
+      </HideWhenAuthed>
       <SectionTracker />
     </div>
   );
