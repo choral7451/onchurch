@@ -5,7 +5,7 @@ import { Icon } from "@/components/icons";
 export function StartSticky() {
   return (
     <Link href="/signup" className="start-sticky" aria-label="무료로 시작하기">
-      <Icon.arrow style={{ width: 15, height: 15 }} />
+      <Icon.cross style={{ width: 15, height: 15 }} />
       <span>시작하기</span>
     </Link>
   );
