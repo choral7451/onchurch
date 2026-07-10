@@ -4,7 +4,6 @@ import { LandingNav } from "@/components/marketing/landing-nav";
 import { LandingFooter } from "@/components/marketing/landing-footer";
 import { HideWhenAuthed } from "@/components/marketing/hide-when-authed";
 import { ContactSticky } from "@/components/marketing/contact-sticky";
-import { StartSticky } from "@/components/marketing/start-sticky";
 import { SectionTracker } from "@/components/marketing/section-tracker";
 import { HeroPreview } from "@/components/marketing/hero-preview";
 import { Icon, type IconKey } from "@/components/icons";
@@ -333,7 +332,7 @@ export default async function LandingPage() {
               </ul>
               <HideWhenAuthed>
                 <Link href="/signup" className="btn btn-primary btn-lg" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
-                  7일 무료로 시작 <Icon.arrow style={{ width: 14, height: 14 }} />
+                  7일 무료로 시작
                 </Link>
                 <p className="price-note">사이트 운영을 시작하면 7일 무료 체험이 자동으로 시작됩니다.</p>
               </HideWhenAuthed>
@@ -376,7 +375,7 @@ export default async function LandingPage() {
           <HideWhenAuthed>
             <div className="cta-banner-buttons">
               <Link href="/signup" className="btn btn-primary btn-lg" style={{ background: "white", color: "var(--primary-deep)" }}>
-                <Icon.arrow style={{ width: 16, height: 16 }} />
+                <Icon.cross style={{ width: 16, height: 16 }} />
                 체험 시작하기
               </Link>
             </div>
@@ -386,9 +385,6 @@ export default async function LandingPage() {
 
       <LandingFooter />
       <ContactSticky />
-      <HideWhenAuthed>
-        <StartSticky />
-      </HideWhenAuthed>
       <SectionTracker />
     </div>
   );
