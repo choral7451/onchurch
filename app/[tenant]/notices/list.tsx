@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import { onchurchNotice, type Notice } from "@/lib/api-client";
+import { type Lang, pick } from "@/lib/i18n";
 
 const ALL = "전체";
 
@@ -26,9 +27,22 @@ type Props = {
   pageSize: number;
   categories: string[];
   churchName: string;
+  lang?: Lang;
 };
 
-export function NoticesList({ slug, initialNotices, totalCount, pageSize, categories, churchName }: Props) {
+export function NoticesList({ slug, initialNotices, totalCount, pageSize, categories, churchName, lang = "ko" }: Props) {
+  const t = pick(lang, {
+    ko: {
+      searchPlaceholder: "검색...", noResults: "검색 결과가 없습니다.", empty: "등록된 공지가 없습니다.",
+      colNo: "번호", colCat: "분류", colTitle: "제목", colAuthor: "작성자", colDate: "작성일",
+      loading: "불러오는 중...", general: "일반", pinned: "고정", close: "닫기", noContent: "내용이 없습니다.",
+    },
+    en: {
+      searchPlaceholder: "Search...", noResults: "No results found.", empty: "No notices yet.",
+      colNo: "No.", colCat: "Category", colTitle: "Title", colAuthor: "Author", colDate: "Date",
+      loading: "Loading...", general: "General", pinned: "Pinned", close: "Close", noContent: "No content.",
+    },
+  });
   const [items, setItems] = useState<Notice[]>(initialNotices);
   const [total, setTotal] = useState<number>(totalCount);
   const [page, setPage] = useState<number>(1);
@@ -143,7 +157,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="검색..."
+              placeholder={t.searchPlaceholder}
               style={{
                 padding: "9px 14px 9px 36px",
                 fontSize: 13,
@@ -169,16 +183,16 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
         </div>
       ) : items.length === 0 && !loading ? (
         <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>
-          {query.trim() ? "검색 결과가 없습니다." : "등록된 공지가 없습니다."}
+          {query.trim() ? t.noResults : t.empty}
         </div>
       ) : (
         <div className="notice-list">
           <div className="notice-row head">
-            <div style={{ textAlign: "center" }}>번호</div>
-            <div className="notice-col-cat">분류</div>
-            <div style={{ textAlign: "center" }}>제목</div>
-            <div>작성자</div>
-            <div style={{ textAlign: "right" }}>작성일</div>
+            <div style={{ textAlign: "center" }}>{t.colNo}</div>
+            <div className="notice-col-cat">{t.colCat}</div>
+            <div style={{ textAlign: "center" }}>{t.colTitle}</div>
+            <div>{t.colAuthor}</div>
+            <div style={{ textAlign: "right" }}>{t.colDate}</div>
           </div>
           {items.map((n) => (
             <div
@@ -193,7 +207,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
             >
               {/* 전역 id 대신 교회별 게시판 순번(seqNo) 표시. 고정글은 📌 */}
               <div className="notice-num">{n.isPinned ? "📌" : n.seqNo ?? n.id}</div>
-              <div className="notice-col-cat"><span className="notice-cat">{n.category ?? "일반"}</span></div>
+              <div className="notice-col-cat"><span className="notice-cat">{n.category ?? t.general}</span></div>
               <div className="notice-title">{n.title}</div>
               <div className="notice-author">{n.author ?? churchName}</div>
               <div className="notice-date">{formatDate(n.publishedAt ?? n.createdAt)}</div>
@@ -207,7 +221,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
 
       {loading && !switching && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
-          불러오는 중...
+          {t.loading}
         </div>
       )}
 
@@ -223,15 +237,15 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
             <button
               type="button"
               className="notice-modal-close"
-              aria-label="닫기"
+              aria-label={t.close}
               onClick={() => setActive(null)}
             >
               ×
             </button>
             <div className="notice-modal-body">
               <div className="notice-modal-head">
-                {active.isPinned && <span className="notice-modal-pin">📌 고정</span>}
-                <span className="notice-modal-cat">{active.category ?? "일반"}</span>
+                {active.isPinned && <span className="notice-modal-pin">📌 {t.pinned}</span>}
+                <span className="notice-modal-cat">{active.category ?? t.general}</span>
               </div>
               <h3 className="notice-modal-title">{active.title}</h3>
               <div className="notice-modal-meta">
@@ -243,7 +257,7 @@ export function NoticesList({ slug, initialNotices, totalCount, pageSize, catego
                 <div className="notice-modal-content">{active.content}</div>
               ) : (
                 !active.imageUrls?.length && !active.attachments?.length && (
-                  <div className="notice-modal-content empty">내용이 없습니다.</div>
+                  <div className="notice-modal-content empty">{t.noContent}</div>
                 )
               )}
               {active.imageUrls?.length > 0 && (

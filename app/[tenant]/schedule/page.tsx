@@ -4,17 +4,25 @@ import { PageHeader } from "@/components/shell/page-header";
 import { Calendar } from "@/components/calendar";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+import { type Lang, pick, normalizeLang } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
-  if (!church) return { title: "일정", robots: { index: false, follow: false } };
+  const lang = normalizeLang(church?.siteLang);
+  if (!church) return { title: pick(lang, { ko: "일정", en: "Calendar" }), robots: { index: false, follow: false } };
   const pastor = await fetchPublicPastor(tenant);
   return buildChurchMetadata(church, pastor, {
-    pageTitle: "일정",
+    pageTitle: pick(lang, { ko: "일정", en: "Calendar" }),
     path: "/schedule",
-    pageDescription: `${church.name}의 월별 예배·행사 일정을 캘린더로 확인하세요.`,
-    extraKeywords: ["교회 일정", "행사 일정", "교회 캘린더", "예배 일정"],
+    pageDescription: pick(lang, {
+      ko: `${church.name}의 월별 예배·행사 일정을 캘린더로 확인하세요.`,
+      en: `Check ${church.name}'s monthly worship and event schedule on the calendar.`,
+    }),
+    extraKeywords: pick(lang, {
+      ko: ["교회 일정", "행사 일정", "교회 캘린더", "예배 일정"],
+      en: ["church calendar", "event schedule", "church events", "worship schedule"],
+    }),
   });
 }
 
@@ -43,9 +51,9 @@ async function fetchEvents(slug: string): Promise<EventItem[]> {
   }
 }
 
-async function ScheduleContent({ tenant, initialYm }: { tenant: string; initialYm?: string }) {
+async function ScheduleContent({ tenant, initialYm, lang }: { tenant: string; initialYm?: string; lang: Lang }) {
   const events = await fetchEvents(tenant);
-  return <Calendar events={events} initialYm={initialYm} />;
+  return <Calendar events={events} initialYm={initialYm} lang={lang} />;
 }
 
 function ScheduleSkeleton() {
@@ -61,17 +69,22 @@ export default async function SchedulePage({
 }) {
   const { tenant } = await params;
   const { ym } = await searchParams;
+  const church = await fetchPublicChurch(tenant);
+  const lang = normalizeLang(church?.siteLang);
   return (
     <div>
       <PageHeader
         eyebrow="SCHEDULE"
-        title="교회 일정"
-        sub="이번 달 예배·행사 일정과 다가오는 모임을 한 곳에서 확인하세요."
+        title={pick(lang, { ko: "교회 일정", en: "Church Calendar" })}
+        sub={pick(lang, {
+          ko: "이번 달 예배·행사 일정과 다가오는 모임을 한 곳에서 확인하세요.",
+          en: "See this month's worship, events, and upcoming gatherings all in one place.",
+        })}
       />
       <section className="section">
         <div className="container">
           <Suspense fallback={<ScheduleSkeleton />}>
-            <ScheduleContent tenant={tenant} initialYm={ym} />
+            <ScheduleContent tenant={tenant} initialYm={ym} lang={lang} />
           </Suspense>
         </div>
       </section>

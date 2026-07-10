@@ -4,13 +4,19 @@ import { useEffect, useState } from "react";
 import { SermonCard } from "@/components/sermon-card";
 import type { Sermon } from "@/lib/types";
 import { parseYouTubeId, youtubeEmbedUrl } from "@/lib/youtube";
+import { type Lang, pick } from "@/lib/i18n";
 
 type Props = {
   sermons: Sermon[];
   filters: string[];
+  lang?: Lang;
 };
 
-export function SermonsList({ sermons, filters }: Props) {
+export function SermonsList({ sermons, filters, lang = "ko" }: Props) {
+  const t = pick(lang, {
+    ko: { searchPlaceholder: "제목·설교자·카테고리 검색", searchLabel: "설교 검색", noResults: "검색 결과가 없습니다.", close: "닫기" },
+    en: { searchPlaceholder: "Search by title, speaker, category", searchLabel: "Search sermons", noResults: "No results found.", close: "Close" },
+  });
   const [filter, setFilter] = useState<string>(filters[0] ?? "전체");
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<Sermon | null>(null);
@@ -48,17 +54,17 @@ export function SermonsList({ sermons, filters }: Props) {
         <input
           type="search"
           className="sermon-search"
-          placeholder="제목·설교자·카테고리 검색"
+          placeholder={t.searchPlaceholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          aria-label="설교 검색"
+          aria-label={t.searchLabel}
         />
       </div>
 
       <div className="sermons-list-grid">
         {filtered.length === 0 ? (
           <p style={{ gridColumn: "1 / -1", color: "var(--muted)", textAlign: "center", padding: "32px 0" }}>
-            검색 결과가 없습니다.
+            {t.noResults}
           </p>
         ) : (
           filtered.map((s, i) => <SermonCard key={`${s.title}-${i}`} sermon={s} onPlay={setActive} />)
@@ -77,7 +83,7 @@ export function SermonsList({ sermons, filters }: Props) {
             <button
               type="button"
               className="sermon-modal-close"
-              aria-label="닫기"
+              aria-label={t.close}
               onClick={() => setActive(null)}
             >
               ×

@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { Brand, NavItem } from "@/lib/types";
+import { type Lang, pick, NAV_LABELS, FOOTER_HEADINGS } from "@/lib/i18n";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
@@ -24,6 +25,7 @@ export type PublicChurch = {
   enabledPages: string[];
   homeSectionOrder: string[];
   homeQuickLinks: string[];
+  siteLang: Lang;
   isPublished: boolean;
 };
 
@@ -110,3 +112,19 @@ export const PUBLIC_FOOTER_NAV: { heading: string; ids: string[] }[] = [
   { heading: "콘텐츠", ids: ["sermons", "notices", "gallery", "community"] },
   { heading: "기타", ids: ["schedule", "prayer"] },
 ];
+
+// 언어에 맞춰 네비 라벨을 번역해 반환한다. href/id는 그대로.
+export function getPublicNav(lang: Lang): NavItem[] {
+  return PUBLIC_NAV.map((item) => ({
+    ...item,
+    label: NAV_LABELS[item.id] ? pick(lang, NAV_LABELS[item.id]) : item.label,
+  }));
+}
+
+export function getPublicFooterNav(lang: Lang): { heading: string; ids: string[] }[] {
+  return [
+    { heading: pick(lang, FOOTER_HEADINGS.church), ids: ["about", "worship", "directions"] },
+    { heading: pick(lang, FOOTER_HEADINGS.content), ids: ["sermons", "notices", "gallery", "community"] },
+    { heading: pick(lang, FOOTER_HEADINGS.more), ids: ["schedule", "prayer"] },
+  ];
+}

@@ -6,17 +6,31 @@ import type { Sermon } from "@/lib/types";
 import { fetchPublicChurch, fetchLiveStatus } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { SermonLive } from "@/components/sermon-live";
+import { type Lang, pick, normalizeLang } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
   if (!church) return { title: "말씀", robots: { index: false, follow: false } };
+  const lang = normalizeLang(church.siteLang);
   const pastor = await fetchPublicPastor(tenant);
+  const t = pick(lang, {
+    ko: {
+      pageTitle: "말씀",
+      pageDescription: `${church.name}의 설교 영상을 카테고리별로 모아 보실 수 있습니다.${pastor?.name ? ` 담임목사 ${pastor.name}의 말씀.` : ""}`,
+      extraKeywords: ["설교", "설교 영상", "말씀", "묵상", ...(pastor?.name ? [`${pastor.name} 설교`] : [])],
+    },
+    en: {
+      pageTitle: "Sermons",
+      pageDescription: `Browse sermon videos from ${church.name} by category.${pastor?.name ? ` Messages by Pastor ${pastor.name}.` : ""}`,
+      extraKeywords: ["sermons", "sermon videos", "messages", "devotion", ...(pastor?.name ? [`${pastor.name} sermons`] : [])],
+    },
+  });
   return buildChurchMetadata(church, pastor, {
-    pageTitle: "말씀",
+    pageTitle: t.pageTitle,
     path: "/sermons",
-    pageDescription: `${church.name}의 설교 영상을 카테고리별로 모아 보실 수 있습니다.${pastor?.name ? ` 담임목사 ${pastor.name}의 말씀.` : ""}`,
-    extraKeywords: ["설교", "설교 영상", "말씀", "묵상", ...(pastor?.name ? [`${pastor.name} 설교`] : [])],
+    pageDescription: t.pageDescription,
+    extraKeywords: t.extraKeywords,
   });
 }
 
@@ -54,7 +68,7 @@ async function fetchSermons(slug: string): Promise<{ series: ApiSermonSeries[]; 
   }
 }
 
-async function SermonsContent({ tenant }: { tenant: string }) {
+async function SermonsContent({ tenant, lang }: { tenant: string; lang: Lang }) {
   const [data, church, liveStatus] = await Promise.all([
     fetchSermons(tenant),
     fetchPublicChurch(tenant),
@@ -81,7 +95,7 @@ async function SermonsContent({ tenant }: { tenant: string }) {
         initialVideoId={liveStatus.videoId}
         liveUrl={church?.liveUrl ?? null}
       />
-      <SermonsList sermons={sermons} filters={filters} />
+      <SermonsList sermons={sermons} filters={filters} lang={lang} />
     </>
   );
 }
@@ -103,17 +117,23 @@ function SermonsSkeleton() {
 
 export default async function SermonsPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  const lang = normalizeLang(church?.siteLang);
+  const t = pick(lang, {
+    ko: { title: "함께 드리는 예배", sub: "지난 예배의 말씀을 언제든 다시 들으실 수 있습니다." },
+    en: { title: "Worship Together", sub: "Revisit the messages from our past services anytime." },
+  });
   return (
     <div>
       <PageHeader
         eyebrow="SERMONS"
-        title="함께 드리는 예배"
-        sub="지난 예배의 말씀을 언제든 다시 들으실 수 있습니다."
+        title={t.title}
+        sub={t.sub}
       />
       <section className="section">
         <div className="container">
           <Suspense fallback={<SermonsSkeleton />}>
-            <SermonsContent tenant={tenant} />
+            <SermonsContent tenant={tenant} lang={lang} />
           </Suspense>
         </div>
       </section>

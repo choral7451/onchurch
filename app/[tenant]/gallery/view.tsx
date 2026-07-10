@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { onchurchGallery, type GalleryGroup } from "@/lib/api-client";
+import { type Lang, pick } from "@/lib/i18n";
 
 type Category = { id: number; name: string; isAll: boolean };
 type Layout = { col: number; row: number };
@@ -13,9 +14,10 @@ type Props = {
   totalCount: number;
   pageSize: number;
   layout: Layout[];
+  lang?: Lang;
 };
 
-export function GalleryView({ slug, categories, initialGroups, totalCount, pageSize, layout }: Props) {
+export function GalleryView({ slug, categories, initialGroups, totalCount, pageSize, layout, lang = "ko" }: Props) {
   // '전체'(isAll) 카테고리가 있으면 그것을, 없으면(삭제한 교회) 첫 카테고리를 기본 선택.
   const allCat = useMemo(() => categories.find((c) => c.isAll) ?? null, [categories]);
   const initialFilter = allCat ? allCat.id : categories[0]?.id ?? null;
@@ -235,7 +237,7 @@ export function GalleryView({ slug, categories, initialGroups, totalCount, pageS
                 </div>
               )}
               {g.count > 1 && (
-                <span className="gallery-count-badge" aria-label={`사진 ${g.count}장`}>
+                <span className="gallery-count-badge" aria-label={pick(lang, { ko: `사진 ${g.count}장`, en: `${g.count} photos` })}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="2" />
                     <path d="M3 15l5-5 4 4 3-3 6 6" />
@@ -254,7 +256,7 @@ export function GalleryView({ slug, categories, initialGroups, totalCount, pageS
 
       {!switching && groups.length === 0 && !loading && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 40 }}>
-          이 카테고리에 사진이 없습니다.
+          {pick(lang, { ko: "이 카테고리에 사진이 없습니다.", en: "No photos in this category." })}
         </div>
       )}
 
@@ -263,7 +265,7 @@ export function GalleryView({ slug, categories, initialGroups, totalCount, pageS
 
       {loading && !switching && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
-          불러오는 중...
+          {pick(lang, { ko: "불러오는 중...", en: "Loading..." })}
         </div>
       )}
 
@@ -278,7 +280,7 @@ export function GalleryView({ slug, categories, initialGroups, totalCount, pageS
           <button
             type="button"
             className="gallery-lightbox-close"
-            aria-label="닫기"
+            aria-label={pick(lang, { ko: "닫기", en: "Close" })}
             onClick={(e) => { e.stopPropagation(); close(); }}
           >
             ×
@@ -287,7 +289,7 @@ export function GalleryView({ slug, categories, initialGroups, totalCount, pageS
             <button
               type="button"
               className="gallery-lightbox-nav prev"
-              aria-label="이전"
+              aria-label={pick(lang, { ko: "이전", en: "Previous" })}
               onClick={(e) => { e.stopPropagation(); prev(); }}
             >
               ‹
@@ -309,7 +311,7 @@ export function GalleryView({ slug, categories, initialGroups, totalCount, pageS
             <button
               type="button"
               className="gallery-lightbox-nav next"
-              aria-label="다음"
+              aria-label={pick(lang, { ko: "다음", en: "Next" })}
               onClick={(e) => { e.stopPropagation(); next(); }}
             >
               ›

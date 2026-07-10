@@ -13,7 +13,8 @@ import { TopBanner } from "@/components/top-banner";
 import { Reveal } from "@/components/reveal";
 import type { Sermon } from "@/lib/types";
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
-import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS } from "@/lib/quick-links";
+import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, quickLinkLabels } from "@/lib/quick-links";
+import { type Lang, pick, normalizeLang } from "@/lib/i18n";
 
 const GRAD_CYCLE: Sermon["grad"][] = ["ph-grad-1", "ph-grad-2", "ph-grad-3", "ph-grad-4"];
 
@@ -150,7 +151,7 @@ function pickUpcoming(events: PublicEvent[]): PublicEvent[] {
     .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 }
 
-async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: string; url: (p: string) => string; churchName: string }) {
+async function HeroFeaturedEventSection({ slug, url, churchName, lang }: { slug: string; url: (p: string) => string; churchName: string; lang: Lang }) {
   const data = await fetchJson<{ events: PublicEvent[] }>(`/onchurch/sites/${slug}/events`, { events: [] });
   const upcoming = pickUpcoming(data.events);
   const head = upcoming[0];
@@ -161,13 +162,13 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
         <LightRays className="news-feature-bg" style={{ width: "100%", height: "100%", position: "absolute", inset: 0, color: "white" }} />
         <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
           <div>
-            <div className="news-feature-tag"><span className="pulse" />다가오는 일정</div>
-            <h2 className="news-feature-title">예정된 일정이 없습니다</h2>
-            <p className="news-feature-desc">{churchName}의 새로운 일정을 곧 알려드릴게요.</p>
+            <div className="news-feature-tag"><span className="pulse" />{pick(lang, { ko: "다가오는 일정", en: "Upcoming" })}</div>
+            <h2 className="news-feature-title">{pick(lang, { ko: "예정된 일정이 없습니다", en: "No upcoming events" })}</h2>
+            <p className="news-feature-desc">{pick(lang, { ko: `${churchName}의 새로운 일정을 곧 알려드릴게요.`, en: `We'll share new events from ${churchName} soon.` })}</p>
           </div>
           <div>
             <Link href={url("/schedule")} className="news-feature-cta">
-              전체 일정 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
+              {pick(lang, { ko: "전체 일정 보기", en: "View full calendar" })} <Icon.arrow style={{ width: 14, height: 14 }} />
             </Link>
           </div>
         </div>
@@ -179,7 +180,7 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
   const p = seoulParts(head.startAt);
   const dateStr = p ? `${p.year}.${String(p.month).padStart(2, "0")}.${String(p.day).padStart(2, "0")}` : "";
   const timeStr = head.isAllDay
-    ? "종일"
+    ? pick(lang, { ko: "종일", en: "All day" })
     : p
       ? `${String(p.hours).padStart(2, "0")}:${String(p.minutes).padStart(2, "0")}`
       : "";
@@ -189,7 +190,7 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
       <LightRays className="news-feature-bg" style={{ width: "100%", height: "100%", position: "absolute", inset: 0, color: "white" }} />
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
         <div>
-          <div className="news-feature-tag"><span className="pulse" />다가오는 일정 · {mon} {day}</div>
+          <div className="news-feature-tag"><span className="pulse" />{pick(lang, { ko: "다가오는 일정", en: "Upcoming" })} · {mon} {day}</div>
           <h2 className="news-feature-title">{head.title}</h2>
           <p className="news-feature-meta-line">
             {dateStr} · {timeStr}
@@ -201,7 +202,7 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
         </div>
         <div>
           <Link href={url(schedulePath("/schedule", head.startAt))} className="news-feature-cta">
-            전체 일정 보기 <Icon.arrow style={{ width: 14, height: 14 }} />
+            {pick(lang, { ko: "전체 일정 보기", en: "View full calendar" })} <Icon.arrow style={{ width: 14, height: 14 }} />
           </Link>
         </div>
       </div>
@@ -209,7 +210,7 @@ async function HeroFeaturedEventSection({ slug, url, churchName }: { slug: strin
   );
 }
 
-async function UpcomingEventsListSection({ slug, url }: { slug: string; url: (p: string) => string }) {
+async function UpcomingEventsListSection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
   const data = await fetchJson<{ events: PublicEvent[] }>(`/onchurch/sites/${slug}/events`, { events: [] });
   // 왼쪽 hero 카드가 첫 번째(가장 가까운) 일정을 보여주므로, 리스트는 그 이후 5개만.
   const upcoming = pickUpcoming(data.events).slice(1, 6);
@@ -217,14 +218,14 @@ async function UpcomingEventsListSection({ slug, url }: { slug: string; url: (p:
     <ul className="news-list">
       {upcoming.length === 0 ? (
         <li style={{ color: "var(--muted)", fontSize: 13, padding: "24px 0", textAlign: "center" }}>
-          이후 예정된 일정이 없습니다.
+          {pick(lang, { ko: "이후 예정된 일정이 없습니다.", en: "No more upcoming events." })}
         </li>
       ) : (
         upcoming.map((item) => {
           const { day, mon } = dateParts(item.startAt, item.startAt);
           const p = seoulParts(item.startAt);
           const timeStr = item.isAllDay
-            ? "종일"
+            ? pick(lang, { ko: "종일", en: "All day" })
             : p
               ? `${String(p.hours).padStart(2, "0")}:${String(p.minutes).padStart(2, "0")}`
               : "";
@@ -271,7 +272,7 @@ function NoticesListSkeleton() {
   );
 }
 
-async function WorshipScheduleSection({ slug, url }: { slug: string; url: (p: string) => string }) {
+async function WorshipScheduleSection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
   const data = await fetchJson<{ services: PublicWorshipService[] }>(`/onchurch/sites/${slug}/worship`, { services: [] });
   const allServices = data.services;
   if (allServices.length === 0) return null;
@@ -287,10 +288,10 @@ async function WorshipScheduleSection({ slug, url }: { slug: string; url: (p: st
         <div className="section-head">
           <div>
             <span className="eyebrow">Worship Schedule</span>
-            <h2>함께 드리는 예배</h2>
+            <h2>{pick(lang, { ko: "함께 드리는 예배", en: "Worship together" })}</h2>
           </div>
           <div className="section-head-action">
-            <Link href={url("/worship")}>전체 예배 안내 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+            <Link href={url("/worship")}>{pick(lang, { ko: "전체 예배 안내", en: "All services" })} <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
           </div>
         </div>
         <div className="worship-grid">
@@ -300,7 +301,7 @@ async function WorshipScheduleSection({ slug, url }: { slug: string; url: (p: st
               <div className="worship-name">{w.name}</div>
               <div className="worship-time">{w.time}</div>
               {w.meta && <div className="worship-meta">{w.meta}</div>}
-              {w.isFeatured && <span className="worship-pill">대표 예배</span>}
+              {w.isFeatured && <span className="worship-pill">{pick(lang, { ko: "대표 예배", en: "Main service" })}</span>}
             </div>
           ))}
         </div>
@@ -321,14 +322,15 @@ function SectionSkeleton({ tinted = false, height = 220 }: { tinted?: boolean; h
   );
 }
 
-async function HomeSermonsSection({ slug, url }: { slug: string; url: (p: string) => string }) {
+async function HomeSermonsSection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
   const data = await fetchJson<{ series: PublicSermonSeries[]; sermons: PublicSermon[] }>(
     `/onchurch/sites/${slug}/sermons`,
     { series: [], sermons: [] },
   );
+  const uncategorized = pick(lang, { ko: "미분류", en: "Uncategorized" });
   const seriesById = new Map(data.series.map((s) => [s.id, s.name] as const));
   const sermons: Sermon[] = data.sermons.slice(0, 3).map((s, i) => ({
-    series: s.seriesId != null ? seriesById.get(s.seriesId) ?? "미분류" : "미분류",
+    series: s.seriesId != null ? seriesById.get(s.seriesId) ?? uncategorized : uncategorized,
     title: s.title,
     pastor: s.pastor ?? "",
     date: s.date ?? "",
@@ -343,10 +345,10 @@ async function HomeSermonsSection({ slug, url }: { slug: string; url: (p: string
         <div className="section-head">
           <div>
             <span className="eyebrow">Sermons</span>
-            <h2>함께 드리는 예배</h2>
+            <h2>{pick(lang, { ko: "함께 드리는 예배", en: "Worship together" })}</h2>
           </div>
           <div className="section-head-action">
-            <Link href={url("/sermons")}>설교 전체 보기 <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+            <Link href={url("/sermons")}>{pick(lang, { ko: "설교 전체 보기", en: "All sermons" })} <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
           </div>
         </div>
         <SermonFeatureGrid sermons={sermons} />
@@ -355,7 +357,7 @@ async function HomeSermonsSection({ slug, url }: { slug: string; url: (p: string
   );
 }
 
-async function PastorSection({ slug, url }: { slug: string; url: (p: string) => string }) {
+async function PastorSection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
   const data = await fetchJson<{ pastor: PublicPastor }>(`/onchurch/sites/${slug}/about`, { pastor: null });
   const pastor = data.pastor;
   if (!pastor || (!pastor.message?.trim() && !pastor.name)) return null;
@@ -368,7 +370,7 @@ async function PastorSection({ slug, url }: { slug: string; url: (p: string) => 
               // eslint-disable-next-line @next/next/no-img-element
               <img src={pastor.photoUrl} alt={pastor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
-              <div className="pastor-photo-label">담임목사</div>
+              <div className="pastor-photo-label">{pick(lang, { ko: "담임목사", en: "Senior Pastor" })}</div>
             )}
           </div>
           <div className="pastor-block">
@@ -391,10 +393,10 @@ async function PastorSection({ slug, url }: { slug: string; url: (p: string) => 
                 </p>
               </div>
             )}
-            <div className="pastor-sign">담임목사 <strong>{pastor.name.replace(/\s/g, "")}</strong></div>
+            <div className="pastor-sign">{pick(lang, { ko: "담임목사", en: "Senior Pastor" })} <strong>{pastor.name.replace(/\s/g, "")}</strong></div>
             <div style={{ marginTop: 28 }}>
               <Link href={url("/about")} className="btn btn-secondary">
-                교회 소개 자세히 <Icon.arrow style={{ width: 14, height: 14 }} />
+                {pick(lang, { ko: "교회 소개 자세히", en: "More about us" })} <Icon.arrow style={{ width: 14, height: 14 }} />
               </Link>
             </div>
           </div>
@@ -419,6 +421,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const church = await fetchPublicChurch(tenant);
   if (!church) notFound();
 
+  const lang = normalizeLang(church.siteLang);
   const pathPrefix = await getPathPrefix(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
   const slug = encodeURIComponent(tenant);
@@ -460,16 +463,16 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
         </div>
         <div className="hero-inner">
           <Suspense fallback={<FeaturedEventSkeleton />}>
-            <HeroFeaturedEventSection slug={slug} url={url} churchName={church.name} />
+            <HeroFeaturedEventSection slug={slug} url={url} churchName={church.name} lang={lang} />
           </Suspense>
 
           <div className="news-list-card">
             <div className="news-list-head">
-              <h3>다가오는 일정</h3>
-              <Link href={url("/schedule")}>전체보기 →</Link>
+              <h3>{pick(lang, { ko: "다가오는 일정", en: "Upcoming" })}</h3>
+              <Link href={url("/schedule")}>{pick(lang, { ko: "전체보기", en: "See all" })} →</Link>
             </div>
             <Suspense fallback={<NoticesListSkeleton />}>
-              <UpcomingEventsListSection slug={slug} url={url} />
+              <UpcomingEventsListSection slug={slug} url={url} lang={lang} />
             </Suspense>
           </div>
         </div>
@@ -481,12 +484,13 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
           <div className="quick-strip" style={{ "--quick-count": Math.min(quickItems.length, 4) } as CSSProperties}>
             {quickItems.map(({ def, href, external }) => {
               const QuickIcon = Icon[def.ic];
+              const labels = quickLinkLabels(def, lang);
               const inner = (
                 <>
                   <div className="quick-card-icon"><QuickIcon width={22} height={22} /></div>
-                  <div className="quick-card-title">{def.title}</div>
-                  <div className="quick-card-desc">{def.desc}</div>
-                  <div className="quick-card-arrow">바로가기 <Icon.arrow style={{ width: 12, height: 12 }} /></div>
+                  <div className="quick-card-title">{labels.title}</div>
+                  <div className="quick-card-desc">{labels.desc}</div>
+                  <div className="quick-card-arrow">{pick(lang, { ko: "바로가기", en: "See more" })} <Icon.arrow style={{ width: 12, height: 12 }} /></div>
                 </>
               );
               return external ? (
@@ -501,12 +505,12 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
     ) : null,
     worship: isPageEnabled("worship") ? (
       <Suspense fallback={<SectionSkeleton tinted height={200} />}>
-        <WorshipScheduleSection slug={slug} url={url} />
+        <WorshipScheduleSection slug={slug} url={url} lang={lang} />
       </Suspense>
     ) : null,
     sermons: isPageEnabled("sermons") ? (
       <Suspense fallback={<SectionSkeleton height={320} />}>
-        <HomeSermonsSection slug={slug} url={url} />
+        <HomeSermonsSection slug={slug} url={url} lang={lang} />
       </Suspense>
     ) : null,
     visit: (
@@ -516,13 +520,13 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
             <Rings className="pray-cta-bg" style={{ color: "var(--primary)" }} />
             <div style={{ position: "relative", zIndex: 1 }}>
               <span className="eyebrow">Visit</span>
-              <h3>처음 오시는 분들을 환영합니다</h3>
-              <p>예배 시간과 오시는 길을 확인하시고, 언제든 편하게 방문해주세요.</p>
+              <h3>{pick(lang, { ko: "처음 오시는 분들을 환영합니다", en: "Welcome, first-time visitors" })}</h3>
+              <p>{pick(lang, { ko: "예배 시간과 오시는 길을 확인하시고, 언제든 편하게 방문해주세요.", en: "Check our service times and directions, and feel free to visit anytime." })}</p>
             </div>
             <div style={{ position: "relative", zIndex: 1 }}>
               <Link href={url("/directions")} className="btn btn-primary btn-lg">
                 <Icon.mapPin style={{ width: 16, height: 16 }} />
-                찾아오시는 길
+                {pick(lang, { ko: "찾아오시는 길", en: "Directions" })}
               </Link>
             </div>
           </div>
@@ -531,7 +535,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
     ),
     pastor: (
       <Suspense fallback={<SectionSkeleton height={280} />}>
-        <PastorSection slug={slug} url={url} />
+        <PastorSection slug={slug} url={url} lang={lang} />
       </Suspense>
     ),
   };

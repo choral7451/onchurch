@@ -4,17 +4,31 @@ import { PageHeader } from "@/components/shell/page-header";
 import { NoticesList } from "./list";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+import { type Lang, pick, normalizeLang } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
   if (!church) return { title: "교회 소식", robots: { index: false, follow: false } };
+  const lang = normalizeLang(church.siteLang);
   const pastor = await fetchPublicPastor(tenant);
+  const t = pick(lang, {
+    ko: {
+      pageTitle: "교회 소식",
+      pageDescription: `${church.name}의 공지사항과 새소식, 행사 안내를 확인하세요.`,
+      extraKeywords: ["교회 소식", "공지사항", "새소식", "교회 행사"],
+    },
+    en: {
+      pageTitle: "News",
+      pageDescription: `Check the latest notices, news, and event announcements from ${church.name}.`,
+      extraKeywords: ["church news", "notices", "announcements", "church events"],
+    },
+  });
   return buildChurchMetadata(church, pastor, {
-    pageTitle: "교회 소식",
+    pageTitle: t.pageTitle,
     path: "/notices",
-    pageDescription: `${church.name}의 공지사항과 새소식, 행사 안내를 확인하세요.`,
-    extraKeywords: ["교회 소식", "공지사항", "새소식", "교회 행사"],
+    pageDescription: t.pageDescription,
+    extraKeywords: t.extraKeywords,
   });
 }
 
@@ -62,7 +76,7 @@ async function fetchNoticesFirstPage(slug: string): Promise<{ notices: Notice[];
   }
 }
 
-async function NoticesContent({ tenant }: { tenant: string }) {
+async function NoticesContent({ tenant, lang }: { tenant: string; lang: Lang }) {
   const [{ notices, totalCount, categories }, church] = await Promise.all([
     fetchNoticesFirstPage(tenant),
     fetchPublicChurch(tenant),
@@ -75,6 +89,7 @@ async function NoticesContent({ tenant }: { tenant: string }) {
       pageSize={PAGE_SIZE}
       categories={categories}
       churchName={church?.name ?? ""}
+      lang={lang}
     />
   );
 }
@@ -93,17 +108,23 @@ function NoticesSkeleton() {
 
 export default async function NoticesPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  const lang = normalizeLang(church?.siteLang);
+  const t = pick(lang, {
+    ko: { title: "공지사항 · 교회 소식", sub: "교회의 공지와 새 소식을 한 곳에서 확인하세요." },
+    en: { title: "Notices · Church News", sub: "Find all church notices and news in one place." },
+  });
   return (
     <div>
       <PageHeader
         eyebrow="NOTICES"
-        title="공지사항 · 교회 소식"
-        sub="교회의 공지와 새 소식을 한 곳에서 확인하세요."
+        title={t.title}
+        sub={t.sub}
       />
       <section className="section">
         <div className="container">
           <Suspense fallback={<NoticesSkeleton />}>
-            <NoticesContent tenant={tenant} />
+            <NoticesContent tenant={tenant} lang={lang} />
           </Suspense>
         </div>
       </section>

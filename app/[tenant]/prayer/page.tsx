@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shell/page-header";
+import { pick, normalizeLang } from "@/lib/i18n";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
 import { PrayerForm } from "@/app/[tenant]/prayer/form";
@@ -17,15 +18,28 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
   if (!church) return { title: "기도 요청", robots: { index: false, follow: false } };
+  const lang = normalizeLang(church.siteLang);
+  const meta = pick(lang, {
+    ko: {
+      title: "기도 요청",
+      desc: `${church.name}에 기도 제목을 보내주시면 함께 마음을 모아 기도해드립니다.`,
+      keywords: ["기도 요청", "중보기도", "기도 제목"],
+    },
+    en: {
+      title: "Prayer Requests",
+      desc: `Send your prayer requests to ${church.name}, and we will join our hearts and pray together with you.`,
+      keywords: ["prayer request", "intercessory prayer", "prayer"],
+    },
+  });
   if (!isPrayerEnabled(church.enabledPages)) {
-    return { title: "기도 요청", robots: { index: false, follow: false } };
+    return { title: meta.title, robots: { index: false, follow: false } };
   }
   const pastor = await fetchPublicPastor(tenant);
   return buildChurchMetadata(church, pastor, {
-    pageTitle: "기도 요청",
+    pageTitle: meta.title,
     path: "/prayer",
-    pageDescription: `${church.name}에 기도 제목을 보내주시면 함께 마음을 모아 기도해드립니다.`,
-    extraKeywords: ["기도 요청", "중보기도", "기도 제목"],
+    pageDescription: meta.desc,
+    extraKeywords: meta.keywords,
   });
 }
 
@@ -34,16 +48,20 @@ export default async function PrayerPage({ params }: { params: Promise<{ tenant:
   const church = await fetchPublicChurch(tenant);
   if (!church) notFound();
   if (!isPrayerEnabled(church.enabledPages)) notFound();
+  const lang = normalizeLang(church.siteLang);
   return (
     <div>
       <PageHeader
         eyebrow="PRAYER REQUEST"
-        title="기도 요청"
-        sub="혼자 감당하기 어려운 일들이 있으신가요? 함께 마음을 모아 기도해드립니다."
+        title={pick(lang, { ko: "기도 요청", en: "Prayer Requests" })}
+        sub={pick(lang, {
+          ko: "혼자 감당하기 어려운 일들이 있으신가요? 함께 마음을 모아 기도해드립니다.",
+          en: "Are there burdens too heavy to carry alone? We'll join our hearts and pray with you.",
+        })}
       />
       <section className="section">
         <div className="container" style={{ maxWidth: 760 }}>
-          <PrayerForm slug={tenant} categories={CATEGORIES} scopes={SCOPES} />
+          <PrayerForm slug={tenant} categories={CATEGORIES} scopes={SCOPES} lang={lang} />
         </div>
       </section>
     </div>

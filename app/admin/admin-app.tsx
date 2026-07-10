@@ -46,6 +46,7 @@ import { HomeOrderEditor } from "./page-editors/home-order";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
+import { type Lang, normalizeLang } from "@/lib/i18n";
 
 type Initial = {
   slug: string;
@@ -273,6 +274,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [liveUrl, setLiveUrl] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [liveSaving, setLiveSaving] = useState(false);
+  // 공개 사이트 고정 UI 문구 언어(ko/en). 관리자 콘솔 자체는 항상 한국어.
+  const [siteLang, setSiteLang] = useState<Lang>("ko");
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
@@ -386,6 +389,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           setPhone(c.phone ?? "");
           setEmail(c.email ?? "");
           setAddress(c.address ?? "");
+          setSiteLang(normalizeLang(c.siteLang));
           setSavedRequired({
             slug: c.slug ?? "",
             name: c.name ?? "",
@@ -546,6 +550,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       await onchurchChurch.upsertMine({
         slug,
         name,
+        siteLang,
         eng: eng || null,
         tagline: tagline || null,
         phone: phone || null,
@@ -585,6 +590,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       await onchurchChurch.upsertMine({
         slug,
         name,
+        siteLang,
         eng: eng || null,
         tagline: tagline || null,
         phone: phone || null,
@@ -619,6 +625,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       await onchurchChurch.upsertMine({
         slug,
         name,
+        siteLang,
         eng: eng || null,
         tagline: tagline || null,
         phone: phone || null,
@@ -651,6 +658,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       await onchurchChurch.upsertMine({
         slug,
         name,
+        siteLang,
         eng: eng || null,
         tagline: tagline || null,
         phone: phone || null,
@@ -741,6 +749,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       const updated = await onchurchChurch.upsertMine({
         slug,
         name,
+        siteLang,
         eng: eng || null,
         tagline: tagline || null,
         phone: phone || null,
@@ -1534,6 +1543,29 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <label htmlFor="ad-tagline">태그라인</label>
                         <input id="ad-tagline" type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="은혜와 진리가 흐르는 공동체" maxLength={20} />
                         <span className="form-hint" style={{ marginTop: 4, textAlign: "right", color: tagline.length >= 20 ? "oklch(0.55 0.18 28)" : undefined }}>{tagline.length}/20자</span>
+                      </div>
+                      <div className="form-row full">
+                        <label>홈페이지 언어</label>
+                        <div style={{ display: "inline-flex", gap: 6, background: "var(--bg-tinted)", padding: 4, borderRadius: 10, border: "1px solid var(--line)", width: "max-content" }}>
+                          {([["ko", "한국어"], ["en", "English"]] as const).map(([v, lbl]) => (
+                            <button
+                              key={v}
+                              type="button"
+                              onClick={() => setSiteLang(v)}
+                              style={{
+                                padding: "8px 18px", borderRadius: 7, border: 0, cursor: "pointer",
+                                fontSize: 14, fontWeight: 600, fontFamily: "inherit",
+                                background: siteLang === v ? "var(--primary)" : "transparent",
+                                color: siteLang === v ? "#fff" : "var(--ink-2)",
+                              }}
+                            >
+                              {lbl}
+                            </button>
+                          ))}
+                        </div>
+                        <span className="form-hint" style={{ marginTop: 6 }}>
+                          영어를 선택하면 공개 홈페이지의 메뉴·버튼 등 고정 문구가 영어로 표시됩니다. 교회가 직접 입력한 글 내용(설교 제목·공지·소개 등)은 입력한 언어 그대로 노출됩니다.
+                        </span>
                       </div>
                     </div>
                     {sectionSaveBar}

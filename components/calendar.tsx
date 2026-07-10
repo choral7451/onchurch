@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/icons";
+import { type Lang, pick } from "@/lib/i18n";
 
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
+const DOW_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 type CalendarEvent = {
@@ -66,8 +68,9 @@ function parseYm(ym: string | undefined): { year: number; month: number } | null
   return { year, month };
 }
 
-export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initialYm?: string }) {
+export function Calendar({ events, initialYm, lang = "ko" }: { events: CalendarEvent[]; initialYm?: string; lang?: Lang }) {
   const today = new Date();
+  const dowLabels = pick(lang, { ko: DOW, en: DOW_EN });
   const [view, setView] = useState(
     parseYm(initialYm) ?? { year: today.getFullYear(), month: today.getMonth() + 1 },
   );
@@ -154,20 +157,25 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
       <div className="cal">
         <div className="cal-head">
           <div className="cal-month">
-            {view.year}년 {view.month}월
-            <span>{new Date(view.year, view.month - 1, 1).toLocaleString("en-US", { month: "long" })}</span>
+            {pick(lang, {
+              ko: `${view.year}년 ${view.month}월`,
+              en: new Date(view.year, view.month - 1, 1).toLocaleString("en-US", { month: "long", year: "numeric" }),
+            })}
+            {lang === "ko" && (
+              <span>{new Date(view.year, view.month - 1, 1).toLocaleString("en-US", { month: "long" })}</span>
+            )}
           </div>
           <div className="cal-nav">
-            <button type="button" aria-label="이전 달" onClick={() => shiftMonth(-1)}>
+            <button type="button" aria-label={pick(lang, { ko: "이전 달", en: "Previous month" })} onClick={() => shiftMonth(-1)}>
               <Icon.chevL />
             </button>
-            <button type="button" aria-label="다음 달" onClick={() => shiftMonth(1)}>
+            <button type="button" aria-label={pick(lang, { ko: "다음 달", en: "Next month" })} onClick={() => shiftMonth(1)}>
               <Icon.chevR />
             </button>
           </div>
         </div>
         <div className="cal-grid">
-          {DOW.map((d, i) => (
+          {dowLabels.map((d, i) => (
             <div key={d} className={`cal-dow ${i === 0 ? "sun" : ""}`}>
               {d}
             </div>
@@ -197,7 +205,14 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
                 className={cls}
                 role={has ? "button" : undefined}
                 tabIndex={has ? 0 : undefined}
-                aria-label={has ? `${view.month}월 ${day}일 일정 보기 (${dayEvents!.length}건)` : undefined}
+                aria-label={
+                  has
+                    ? pick(lang, {
+                        ko: `${view.month}월 ${day}일 일정 보기 (${dayEvents!.length}건)`,
+                        en: `View events for ${view.month}/${day} (${dayEvents!.length})`,
+                      })
+                    : undefined
+                }
                 onClick={has ? () => openDay(day) : undefined}
                 onKeyDown={
                   has
@@ -223,8 +238,11 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
         {upcoming.length === 0 ? (
           <div style={{ padding: 24, color: "var(--muted)", fontSize: 13 }}>
             {view.year === today.getFullYear() && view.month === today.getMonth() + 1
-              ? "다가오는 일정이 없습니다."
-              : `${view.month}월 일정이 없습니다.`}
+              ? pick(lang, { ko: "다가오는 일정이 없습니다.", en: "No upcoming events." })
+              : pick(lang, {
+                  ko: `${view.month}월 일정이 없습니다.`,
+                  en: `No events in ${new Date(view.year, view.month - 1, 1).toLocaleString("en-US", { month: "long" })}.`,
+                })}
           </div>
         ) : (
           <>
@@ -234,7 +252,7 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
                 key={e.id}
                 className="upcoming-item upcoming-item-btn"
                 onClick={() => openEvent(e)}
-                aria-label={`${e.title} 상세 보기`}
+                aria-label={pick(lang, { ko: `${e.title} 상세 보기`, en: `View ${e.title}` })}
               >
                 <div className="upcoming-date">{fmtUpcomingDate(e.startAt)}</div>
                 <div className="upcoming-title">{e.title}</div>
@@ -248,7 +266,9 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
                 onClick={() => setExpanded((v) => !v)}
                 aria-expanded={expanded}
               >
-                {expanded ? "접기" : `+${hiddenCount}개 더 보기`}
+                {expanded
+                  ? pick(lang, { ko: "접기", en: "Collapse" })
+                  : pick(lang, { ko: `+${hiddenCount}개 더 보기`, en: `+${hiddenCount} more` })}
               </button>
             )}
           </>
@@ -267,7 +287,7 @@ export function Calendar({ events, initialYm }: { events: CalendarEvent[]; initi
             <button
               type="button"
               className="event-modal-close"
-              aria-label="닫기"
+              aria-label={pick(lang, { ko: "닫기", en: "Close" })}
               onClick={close}
             >
               ×

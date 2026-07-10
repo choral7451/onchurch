@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
 import type { Brand, NavItem } from "@/lib/types";
+import { type Lang, pick, SHELL } from "@/lib/i18n";
 
 type Props = {
   tenant: string;
@@ -12,9 +13,10 @@ type Props = {
   nav: NavItem[];
   pathPrefix: string;
   enabledPages?: string[];
+  lang?: Lang;
 };
 
-export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
+export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -85,14 +87,14 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
           <div className="nav-cta">
             <Link href={link("/prayer")} className="btn btn-primary">
               <Icon.pray style={{ width: 16, height: 16 }} />
-              기도 요청
+              {pick(lang, SHELL.prayerCta)}
             </Link>
           </div>
         )}
         <button
           type="button"
           className="nav-toggle"
-          aria-label="메뉴 열기"
+          aria-label={pick(lang, SHELL.openMenu)}
           aria-expanded={open}
           onClick={() => setOpen(true)}
         >
@@ -108,16 +110,16 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
         <button
           type="button"
           className="nav-overlay"
-          aria-label="메뉴 닫기"
+          aria-label={pick(lang, SHELL.closeMenu)}
           onClick={() => setOpen(false)}
         />
-        <aside className="nav-drawer" role="dialog" aria-label="모바일 메뉴">
+        <aside className="nav-drawer" role="dialog" aria-label={pick(lang, SHELL.mobileMenu)}>
           <header className="nav-drawer-head">
-            <span>메뉴</span>
+            <span>{pick(lang, SHELL.menu)}</span>
             <button
               type="button"
               className="nav-drawer-close"
-              aria-label="닫기"
+              aria-label={pick(lang, SHELL.close)}
               onClick={() => setOpen(false)}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
@@ -140,7 +142,7 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages }: Props) {
             <div className="nav-drawer-cta">
               <Link href={link("/prayer")} className="btn btn-primary">
                 <Icon.pray style={{ width: 16, height: 16 }} />
-                기도 요청
+                {pick(lang, SHELL.prayerCta)}
               </Link>
             </div>
           )}

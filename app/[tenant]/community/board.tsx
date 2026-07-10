@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
+import { type Lang, pick } from "@/lib/i18n";
 import {
   ApiError,
   getCurrentUserId,
@@ -20,6 +21,7 @@ type Props = {
   pageSize: number;
   categories: string[];
   loginHref: string;
+  lang?: Lang;
 };
 
 function formatDate(iso: string): string {
@@ -39,7 +41,95 @@ type Draft = {
 
 const EMPTY_DRAFT: Draft = { id: null, category: "", title: "", content: "", photoUrls: [], videoUrl: "" };
 
-export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categories, loginHref }: Props) {
+export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categories, loginHref, lang = "ko" }: Props) {
+  const t = pick(lang, {
+    ko: {
+      all: "전체",
+      write: "+ 글쓰기",
+      loginWrite: "로그인하고 글쓰기",
+      selectCategory: "카테고리 선택",
+      category: "카테고리",
+      none: "선택 안 함",
+      videoLink: "동영상 링크 (선택)",
+      videoLinkPh: "YouTube / Vimeo 링크",
+      title: "제목",
+      titlePh: "제목을 입력해주세요",
+      content: "내용",
+      contentPh: "나누고 싶은 이야기를 자유롭게 적어주세요.",
+      photos: "사진",
+      removePhoto: "사진 제거",
+      uploading: "업로드 중...",
+      addPhoto: "사진 추가",
+      cancel: "취소",
+      saving: "저장 중...",
+      updateDone: "수정 완료",
+      postSubmit: "등록",
+      empty: "아직 등록된 글이 없습니다.",
+      emptyLoggedIn: "첫 글을 남겨보세요!",
+      emptyLoggedOut: "로그인 후 첫 글을 남겨보세요!",
+      videoBadge: "영상",
+      close: "닫기",
+      videoTitle: "동영상",
+      watchVideo: "동영상 보기",
+      noContent: "내용이 없습니다.",
+      loadingMore: "불러오는 중...",
+      report: "신고",
+      edit: "수정",
+      del: "삭제",
+      confirmDelete: "이 게시글을 삭제할까요?",
+      confirmReport: "이 게시글을 신고할까요? 관리자가 검토합니다.",
+      reportDone: "신고가 접수되었습니다.",
+      photoUploadFail: "사진 업로드에 실패했습니다.",
+      titleRequired: "제목을 입력해주세요.",
+      saveFail: "저장에 실패했습니다.",
+      deleteFail: "삭제에 실패했습니다.",
+      reportFail: "신고에 실패했습니다.",
+    },
+    en: {
+      all: "All",
+      write: "+ Write",
+      loginWrite: "Log in to write",
+      selectCategory: "Select category",
+      category: "Category",
+      none: "None",
+      videoLink: "Video link (optional)",
+      videoLinkPh: "YouTube / Vimeo link",
+      title: "Title",
+      titlePh: "Enter a title",
+      content: "Message",
+      contentPh: "Feel free to share what's on your mind.",
+      photos: "Photos",
+      removePhoto: "Remove photo",
+      uploading: "Uploading...",
+      addPhoto: "Add photo",
+      cancel: "Cancel",
+      saving: "Saving...",
+      updateDone: "Update",
+      postSubmit: "Post",
+      empty: "No posts yet.",
+      emptyLoggedIn: "Be the first to write a post!",
+      emptyLoggedOut: "Log in and be the first to write a post!",
+      videoBadge: "Video",
+      close: "Close",
+      videoTitle: "Video",
+      watchVideo: "Watch video",
+      noContent: "No content.",
+      loadingMore: "Loading...",
+      report: "Report",
+      edit: "Edit",
+      del: "Delete",
+      confirmDelete: "Delete this post?",
+      confirmReport: "Report this post? An administrator will review it.",
+      reportDone: "Your report has been submitted.",
+      photoUploadFail: "Failed to upload photos.",
+      titleRequired: "Please enter a title.",
+      saveFail: "Failed to save.",
+      deleteFail: "Failed to delete.",
+      reportFail: "Failed to submit the report.",
+    },
+  });
+  // "전체"는 API 필터 값(전체 조회 sentinel)이라 값은 유지하고 표시 라벨만 번역한다.
+  const catLabel = (c: string) => (c === "전체" ? t.all : c);
   const [posts, setPosts] = useState<CommunityPost[]>(initialPosts);
   const [total, setTotal] = useState<number>(totalCount);
   const [page, setPage] = useState(1);
@@ -181,7 +271,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       const uploaded = await uploadImages(files);
       setDraft((d) => ({ ...d, photoUrls: [...d.photoUrls, ...uploaded.map((u) => u.url)] }));
     } catch (err) {
-      setFormErr(err instanceof ApiError ? err.message : "사진 업로드에 실패했습니다.");
+      setFormErr(err instanceof ApiError ? err.message : t.photoUploadFail);
     } finally {
       setUploading(false);
       if (photoInputRef.current) photoInputRef.current.value = "";
@@ -194,7 +284,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
 
   async function submit() {
     if (saving) return;
-    if (!draft.title.trim()) { setFormErr("제목을 입력해주세요."); return; }
+    if (!draft.title.trim()) { setFormErr(t.titleRequired); return; }
     setSaving(true);
     setFormErr("");
     try {
@@ -210,30 +300,30 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       cancelWrite();
       await refresh();
     } catch (err) {
-      setFormErr(err instanceof ApiError ? err.message : "저장에 실패했습니다.");
+      setFormErr(err instanceof ApiError ? err.message : t.saveFail);
     } finally {
       setSaving(false);
     }
   }
 
   async function removePost(p: CommunityPost) {
-    if (!confirm("이 게시글을 삭제할까요?")) return;
+    if (!confirm(t.confirmDelete)) return;
     try {
       await onchurchCommunity.remove(p.id);
       setActive(null);
       await refresh();
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "삭제에 실패했습니다.");
+      alert(err instanceof ApiError ? err.message : t.deleteFail);
     }
   }
 
   async function report(p: CommunityPost) {
-    if (!confirm("이 게시글을 신고할까요? 관리자가 검토합니다.")) return;
+    if (!confirm(t.confirmReport)) return;
     try {
       await onchurchCommunity.report(slug, p.id);
-      alert("신고가 접수되었습니다.");
+      alert(t.reportDone);
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "신고에 실패했습니다.");
+      alert(err instanceof ApiError ? err.message : t.reportFail);
     }
   }
 
@@ -256,27 +346,27 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
           <select
             value={cat}
             onChange={(e) => selectCat(e.target.value)}
-            aria-label="카테고리 선택"
+            aria-label={t.selectCategory}
             style={{ flex: 1, minWidth: 0, padding: "10px 12px", fontSize: 14, border: "1px solid var(--line)", borderRadius: 10, background: "var(--surface)", fontFamily: "inherit" }}
           >
-            {allCats.map((c) => <option key={c} value={c}>{c}</option>)}
+            {allCats.map((c) => <option key={c} value={c}>{catLabel(c)}</option>)}
           </select>
         ) : (
           <div className="chips" style={{ marginBottom: 0 }}>
             {allCats.map((c) => (
               <div key={c} className={`chip ${cat === c ? "active" : ""}`} onClick={() => selectCat(c)}>
-                {c}
+                {catLabel(c)}
               </div>
             ))}
           </div>
         )}
         {loggedIn ? (
           <button type="button" className="btn btn-primary" onClick={startNew} disabled={writing}>
-            + 글쓰기
+            {t.write}
           </button>
         ) : (
           <Link href={loginHref} className="btn btn-primary">
-            로그인하고 글쓰기
+            {t.loginWrite}
           </Link>
         )}
       </div>
@@ -287,43 +377,43 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
           {formErr && <div className="phone-msg phone-msg-error" style={{ marginBottom: 16 }}>{formErr}</div>}
           <div className="form-grid">
             <div className="form-row">
-              <label>카테고리</label>
+              <label>{t.category}</label>
               <select value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
-                <option value="">선택 안 함</option>
+                <option value="">{t.none}</option>
                 {categories.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="form-row">
-              <label>동영상 링크 (선택)</label>
+              <label>{t.videoLink}</label>
               <input
                 type="url"
                 value={draft.videoUrl}
                 onChange={(e) => setDraft({ ...draft, videoUrl: e.target.value })}
-                placeholder="YouTube / Vimeo 링크"
+                placeholder={t.videoLinkPh}
               />
             </div>
             <div className="form-row full">
-              <label>제목 <span className="req">*</span></label>
+              <label>{t.title} <span className="req">*</span></label>
               <input
                 type="text"
                 value={draft.title}
                 onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                placeholder="제목을 입력해주세요"
+                placeholder={t.titlePh}
                 maxLength={300}
                 required
               />
             </div>
             <div className="form-row full">
-              <label>내용</label>
+              <label>{t.content}</label>
               <textarea
                 rows={6}
                 value={draft.content}
                 onChange={(e) => setDraft({ ...draft, content: e.target.value })}
-                placeholder="나누고 싶은 이야기를 자유롭게 적어주세요."
+                placeholder={t.contentPh}
               />
             </div>
             <div className="form-row full">
-              <label>사진</label>
+              <label>{t.photos}</label>
               <input ref={photoInputRef} type="file" accept="image/*" multiple onChange={onPickPhotos} style={{ display: "none" }} />
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                 {draft.photoUrls.map((url) => (
@@ -333,7 +423,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                     <button
                       type="button"
                       onClick={() => removePhoto(url)}
-                      aria-label="사진 제거"
+                      aria-label={t.removePhoto}
                       style={{ position: "absolute", top: 2, right: 2, width: 20, height: 20, borderRadius: "50%", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: 12, lineHeight: "20px" }}
                     >
                       ×
@@ -347,15 +437,15 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                   disabled={uploading}
                 >
                   <Icon.image style={{ width: 14, height: 14 }} />
-                  {uploading ? "업로드 중..." : "사진 추가"}
+                  {uploading ? t.uploading : t.addPhoto}
                 </button>
               </div>
             </div>
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
-            <button type="button" className="btn btn-ghost" onClick={cancelWrite} disabled={saving}>취소</button>
+            <button type="button" className="btn btn-ghost" onClick={cancelWrite} disabled={saving}>{t.cancel}</button>
             <button type="button" className="btn btn-primary" onClick={submit} disabled={saving || !draft.title.trim()}>
-              {saving ? "저장 중..." : draft.id ? "수정 완료" : "등록"}
+              {saving ? t.saving : draft.id ? t.updateDone : t.postSubmit}
             </button>
           </div>
         </div>
@@ -370,7 +460,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
         </div>
       ) : posts.length === 0 && !loading ? (
         <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>
-          아직 등록된 글이 없습니다.<br className="mobile-only-br" /> {loggedIn ? "첫 글을 남겨보세요!" : "로그인 후 첫 글을 남겨보세요!"}
+          {t.empty}<br className="mobile-only-br" /> {loggedIn ? t.emptyLoggedIn : t.emptyLoggedOut}
         </div>
       ) : (
         <div className="community-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
@@ -406,7 +496,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                     )}
                     {hasVideo && (
                       <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.65)", color: "#fff", borderRadius: 999, padding: "3px 9px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        ▶ 영상
+                        ▶ {t.videoBadge}
                       </span>
                     )}
                   </div>
@@ -448,7 +538,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
 
       {loading && !switching && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
-          불러오는 중...
+          {t.loadingMore}
         </div>
       )}
 
@@ -456,7 +546,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       {active && (
         <div className="notice-modal-backdrop" role="dialog" aria-modal="true" aria-label={active.title} onClick={() => setActive(null)}>
           <div className="notice-modal" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="notice-modal-close" aria-label="닫기" onClick={() => setActive(null)}>×</button>
+            <button type="button" className="notice-modal-close" aria-label={t.close} onClick={() => setActive(null)}>×</button>
             <div className="notice-modal-body">
               <div className="notice-modal-head">
                 {active.category && <span className="notice-modal-cat">{active.category}</span>}
@@ -474,7 +564,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                     <div style={{ position: "relative", aspectRatio: "16 / 9", borderRadius: 10, overflow: "hidden" }}>
                       <iframe
                         src={toEmbedUrl(active.videoUrl)!}
-                        title="동영상"
+                        title={t.videoTitle}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
@@ -482,7 +572,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                     </div>
                   ) : (
                     <a href={active.videoUrl} target="_blank" rel="noreferrer noopener" className="btn btn-secondary">
-                      ▶ 동영상 보기
+                      ▶ {t.watchVideo}
                     </a>
                   )}
                 </div>
@@ -500,15 +590,15 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
               {active.content ? (
                 <div className="notice-modal-content" style={{ whiteSpace: "pre-wrap" }}>{active.content}</div>
               ) : (
-                <div className="notice-modal-content empty">내용이 없습니다.</div>
+                <div className="notice-modal-content empty">{t.noContent}</div>
               )}
 
               <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
-                <button type="button" className="btn btn-ghost" onClick={() => report(active)}>신고</button>
+                <button type="button" className="btn btn-ghost" onClick={() => report(active)}>{t.report}</button>
                 {myId != null && myId === active.authorId && (
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button type="button" className="btn btn-secondary" onClick={() => startEdit(active)}>수정</button>
-                    <button type="button" className="btn btn-ghost" onClick={() => removePost(active)}>삭제</button>
+                    <button type="button" className="btn btn-secondary" onClick={() => startEdit(active)}>{t.edit}</button>
+                    <button type="button" className="btn btn-ghost" onClick={() => removePost(active)}>{t.del}</button>
                   </div>
                 )}
               </div>

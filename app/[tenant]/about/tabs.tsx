@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { type Lang, pick } from "@/lib/i18n";
 
 type Pastor = {
   id: number;
@@ -37,10 +38,10 @@ type StaffMember = {
 };
 
 const TABS = [
-  { id: "greeting", label: "담임목사 인사" },
-  { id: "vision", label: "비전과 사명" },
-  { id: "history", label: "교회 연혁" },
-  { id: "staff", label: "섬김의 사람들" },
+  { id: "greeting", label: { ko: "담임목사 인사", en: "Pastor's Greeting" } },
+  { id: "vision", label: { ko: "비전과 사명", en: "Vision & Mission" } },
+  { id: "history", label: { ko: "교회 연혁", en: "History" } },
+  { id: "staff", label: { ko: "섬김의 사람들", en: "Our Team" } },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -51,9 +52,10 @@ type Props = {
   history: HistoryItem[];
   staff: StaffMember[];
   enabledPages?: string[];
+  lang?: Lang;
 };
 
-export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Props) {
+export function AboutTabs({ pastor, vision, history, staff, enabledPages, lang = "ko" }: Props) {
   const enabled = enabledPages ?? [];
   const isOn = (key: string) => enabled.length === 0 || enabled.includes(key);
   const visibleTabs = TABS.filter((t) => {
@@ -68,7 +70,7 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
       <div className="tabs">
         {visibleTabs.map((t) => (
           <div key={t.id} className={`tab ${activeTab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
-            {t.label}
+            {pick(lang, t.label)}
           </div>
         ))}
       </div>
@@ -81,7 +83,7 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={pastor.photoUrl} alt={pastor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
-                <div className="pastor-photo-label">담임목사 사진</div>
+                <div className="pastor-photo-label">{pick(lang, { ko: "담임목사 사진", en: "Pastor photo" })}</div>
               )}
             </div>
             <div className="pastor-block">
@@ -100,17 +102,17 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
                   </span>
                 ))}
               </p>
-              <div className="pastor-sign">{pastor.role ?? "담임목사"} <strong>{pastor.name}</strong></div>
+              <div className="pastor-sign">{pastor.role ?? pick(lang, { ko: "담임목사", en: "Senior Pastor" })} <strong>{pastor.name}</strong></div>
             </div>
           </div>
         ) : (
-          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 담임목사 인사말이 등록되지 않았습니다.</div>
+          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>{pick(lang, { ko: "아직 담임목사 인사말이 등록되지 않았습니다.", en: "No pastor's greeting yet." })}</div>
         )
       )}
 
       {activeTab === "vision" && (
         vision.length === 0 ? (
-          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 비전이 등록되지 않았습니다.</div>
+          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>{pick(lang, { ko: "아직 비전이 등록되지 않았습니다.", en: "No vision yet." })}</div>
         ) : (
           <div className="vision-grid">
             {vision.map((v) => (
@@ -126,7 +128,7 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
 
       {activeTab === "history" && (
         history.length === 0 ? (
-          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 교회 연혁이 등록되지 않았습니다.</div>
+          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>{pick(lang, { ko: "아직 교회 연혁이 등록되지 않았습니다.", en: "No history yet." })}</div>
         ) : (
           <div className="history-timeline">
             <div className="history-rail" />
@@ -144,7 +146,7 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages }: Prop
 
       {activeTab === "staff" && (
         staff.length === 0 ? (
-          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>아직 섬김의 사람들 정보가 등록되지 않았습니다.</div>
+          <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>{pick(lang, { ko: "아직 섬김의 사람들 정보가 등록되지 않았습니다.", en: "No team members yet." })}</div>
         ) : (
           <div className="staff-grid">
             {staff.map((s) => (

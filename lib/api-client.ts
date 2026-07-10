@@ -1,3 +1,5 @@
+import type { Lang } from "@/lib/i18n";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
 export type AuthTokens = {
@@ -28,6 +30,7 @@ export type Church = {
   enabledPages: string[];
   homeSectionOrder: string[];
   homeQuickLinks: string[];
+  siteLang: Lang;
   isPublished: boolean;
   // 최초 사이트 오픈(첫 공개) 시각. 한 번이라도 오픈하면 채워지고 OFF해도 유지 — 온보딩 완료 판단에 사용.
   firstPublishedAt: string | null;
@@ -58,6 +61,7 @@ export type UpsertChurchInput = {
   enabledPages: string[];
   homeSectionOrder?: string[];
   homeQuickLinks?: string[];
+  siteLang?: Lang;
 };
 
 export class ApiError extends Error {
@@ -932,6 +936,7 @@ export const onchurchChurch = {
         enabledPages: input.enabledPages,
         homeSectionOrder: input.homeSectionOrder ?? [],
         homeQuickLinks: input.homeQuickLinks ?? [],
+        siteLang: input.siteLang ?? "ko",
       }),
     }),
   publish: (isPublished: boolean) =>

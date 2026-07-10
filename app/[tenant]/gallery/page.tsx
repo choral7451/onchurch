@@ -4,17 +4,25 @@ import { PageHeader } from "@/components/shell/page-header";
 import { GalleryView } from "./view";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+import { type Lang, pick, normalizeLang } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
-  if (!church) return { title: "갤러리", robots: { index: false, follow: false } };
+  const lang = normalizeLang(church?.siteLang);
+  if (!church) return { title: pick(lang, { ko: "갤러리", en: "Gallery" }), robots: { index: false, follow: false } };
   const pastor = await fetchPublicPastor(tenant);
   return buildChurchMetadata(church, pastor, {
-    pageTitle: "갤러리",
+    pageTitle: pick(lang, { ko: "갤러리", en: "Gallery" }),
     path: "/gallery",
-    pageDescription: `${church.name}의 공동체 사진과 행사 기록을 갤러리로 만나보세요.`,
-    extraKeywords: ["갤러리", "교회 사진", "행사 사진", "공동체"],
+    pageDescription: pick(lang, {
+      ko: `${church.name}의 공동체 사진과 행사 기록을 갤러리로 만나보세요.`,
+      en: `Explore ${church.name}'s community photos and event highlights in the gallery.`,
+    }),
+    extraKeywords: pick(lang, {
+      ko: ["갤러리", "교회 사진", "행사 사진", "공동체"],
+      en: ["gallery", "church photos", "event photos", "community"],
+    }),
   });
 }
 
@@ -59,7 +67,7 @@ async function fetchGalleryFirstPage(
   }
 }
 
-async function GalleryContent({ tenant }: { tenant: string }) {
+async function GalleryContent({ tenant, lang }: { tenant: string; lang: Lang }) {
   const data = await fetchGalleryFirstPage(tenant);
   return (
     <GalleryView
@@ -69,6 +77,7 @@ async function GalleryContent({ tenant }: { tenant: string }) {
       totalCount={data.totalCount}
       pageSize={PAGE_SIZE}
       layout={LAYOUT}
+      lang={lang}
     />
   );
 }
@@ -89,13 +98,22 @@ function GallerySkeleton() {
 
 export default async function GalleryPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  const lang = normalizeLang(church?.siteLang);
   return (
     <div>
-      <PageHeader eyebrow="GALLERY" title="갤러리" sub="우리 공동체의 사진과 추억을 모아 두는 곳입니다." />
+      <PageHeader
+        eyebrow="GALLERY"
+        title={pick(lang, { ko: "갤러리", en: "Gallery" })}
+        sub={pick(lang, {
+          ko: "우리 공동체의 사진과 추억을 모아 두는 곳입니다.",
+          en: "A place to gather our community's photos and memories.",
+        })}
+      />
       <section className="section">
         <div className="container">
           <Suspense fallback={<GallerySkeleton />}>
-            <GalleryContent tenant={tenant} />
+            <GalleryContent tenant={tenant} lang={lang} />
           </Suspense>
         </div>
       </section>

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
+import { type Lang, normalizeLang, pick } from "@/lib/i18n";
 import { Icon } from "@/components/icons";
 import { GoogleMap } from "@/components/google-map";
 
@@ -10,13 +11,20 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
   if (!church) return { title: "찾아오시는 길", robots: { index: false, follow: false } };
+  const lang = normalizeLang(church.siteLang);
   const pastor = await fetchPublicPastor(tenant);
   const addr = church.address ?? "";
   return buildChurchMetadata(church, pastor, {
-    pageTitle: "찾아오시는 길",
+    pageTitle: pick(lang, { ko: "찾아오시는 길", en: "Directions" }),
     path: "/directions",
-    pageDescription: `${church.name}을(를) 찾아오시는 방법을 안내합니다.${addr ? ` 주소: ${addr}.` : ""}${church.phone ? ` 문의: ${church.phone}.` : ""}`,
-    extraKeywords: ["찾아오시는 길", "오시는 길", "주소", "지도", "교통", ...(addr ? [addr] : [])],
+    pageDescription: pick(lang, {
+      ko: `${church.name}을(를) 찾아오시는 방법을 안내합니다.${addr ? ` 주소: ${addr}.` : ""}${church.phone ? ` 문의: ${church.phone}.` : ""}`,
+      en: `How to find ${church.name}.${addr ? ` Address: ${addr}.` : ""}${church.phone ? ` Contact: ${church.phone}.` : ""}`,
+    }),
+    extraKeywords: pick(lang, {
+      ko: ["찾아오시는 길", "오시는 길", "주소", "지도", "교통", ...(addr ? [addr] : [])],
+      en: ["Directions", "how to get there", "Address", "map", "Public Transit", ...(addr ? [addr] : [])],
+    }),
   });
 }
 
@@ -42,7 +50,7 @@ async function fetchTransportations(slug: string): Promise<PublicTransportation[
   }
 }
 
-async function ChurchInfoSection({ tenant }: { tenant: string }) {
+async function ChurchInfoSection({ tenant, lang }: { tenant: string; lang: Lang }) {
   const church = await fetchPublicChurch(tenant);
   const churchName = church?.name ?? "";
   const address = church?.address ?? "";
@@ -57,35 +65,35 @@ async function ChurchInfoSection({ tenant }: { tenant: string }) {
         <div className="card info-card">
           <div className="info-card-head">
             <Icon.mapPin />
-            <span>주소</span>
+            <span>{pick(lang, { ko: "주소", en: "Address" })}</span>
           </div>
           <div className="info-card-body">
-            {address || <span className="info-card-empty">등록된 주소가 없습니다.</span>}
+            {address || <span className="info-card-empty">{pick(lang, { ko: "등록된 주소가 없습니다.", en: "No address yet." })}</span>}
           </div>
         </div>
         <div className="card info-card">
           <div className="info-card-head">
             <Icon.phone />
-            <span>연락처</span>
+            <span>{pick(lang, { ko: "연락처", en: "Contact" })}</span>
           </div>
           <div className="info-card-body">
             {phone ? (
               <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`}>{phone}</a>
             ) : (
-              <span className="info-card-empty">등록된 연락처가 없습니다.</span>
+              <span className="info-card-empty">{pick(lang, { ko: "등록된 연락처가 없습니다.", en: "No contact yet." })}</span>
             )}
           </div>
         </div>
         <div className="card info-card">
           <div className="info-card-head">
             <Icon.mail />
-            <span>이메일</span>
+            <span>{pick(lang, { ko: "이메일", en: "Email" })}</span>
           </div>
           <div className="info-card-body" style={{ wordBreak: "break-all" }}>
             {email ? (
               <a href={`mailto:${email}`}>{email}</a>
             ) : (
-              <span className="info-card-empty">등록된 이메일이 없습니다.</span>
+              <span className="info-card-empty">{pick(lang, { ko: "등록된 이메일이 없습니다.", en: "No email yet." })}</span>
             )}
           </div>
         </div>
@@ -107,7 +115,7 @@ function ChurchInfoSkeleton() {
   );
 }
 
-async function TransportationsSection({ tenant }: { tenant: string }) {
+async function TransportationsSection({ tenant, lang }: { tenant: string; lang: Lang }) {
   const items = await fetchTransportations(tenant);
   if (items.length === 0) return null;
   return (
@@ -115,7 +123,7 @@ async function TransportationsSection({ tenant }: { tenant: string }) {
       <div className="section-head">
         <div>
           <span className="eyebrow">Transportation</span>
-          <h2>대중교통 안내</h2>
+          <h2>{pick(lang, { ko: "대중교통 안내", en: "Public Transit" })}</h2>
         </div>
       </div>
       <div className="info-grid">
@@ -148,20 +156,25 @@ function TransportationsSkeleton() {
 
 export default async function DirectionsPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
+  const church = await fetchPublicChurch(tenant);
+  const lang = normalizeLang(church?.siteLang);
   return (
     <div>
       <PageHeader
         eyebrow="DIRECTIONS"
-        title="찾아오시는 길"
-        sub="처음 오시는 분도 어렵지 않게 안내해드립니다."
+        title={pick(lang, { ko: "찾아오시는 길", en: "Directions" })}
+        sub={pick(lang, {
+          ko: "처음 오시는 분도 어렵지 않게 안내해드립니다.",
+          en: "Clear directions so even first-time visitors can find us with ease.",
+        })}
       />
       <section className="section">
         <div className="container">
           <Suspense fallback={<ChurchInfoSkeleton />}>
-            <ChurchInfoSection tenant={tenant} />
+            <ChurchInfoSection tenant={tenant} lang={lang} />
           </Suspense>
           <Suspense fallback={<TransportationsSkeleton />}>
-            <TransportationsSection tenant={tenant} />
+            <TransportationsSection tenant={tenant} lang={lang} />
           </Suspense>
         </div>
       </section>

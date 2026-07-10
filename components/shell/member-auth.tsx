@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { type Lang, pick } from "@/lib/i18n";
 import { AccountRecoveryModal } from "@/components/shell/account-recovery";
 import { ApiError, onchurchAuth, saveSessionChurch, saveTokens } from "@/lib/api-client";
 
@@ -20,7 +21,7 @@ function formatPhone(raw: string) {
  * 교회 공개 사이트의 성도 로그인/가입 UI.
  * slug 종속 가입(churchId 자동 연결). 완료 후 redirectTo로 이동.
  */
-export function MemberAuth({ slug, churchName, redirectTo }: { slug: string; churchName: string; redirectTo: string }) {
+export function MemberAuth({ slug, churchName, redirectTo, lang = "ko" }: { slug: string; churchName: string; redirectTo: string; lang?: Lang }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("login");
   const done = () => {
@@ -31,19 +32,19 @@ export function MemberAuth({ slug, churchName, redirectTo }: { slug: string; chu
   return (
     <div className="card" style={{ padding: 32 }}>
       <div className="chips" style={{ marginBottom: 24 }}>
-        <div className={`chip ${tab === "login" ? "active" : ""}`} onClick={() => setTab("login")}>로그인</div>
-        <div className={`chip ${tab === "join" ? "active" : ""}`} onClick={() => setTab("join")}>성도 가입</div>
+        <div className={`chip ${tab === "login" ? "active" : ""}`} onClick={() => setTab("login")}>{pick(lang, { ko: "로그인", en: "Log in" })}</div>
+        <div className={`chip ${tab === "join" ? "active" : ""}`} onClick={() => setTab("join")}>{pick(lang, { ko: "성도 가입", en: "Sign up" })}</div>
       </div>
       {tab === "login" ? (
-        <LoginPane slug={slug} onDone={done} />
+        <LoginPane slug={slug} onDone={done} lang={lang} />
       ) : (
-        <JoinPane slug={slug} churchName={churchName} onDone={done} />
+        <JoinPane slug={slug} churchName={churchName} onDone={done} lang={lang} />
       )}
     </div>
   );
 }
 
-function LoginPane({ slug, onDone }: { slug: string; onDone: () => void }) {
+function LoginPane({ slug, onDone, lang }: { slug: string; onDone: () => void; lang: Lang }) {
   const [userId, setUserId] = useState("");
   const [pw, setPw] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -52,7 +53,7 @@ function LoginPane({ slug, onDone }: { slug: string; onDone: () => void }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!userId || !pw) { setErrMsg("아이디와 비밀번호를 입력해주세요."); return; }
+    if (!userId || !pw) { setErrMsg(pick(lang, { ko: "아이디와 비밀번호를 입력해주세요.", en: "Please enter your ID and password." })); return; }
     setSubmitting(true);
     setErrMsg("");
     try {
@@ -61,7 +62,7 @@ function LoginPane({ slug, onDone }: { slug: string; onDone: () => void }) {
       saveSessionChurch(slug);
       onDone();
     } catch (err) {
-      setErrMsg(err instanceof ApiError ? err.message : "로그인에 실패했습니다.");
+      setErrMsg(err instanceof ApiError ? err.message : pick(lang, { ko: "로그인에 실패했습니다.", en: "Login failed." }));
     } finally {
       setSubmitting(false);
     }
@@ -70,28 +71,28 @@ function LoginPane({ slug, onDone }: { slug: string; onDone: () => void }) {
   return (
     <form className="auth-form" onSubmit={onSubmit} noValidate>
       <div className="form-row full">
-        <label htmlFor="cm-id">아이디</label>
-        <input id="cm-id" type="text" autoComplete="username" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="아이디" required />
+        <label htmlFor="cm-id">{pick(lang, { ko: "아이디", en: "ID" })}</label>
+        <input id="cm-id" type="text" autoComplete="username" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder={pick(lang, { ko: "아이디", en: "ID" })} required />
       </div>
       <div className="form-row full">
-        <label htmlFor="cm-pw">비밀번호</label>
+        <label htmlFor="cm-pw">{pick(lang, { ko: "비밀번호", en: "Password" })}</label>
         <input id="cm-pw" type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="••••••••" required />
       </div>
       {errMsg && <div className="auth-error">{errMsg}</div>}
       <button type="submit" className="btn btn-primary btn-lg" disabled={submitting || !userId || !pw} style={{ width: "100%", justifyContent: "center" }}>
-        {submitting ? "로그인 중..." : "로그인"}
+        {submitting ? pick(lang, { ko: "로그인 중...", en: "Logging in..." }) : pick(lang, { ko: "로그인", en: "Log in" })}
       </button>
       <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>
-        <button type="button" className="auth-link" onClick={() => setRecovery("find-id")}>아이디 찾기</button>
+        <button type="button" className="auth-link" onClick={() => setRecovery("find-id")}>{pick(lang, { ko: "아이디 찾기", en: "Find ID" })}</button>
         <span style={{ color: "var(--line)" }}>|</span>
-        <button type="button" className="auth-link" onClick={() => setRecovery("reset-pw")}>비밀번호 찾기</button>
+        <button type="button" className="auth-link" onClick={() => setRecovery("reset-pw")}>{pick(lang, { ko: "비밀번호 찾기", en: "Reset password" })}</button>
       </div>
-      {recovery && <AccountRecoveryModal initialMode={recovery} churchSlug={slug} onClose={() => setRecovery(null)} />}
+      {recovery && <AccountRecoveryModal initialMode={recovery} churchSlug={slug} onClose={() => setRecovery(null)} lang={lang} />}
     </form>
   );
 }
 
-function JoinPane({ slug, churchName, onDone }: { slug: string; churchName: string; onDone: () => void }) {
+function JoinPane({ slug, churchName, onDone, lang }: { slug: string; churchName: string; onDone: () => void; lang: Lang }) {
   const [name, setName] = useState("");
   const [userId, setUserId] = useState("");
   const [pw, setPw] = useState("");
@@ -116,41 +117,41 @@ function JoinPane({ slug, churchName, onDone }: { slug: string; churchName: stri
   const digitsOnly = (s: string) => s.replace(/[^0-9]/g, "");
 
   async function sendCode() {
-    if (digitsOnly(phone).length < 10) { setPhoneMsg({ kind: "error", text: "올바른 휴대전화 번호를 입력해주세요." }); return; }
+    if (digitsOnly(phone).length < 10) { setPhoneMsg({ kind: "error", text: pick(lang, { ko: "올바른 휴대전화 번호를 입력해주세요.", en: "Please enter a valid mobile phone number." }) }); return; }
     setPhoneSending(true);
     setPhoneMsg(null);
     try {
       await onchurchAuth.sendVerification(phone);
       setPhoneStatus("code-sent");
       setSecondsLeft(CODE_TTL_SECONDS);
-      setPhoneMsg({ kind: "info", text: "인증번호가 발송되었습니다. 5분 안에 입력해주세요." });
+      setPhoneMsg({ kind: "info", text: pick(lang, { ko: "인증번호가 발송되었습니다. 5분 안에 입력해주세요.", en: "A verification code has been sent. Please enter it within 5 minutes." }) });
       setTimeout(() => codeInputRef.current?.focus(), 50);
     } catch (err) {
-      setPhoneMsg({ kind: "error", text: err instanceof ApiError ? err.message : "인증번호 발송에 실패했습니다." });
+      setPhoneMsg({ kind: "error", text: err instanceof ApiError ? err.message : pick(lang, { ko: "인증번호 발송에 실패했습니다.", en: "Failed to send the verification code." }) });
     } finally {
       setPhoneSending(false);
     }
   }
 
   async function verifyCode() {
-    if (!/^\d{6}$/.test(code)) { setPhoneMsg({ kind: "error", text: "6자리 숫자 인증번호를 입력해주세요." }); return; }
-    if (secondsLeft <= 0) { setPhoneMsg({ kind: "error", text: "인증번호가 만료되었습니다. 다시 발송해주세요." }); return; }
+    if (!/^\d{6}$/.test(code)) { setPhoneMsg({ kind: "error", text: pick(lang, { ko: "6자리 숫자 인증번호를 입력해주세요.", en: "Please enter the 6-digit verification code." }) }); return; }
+    if (secondsLeft <= 0) { setPhoneMsg({ kind: "error", text: pick(lang, { ko: "인증번호가 만료되었습니다. 다시 발송해주세요.", en: "The verification code has expired. Please send a new one." }) }); return; }
     setPhoneStatus("verifying");
     setPhoneMsg(null);
     try {
       await onchurchAuth.verifyCode(phone, code);
       setPhoneStatus("verified");
-      setPhoneMsg({ kind: "success", text: "연락처 인증이 완료되었습니다." });
+      setPhoneMsg({ kind: "success", text: pick(lang, { ko: "연락처 인증이 완료되었습니다.", en: "Phone verification complete." }) });
     } catch (err) {
       setPhoneStatus("code-sent");
-      setPhoneMsg({ kind: "error", text: err instanceof ApiError ? err.message : "인증번호 검증에 실패했습니다." });
+      setPhoneMsg({ kind: "error", text: err instanceof ApiError ? err.message : pick(lang, { ko: "인증번호 검증에 실패했습니다.", en: "Failed to verify the code." }) });
     }
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (phoneStatus !== "verified") { setErrMsg("연락처 인증을 먼저 완료해주세요."); return; }
-    if (pw !== pwConfirm) { setErrMsg("비밀번호가 일치하지 않습니다."); return; }
+    if (phoneStatus !== "verified") { setErrMsg(pick(lang, { ko: "연락처 인증을 먼저 완료해주세요.", en: "Please verify your phone number first." })); return; }
+    if (pw !== pwConfirm) { setErrMsg(pick(lang, { ko: "비밀번호가 일치하지 않습니다.", en: "The passwords do not match." })); return; }
     setSubmitting(true);
     setErrMsg("");
     try {
@@ -159,7 +160,7 @@ function JoinPane({ slug, churchName, onDone }: { slug: string; churchName: stri
       saveSessionChurch(slug);
       onDone();
     } catch (err) {
-      setErrMsg(err instanceof ApiError ? err.message : "회원가입에 실패했습니다.");
+      setErrMsg(err instanceof ApiError ? err.message : pick(lang, { ko: "회원가입에 실패했습니다.", en: "Sign up failed." }));
     } finally {
       setSubmitting(false);
     }
@@ -173,46 +174,48 @@ function JoinPane({ slug, churchName, onDone }: { slug: string; churchName: stri
   return (
     <form className="auth-form" onSubmit={onSubmit} noValidate>
       <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 8px" }}>
-        <strong style={{ color: "var(--ink)" }}>{churchName}</strong> 성도로 가입합니다.
+        {pick(lang, { ko: "", en: "Sign up as a member of " })}
+        <strong style={{ color: "var(--ink)" }}>{churchName}</strong>
+        {pick(lang, { ko: " 성도로 가입합니다.", en: "." })}
       </p>
       <div className="form-row full">
-        <label htmlFor="cj-name">이름</label>
-        <input id="cj-name" type="text" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="홍길동" required />
+        <label htmlFor="cj-name">{pick(lang, { ko: "이름", en: "Name" })}</label>
+        <input id="cj-name" type="text" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={pick(lang, { ko: "홍길동", en: "John Doe" })} required />
       </div>
       <div className="form-row full">
-        <label htmlFor="cj-id">아이디</label>
-        <input id="cj-id" type="text" autoComplete="username" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="영문/숫자 4자 이상" minLength={4} required />
+        <label htmlFor="cj-id">{pick(lang, { ko: "아이디", en: "ID" })}</label>
+        <input id="cj-id" type="text" autoComplete="username" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder={pick(lang, { ko: "영문/숫자 4자 이상", en: "4+ letters/numbers" })} minLength={4} required />
       </div>
       <div className="form-row full">
-        <label htmlFor="cj-pw">비밀번호</label>
-        <input id="cj-pw" type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="8자 이상" minLength={8} required />
+        <label htmlFor="cj-pw">{pick(lang, { ko: "비밀번호", en: "Password" })}</label>
+        <input id="cj-pw" type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder={pick(lang, { ko: "8자 이상", en: "8+ characters" })} minLength={8} required />
       </div>
       <div className="form-row full">
-        <label htmlFor="cj-pw2">비밀번호 확인</label>
-        <input id="cj-pw2" type="password" autoComplete="new-password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} placeholder="비밀번호를 다시 입력해주세요" minLength={8} required />
+        <label htmlFor="cj-pw2">{pick(lang, { ko: "비밀번호 확인", en: "Confirm password" })}</label>
+        <input id="cj-pw2" type="password" autoComplete="new-password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} placeholder={pick(lang, { ko: "비밀번호를 다시 입력해주세요", en: "Re-enter your password" })} minLength={8} required />
         {pwConfirm.length > 0 && pw !== pwConfirm && (
-          <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>비밀번호가 일치하지 않습니다.</span>
+          <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>{pick(lang, { ko: "비밀번호가 일치하지 않습니다.", en: "The passwords do not match." })}</span>
         )}
       </div>
       <div className="form-row full">
         <label htmlFor="cj-phone">
-          연락처
-          {phoneStatus === "verified" && <span style={{ marginLeft: 8, color: "oklch(0.5 0.13 145)", fontWeight: 600 }}>· 인증 완료</span>}
+          {pick(lang, { ko: "연락처", en: "Phone" })}
+          {phoneStatus === "verified" && <span style={{ marginLeft: 8, color: "oklch(0.5 0.13 145)", fontWeight: 600 }}>{pick(lang, { ko: "· 인증 완료", en: "· Verified" })}</span>}
         </label>
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
           <input id="cj-phone" type="tel" inputMode="numeric" autoComplete="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="010-0000-0000" disabled={phoneStatus === "verified"} required />
           <button type="button" className="btn btn-secondary" onClick={sendCode} disabled={phoneStatus === "verified" || phoneSending || digitsOnly(phone).length < 10} style={{ whiteSpace: "nowrap" }}>
-            {phoneSending ? "발송 중..." : phoneStatus === "idle" ? "인증번호 발송" : "재발송"}
+            {phoneSending ? pick(lang, { ko: "발송 중...", en: "Sending..." }) : phoneStatus === "idle" ? pick(lang, { ko: "인증번호 발송", en: "Send code" }) : pick(lang, { ko: "재발송", en: "Resend" })}
           </button>
         </div>
         {(phoneStatus === "code-sent" || phoneStatus === "verifying") && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
             <div style={{ position: "relative" }}>
-              <input ref={codeInputRef} type="text" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))} placeholder="6자리 인증번호" style={{ paddingRight: 64, width: "100%", letterSpacing: "0.2em" }} />
+              <input ref={codeInputRef} type="text" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))} placeholder={pick(lang, { ko: "6자리 인증번호", en: "6-digit code" })} style={{ paddingRight: 64, width: "100%", letterSpacing: "0.2em" }} />
               <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: "var(--font-mono)", fontSize: 12, color: secondsLeft <= 30 ? "oklch(0.55 0.15 28)" : "var(--muted)" }}>{mmss}</span>
             </div>
             <button type="button" className="btn btn-primary" onClick={verifyCode} disabled={code.length < 6 || secondsLeft <= 0 || phoneStatus === "verifying"} style={{ whiteSpace: "nowrap" }}>
-              {phoneStatus === "verifying" ? "확인 중..." : "확인"}
+              {phoneStatus === "verifying" ? pick(lang, { ko: "확인 중...", en: "Verifying..." }) : pick(lang, { ko: "확인", en: "Verify" })}
             </button>
           </div>
         )}
@@ -221,22 +224,25 @@ function JoinPane({ slug, churchName, onDone }: { slug: string; churchName: stri
       <label className="checkbox-row" style={{ cursor: "pointer", justifyContent: "space-between" }}>
         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
         <span>
+          {pick(lang, { ko: "", en: "I agree to the " })}
           <a href="https://everychurch.co.kr/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
-            이용약관
+            {pick(lang, { ko: "이용약관", en: "Terms of Service" })}
           </a>{" "}
           ·{" "}
           <a href="https://everychurch.co.kr/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>
-            개인정보 처리방침
-          </a>{" "}
-          동의
+            {pick(lang, { ko: "개인정보 처리방침", en: "Privacy Policy" })}
+          </a>
+          {pick(lang, { ko: " 동의", en: "" })}
         </span>
       </label>
       <p className="form-hint" style={{ margin: "-4px 0 0" }}>
-        가입 시 입력하신 정보는 소속 교회(<strong>{churchName}</strong>)에 제공됩니다.
+        {pick(lang, { ko: "가입 시 입력하신 정보는 소속 교회(", en: "The information you provide will be shared with your church (" })}
+        <strong>{churchName}</strong>
+        {pick(lang, { ko: ")에 제공됩니다.", en: ")." })}
       </p>
       {errMsg && <div className="auth-error">{errMsg}</div>}
       <button type="submit" className="btn btn-primary btn-lg" disabled={!canSubmit} style={{ width: "100%", justifyContent: "center", opacity: canSubmit ? 1 : 0.6 }}>
-        {submitting ? "가입 중..." : "가입하고 시작하기"}
+        {submitting ? pick(lang, { ko: "가입 중...", en: "Signing up..." }) : pick(lang, { ko: "가입하고 시작하기", en: "Sign up and start" })}
       </button>
     </form>
   );

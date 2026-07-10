@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import type { Brand, NavItem } from "@/lib/types";
+import { type Lang, pick, SHELL } from "@/lib/i18n";
 
 type FooterNavGroup = { heading: string; ids: string[] };
 
@@ -10,9 +11,10 @@ type Props = {
   footerNav: FooterNavGroup[];
   pathPrefix: string;
   enabledPages?: string[];
+  lang?: Lang;
 };
 
-export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages }: Props) {
+export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang = "ko" }: Props) {
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const navById = new Map(nav.map((n) => [n.id, n] as const));
   const isEnabled = (id: string) =>
@@ -80,7 +82,7 @@ export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages }: Prop
             <div>
               {brand.representative}
               {brand.representative && brand.businessNo ? " · " : ""}
-              {brand.businessNo && `사업자등록번호 ${brand.businessNo}`}
+              {brand.businessNo && `${pick(lang, SHELL.businessNo)} ${brand.businessNo}`}
             </div>
           )}
         </div>

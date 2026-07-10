@@ -5,11 +5,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AUTH_CHANGE_EVENT, clearTokens, isLoggedInForChurch, onchurchChurch } from "@/lib/api-client";
 import { buildAdminUrl } from "@/lib/site-host";
+import { type Lang, pick, SHELL } from "@/lib/i18n";
 
 type Props = {
   tagline: string;
   pathPrefix: string;
   slug: string;
+  lang?: Lang;
 };
 
 const menuItemStyle: React.CSSProperties = {
@@ -26,7 +28,7 @@ const menuItemStyle: React.CSSProperties = {
   whiteSpace: "nowrap",
 };
 
-export function UtilBar({ tagline, pathPrefix, slug }: Props) {
+export function UtilBar({ tagline, pathPrefix, slug, lang = "ko" }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -97,7 +99,7 @@ export function UtilBar({ tagline, pathPrefix, slug }: Props) {
                 aria-expanded={menuOpen}
                 style={{ background: "transparent", border: 0, color: "inherit", font: "inherit", cursor: "pointer", padding: 0 }}
               >
-                내 계정 ▾
+                {pick(lang, SHELL.myAccount)} ▾
               </button>
               {menuOpen && (
                 <div
@@ -109,15 +111,15 @@ export function UtilBar({ tagline, pathPrefix, slug }: Props) {
                   }}
                 >
                   {isAdmin && (
-                    <a href={buildAdminUrl()} className="utilbar-menu-item" role="menuitem" style={menuItemStyle}>관리자 페이지</a>
+                    <a href={buildAdminUrl()} className="utilbar-menu-item" role="menuitem" style={menuItemStyle}>{pick(lang, SHELL.adminPage)}</a>
                   )}
-                  <Link href={mypageHref} className="utilbar-menu-item" role="menuitem" style={menuItemStyle} onClick={() => setMenuOpen(false)}>마이페이지</Link>
-                  <button type="button" className="utilbar-menu-item" role="menuitem" style={{ ...menuItemStyle, textAlign: "left", width: "100%" }} onClick={logout}>로그아웃</button>
+                  <Link href={mypageHref} className="utilbar-menu-item" role="menuitem" style={menuItemStyle} onClick={() => setMenuOpen(false)}>{pick(lang, SHELL.myPage)}</Link>
+                  <button type="button" className="utilbar-menu-item" role="menuitem" style={{ ...menuItemStyle, textAlign: "left", width: "100%" }} onClick={logout}>{pick(lang, SHELL.logout)}</button>
                 </div>
               )}
             </div>
           ) : (
-            <Link href={loginHref}>로그인</Link>
+            <Link href={loginHref}>{pick(lang, SHELL.login)}</Link>
           )}
         </div>
       </div>

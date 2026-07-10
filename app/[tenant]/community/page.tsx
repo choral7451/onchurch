@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
+import { pick, normalizeLang } from "@/lib/i18n";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { getPathPrefix } from "@/lib/path-prefix";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
@@ -17,15 +18,28 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
   if (!church) return { title: "교제", robots: { index: false, follow: false } };
+  const lang = normalizeLang(church.siteLang);
+  const meta = pick(lang, {
+    ko: {
+      title: "교제",
+      desc: `${church.name} 성도들이 글과 사진, 영상으로 일상과 은혜를 나누는 공간입니다.`,
+      keywords: ["교제", "나눔", "성도 게시판", "교회 커뮤니티"],
+    },
+    en: {
+      title: "Community",
+      desc: `A space where members of ${church.name} share their daily lives and God's grace through posts, photos, and videos.`,
+      keywords: ["community", "fellowship", "member board", "church community"],
+    },
+  });
   if (!isCommunityEnabled(church.enabledPages)) {
-    return { title: "교제", robots: { index: false, follow: false } };
+    return { title: meta.title, robots: { index: false, follow: false } };
   }
   const pastor = await fetchPublicPastor(tenant);
   return buildChurchMetadata(church, pastor, {
-    pageTitle: "교제",
+    pageTitle: meta.title,
     path: "/community",
-    pageDescription: `${church.name} 성도들이 글과 사진, 영상으로 일상과 은혜를 나누는 공간입니다.`,
-    extraKeywords: ["교제", "나눔", "성도 게시판", "교회 커뮤니티"],
+    pageDescription: meta.desc,
+    extraKeywords: meta.keywords,
   });
 }
 
@@ -56,6 +70,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ tena
   if (!church) notFound();
   if (!isCommunityEnabled(church.enabledPages)) notFound();
 
+  const lang = normalizeLang(church.siteLang);
   const { posts, totalCount, categories } = await fetchInitial(tenant);
   const prefix = await getPathPrefix(tenant);
   // 교회가 카테고리를 정의하지 않았으면 기본 카테고리를 노출한다.
@@ -65,8 +80,11 @@ export default async function CommunityPage({ params }: { params: Promise<{ tena
     <div>
       <PageHeader
         eyebrow="COMMUNITY"
-        title="교제"
-        sub="성도들이 글과 사진, 영상으로 일상과 은혜를 나누는 공간입니다."
+        title={pick(lang, { ko: "교제", en: "Community" })}
+        sub={pick(lang, {
+          ko: "성도들이 글과 사진, 영상으로 일상과 은혜를 나누는 공간입니다.",
+          en: "A space where members share their daily lives and God's grace through posts, photos, and videos.",
+        })}
       />
       <section className="section">
         <div className="container">
@@ -77,6 +95,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ tena
             pageSize={PAGE_SIZE}
             categories={categoryNames}
             loginHref={`${prefix}/login`}
+            lang={lang}
           />
         </div>
       </section>

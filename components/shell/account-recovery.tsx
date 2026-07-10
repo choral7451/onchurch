@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { type Lang, pick } from "@/lib/i18n";
 import { ApiError, FoundAccount, onchurchAuth } from "@/lib/api-client";
 
 type Mode = "find-id" | "reset-pw";
@@ -27,10 +28,12 @@ export function AccountRecoveryModal({
   initialMode = "find-id",
   churchSlug = null,
   onClose,
+  lang = "ko",
 }: {
   initialMode?: Mode;
   churchSlug?: string | null;
   onClose: () => void;
+  lang?: Lang;
 }) {
   const [mode, setMode] = useState<Mode>(initialMode);
 
@@ -43,27 +46,27 @@ export function AccountRecoveryModal({
   }, [onClose]);
 
   return (
-    <div className="recovery-modal-backdrop" role="dialog" aria-modal="true" aria-label="아이디 · 비밀번호 찾기" onClick={onClose}>
+    <div className="recovery-modal-backdrop" role="dialog" aria-modal="true" aria-label={pick(lang, { ko: "아이디 · 비밀번호 찾기", en: "Find ID · Reset password" })} onClick={onClose}>
       <div className="recovery-modal" onClick={(e) => e.stopPropagation()}>
-        <button type="button" className="recovery-modal-close" onClick={onClose} aria-label="닫기">
+        <button type="button" className="recovery-modal-close" onClick={onClose} aria-label={pick(lang, { ko: "닫기", en: "Close" })}>
           ×
         </button>
         <div className="chips" style={{ marginBottom: 24 }}>
           <div className={`chip ${mode === "find-id" ? "active" : ""}`} onClick={() => setMode("find-id")}>
-            아이디 찾기
+            {pick(lang, { ko: "아이디 찾기", en: "Find ID" })}
           </div>
           <div className={`chip ${mode === "reset-pw" ? "active" : ""}`} onClick={() => setMode("reset-pw")}>
-            비밀번호 찾기
+            {pick(lang, { ko: "비밀번호 찾기", en: "Reset password" })}
           </div>
         </div>
-        {mode === "find-id" ? <FindIdPane churchSlug={churchSlug} /> : <ResetPwPane churchSlug={churchSlug} onClose={onClose} />}
+        {mode === "find-id" ? <FindIdPane churchSlug={churchSlug} lang={lang} /> : <ResetPwPane churchSlug={churchSlug} onClose={onClose} lang={lang} />}
       </div>
     </div>
   );
 }
 
 /** 연락처 입력 + 인증번호 발송/검증. 인증 완료 시 onVerified(phone) 호출. */
-function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerified: (phone: string) => void }) {
+function PhoneVerifyField({ verified, onVerified, lang }: { verified: boolean; onVerified: (phone: string) => void; lang: Lang }) {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [status, setStatus] = useState<PhoneStatus>("idle");
@@ -80,7 +83,7 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
 
   async function sendCode() {
     if (digitsOnly(phone).length < 10) {
-      setMsg({ kind: "error", text: "올바른 휴대전화 번호를 입력해주세요." });
+      setMsg({ kind: "error", text: pick(lang, { ko: "올바른 휴대전화 번호를 입력해주세요.", en: "Please enter a valid mobile phone number." }) });
       return;
     }
     setSending(true);
@@ -89,10 +92,10 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
       await onchurchAuth.sendVerification(phone);
       setStatus("code-sent");
       setSecondsLeft(CODE_TTL_SECONDS);
-      setMsg({ kind: "info", text: "인증번호가 발송되었습니다. 5분 안에 입력해주세요." });
+      setMsg({ kind: "info", text: pick(lang, { ko: "인증번호가 발송되었습니다. 5분 안에 입력해주세요.", en: "A verification code has been sent. Please enter it within 5 minutes." }) });
       setTimeout(() => codeInputRef.current?.focus(), 50);
     } catch (err) {
-      setMsg({ kind: "error", text: err instanceof ApiError ? err.message : "인증번호 발송에 실패했습니다." });
+      setMsg({ kind: "error", text: err instanceof ApiError ? err.message : pick(lang, { ko: "인증번호 발송에 실패했습니다.", en: "Failed to send the verification code." }) });
     } finally {
       setSending(false);
     }
@@ -100,11 +103,11 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
 
   async function verify() {
     if (!/^\d{6}$/.test(code)) {
-      setMsg({ kind: "error", text: "6자리 숫자 인증번호를 입력해주세요." });
+      setMsg({ kind: "error", text: pick(lang, { ko: "6자리 숫자 인증번호를 입력해주세요.", en: "Please enter the 6-digit verification code." }) });
       return;
     }
     if (secondsLeft <= 0) {
-      setMsg({ kind: "error", text: "인증번호가 만료되었습니다. 다시 발송해주세요." });
+      setMsg({ kind: "error", text: pick(lang, { ko: "인증번호가 만료되었습니다. 다시 발송해주세요.", en: "The verification code has expired. Please send a new one." }) });
       return;
     }
     setStatus("verifying");
@@ -112,11 +115,11 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
     try {
       await onchurchAuth.verifyCode(phone, code);
       setStatus("verified");
-      setMsg({ kind: "success", text: "연락처 인증이 완료되었습니다." });
+      setMsg({ kind: "success", text: pick(lang, { ko: "연락처 인증이 완료되었습니다.", en: "Phone verification complete." }) });
       onVerified(phone);
     } catch (err) {
       setStatus("code-sent");
-      setMsg({ kind: "error", text: err instanceof ApiError ? err.message : "인증번호 검증에 실패했습니다." });
+      setMsg({ kind: "error", text: err instanceof ApiError ? err.message : pick(lang, { ko: "인증번호 검증에 실패했습니다.", en: "Failed to verify the code." }) });
     }
   }
 
@@ -125,8 +128,8 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
   return (
     <div className="form-row full">
       <label htmlFor="ar-phone">
-        연락처
-        {verified && <span style={{ marginLeft: 8, color: "oklch(0.5 0.13 145)", fontWeight: 600 }}>· 인증 완료</span>}
+        {pick(lang, { ko: "연락처", en: "Phone" })}
+        {verified && <span style={{ marginLeft: 8, color: "oklch(0.5 0.13 145)", fontWeight: 600 }}>{pick(lang, { ko: "· 인증 완료", en: "· Verified" })}</span>}
       </label>
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
         <input
@@ -147,7 +150,7 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
           disabled={verified || sending || digitsOnly(phone).length < 10}
           style={{ whiteSpace: "nowrap" }}
         >
-          {sending ? "발송 중..." : status === "idle" ? "인증번호 발송" : "재발송"}
+          {sending ? pick(lang, { ko: "발송 중...", en: "Sending..." }) : status === "idle" ? pick(lang, { ko: "인증번호 발송", en: "Send code" }) : pick(lang, { ko: "재발송", en: "Resend" })}
         </button>
       </div>
       {(status === "code-sent" || status === "verifying") && (
@@ -160,7 +163,7 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
               maxLength={6}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
-              placeholder="6자리 인증번호"
+              placeholder={pick(lang, { ko: "6자리 인증번호", en: "6-digit code" })}
               style={{ paddingRight: 64, width: "100%", letterSpacing: "0.2em" }}
             />
             <span
@@ -184,7 +187,7 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
             disabled={code.length < 6 || secondsLeft <= 0 || status === "verifying"}
             style={{ whiteSpace: "nowrap" }}
           >
-            {status === "verifying" ? "확인 중..." : "확인"}
+            {status === "verifying" ? pick(lang, { ko: "확인 중...", en: "Verifying..." }) : pick(lang, { ko: "확인", en: "Verify" })}
           </button>
         </div>
       )}
@@ -197,7 +200,7 @@ function PhoneVerifyField({ verified, onVerified }: { verified: boolean; onVerif
   );
 }
 
-function FindIdPane({ churchSlug }: { churchSlug: string | null }) {
+function FindIdPane({ churchSlug, lang }: { churchSlug: string | null; lang: Lang }) {
   const [accounts, setAccounts] = useState<FoundAccount[] | null>(null);
   const [errMsg, setErrMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -209,7 +212,7 @@ function FindIdPane({ churchSlug }: { churchSlug: string | null }) {
       const { accounts } = await onchurchAuth.findLoginIds(phone, churchSlug);
       setAccounts(accounts);
     } catch (err) {
-      setErrMsg(err instanceof ApiError ? err.message : "아이디 조회에 실패했습니다.");
+      setErrMsg(err instanceof ApiError ? err.message : pick(lang, { ko: "아이디 조회에 실패했습니다.", en: "Failed to look up your ID." }));
     } finally {
       setLoading(false);
     }
@@ -219,7 +222,7 @@ function FindIdPane({ churchSlug }: { churchSlug: string | null }) {
     return (
       <div className="auth-form">
         <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
-          입력하신 연락처로 가입된 아이디입니다.
+          {pick(lang, { ko: "입력하신 연락처로 가입된 아이디입니다.", en: "IDs registered with the phone number you entered." })}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {accounts.map((acc) => (
@@ -233,7 +236,10 @@ function FindIdPane({ churchSlug }: { churchSlug: string | null }) {
                 <span style={{ color: "var(--muted)", fontSize: 12, marginLeft: 8 }}>{acc.name}</span>
               </div>
               <span style={{ color: "var(--muted)", fontSize: 12 }}>
-                {new Date(acc.createdAt).toLocaleDateString("ko-KR")} 가입
+                {pick(lang, {
+                  ko: `${new Date(acc.createdAt).toLocaleDateString("ko-KR")} 가입`,
+                  en: `Joined ${new Date(acc.createdAt).toLocaleDateString("en-US")}`,
+                })}
               </span>
             </div>
           ))}
@@ -245,16 +251,16 @@ function FindIdPane({ churchSlug }: { churchSlug: string | null }) {
   return (
     <div className="auth-form">
       <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
-        가입 시 등록한 연락처로 인증하면 아이디를 확인할 수 있습니다.
+        {pick(lang, { ko: "가입 시 등록한 연락처로 인증하면 아이디를 확인할 수 있습니다.", en: "Verify the phone number you registered with to see your ID." })}
       </p>
-      <PhoneVerifyField verified={false} onVerified={onVerified} />
-      {loading && <div className="phone-msg phone-msg-info">아이디를 조회하고 있습니다...</div>}
+      <PhoneVerifyField verified={false} onVerified={onVerified} lang={lang} />
+      {loading && <div className="phone-msg phone-msg-info">{pick(lang, { ko: "아이디를 조회하고 있습니다...", en: "Looking up your ID..." })}</div>}
       {errMsg && <div className="auth-error">{errMsg}</div>}
     </div>
   );
 }
 
-function ResetPwPane({ churchSlug, onClose }: { churchSlug: string | null; onClose: () => void }) {
+function ResetPwPane({ churchSlug, onClose, lang }: { churchSlug: string | null; onClose: () => void; lang: Lang }) {
   const [loginId, setLoginId] = useState("");
   const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null);
   const [pw, setPw] = useState("");
@@ -266,15 +272,15 @@ function ResetPwPane({ churchSlug, onClose }: { churchSlug: string | null; onClo
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!verifiedPhone) {
-      setErrMsg("연락처 인증을 먼저 완료해주세요.");
+      setErrMsg(pick(lang, { ko: "연락처 인증을 먼저 완료해주세요.", en: "Please verify your phone number first." }));
       return;
     }
     if (pw.length < 8) {
-      setErrMsg("비밀번호는 8자 이상이어야 합니다.");
+      setErrMsg(pick(lang, { ko: "비밀번호는 8자 이상이어야 합니다.", en: "The password must be at least 8 characters." }));
       return;
     }
     if (pw !== pwConfirm) {
-      setErrMsg("비밀번호가 일치하지 않습니다.");
+      setErrMsg(pick(lang, { ko: "비밀번호가 일치하지 않습니다.", en: "The passwords do not match." }));
       return;
     }
     setSubmitting(true);
@@ -283,7 +289,7 @@ function ResetPwPane({ churchSlug, onClose }: { churchSlug: string | null; onClo
       await onchurchAuth.resetPassword(loginId.trim(), verifiedPhone, pw, churchSlug);
       setDone(true);
     } catch (err) {
-      setErrMsg(err instanceof ApiError ? err.message : "비밀번호 변경에 실패했습니다.");
+      setErrMsg(err instanceof ApiError ? err.message : pick(lang, { ko: "비밀번호 변경에 실패했습니다.", en: "Failed to reset the password." }));
     } finally {
       setSubmitting(false);
     }
@@ -292,9 +298,9 @@ function ResetPwPane({ churchSlug, onClose }: { churchSlug: string | null; onClo
   if (done) {
     return (
       <div className="auth-form">
-        <div className="phone-msg phone-msg-success">비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.</div>
+        <div className="phone-msg phone-msg-success">{pick(lang, { ko: "비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.", en: "Your password has been changed. Please log in with your new password." })}</div>
         <button type="button" className="btn btn-primary btn-lg" onClick={onClose} style={{ width: "100%", justifyContent: "center" }}>
-          로그인하기
+          {pick(lang, { ko: "로그인하기", en: "Log in" })}
         </button>
       </div>
     );
@@ -305,51 +311,51 @@ function ResetPwPane({ churchSlug, onClose }: { churchSlug: string | null; onClo
   return (
     <form className="auth-form" onSubmit={onSubmit} noValidate>
       <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
-        아이디와 가입 시 등록한 연락처로 인증한 뒤 새 비밀번호를 설정합니다.
+        {pick(lang, { ko: "아이디와 가입 시 등록한 연락처로 인증한 뒤 새 비밀번호를 설정합니다.", en: "Verify your ID and registered phone number, then set a new password." })}
       </p>
       <div className="form-row full">
-        <label htmlFor="ar-loginid">아이디</label>
+        <label htmlFor="ar-loginid">{pick(lang, { ko: "아이디", en: "ID" })}</label>
         <input
           id="ar-loginid"
           type="text"
           autoComplete="username"
           value={loginId}
           onChange={(e) => setLoginId(e.target.value)}
-          placeholder="아이디"
+          placeholder={pick(lang, { ko: "아이디", en: "ID" })}
           required
         />
       </div>
-      <PhoneVerifyField verified={!!verifiedPhone} onVerified={(phone) => setVerifiedPhone(phone)} />
+      <PhoneVerifyField verified={!!verifiedPhone} onVerified={(phone) => setVerifiedPhone(phone)} lang={lang} />
       {verifiedPhone && (
         <>
           <div className="form-row full">
-            <label htmlFor="ar-newpw">새 비밀번호</label>
+            <label htmlFor="ar-newpw">{pick(lang, { ko: "새 비밀번호", en: "New password" })}</label>
             <input
               id="ar-newpw"
               type="password"
               autoComplete="new-password"
               value={pw}
               onChange={(e) => setPw(e.target.value)}
-              placeholder="8자 이상"
+              placeholder={pick(lang, { ko: "8자 이상", en: "8+ characters" })}
               minLength={8}
               required
             />
           </div>
           <div className="form-row full">
-            <label htmlFor="ar-newpw2">새 비밀번호 확인</label>
+            <label htmlFor="ar-newpw2">{pick(lang, { ko: "새 비밀번호 확인", en: "Confirm new password" })}</label>
             <input
               id="ar-newpw2"
               type="password"
               autoComplete="new-password"
               value={pwConfirm}
               onChange={(e) => setPwConfirm(e.target.value)}
-              placeholder="비밀번호를 다시 입력해주세요"
+              placeholder={pick(lang, { ko: "비밀번호를 다시 입력해주세요", en: "Re-enter your password" })}
               minLength={8}
               required
             />
             {pwConfirm.length > 0 && pw !== pwConfirm && (
               <span className="form-hint" style={{ color: "oklch(0.55 0.15 28)" }}>
-                비밀번호가 일치하지 않습니다.
+                {pick(lang, { ko: "비밀번호가 일치하지 않습니다.", en: "The passwords do not match." })}
               </span>
             )}
           </div>
@@ -362,7 +368,7 @@ function ResetPwPane({ churchSlug, onClose }: { churchSlug: string | null; onClo
         disabled={!canSubmit}
         style={{ width: "100%", justifyContent: "center", opacity: canSubmit ? 1 : 0.6 }}
       >
-        {submitting ? "변경 중..." : "비밀번호 변경"}
+        {submitting ? pick(lang, { ko: "변경 중...", en: "Changing..." }) : pick(lang, { ko: "비밀번호 변경", en: "Reset password" })}
       </button>
     </form>
   );
