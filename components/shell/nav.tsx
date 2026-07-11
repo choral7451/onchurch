@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
 import type { Brand, NavItem } from "@/lib/types";
 import { type Lang, pick, SHELL } from "@/lib/i18n";
-import { AUTH_CHANGE_EVENT, isLoggedIn, onchurchChurch } from "@/lib/api-client";
+import { AUTH_CHANGE_EVENT, isLoggedInForChurch, onchurchChurch } from "@/lib/api-client";
 import { buildAdminUrl } from "@/lib/site-host";
 
 type Props = {
@@ -21,7 +21,7 @@ type Props = {
 export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  // 오너/관리자로 로그인한 경우에만 관리자 페이지 이동 버튼을 노출한다.
+  // 이 교회(tenant) 사이트에 오너/관리자로 로그인한 경우에만 관리자 페이지 이동 버튼을 노출한다.
   const [isManager, setIsManager] = useState(false);
 
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
@@ -47,10 +47,11 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
   }, [pathname]);
 
   // 로그인/로그아웃(같은 탭) 및 다른 탭 변경 시 오너/관리자 여부를 다시 판별.
+  // 이 교회(tenant)에서 로그인한 세션일 때만 판별한다 — 다른 교회 오너가 봐도 노출되면 안 됨.
   useEffect(() => {
     let cancelled = false;
     const sync = () => {
-      if (!isLoggedIn()) {
+      if (!isLoggedInForChurch(tenant)) {
         setIsManager(false);
         return;
       }
@@ -75,7 +76,7 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
       window.removeEventListener(AUTH_CHANGE_EVENT, sync);
       window.removeEventListener("storage", onStorage);
     };
-  }, []);
+  }, [tenant]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
