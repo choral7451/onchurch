@@ -56,6 +56,21 @@ function fmtRange(ev: CalendarEvent): string {
 }
 
 const UPCOMING_PREVIEW_LIMIT = 8;
+// PC에서는 한 페이지에 이 개수만큼만 보여주고 화살표로 페이지를 넘긴다 (목록이 세로로 늘어나지 않게).
+const UPCOMING_PAGE_SIZE = 5;
+
+// 뷰포트가 PC 폭인지 판별. 반응형 분기점(960px, globals.css)과 동일하게 맞춘다.
+function useIsDesktop(): boolean {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 961px)");
+    setIsDesktop(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return isDesktop;
+}
 
 // "YYYY-MM"(예: "2026-04") 파싱. 홈페이지에서 특정 일정을 클릭해 넘어온 경우 그 달을 연다.
 function parseYm(ym: string | undefined): { year: number; month: number } | null {
@@ -77,6 +92,8 @@ export function Calendar({ events, initialYm, lang = "ko" }: { events: CalendarE
   const [activeEvents, setActiveEvents] = useState<CalendarEvent[] | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const [page, setPage] = useState(0);
+  const isDesktop = useIsDesktop();
 
   const firstDay = new Date(view.year, view.month - 1, 1).getDay();
   const daysInMonth = new Date(view.year, view.month, 0).getDate();
@@ -110,13 +127,19 @@ export function Calendar({ events, initialYm, lang = "ko" }: { events: CalendarE
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
   }, [events, view]);
 
-  // 달이 바뀌면 펼친 상태를 닫는다 (새 달 기준으로 다시 프리뷰부터).
+  // 달이 바뀌면 펼친 상태를 닫고 페이지를 처음으로 되돌린다 (새 달 기준으로 다시 처음부터).
   useEffect(() => {
     setExpanded(false);
+    setPage(0);
   }, [view.year, view.month]);
 
   const visibleUpcoming = expanded ? upcoming : upcoming.slice(0, UPCOMING_PREVIEW_LIMIT);
   const hiddenCount = upcoming.length - UPCOMING_PREVIEW_LIMIT;
+
+  // PC 페이지네이션: 총 페이지 수와 현재 페이지에 보일 일정 목록.
+  const pageCount = Math.max(1, Math.ceil(upcoming.length / UPCOMING_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const pagedUpcoming = upcoming.slice(safePage * UPCOMING_PAGE_SIZE, safePage * UPCOMING_PAGE_SIZE + UPCOMING_PAGE_SIZE);
 
   function shiftMonth(delta: number) {
     setView((v) => {
@@ -151,6 +174,20 @@ export function Calendar({ events, initialYm, lang = "ko" }: { events: CalendarE
   }, [activeEvents]);
 
   const activeEvent = activeEvents ? activeEvents[activeIndex] : null;
+
+  const renderUpcomingItem = (e: CalendarEvent) => (
+    <button
+      type="button"
+      key={e.id}
+      className="upcoming-item upcoming-item-btn"
+      onClick={() => openEvent(e)}
+      aria-label={pick(lang, { ko: `${e.title} 상세 보기`, en: `View ${e.title}` })}
+    >
+      <div className="upcoming-date">{fmtUpcomingDate(e.startAt)}</div>
+      <div className="upcoming-title">{e.title}</div>
+      <div className="upcoming-meta">{fmtMeta(e)}</div>
+    </button>
+  );
 
   return (
     <div className="calendar-wrap">
@@ -244,21 +281,36 @@ export function Calendar({ events, initialYm, lang = "ko" }: { events: CalendarE
                   en: `No events in ${new Date(view.year, view.month - 1, 1).toLocaleString("en-US", { month: "long" })}.`,
                 })}
           </div>
+        ) : isDesktop ? (
+          <>
+            {pagedUpcoming.map(renderUpcomingItem)}
+            {pageCount > 1 && (
+              <div className="upcoming-pager">
+                <button
+                  type="button"
+                  aria-label={pick(lang, { ko: "이전 페이지", en: "Previous page" })}
+                  disabled={safePage === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                >
+                  <Icon.chevL />
+                </button>
+                <span className="upcoming-pager-info">
+                  {safePage + 1} / {pageCount}
+                </span>
+                <button
+                  type="button"
+                  aria-label={pick(lang, { ko: "다음 페이지", en: "Next page" })}
+                  disabled={safePage >= pageCount - 1}
+                  onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                >
+                  <Icon.chevR />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <>
-            {visibleUpcoming.map((e) => (
-              <button
-                type="button"
-                key={e.id}
-                className="upcoming-item upcoming-item-btn"
-                onClick={() => openEvent(e)}
-                aria-label={pick(lang, { ko: `${e.title} 상세 보기`, en: `View ${e.title}` })}
-              >
-                <div className="upcoming-date">{fmtUpcomingDate(e.startAt)}</div>
-                <div className="upcoming-title">{e.title}</div>
-                <div className="upcoming-meta">{fmtMeta(e)}</div>
-              </button>
-            ))}
+            {visibleUpcoming.map(renderUpcomingItem)}
             {hiddenCount > 0 && (
               <button
                 type="button"
