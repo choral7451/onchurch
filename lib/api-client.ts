@@ -1639,29 +1639,6 @@ export const onchurchGallery = {
   },
 };
 
-export type PrayerStatus = "pending" | "praying" | "answered";
-
-export type PrayerSubmitInput = {
-  name: string | null;
-  contact: string | null;
-  category: string;
-  scope: string;
-  content: string;
-  isAnonymous: boolean;
-};
-
-export type PrayerItem = {
-  id: number;
-  name: string | null;
-  contact: string | null;
-  category: string;
-  scope: string;
-  content: string;
-  isAnonymous: boolean;
-  status: PrayerStatus;
-  createdAt: string;
-};
-
 export type InquiryItem = {
   id: number;
   question: string;
@@ -1682,26 +1659,6 @@ export const onchurchInquiry = {
       auth: true,
       body: JSON.stringify({ question }),
     }),
-};
-
-export const onchurchPrayer = {
-  submitPublic: (slug: string, input: PrayerSubmitInput) =>
-    request<PrayerItem>(`/onchurch/sites/${encodeURIComponent(slug)}/prayers`, {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  listMine: () =>
-    request<{ prayers: PrayerItem[] }>("/onchurch/prayers/me", { method: "GET", auth: true }).then(
-      (r) => r.prayers ?? [],
-    ),
-  updateStatus: (id: number, status: PrayerStatus) =>
-    request<PrayerItem>(`/onchurch/prayers/me/${id}/status`, {
-      method: "PUT",
-      auth: true,
-      body: JSON.stringify({ status }),
-    }),
-  remove: (id: number) =>
-    request<unknown>(`/onchurch/prayers/me/${id}`, { method: "DELETE", auth: true }),
 };
 
 // ── 교제 게시판 (Community) ─────────────────────────────

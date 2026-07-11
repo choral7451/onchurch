@@ -103,14 +103,13 @@ export const PUBLIC_NAV: NavItem[] = [
   { id: "schedule", label: "일정", href: "/schedule" },
   { id: "gallery", label: "갤러리", href: "/gallery" },
   { id: "community", label: "교제", href: "/community" },
-  { id: "prayer", label: "기도 요청", href: "/prayer" },
   { id: "directions", label: "찾아오시는 길", href: "/directions" },
 ];
 
 export const PUBLIC_FOOTER_NAV: { heading: string; ids: string[] }[] = [
   { heading: "교회", ids: ["about", "worship", "directions"] },
   { heading: "콘텐츠", ids: ["sermons", "notices", "gallery", "community"] },
-  { heading: "기타", ids: ["schedule", "prayer"] },
+  { heading: "기타", ids: ["schedule"] },
 ];
 
 // 언어에 맞춰 네비 라벨을 번역해 반환한다. href/id는 그대로.
@@ -125,6 +124,6 @@ export function getPublicFooterNav(lang: Lang): { heading: string; ids: string[]
   return [
     { heading: pick(lang, FOOTER_HEADINGS.church), ids: ["about", "worship", "directions"] },
     { heading: pick(lang, FOOTER_HEADINGS.content), ids: ["sermons", "notices", "gallery", "community"] },
-    { heading: pick(lang, FOOTER_HEADINGS.more), ids: ["schedule", "prayer"] },
+    { heading: pick(lang, FOOTER_HEADINGS.more), ids: ["schedule"] },
   ];
 }

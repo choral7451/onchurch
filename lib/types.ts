@@ -127,11 +127,6 @@ export type StaffMember = {
   photo?: string;
 };
 
-export type PrayerSample = {
-  who: string;
-  topic: string;
-};
-
 export type Transportation = {
   tag: string;
   icon: string;
@@ -171,9 +166,6 @@ export type SiteData = {
   vision: VisionItem[];
   history: HistoryItem[];
   staff: StaffMember[];
-  prayerSamples: PrayerSample[];
-  prayerCategories: string[];
-  prayerScopes: string[];
   transportation: Transportation[];
   verseOfWeek: VerseOfWeek;
   calendar: CalendarConfig;

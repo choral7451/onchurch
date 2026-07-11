@@ -59,7 +59,6 @@ export const metadata: Metadata = {
     "교회 갤러리",
     "성경 통독",
     "교회 부서 홈페이지",
-    "기도 요청 폼",
     "교회 서브도메인",
     "온교회",
     "everychurch",

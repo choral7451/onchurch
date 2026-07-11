@@ -21,7 +21,6 @@ export const SITE_DATA: SiteData = {
     // { id: "departments", label: "교회학교", href: "/departments" },
     { id: "gallery", label: "갤러리", href: "/gallery" },
     { id: "community", label: "교제", href: "/community" },
-    { id: "prayer", label: "기도 요청", href: "/prayer" },
     { id: "directions", label: "찾아오시는 길", href: "/directions" },
   ],
   hero: {
@@ -152,14 +151,6 @@ export const SITE_DATA: SiteData = {
     { name: "한소영", role: "전도사", area: "유치부" },
     { name: "최지민", role: "전도사", area: "유아부" },
   ],
-  prayerSamples: [
-    { who: "ㅇㅎㅈ 자매", topic: "딸의 대학 진학과 진로를 위해 기도해주세요." },
-    { who: "익명", topic: "오랜 시간 멀어졌던 가족과의 화해를 위해 기도 부탁드립니다." },
-    { who: "ㄱㅈㅎ 형제", topic: "수술을 앞두고 있습니다. 평안과 회복을 구합니다." },
-    { who: "선교사 가정", topic: "캄보디아 현지 사역과 자녀 교육을 위해 기도해주세요." },
-  ],
-  prayerCategories: ["가정 / 자녀", "건강 / 치유", "직장 / 진로", "신앙 성장", "관계 / 화해", "기타"],
-  prayerScopes: ["중보기도팀에게만", "담임목사에게만", "전체 성도와 함께"],
   transportation: [
     { tag: "지하철", icon: "🚇", title: "왕십리역 5번 출구", desc: "도보 7분 · 2호선 / 5호선 / 분당선 / 경의중앙선 환승" },
     { tag: "버스", icon: "🚌", title: "성동구청 정류장", desc: "도보 3분 · 간선 240, 410, 420 / 마을 성동08" },

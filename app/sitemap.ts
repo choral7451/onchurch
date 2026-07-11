@@ -18,7 +18,6 @@ const TENANT_PAGES: PageSpec[] = [
   { id: "gallery",     path: "/gallery",     priority: 0.6, changeFrequency: "monthly" },
   { id: "directions",  path: "/directions",  priority: 0.7, changeFrequency: "yearly" },
   { id: "bible",       path: "/bible",       priority: 0.4, changeFrequency: "monthly" },
-  { id: "prayer",      path: "/prayer",      priority: 0.4, changeFrequency: "monthly" },
   { id: "departments", path: "/departments", priority: 0.5, changeFrequency: "monthly" },
 ];
 

@@ -22,7 +22,6 @@ export const NAV_LABELS: Record<string, { ko: string; en: string }> = {
   schedule: { ko: "일정", en: "Calendar" },
   gallery: { ko: "갤러리", en: "Gallery" },
   community: { ko: "교제", en: "Community" },
-  prayer: { ko: "기도 요청", en: "Prayer" },
   directions: { ko: "찾아오시는 길", en: "Directions" },
 };
 
@@ -35,7 +34,6 @@ export const FOOTER_HEADINGS = {
 
 // 셸(네비/유틸바/푸터) 공통 문구
 export const SHELL = {
-  prayerCta: { ko: "기도 요청", en: "Prayer" },
   openMenu: { ko: "메뉴 열기", en: "Open menu" },
   closeMenu: { ko: "메뉴 닫기", en: "Close menu" },
   menu: { ko: "메뉴", en: "Menu" },

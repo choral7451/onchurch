@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
 import type { Brand, NavItem } from "@/lib/types";
 import { type Lang, pick, SHELL } from "@/lib/i18n";
+import { AUTH_CHANGE_EVENT, isLoggedIn, onchurchChurch } from "@/lib/api-client";
+import { buildAdminUrl } from "@/lib/site-host";
 
 type Props = {
   tenant: string;
@@ -19,6 +21,8 @@ type Props = {
 export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // 오너/관리자로 로그인한 경우에만 관리자 페이지 이동 버튼을 노출한다.
+  const [isManager, setIsManager] = useState(false);
 
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const base = `/${tenant}`;
@@ -34,15 +38,44 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
     );
   };
 
-  const visibleNav = (enabledPages && enabledPages.length > 0
+  const visibleNav = enabledPages && enabledPages.length > 0
     ? nav.filter((item) => item.id === "directions" || enabledPages.includes(item.id))
-    : nav
-  ).filter((item) => item.id !== "prayer"); // 기도 요청은 우측 CTA 버튼으로만 노출
-  const prayerEnabled = !enabledPages || enabledPages.length === 0 || enabledPages.includes("prayer");
+    : nav;
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  // 로그인/로그아웃(같은 탭) 및 다른 탭 변경 시 오너/관리자 여부를 다시 판별.
+  useEffect(() => {
+    let cancelled = false;
+    const sync = () => {
+      if (!isLoggedIn()) {
+        setIsManager(false);
+        return;
+      }
+      onchurchChurch
+        .getMine()
+        .then((res) => {
+          if (cancelled) return;
+          setIsManager(res?.churchRole === "owner" || res?.churchRole === "admin");
+        })
+        .catch(() => {
+          if (!cancelled) setIsManager(false);
+        });
+    };
+    sync();
+    window.addEventListener(AUTH_CHANGE_EVENT, sync);
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key || e.key.startsWith("onchurch.")) sync();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(AUTH_CHANGE_EVENT, sync);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -83,12 +116,12 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
             </Link>
           ))}
         </div>
-        {prayerEnabled && (
+        {isManager && (
           <div className="nav-cta">
-            <Link href={link("/prayer")} className="btn btn-primary">
-              <Icon.pray style={{ width: 16, height: 16 }} />
-              {pick(lang, SHELL.prayerCta)}
-            </Link>
+            <a href={buildAdminUrl()} className="btn btn-primary">
+              <Icon.gear style={{ width: 16, height: 16 }} />
+              {pick(lang, SHELL.adminPage)}
+            </a>
           </div>
         )}
         <button
@@ -138,12 +171,12 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
               </Link>
             ))}
           </div>
-          {prayerEnabled && (
+          {isManager && (
             <div className="nav-drawer-cta">
-              <Link href={link("/prayer")} className="btn btn-primary">
-                <Icon.pray style={{ width: 16, height: 16 }} />
-                {pick(lang, SHELL.prayerCta)}
-              </Link>
+              <a href={buildAdminUrl()} className="btn btn-primary">
+                <Icon.gear style={{ width: 16, height: 16 }} />
+                {pick(lang, SHELL.adminPage)}
+              </a>
             </div>
           )}
         </aside>
