@@ -57,6 +57,24 @@ export const fetchPublicPastor = cache(async (slug: string): Promise<PublicPasto
   }
 });
 
+type PublicBannerLite = {
+  imageUrl: string | null;
+  isDefault: boolean;
+};
+
+export const fetchPublicBanners = cache(async (slug: string): Promise<PublicBannerLite[]> => {
+  try {
+    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/banners`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    return (body?.item?.banners ?? []) as PublicBannerLite[];
+  } catch {
+    return [];
+  }
+});
+
 // 현재 요청의 사이트 origin (`https://example.com`). 멀티테넌트라 host 헤더 기준.
 export async function getSiteOrigin(): Promise<string> {
   const h = await headers();
@@ -156,6 +174,14 @@ export async function buildChurchMetadata(
 
   const logo = church.logoUrl ?? undefined;
 
+  // 공유(og:image)·favicon 이미지.
+  // - favicon(icons): 교회 로고만 사용.
+  // - 공유 이미지(og:image): 로고 → 첫 번째 배너 → 기본 배너 순으로 fallback.
+  const banners = await fetchPublicBanners(church.slug);
+  const firstBanner = banners.find((b) => !b.isDefault && b.imageUrl)?.imageUrl ?? undefined;
+  const defaultBanner = banners.find((b) => b.isDefault && b.imageUrl)?.imageUrl ?? undefined;
+  const shareImage = logo ?? firstBanner ?? defaultBanner;
+
   // <meta name="..."> 추가 항목. 교회별 네이버 사이트 인증 코드가 있으면 해당 교회 페이지에만 주입한다.
   const other: Record<string, string> = {};
   if (church.address) other["geo.placename"] = church.address;
@@ -187,13 +213,13 @@ export async function buildChurchMetadata(
       title: fullTitle,
       description,
       url,
-      images: logo ? [{ url: logo, alt: church.name }] : undefined,
+      images: shareImage ? [{ url: shareImage, alt: church.name }] : undefined,
     },
     twitter: {
-      card: logo ? "summary_large_image" : "summary",
+      card: shareImage ? "summary_large_image" : "summary",
       title: fullTitle,
       description,
-      images: logo ? [logo] : undefined,
+      images: shareImage ? [shareImage] : undefined,
     },
     other: Object.keys(other).length > 0 ? other : undefined,
   };
