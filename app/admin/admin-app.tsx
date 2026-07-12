@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { AddressPicker } from "@/components/address-picker";
+import { ForcePasswordChangeModal } from "@/components/shell/force-password-change";
 import type {
   Brand,
   EventItem,
@@ -228,6 +229,9 @@ const DENOMINATION_LOGOS: { url: string; label: string }[] = [
 export function AdminApp({ initial }: { initial: Initial }) {
   const router = useRouter();
 
+  // 위저드(임시비밀번호)로 생성된 계정 → 최초 진입 시 비밀번호 변경 강제.
+  const [forcePwChange, setForcePwChange] = useState(false);
+
   const [activeSection, setActiveSection] = useState<SectionKey>("start");
   // 사이드바 최상위 구분: 홈페이지 / 성도관리
   const [navGroup, setNavGroup] = useState<NavGroup>("home");
@@ -350,6 +354,20 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   useEffect(() => {
     void refreshRequiredStatus();
+  }, []);
+
+  // 최초 진입 시 임시비밀번호 계정이면 비밀번호 변경을 강제한다.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const profile = await onchurchUser.getMe();
+        if (!cancelled && profile.mustChangePassword) setForcePwChange(true);
+      } catch {
+        /* 조회 실패 시 강제하지 않음 */
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -991,6 +1009,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   return (
     <div className="admin-shell">
+      {forcePwChange && <ForcePasswordChangeModal onDone={() => setForcePwChange(false)} />}
       {quickLimitMsg && (
         <div
           role="alert"

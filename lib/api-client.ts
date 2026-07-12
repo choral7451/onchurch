@@ -470,6 +470,8 @@ export type UserProfile = {
   phone: string;
   role: string;
   churchName: string | null;
+  // 위저드(임시비밀번호)로 생성된 계정 → 최초 로그인 시 비밀번호 변경 강제 여부.
+  mustChangePassword: boolean;
 };
 
 export const onchurchUser = {
