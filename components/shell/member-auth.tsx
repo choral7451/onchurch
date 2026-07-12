@@ -69,6 +69,7 @@ function LoginPane({ slug, onDone, lang }: { slug: string; onDone: () => void; l
   }
 
   return (
+    <>
     <form className="auth-form" onSubmit={onSubmit} noValidate>
       <div className="form-row full">
         <label htmlFor="cm-id">{pick(lang, { ko: "아이디", en: "ID" })}</label>
@@ -87,8 +88,9 @@ function LoginPane({ slug, onDone, lang }: { slug: string; onDone: () => void; l
         <span style={{ color: "var(--line)" }}>|</span>
         <button type="button" className="auth-link" onClick={() => setRecovery("reset-pw")}>{pick(lang, { ko: "비밀번호 찾기", en: "Reset password" })}</button>
       </div>
-      {recovery && <AccountRecoveryModal initialMode={recovery} churchSlug={slug} onClose={() => setRecovery(null)} lang={lang} />}
     </form>
+    {recovery && <AccountRecoveryModal initialMode={recovery} churchSlug={slug} onClose={() => setRecovery(null)} lang={lang} />}
+    </>
   );
 }
 

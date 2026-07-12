@@ -46,6 +46,7 @@ export function LoginForm() {
   }
 
   return (
+    <>
     <form className="auth-form" onSubmit={onSubmit} noValidate>
       <div className="form-row full">
         <label htmlFor="auth-id">아이디</label>
@@ -123,7 +124,8 @@ export function LoginForm() {
         <button type="button" className="auth-link" onClick={() => setRecovery("reset-pw")}>비밀번호 찾기</button>
       </div>
 
-      {recovery && <AccountRecoveryModal initialMode={recovery} onClose={() => setRecovery(null)} />}
     </form>
+    {recovery && <AccountRecoveryModal initialMode={recovery} onClose={() => setRecovery(null)} />}
+    </>
   );
 }
