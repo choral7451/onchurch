@@ -480,6 +480,9 @@ export const onchurchUser = {
     request<UserProfile>("/onchurch/users/me", { method: "PUT", auth: true, body: JSON.stringify(input) }),
   changePassword: (input: { currentPassword: string; newPassword: string }) =>
     request<unknown>("/onchurch/users/me/password", { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  // 임시비밀번호 계정(mustChangePassword)의 최초 비밀번호 설정 — 현재 비밀번호 불필요.
+  setInitialPassword: (input: { newPassword: string }) =>
+    request<unknown>("/onchurch/users/me/initial-password", { method: "PUT", auth: true, body: JSON.stringify(input) }),
 };
 
 export type EmailRecipientStatus = "sent" | "failed" | "excluded";

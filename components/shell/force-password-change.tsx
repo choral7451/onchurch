@@ -6,16 +6,15 @@ import { ApiError, onchurchUser } from "@/lib/api-client";
 /**
  * 위저드(임시비밀번호)로 생성된 계정이 관리자 콘솔 최초 진입 시 강제로 뜨는 비밀번호 변경 모달.
  * 변경 성공 전까지 닫을 수 없다(배경 클릭·ESC·닫기 버튼 없음).
- * SMS로 받은 임시 비밀번호(현재 비밀번호) + 새 비밀번호를 입력받아 변경한다.
+ * 임시 비밀번호 입력 없이 새 비밀번호만 설정한다(인증 + mustChangePassword 플래그로 검증).
  */
 export function ForcePasswordChangeModal({ onDone }: { onDone: () => void }) {
-  const [currentPassword, setCurrentPassword] = useState("");
   const [pw, setPw] = useState("");
   const [pwConfirm, setPwConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errMsg, setErrMsg] = useState("");
 
-  const canSubmit = currentPassword.length > 0 && pw.length >= 8 && pw === pwConfirm && !submitting;
+  const canSubmit = pw.length >= 8 && pw === pwConfirm && !submitting;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,14 +26,10 @@ export function ForcePasswordChangeModal({ onDone }: { onDone: () => void }) {
       setErrMsg("새 비밀번호가 일치하지 않습니다.");
       return;
     }
-    if (pw === currentPassword) {
-      setErrMsg("임시 비밀번호와 다른 비밀번호로 설정해주세요.");
-      return;
-    }
     setSubmitting(true);
     setErrMsg("");
     try {
-      await onchurchUser.changePassword({ currentPassword, newPassword: pw });
+      await onchurchUser.setInitialPassword({ newPassword: pw });
       onDone();
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "비밀번호 변경에 실패했습니다.");
@@ -51,18 +46,6 @@ export function ForcePasswordChangeModal({ onDone }: { onDone: () => void }) {
           문자로 받으신 임시 비밀번호로 로그인하셨습니다. 보안을 위해 새 비밀번호로 변경한 뒤 이용해주세요.
         </p>
         <form className="auth-form" onSubmit={onSubmit} noValidate>
-          <div className="form-row full">
-            <label htmlFor="fpc-current">임시 비밀번호</label>
-            <input
-              id="fpc-current"
-              type="password"
-              autoComplete="current-password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="문자로 받은 임시 비밀번호"
-              required
-            />
-          </div>
           <div className="form-row full">
             <label htmlFor="fpc-new">새 비밀번호</label>
             <input
