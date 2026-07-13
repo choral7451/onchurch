@@ -7,13 +7,16 @@ export type GoogleMarker = unknown;
 
 export type GeocodeResult = { geometry: { location: GoogleLatLng } };
 
+export type GooglePoint = { x: number; y: number };
+
 export type MarkerIconSymbol = {
-  path: number;
+  path: number | string;
   scale: number;
   fillColor: string;
   fillOpacity: number;
   strokeColor: string;
   strokeWeight: number;
+  anchor?: GooglePoint;
 };
 
 export type PlaceResult = {
@@ -39,6 +42,7 @@ export type GoogleNamespace = {
     }) => GoogleMarker;
     SymbolPath: { CIRCLE: number };
     Animation: { DROP: number };
+    Point: new (x: number, y: number) => GooglePoint;
     Geocoder: new () => {
       geocode: (
         opt: { address: string; region?: string },

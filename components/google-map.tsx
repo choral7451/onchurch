@@ -41,12 +41,14 @@ export function GoogleMap({ address, name }: { address: string; name: string }) 
             map,
             title: name,
             icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 10,
-              fillColor: "#2563eb",
+              // 위치를 가리키는 아래 방향 빨간 화살표
+              path: "M 0 0 L -7 -14 L 0 -10 L 7 -14 Z",
+              scale: 1.6,
+              fillColor: "#dc2626",
               fillOpacity: 1,
               strokeColor: "#ffffff",
-              strokeWeight: 3,
+              strokeWeight: 1.5,
+              anchor: new google.maps.Point(0, 0),
             },
             animation: google.maps.Animation.DROP,
           });
