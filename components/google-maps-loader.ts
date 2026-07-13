@@ -8,14 +8,11 @@ export type GoogleMarker = unknown;
 export type GeocodeResult = { geometry: { location: GoogleLatLng } };
 
 export type GooglePoint = { x: number; y: number };
+export type GoogleSize = { width: number; height: number };
 
-export type MarkerIconSymbol = {
-  path: number | string;
-  scale: number;
-  fillColor: string;
-  fillOpacity: number;
-  strokeColor: string;
-  strokeWeight: number;
+export type MarkerImageIcon = {
+  url: string;
+  scaledSize?: GoogleSize;
   anchor?: GooglePoint;
 };
 
@@ -37,12 +34,13 @@ export type GoogleNamespace = {
       position: GoogleLatLng;
       map: GoogleMapInstance;
       title?: string;
-      icon?: MarkerIconSymbol;
+      icon?: MarkerImageIcon;
       animation?: number;
     }) => GoogleMarker;
     SymbolPath: { CIRCLE: number };
     Animation: { DROP: number };
     Point: new (x: number, y: number) => GooglePoint;
+    Size: new (width: number, height: number) => GoogleSize;
     Geocoder: new () => {
       geocode: (
         opt: { address: string; region?: string },

@@ -41,14 +41,17 @@ export function GoogleMap({ address, name }: { address: string; name: string }) 
             map,
             title: name,
             icon: {
-              // 위치를 가리키는 아래 방향 빨간 화살표
-              path: "M 0 0 L -7 -14 L 0 -10 L 7 -14 Z",
-              scale: 1.6,
-              fillColor: "#dc2626",
-              fillOpacity: 1,
-              strokeColor: "#ffffff",
-              strokeWeight: 1.5,
-              anchor: new google.maps.Point(0, 0),
+              // 위치를 가리키는 클래식 빨간 핀 (물방울 모양 + 안쪽 진한 원)
+              url:
+                "data:image/svg+xml;charset=UTF-8," +
+                encodeURIComponent(
+                  '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="42" viewBox="0 0 30 42">' +
+                    '<path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 27 15 27s15-16.5 15-27C30 6.7 23.3 0 15 0z" fill="#d9342b"/>' +
+                    '<circle cx="15" cy="15" r="6" fill="#a01f18"/>' +
+                    "</svg>",
+                ),
+              scaledSize: new google.maps.Size(30, 42),
+              anchor: new google.maps.Point(15, 42),
             },
             animation: google.maps.Animation.DROP,
           });
