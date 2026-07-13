@@ -680,6 +680,8 @@ export type ChurchOverview = {
   isPaidActive: boolean;
   naverVerification: string | null;
   isTest: boolean;
+  // 소유자 마지막 접속(세션 갱신) 시각. 접속 이력 없으면 null.
+  lastActivity: string | null;
 };
 
 export type OwnerCandidate = {

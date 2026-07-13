@@ -15,6 +15,29 @@ function formatDate(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+// 마지막 접속: 날짜 + 시:분까지 표시. 이력 없으면 '접속 없음'.
+function formatDateTime(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// 마지막 접속 셀: 최근일수록 진하게, 이력 없으면 회색 안내.
+function LastActivityCell({ iso }: { iso: string | null }) {
+  if (!iso) return <span className="whitespace-nowrap text-gray-400">접속 없음</span>;
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  const stale = days >= 7;
+  return (
+    <div className="whitespace-nowrap">
+      <div className={stale ? "text-gray-500" : "text-gray-800"}>{formatDateTime(iso)}</div>
+      <div className={`text-xs ${stale ? "text-red-500" : "text-gray-400"}`}>
+        {days <= 0 ? "오늘" : `${days}일 전`}
+      </div>
+    </div>
+  );
+}
+
 // 구독 기간 문자열만 표시(활성 여부는 별도 '상태' 컬럼에서 표시).
 function PeriodCell({ text, hasValue }: { text: string; hasValue: boolean }) {
   if (!hasValue) return <span className="text-gray-400">—</span>;
@@ -374,11 +397,12 @@ export function ChurchesFeature() {
 
         {status !== "loading" && items.length > 0 && (
           <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="w-full min-w-[1280px] border-collapse text-sm">
+            <table className="w-full min-w-[1440px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500 [&>th]:whitespace-nowrap">
                   <th className="px-4 py-3">교회이름</th>
                   <th className="px-4 py-3">상태</th>
+                  <th className="px-4 py-3">마지막 접속</th>
                   <th className="px-4 py-3">운영</th>
                   <th className="px-4 py-3">주소</th>
                   <th className="px-4 py-3">교회소유자이름</th>
@@ -405,6 +429,9 @@ export function ChurchesFeature() {
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge active={c.isFreeTrialActive || c.isPaidActive} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <LastActivityCell iso={c.lastActivity} />
                     </td>
                     <td className="px-4 py-3">
                       <PublishToggle church={c} onUpdated={handlePublishedUpdated} />
