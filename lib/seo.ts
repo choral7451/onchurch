@@ -232,7 +232,10 @@ export function buildChurchJsonLd(
   pathPrefix: string,
 ): string {
   const url = `${origin}${pathPrefix}`;
-  const sameAs: string[] = [];
+  // 교회의 공식 SNS를 sameAs로 연결 — 검색엔진이 동일 주체로 인식(신뢰도·지식패널 유리).
+  const sameAs = [church.youtubeUrl, church.instagramUrl]
+    .map((s) => compact(s))
+    .filter((s) => /^https?:\/\//.test(s));
 
   const node: Record<string, unknown> = {
     "@context": "https://schema.org",
