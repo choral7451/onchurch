@@ -384,10 +384,9 @@ async function PastorSection({ slug, url, lang }: { slug: string; url: (p: strin
             {pastor.message && (
               <div className="pastor-msg-wrap">
                 <p className="pastor-msg pastor-msg-clamp">
-                  {pastor.message.split("\n\n").map((para, i, arr) => (
-                    <span key={i}>
+                  {pastor.message.split("\n\n").map((para, i) => (
+                    <span key={i} className="pastor-para">
                       {para}
-                      {i < arr.length - 1 && <><br /><br /></>}
                     </span>
                   ))}
                 </p>

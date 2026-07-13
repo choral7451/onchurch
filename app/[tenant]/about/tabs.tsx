@@ -95,10 +95,9 @@ export function AboutTabs({ pastor, vision, history, staff, enabledPages, lang =
                 </span>
               </h2>
               <p className="pastor-msg">
-                {(pastor.longMessage ?? pastor.message ?? "").split("\n\n").map((para, i, arr) => (
-                  <span key={i}>
+                {(pastor.longMessage ?? pastor.message ?? "").split("\n\n").map((para, i) => (
+                  <span key={i} className="pastor-para">
                     {para}
-                    {i < arr.length - 1 && <><br /><br /></>}
                   </span>
                 ))}
               </p>
