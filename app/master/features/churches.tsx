@@ -26,13 +26,17 @@ function formatDateTime(iso: string | null): string {
 // 마지막 접속 셀: 최근일수록 진하게, 이력 없으면 회색 안내.
 function LastActivityCell({ iso }: { iso: string | null }) {
   if (!iso) return <span className="whitespace-nowrap text-gray-400">접속 없음</span>;
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  // 경과 시간(24시간 단위)이 아니라 '달력상 날짜' 차이로 계산해야 표시된 날짜와 라벨이 어긋나지 않는다.
+  // (예: 어제 오후 접속이 24시간 안 지났다는 이유로 '오늘'로 표기되던 문제)
+  const startOfDay = (t: Date) => new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
+  const days = Math.round((startOfDay(new Date()) - startOfDay(new Date(iso))) / 86_400_000);
   const stale = days >= 7;
+  const label = days <= 0 ? "오늘" : days === 1 ? "어제" : `${days}일 전`;
   return (
     <div className="whitespace-nowrap">
       <div className={stale ? "text-gray-500" : "text-gray-800"}>{formatDateTime(iso)}</div>
       <div className={`text-xs ${stale ? "text-red-500" : "text-gray-400"}`}>
-        {days <= 0 ? "오늘" : `${days}일 전`}
+        {label}
       </div>
     </div>
   );
