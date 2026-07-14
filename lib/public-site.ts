@@ -26,6 +26,8 @@ export type PublicChurch = {
   homeSectionOrder: string[];
   homeQuickLinks: string[];
   siteLang: Lang;
+  // 공개 홈페이지 템플릿. 'default'(기본 모던) | 'classic'(충현교회 스타일 전통형). 지정은 운영자가 DB에서 직접.
+  siteTemplate: string;
   isPublished: boolean;
 };
 
