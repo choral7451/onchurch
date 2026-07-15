@@ -1,7 +1,5 @@
 "use client";
 
-// 랜딩·인증·법적고지 페이지 스타일. 이 페이지들은 모두 LandingNav를 쓰므로 여기서 한 번만 로드한다.
-import "@/app/landing.css";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AUTH_CHANGE_EVENT, isLoggedIn, onchurchChurch } from "@/lib/api-client";
