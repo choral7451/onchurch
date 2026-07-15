@@ -592,6 +592,13 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ naverVerification }),
     }),
+  // 교회 공개 홈페이지 템플릿 설정. null이면 'default'로 초기화. 응답으로 정규화된 값 반환.
+  updateChurchSiteTemplate: (churchId: number, siteTemplate: string | null) =>
+    request<{ siteTemplate: string }>(`/onchurch/master/churches/${churchId}/site-template`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ siteTemplate }),
+    }),
   // 교회 운영 여부(공개/비공개) 설정. 마스터 오버라이드. 응답으로 갱신된 상태 반환.
   updateChurchPublished: (churchId: number, isPublished: boolean) =>
     request<{ isPublished: boolean }>(`/onchurch/master/churches/${churchId}/published`, {
@@ -679,6 +686,8 @@ export type ChurchOverview = {
   isFreeTrialActive: boolean;
   isPaidActive: boolean;
   naverVerification: string | null;
+  // 공개 홈페이지 템플릿 ID. 미지정 시 'default'.
+  siteTemplate: string;
   isTest: boolean;
   // 소유자 마지막 접속(세션 갱신) 시각. 접속 이력 없으면 null.
   lastActivity: string | null;

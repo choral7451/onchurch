@@ -26,7 +26,8 @@ export type PublicChurch = {
   homeSectionOrder: string[];
   homeQuickLinks: string[];
   siteLang: Lang;
-  // 공개 홈페이지 템플릿. 'default'(기본 모던) | 'classic'(충현교회 스타일 전통형). 지정은 운영자가 DB에서 직접.
+  // 공개 홈페이지 템플릿 ID. 지원 목록·렌더 매핑은 components/templates/registry.tsx(레지스트리)가 관리.
+  // 지정은 마스터 페이지의 교회 목록에서 변경. 미등록 값은 default 홈으로 폴백.
   siteTemplate: string;
   isPublished: boolean;
 };

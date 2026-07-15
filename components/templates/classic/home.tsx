@@ -2,7 +2,7 @@ import { Suspense, type CSSProperties } from "react";
 import Link from "next/link";
 import { Icon, type IconKey } from "@/components/icons";
 import { LiveBadge } from "@/components/live-badge";
-import { ClassicHero, type ClassicHeroSlide } from "@/components/templates/classic-hero";
+import { ClassicHero, type ClassicHeroSlide } from "@/components/templates/classic/hero";
 import type { PublicChurch } from "@/lib/public-site";
 import { fetchLiveStatus } from "@/lib/public-site";
 import { QUICK_LINK_DEFS, quickLinkLabels } from "@/lib/quick-links";

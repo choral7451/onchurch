@@ -15,7 +15,7 @@ import type { Sermon } from "@/lib/types";
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, quickLinkLabels } from "@/lib/quick-links";
 import { type Lang, pick, normalizeLang } from "@/lib/i18n";
-import { ClassicHome } from "@/components/templates/classic-home";
+import { resolveTemplateHome } from "@/components/templates/registry";
 
 const GRAD_CYCLE: Sermon["grad"][] = ["ph-grad-1", "ph-grad-2", "ph-grad-3", "ph-grad-4"];
 
@@ -424,9 +424,10 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const lang = normalizeLang(church.siteLang);
   const pathPrefix = await getPathPrefix(tenant);
 
-  // 'classic' 템플릿(충현교회 스타일 전통형)은 완전히 다른 메인 레이아웃으로 렌더한다.
-  if (church.siteTemplate === "classic") {
-    return <ClassicHome church={church} tenant={tenant} lang={lang} pathPrefix={pathPrefix} />;
+  // 레지스트리에 등록된 템플릿이면 해당 홈으로 렌더. 미지정/미등록 값은 아래 기본(default) 홈으로 폴백.
+  const TemplateHome = resolveTemplateHome(church.siteTemplate);
+  if (TemplateHome) {
+    return <TemplateHome church={church} tenant={tenant} lang={lang} pathPrefix={pathPrefix} />;
   }
   const url = (path: string) => `${pathPrefix}${path}`;
   const slug = encodeURIComponent(tenant);

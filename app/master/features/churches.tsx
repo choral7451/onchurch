@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, onchurchMaster, type ChurchOverview } from "@/lib/api-client";
+import { SITE_TEMPLATE_META, DEFAULT_TEMPLATE_ID } from "@/components/templates/meta";
 import { TransferOwnerModal } from "./transfer-owner-modal";
 
 const PAGE_SIZE = 30;
@@ -216,6 +217,54 @@ function NaverVerificationEditor({
   );
 }
 
+// 공개 홈페이지 템플릿 선택. 목록은 템플릿 레지스트리 메타(SITE_TEMPLATE_META)에서 가져온다.
+function SiteTemplateSelect({
+  church,
+  onUpdated,
+}: {
+  church: ChurchOverview;
+  onUpdated: (id: number, siteTemplate: string) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function change(value: string) {
+    if (value === church.siteTemplate) return;
+    setSaving(true);
+    setErr("");
+    try {
+      const res = await onchurchMaster.updateChurchSiteTemplate(church.id, value);
+      onUpdated(church.id, res.siteTemplate);
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "변경에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // DB에 레지스트리에 없는 값이 있어도 선택지에 보여준다(현재 값 유실 방지).
+  const known = SITE_TEMPLATE_META.some((t) => t.id === church.siteTemplate);
+
+  return (
+    <div className="flex min-w-[140px] flex-col gap-1">
+      <select
+        value={church.siteTemplate || DEFAULT_TEMPLATE_ID}
+        onChange={(e) => change(e.target.value)}
+        disabled={saving}
+        className="w-[140px] rounded border border-gray-300 px-2 py-1 text-xs focus:border-gray-900 focus:outline-none disabled:opacity-40"
+      >
+        {SITE_TEMPLATE_META.map((t) => (
+          <option key={t.id} value={t.id} title={t.description}>
+            {t.label}
+          </option>
+        ))}
+        {!known && <option value={church.siteTemplate}>{church.siteTemplate}</option>}
+      </select>
+      {err && <span className="text-[11px] text-red-600">{err}</span>}
+    </div>
+  );
+}
+
 // 교회 운영 여부(공개/비공개) 온오프 토글. 마스터가 직접 전환한다.
 function PublishToggle({
   church,
@@ -357,6 +406,11 @@ export function ChurchesFeature() {
     setItems((prev) => prev.map((c) => (c.id === id ? { ...c, isPublished } : c)));
   }, []);
 
+  // 홈페이지 템플릿 변경 후 해당 행만 갱신
+  const handleTemplateUpdated = useCallback((id: number, siteTemplate: string) => {
+    setItems((prev) => prev.map((c) => (c.id === id ? { ...c, siteTemplate } : c)));
+  }, []);
+
   // 소유자 이관 모달 대상 교회
   const [transferTarget, setTransferTarget] = useState<ChurchOverview | null>(null);
 
@@ -414,6 +468,7 @@ export function ChurchesFeature() {
                   <th className="px-4 py-3">프리티어 기간</th>
                   <th className="px-4 py-3">결제기간</th>
                   <th className="px-4 py-3">네이버 인증</th>
+                  <th className="px-4 py-3">템플릿</th>
                   <th className="px-4 py-3">관리</th>
                 </tr>
               </thead>
@@ -458,6 +513,9 @@ export function ChurchesFeature() {
                     </td>
                     <td className="px-4 py-3">
                       <NaverVerificationEditor church={c} onUpdated={handleNaverUpdated} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <SiteTemplateSelect church={c} onUpdated={handleTemplateUpdated} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
