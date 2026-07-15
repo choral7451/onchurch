@@ -1,3 +1,5 @@
+// classic 템플릿 전용 스타일(.chc-*). 템플릿 스타일은 템플릿 폴더 안에서 완결한다.
+import "./styles.css";
 import { Suspense, type CSSProperties } from "react";
 import Link from "next/link";
 import { Icon, type IconKey } from "@/components/icons";

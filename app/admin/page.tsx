@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./admin.css";
 import { SITE_DATA } from "@/lib/site-data";
 import { AdminApp } from "./admin-app";
 
