@@ -96,11 +96,11 @@ const FEATURES: { ic: IconKey; title: string; desc: string }[] = [
   { ic: "calendar", title: "출석 관리", desc: "예배별 출석을 간편하게 체크하고, 성도별 출석 현황을 한눈에 확인합니다." },
 ];
 
-const PROBLEMS: { ic: IconKey; title: string; desc: string }[] = [
-  { ic: "wallet", title: "제작비 수백만원, 게다가 매달 유지비", desc: "외주 제작은 기본 수백만 원. 만든 뒤에도 수정할 때마다 비용이 붙습니다. 작은 교회 예산엔 큰 부담이죠." },
-  { ic: "gear", title: "만들 줄 아는 사람이 없어요", desc: "코딩·디자인을 아는 사람이 없어 결국 외주. 담당 간사·청년이 바뀌면 아무도 손대지 못하고 방치됩니다." },
-  { ic: "calendar", title: "진짜 문제는 '만든 다음'", desc: "주보·공지·설교 영상은 매주 올려야 하는데, 업데이트가 번거로워 결국 몇 달째 멈춘 홈페이지가 됩니다." },
-  { ic: "search", title: "검색해도 안 나오고, 폰에선 깨져요", desc: "네이버·구글에 검색되지 않고, 오래된 홈페이지는 모바일에서 레이아웃이 깨집니다. 정작 성도·새가족은 폰으로 보는데 말이죠." },
+const PROBLEMS: { ic: IconKey; title: string; desc: string; solve: string }[] = [
+  { ic: "wallet", title: "제작비 수백만원, 게다가 매달 유지비", desc: "외주 제작은 기본 수백만 원. 만든 뒤에도 수정할 때마다 비용이 붙습니다. 작은 교회 예산엔 큰 부담이죠.", solve: "제작비 0원, 월 1만원 단일 요금. 수정도 직접 하니 추가 비용이 없습니다." },
+  { ic: "gear", title: "만들 줄 아는 사람이 없어요", desc: "코딩·디자인을 아는 사람이 없어 결국 외주. 담당 간사·청년이 바뀌면 아무도 손대지 못하고 방치됩니다.", solve: "코딩 없이 입력과 토글만으로 완성. 담당자가 바뀌어도 누구나 이어받을 수 있습니다." },
+  { ic: "calendar", title: "진짜 문제는 '만든 다음'", desc: "주보·공지·설교 영상은 매주 올려야 하는데, 업데이트가 번거로워 결국 몇 달째 멈춘 홈페이지가 됩니다.", solve: "주보·공지·설교 영상을 관리자 콘솔에서 클릭 몇 번으로 올립니다. 매주 5분이면 충분해요." },
+  { ic: "search", title: "검색해도 안 나오고, 폰에선 깨져요", desc: "네이버·구글에 검색되지 않고, 오래된 홈페이지는 모바일에서 레이아웃이 깨집니다. 정작 성도·새가족은 폰으로 보는데 말이죠.", solve: "네이버·구글 검색 최적화(SEO)와 모바일 대응이 기본으로 적용됩니다." },
 ];
 
 const STEPS: { n: string; title: string; desc: string }[] = [
@@ -246,6 +246,13 @@ export default async function LandingPage() {
                   <div className="feature-icon"><ProblemIcon width={24} height={24} /></div>
                   <div className="feature-title">{p.title}</div>
                   <div className="feature-desc">{p.desc}</div>
+                  <div className="problem-solve">
+                    <span className="problem-solve-label">
+                      <Icon.arrow style={{ width: 12, height: 12 }} />
+                      온교회는 이렇게
+                    </span>
+                    <p className="problem-solve-desc">{p.solve}</p>
+                  </div>
                 </div>
               );
             })}

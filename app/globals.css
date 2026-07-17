@@ -692,6 +692,9 @@ main { flex: 1; }
 .feature-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; display: grid; place-items: center; }
 .feature-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: var(--primary-deep); }
 .feature-desc { font-size: 14px; color: var(--muted); line-height: 1.7; text-wrap: pretty; }
+.problem-solve { margin-top: auto; padding-top: 14px; border-top: 1px dashed var(--line); }
+.problem-solve-label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.01em; margin-bottom: 6px; }
+.problem-solve-desc { font-size: 13.5px; color: var(--primary-deep); line-height: 1.65; text-wrap: pretty; margin: 0; }
 
 /* Steps */
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: step; }
