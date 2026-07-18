@@ -11,7 +11,7 @@ import { LightRays, Mesh, Rings } from "@/components/decorative";
 import { fetchPublicChurchList } from "@/lib/public-site";
 
 export const metadata: Metadata = {
-  title: { absolute: "온교회 - 교회 홈페이지 무료 제작" },
+  title: { absolute: "온교회홈페이지 - 교회 홈페이지 무료 제작" },
   description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료 체험.",
   keywords: [
     "교회 홈페이지",
@@ -38,12 +38,12 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: "https://everychurch.co.kr/",
     siteName: "온교회",
-    title: "온교회 - 교회 홈페이지 무료 제작",
+    title: "온교회홈페이지 - 교회 홈페이지 무료 제작",
     description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료 체험.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "온교회 - 교회 홈페이지 무료 제작",
+    title: "온교회홈페이지 - 교회 홈페이지 무료 제작",
     description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료 체험.",
   },
 };
