@@ -707,6 +707,16 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                   </span>
                 </button>
               )}
+              {viewIdx !== null && (
+                // 현재 보고 있는 사진 삭제 — 마지막 장을 지우면 업로드 영역으로 돌아간다
+                <button
+                  type="button"
+                  onClick={() => removePhoto(draft.photoUrls[viewIdx])}
+                  style={{ position: "absolute", top: 10, right: 10, display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(0,0,0,0.55)", color: "#fff", borderRadius: 999, padding: "5px 12px", fontSize: 12, cursor: "pointer" }}
+                >
+                  × {t.removePhoto}
+                </button>
+              )}
               {viewIdx !== null && photoCount > 1 && (
                 <>
                   <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(0,0,0,0.55)", color: "#fff", borderRadius: 999, padding: "3px 10px", fontSize: 12 }}>
