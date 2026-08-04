@@ -597,10 +597,11 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                     </button>
                   </div>
                 ))}
+                {/* 파일 선택창을 바로 띄우지 않고 모달을 먼저 연다 — 업로드는 모달 안에서 */}
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => photoInputRef.current?.click()}
+                  onClick={() => setPhotoView(0)}
                   disabled={uploading}
                 >
                   <Icon.image style={{ width: 14, height: 14 }} />
@@ -648,7 +649,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
 
       {/* 사진 본사이즈 모달: 선택한 비율(1:1/4:5)로 등록되는 모습을 크게 보여주고,
           여러 장 넘겨보기(화살표/썸네일) · 비율 변경 · 사진 추가까지 여기서 한다 */}
-      {viewIdx !== null && (
+      {photoView !== null && (
         <div className="notice-modal-backdrop" role="dialog" aria-modal="true" aria-label={t.photoViewLabel} onClick={() => setPhotoView(null)}>
           <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", width: "min(92vw, 420px)", maxHeight: "calc(100dvh - 40px)" }}>
             <button
@@ -660,13 +661,28 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
               ×
             </button>
             <div style={{ position: "relative" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={draft.photoUrls[viewIdx]}
-                alt=""
-                style={{ width: "100%", maxHeight: "calc(100dvh - 220px)", aspectRatio: ratioCss(draft.photoRatio), objectFit: "cover", borderRadius: 14, display: "block", background: "#000", boxShadow: "0 20px 60px -10px rgba(0,0,0,0.5)" }}
-              />
-              {photoCount > 1 && (
+              {viewIdx !== null ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={draft.photoUrls[viewIdx]}
+                  alt=""
+                  style={{ width: "100%", maxHeight: "calc(100dvh - 220px)", aspectRatio: ratioCss(draft.photoRatio), objectFit: "cover", borderRadius: 14, display: "block", background: "#000", boxShadow: "0 20px 60px -10px rgba(0,0,0,0.5)" }}
+                />
+              ) : (
+                // 아직 사진이 없을 때: 선택한 비율 크기의 업로드 영역
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={uploading}
+                  style={{ width: "100%", aspectRatio: ratioCss(draft.photoRatio), maxHeight: "calc(100dvh - 220px)", borderRadius: 14, border: "2px dashed rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.06)", color: "#fff", display: "grid", placeItems: "center", cursor: "pointer" }}
+                >
+                  <span style={{ display: "grid", placeItems: "center", gap: 10 }}>
+                    <span aria-hidden="true" style={{ fontSize: 40, lineHeight: 1, opacity: 0.9 }}>+</span>
+                    <span style={{ fontSize: 14 }}>{uploading ? t.uploading : t.addPhoto}</span>
+                  </span>
+                </button>
+              )}
+              {viewIdx !== null && photoCount > 1 && (
                 <>
                   <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(0,0,0,0.55)", color: "#fff", borderRadius: 999, padding: "3px 10px", fontSize: 12 }}>
                     {viewIdx + 1} / {photoCount}
