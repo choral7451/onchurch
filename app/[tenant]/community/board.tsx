@@ -65,7 +65,7 @@ function PostCard({ p, videoBadge, onClick }: { p: CommunityPost; videoBadge: st
       style={{ textAlign: "left", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", cursor: onClick ? "pointer" : "default", width: "100%" }}
     >
       {/* 인스타 스타일: 게시글에서 고른 비율(1:1 / 4:5)대로 이미지가 카드를 지배하고 텍스트는 아래로 */}
-      {hasMedia && (
+      {hasMedia ? (
         <div style={{ position: "relative", aspectRatio: ratioCss(p.photoRatio), background: "var(--surface-2, #f1f1f1)" }}>
           {thumb ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -95,16 +95,41 @@ function PostCard({ p, videoBadge, onClick }: { p: CommunityPost; videoBadge: st
             </span>
           )}
         </div>
+      ) : (
+        // 글만 있는 게시글: 같은 비율의 '인용문 커버'를 깔아 모든 카드가 동일한 구조를 갖게 한다
+        <div style={{ position: "relative", aspectRatio: ratioCss(p.photoRatio), background: "linear-gradient(160deg, color-mix(in srgb, var(--primary) 9%, var(--surface)), color-mix(in srgb, var(--primary) 3%, var(--surface)))", display: "grid", placeItems: "center", padding: "28px 26px" }}>
+          <span aria-hidden="true" style={{ position: "absolute", top: 14, left: 18, fontFamily: "Georgia, serif", fontSize: 44, lineHeight: 1, color: "color-mix(in srgb, var(--primary) 35%, transparent)" }}>“</span>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 15,
+              lineHeight: 1.85,
+              color: "var(--ink-2)",
+              textAlign: "center",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 7,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {p.content || p.title}
+          </p>
+        </div>
       )}
-      {/* 이미지 아래 텍스트: 작성자 · 제목 · 본문 캡션 */}
-      <div style={{ padding: hasMedia ? "12px 14px 14px" : "16px 18px", display: "flex", flexDirection: "column", gap: 6, flex: 1, minHeight: hasMedia ? undefined : 168 }}>
+      {/* 커버 아래 텍스트: 작성자 · 제목 · 본문 캡션 */}
+      <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12.5 }}>
           <span style={{ fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.authorName}</span>
           <span style={{ color: "var(--muted)", flexShrink: 0 }}>{formatDate(p.createdAt)}</span>
         </div>
-        {p.category && <span className="notice-cat" style={{ alignSelf: "flex-start" }}>{p.category}</span>}
-        <strong style={{ fontSize: 14.5, lineHeight: 1.4, color: "var(--ink)" }}>{p.title}</strong>
-        {p.content && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          {p.category && <span className="notice-cat" style={{ flexShrink: 0 }}>{p.category}</span>}
+          <strong style={{ fontSize: 14.5, lineHeight: 1.4, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</strong>
+        </div>
+        {/* 본문 캡션은 실제 미디어가 있는 카드에만 — 글 카드는 커버에서 이미 보여줬다 */}
+        {hasMedia && p.content && (
           <p
             style={{
               margin: 0,
@@ -114,7 +139,7 @@ function PostCard({ p, videoBadge, onClick }: { p: CommunityPost; videoBadge: st
               whiteSpace: "pre-wrap",
               overflow: "hidden",
               display: "-webkit-box",
-              WebkitLineClamp: hasMedia ? 2 : 4,
+              WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
             }}
           >
