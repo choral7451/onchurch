@@ -7,7 +7,6 @@ import { type Lang, pick } from "@/lib/i18n";
 import {
   ApiError,
   getCurrentUserId,
-  getCurrentUserName,
   isLoggedInForChurch,
   onchurchCommunity,
   uploadImages,
@@ -143,8 +142,8 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       content: "내용",
       contentPh: "나누고 싶은 이야기를 자유롭게 적어주세요.",
       photos: "사진",
-      preview: "미리보기",
-      previewHint: "실제 목록에 이렇게 보여요",
+      photoViewLabel: "사진 크게 보기",
+      photoViewHint: "선택한 비율로 이렇게 등록돼요",
       photoRatio: "이미지 비율",
       ratioSquare: "1:1 정사각형",
       ratioPortrait: "4:5 세로",
@@ -190,8 +189,8 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       content: "Message",
       contentPh: "Feel free to share what's on your mind.",
       photos: "Photos",
-      preview: "Preview",
-      previewHint: "This is how it will appear in the feed",
+      photoViewLabel: "View photo",
+      photoViewHint: "It will be posted in the selected ratio",
       photoRatio: "Image ratio",
       ratioSquare: "Square 1:1",
       ratioPortrait: "Portrait 4:5",
@@ -239,7 +238,6 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [myId, setMyId] = useState<number | null>(null);
-  const [myName, setMyName] = useState<string | null>(null);
 
   const [writing, setWriting] = useState(false);
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
@@ -247,13 +245,14 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
   const [uploading, setUploading] = useState(false);
   const [formErr, setFormErr] = useState("");
   const photoInputRef = useRef<HTMLInputElement>(null);
+  // 업로드한 사진을 본사이즈(선택한 비율로 잘린 모습)로 보여주는 모달
+  const [photoView, setPhotoView] = useState<string | null>(null);
 
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setLoggedIn(isLoggedInForChurch(slug));
     setMyId(getCurrentUserId());
-    setMyName(getCurrentUserName());
   }, [slug]);
 
   useEffect(() => {
@@ -369,6 +368,8 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
     try {
       const uploaded = await uploadImages(files);
       setDraft((d) => ({ ...d, photoUrls: [...d.photoUrls, ...uploaded.map((u) => u.url)] }));
+      // 등록 직후 모달로 본사이즈 확인 — 어떤 비율로 잘려 올라가는지 바로 보여준다.
+      if (uploaded[0]?.url) setPhotoView(uploaded[0].url);
     } catch (err) {
       setFormErr(err instanceof ApiError ? err.message : t.photoUploadFail);
     } finally {
@@ -437,6 +438,17 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       window.removeEventListener("keydown", onKey);
     };
   }, [active]);
+
+  useEffect(() => {
+    if (!photoView) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPhotoView(null); };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [photoView]);
 
   return (
     <>
@@ -558,8 +570,16 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                 {draft.photoUrls.map((url) => (
                   <div key={url} style={{ position: "relative", width: 84, aspectRatio: ratioCss(draft.photoRatio), borderRadius: 8, overflow: "hidden", border: "1px solid var(--line)" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {/* 썸네일 클릭 → 본사이즈 모달: 선택한 비율로 등록되는 모습을 크게 보여준다 */}
+                    <button
+                      type="button"
+                      onClick={() => setPhotoView(url)}
+                      aria-label={t.photoViewLabel}
+                      style={{ display: "block", width: "100%", height: "100%", padding: 0, cursor: "zoom-in" }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    </button>
                     <button
                       type="button"
                       onClick={() => removePhoto(url)}
@@ -582,32 +602,6 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
               </div>
             </div>
           </div>
-          {/* 실시간 미리보기: 목록 카드와 동일한 컴포넌트로 렌더 — 이미지가 선택한 비율로 어떻게 잘리는지 그대로 보인다 */}
-          {(draft.title.trim() !== "" || draft.content.trim() !== "" || draft.photoUrls.length > 0 || draft.videoUrl.trim() !== "") && (
-            <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px dashed var(--line)" }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-                <strong style={{ fontSize: 13.5, color: "var(--ink)" }}>{t.preview}</strong>
-                <span style={{ fontSize: 12, color: "var(--muted)" }}>{t.previewHint}</span>
-              </div>
-              <div style={{ maxWidth: 320, pointerEvents: "none" }} aria-hidden="true">
-                <PostCard
-                  p={{
-                    id: 0,
-                    category: draft.category.trim() || null,
-                    authorName: myName ?? "",
-                    authorId: myId ?? 0,
-                    title: draft.title.trim() || t.titlePh,
-                    content: draft.content.trim() || null,
-                    photoUrls: draft.photoUrls,
-                    photoRatio: draft.photoRatio,
-                    videoUrl: draft.videoUrl.trim() || null,
-                    createdAt: new Date().toISOString(),
-                  }}
-                  videoBadge={t.videoBadge}
-                />
-              </div>
-            </div>
-          )}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
             <button type="button" className="btn btn-ghost" onClick={cancelWrite} disabled={saving}>{t.cancel}</button>
             <button type="button" className="btn btn-primary" onClick={submit} disabled={saving || !draft.title.trim()}>
@@ -642,6 +636,54 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       {loading && !switching && (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: 24, fontSize: 13 }}>
           {t.loadingMore}
+        </div>
+      )}
+
+      {/* 사진 본사이즈 모달: 선택한 비율(1:1/4:5)로 등록되는 모습을 크게 보여주고, 여기서 비율도 바꿀 수 있다 */}
+      {photoView && (
+        <div className="notice-modal-backdrop" role="dialog" aria-modal="true" aria-label={t.photoViewLabel} onClick={() => setPhotoView(null)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", width: "min(92vw, 420px)", maxHeight: "calc(100dvh - 40px)" }}>
+            <button
+              type="button"
+              aria-label={t.close}
+              onClick={() => setPhotoView(null)}
+              style={{ position: "absolute", top: -40, right: 0, width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.18)", color: "#fff", fontSize: 18, lineHeight: 1, display: "grid", placeItems: "center", cursor: "pointer" }}
+            >
+              ×
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photoView}
+              alt=""
+              style={{ width: "100%", maxHeight: "calc(100dvh - 160px)", aspectRatio: ratioCss(draft.photoRatio), objectFit: "cover", borderRadius: 14, display: "block", background: "#000", boxShadow: "0 20px 60px -10px rgba(0,0,0,0.5)" }}
+            />
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+              {([
+                { value: "1:1" as const, label: t.ratioSquare },
+                { value: "4:5" as const, label: t.ratioPortrait },
+              ]).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  aria-pressed={draft.photoRatio === opt.value}
+                  onClick={() => setDraft((d) => ({ ...d, photoRatio: opt.value }))}
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: 999,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    border: "1px solid rgba(255,255,255,0.4)",
+                    background: draft.photoRatio === opt.value ? "#fff" : "transparent",
+                    color: draft.photoRatio === opt.value ? "#111" : "#fff",
+                    fontWeight: draft.photoRatio === opt.value ? 600 : 400,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <p style={{ margin: "10px 0 0", textAlign: "center", color: "rgba(255,255,255,0.8)", fontSize: 12.5 }}>{t.photoViewHint}</p>
+          </div>
         </div>
       )}
 
