@@ -30,16 +30,24 @@ function formatDate(iso: string): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
+type PhotoRatio = "1:1" | "4:5";
+
 type Draft = {
   id: number | null;
   category: string;
   title: string;
   content: string;
   photoUrls: string[];
+  photoRatio: PhotoRatio;
   videoUrl: string;
 };
 
-const EMPTY_DRAFT: Draft = { id: null, category: "", title: "", content: "", photoUrls: [], videoUrl: "" };
+const EMPTY_DRAFT: Draft = { id: null, category: "", title: "", content: "", photoUrls: [], photoRatio: "1:1", videoUrl: "" };
+
+// 인스타처럼 게시글별 이미지 비율(1:1 / 4:5)을 CSS aspect-ratio 값으로 변환.
+function ratioCss(r: PhotoRatio | undefined): string {
+  return r === "4:5" ? "4 / 5" : "1 / 1";
+}
 
 export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categories, loginHref, lang = "ko" }: Props) {
   const t = pick(lang, {
@@ -57,6 +65,9 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       content: "내용",
       contentPh: "나누고 싶은 이야기를 자유롭게 적어주세요.",
       photos: "사진",
+      photoRatio: "이미지 비율",
+      ratioSquare: "1:1 정사각형",
+      ratioPortrait: "4:5 세로",
       removePhoto: "사진 제거",
       uploading: "업로드 중...",
       addPhoto: "사진 추가",
@@ -99,6 +110,9 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       content: "Message",
       contentPh: "Feel free to share what's on your mind.",
       photos: "Photos",
+      photoRatio: "Image ratio",
+      ratioSquare: "Square 1:1",
+      ratioPortrait: "Portrait 4:5",
       removePhoto: "Remove photo",
       uploading: "Uploading...",
       addPhoto: "Add photo",
@@ -249,6 +263,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       title: p.title,
       content: p.content ?? "",
       photoUrls: [...p.photoUrls],
+      photoRatio: p.photoRatio === "4:5" ? "4:5" : "1:1",
       videoUrl: p.videoUrl ?? "",
     });
     setActive(null);
@@ -293,6 +308,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
         title: draft.title.trim(),
         content: draft.content.trim() || null,
         photoUrls: draft.photoUrls,
+        photoRatio: draft.photoRatio,
         videoUrl: draft.videoUrl.trim() || null,
       };
       if (draft.id) await onchurchCommunity.update(draft.id, payload);
@@ -415,9 +431,49 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
             <div className="form-row full">
               <label>{t.photos}</label>
               <input ref={photoInputRef} type="file" accept="image/*" multiple onChange={onPickPhotos} style={{ display: "none" }} />
+              {/* 인스타처럼 이미지 비율 선택 (1:1 / 4:5) — 미리보기도 선택한 비율로 잘려 보인다 */}
+              <div role="radiogroup" aria-label={t.photoRatio} style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                {([
+                  { value: "1:1" as const, label: t.ratioSquare },
+                  { value: "4:5" as const, label: t.ratioPortrait },
+                ]).map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={draft.photoRatio === opt.value}
+                    onClick={() => setDraft((d) => ({ ...d, photoRatio: opt.value }))}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 7,
+                      padding: "7px 13px",
+                      borderRadius: 999,
+                      fontSize: 13,
+                      cursor: "pointer",
+                      border: draft.photoRatio === opt.value ? "1.5px solid var(--primary)" : "1px solid var(--line)",
+                      background: draft.photoRatio === opt.value ? "color-mix(in srgb, var(--primary) 8%, transparent)" : "var(--surface)",
+                      color: draft.photoRatio === opt.value ? "var(--primary)" : "var(--muted)",
+                      fontWeight: draft.photoRatio === opt.value ? 600 : 400,
+                    }}
+                  >
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: opt.value === "4:5" ? 11 : 13,
+                        height: opt.value === "4:5" ? 14 : 13,
+                        borderRadius: 3,
+                        border: "1.5px solid currentColor",
+                        display: "inline-block",
+                      }}
+                    />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                 {draft.photoUrls.map((url) => (
-                  <div key={url} style={{ position: "relative", width: 90, height: 68, borderRadius: 8, overflow: "hidden", border: "1px solid var(--line)" }}>
+                  <div key={url} style={{ position: "relative", width: 84, aspectRatio: ratioCss(draft.photoRatio), borderRadius: 8, overflow: "hidden", border: "1px solid var(--line)" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     <button
@@ -455,7 +511,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       {switching ? (
         <div className="community-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
           {Array.from({ length: 8 }).map((_, i) => (
-            <span key={`skel-${i}`} className="skel" aria-hidden="true" style={{ height: 220, borderRadius: "var(--r-lg)" }} />
+            <span key={`skel-${i}`} className="skel" aria-hidden="true" style={{ height: 340, borderRadius: "var(--r-lg)" }} />
           ))}
         </div>
       ) : posts.length === 0 && !loading ? (
@@ -469,6 +525,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
             const videoThumb = hasVideo ? toVideoThumbnailUrl(p.videoUrl) : null;
             const thumb = p.photoUrls[0] ?? videoThumb;
             const hasMedia = !!thumb || hasVideo;
+            const manyPhotos = p.photoUrls.length > 1;
             return (
               <button
                 key={p.id}
@@ -477,14 +534,15 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                 onClick={() => setActive(p)}
                 style={{ textAlign: "left", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", cursor: "pointer" }}
               >
+                {/* 인스타 스타일: 게시글에서 고른 비율(1:1 / 4:5)대로 이미지가 카드를 지배하고 텍스트는 아래로 */}
                 {hasMedia && (
-                  <div style={{ position: "relative", aspectRatio: "4 / 3", background: "var(--surface-2, #f1f1f1)" }}>
+                  <div style={{ position: "relative", aspectRatio: ratioCss(p.photoRatio), background: "var(--surface-2, #f1f1f1)" }}>
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={thumb} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       // 영상만 있고 썸네일을 못 만든 경우: 그라데이션 + 플레이 표시
-                      <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center", background: "linear-gradient(135deg, var(--primary), var(--primary-deep, #1f2937))", color: "rgba(255,255,255,0.92)" }}>
+                      <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", background: "linear-gradient(135deg, var(--primary), var(--primary-deep, #1f2937))", color: "rgba(255,255,255,0.92)" }}>
                         <span style={{ fontSize: 34, lineHeight: 1 }}>▶</span>
                       </div>
                     )}
@@ -499,13 +557,24 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                         ▶ {t.videoBadge}
                       </span>
                     )}
+                    {manyPhotos && !hasVideo && (
+                      // 사진 여러 장: 인스타의 겹친 사각형 배지
+                      <span aria-hidden="true" style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18, color: "#fff", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))" }}>
+                        <span style={{ position: "absolute", top: 0, right: 0, width: 13, height: 13, borderRadius: 3, background: "rgba(255,255,255,0.55)" }} />
+                        <span style={{ position: "absolute", bottom: 0, left: 0, width: 13, height: 13, borderRadius: 3, background: "#fff" }} />
+                      </span>
+                    )}
                   </div>
                 )}
-                <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 8, flex: 1, minHeight: hasMedia ? undefined : 168 }}>
+                {/* 이미지 아래 텍스트: 작성자 · 제목 · 본문 캡션 */}
+                <div style={{ padding: hasMedia ? "12px 14px 14px" : "16px 18px", display: "flex", flexDirection: "column", gap: 6, flex: 1, minHeight: hasMedia ? undefined : 168 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12.5 }}>
+                    <span style={{ fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.authorName}</span>
+                    <span style={{ color: "var(--muted)", flexShrink: 0 }}>{formatDate(p.createdAt)}</span>
+                  </div>
                   {p.category && <span className="notice-cat" style={{ alignSelf: "flex-start" }}>{p.category}</span>}
-                  <strong style={{ fontSize: 15, lineHeight: 1.4, color: "var(--ink)" }}>{p.title}</strong>
-                  {/* 글만 있는 카드: 본문 미리보기로 빈 공간을 채운다 */}
-                  {!hasMedia && p.content && (
+                  <strong style={{ fontSize: 14.5, lineHeight: 1.4, color: "var(--ink)" }}>{p.title}</strong>
+                  {p.content && (
                     <p
                       style={{
                         margin: 0,
@@ -515,17 +584,13 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                         whiteSpace: "pre-wrap",
                         overflow: "hidden",
                         display: "-webkit-box",
-                        WebkitLineClamp: 4,
+                        WebkitLineClamp: hasMedia ? 2 : 4,
                         WebkitBoxOrient: "vertical",
                       }}
                     >
                       {p.content}
                     </p>
                   )}
-                  <div style={{ marginTop: "auto", paddingTop: 10, display: "flex", justifyContent: "space-between", color: "var(--muted)", fontSize: 12 }}>
-                    <span>{p.authorName}</span>
-                    <span>{formatDate(p.createdAt)}</span>
-                  </div>
                 </div>
               </button>
             );
@@ -579,10 +644,11 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
               )}
 
               {active.photoUrls.length > 0 && (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, margin: "16px 0" }}>
+                // 인스타 상세처럼 선택한 비율(1:1 / 4:5)로 큼직하게 세로 나열
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, margin: "16px 0" }}>
                   {active.photoUrls.map((url) => (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img key={url} src={url} alt="" style={{ width: "100%", borderRadius: 8, border: "1px solid var(--line)" }} />
+                    <img key={url} src={url} alt="" style={{ width: "100%", aspectRatio: ratioCss(active.photoRatio), objectFit: "cover", borderRadius: 10, border: "1px solid var(--line)" }} />
                   ))}
                 </div>
               )}

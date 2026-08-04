@@ -1686,6 +1686,7 @@ export type CommunityPost = {
   title: string;
   content: string | null;
   photoUrls: string[];
+  photoRatio: "1:1" | "4:5";
   videoUrl: string | null;
   createdAt: string;
 };
@@ -1700,6 +1701,7 @@ export type CommunityPostWriteInput = {
   title: string;
   content?: string | null;
   photoUrls?: string[];
+  photoRatio?: "1:1" | "4:5";
   videoUrl?: string | null;
 };
 
