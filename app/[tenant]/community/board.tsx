@@ -245,8 +245,8 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
   const [uploading, setUploading] = useState(false);
   const [formErr, setFormErr] = useState("");
   const photoInputRef = useRef<HTMLInputElement>(null);
-  // 업로드한 사진을 본사이즈(선택한 비율로 잘린 모습)로 보여주는 모달
-  const [photoView, setPhotoView] = useState<string | null>(null);
+  // 업로드한 사진을 본사이즈(선택한 비율로 잘린 모습)로 보여주는 모달 — draft.photoUrls 의 인덱스
+  const [photoView, setPhotoView] = useState<number | null>(null);
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -369,7 +369,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       const uploaded = await uploadImages(files);
       setDraft((d) => ({ ...d, photoUrls: [...d.photoUrls, ...uploaded.map((u) => u.url)] }));
       // 등록 직후 모달로 본사이즈 확인 — 어떤 비율로 잘려 올라가는지 바로 보여준다.
-      if (uploaded[0]?.url) setPhotoView(uploaded[0].url);
+      if (uploaded.length > 0) setPhotoView(draft.photoUrls.length);
     } catch (err) {
       setFormErr(err instanceof ApiError ? err.message : t.photoUploadFail);
     } finally {
@@ -439,16 +439,23 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
     };
   }, [active]);
 
+  const photoCount = draft.photoUrls.length;
+  // 모달이 열린 채 사진이 지워져도 안전하게 마지막 인덱스로 보정.
+  const viewIdx = photoView !== null && photoCount > 0 ? Math.min(photoView, photoCount - 1) : null;
   useEffect(() => {
-    if (!photoView) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPhotoView(null); };
+    if (photoView === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPhotoView(null);
+      if (photoCount > 1 && e.key === "ArrowLeft") setPhotoView((v) => (v === null ? v : (v - 1 + photoCount) % photoCount));
+      if (photoCount > 1 && e.key === "ArrowRight") setPhotoView((v) => (v === null ? v : (v + 1) % photoCount));
+    };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
-  }, [photoView]);
+  }, [photoView, photoCount]);
 
   return (
     <>
@@ -568,12 +575,12 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                 ))}
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                {draft.photoUrls.map((url) => (
+                {draft.photoUrls.map((url, i) => (
                   <div key={url} style={{ position: "relative", width: 84, aspectRatio: ratioCss(draft.photoRatio), borderRadius: 8, overflow: "hidden", border: "1px solid var(--line)" }}>
                     {/* 썸네일 클릭 → 본사이즈 모달: 선택한 비율로 등록되는 모습을 크게 보여준다 */}
                     <button
                       type="button"
-                      onClick={() => setPhotoView(url)}
+                      onClick={() => setPhotoView(i)}
                       aria-label={t.photoViewLabel}
                       style={{ display: "block", width: "100%", height: "100%", padding: 0, cursor: "zoom-in" }}
                     >
@@ -639,8 +646,9 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
         </div>
       )}
 
-      {/* 사진 본사이즈 모달: 선택한 비율(1:1/4:5)로 등록되는 모습을 크게 보여주고, 여기서 비율도 바꿀 수 있다 */}
-      {photoView && (
+      {/* 사진 본사이즈 모달: 선택한 비율(1:1/4:5)로 등록되는 모습을 크게 보여주고,
+          여러 장 넘겨보기(화살표/썸네일) · 비율 변경 · 사진 추가까지 여기서 한다 */}
+      {viewIdx !== null && (
         <div className="notice-modal-backdrop" role="dialog" aria-modal="true" aria-label={t.photoViewLabel} onClick={() => setPhotoView(null)}>
           <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", width: "min(92vw, 420px)", maxHeight: "calc(100dvh - 40px)" }}>
             <button
@@ -651,12 +659,61 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
             >
               ×
             </button>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={photoView}
-              alt=""
-              style={{ width: "100%", maxHeight: "calc(100dvh - 160px)", aspectRatio: ratioCss(draft.photoRatio), objectFit: "cover", borderRadius: 14, display: "block", background: "#000", boxShadow: "0 20px 60px -10px rgba(0,0,0,0.5)" }}
-            />
+            <div style={{ position: "relative" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={draft.photoUrls[viewIdx]}
+                alt=""
+                style={{ width: "100%", maxHeight: "calc(100dvh - 220px)", aspectRatio: ratioCss(draft.photoRatio), objectFit: "cover", borderRadius: 14, display: "block", background: "#000", boxShadow: "0 20px 60px -10px rgba(0,0,0,0.5)" }}
+              />
+              {photoCount > 1 && (
+                <>
+                  <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(0,0,0,0.55)", color: "#fff", borderRadius: 999, padding: "3px 10px", fontSize: 12 }}>
+                    {viewIdx + 1} / {photoCount}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="‹"
+                    onClick={() => setPhotoView((viewIdx - 1 + photoCount) % photoCount)}
+                    style={{ position: "absolute", top: "50%", left: 8, transform: "translateY(-50%)", width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 20, lineHeight: 1, display: "grid", placeItems: "center", cursor: "pointer" }}
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="›"
+                    onClick={() => setPhotoView((viewIdx + 1) % photoCount)}
+                    style={{ position: "absolute", top: "50%", right: 8, transform: "translateY(-50%)", width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 20, lineHeight: 1, display: "grid", placeItems: "center", cursor: "pointer" }}
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+            </div>
+            {/* 썸네일 스트립: 눌러서 다른 사진 보기 + 마지막 + 타일로 사진 추가 */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
+              {draft.photoUrls.map((url, i) => (
+                <button
+                  key={url}
+                  type="button"
+                  onClick={() => setPhotoView(i)}
+                  aria-label={`${i + 1}`}
+                  style={{ width: 44, aspectRatio: ratioCss(draft.photoRatio), borderRadius: 6, overflow: "hidden", padding: 0, cursor: "pointer", border: i === viewIdx ? "2px solid #fff" : "2px solid transparent", opacity: i === viewIdx ? 1 : 0.55 }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={uploading}
+                aria-label={t.addPhoto}
+                style={{ width: 44, aspectRatio: ratioCss(draft.photoRatio), borderRadius: 6, border: "1.5px dashed rgba(255,255,255,0.6)", background: "transparent", color: "#fff", fontSize: 18, display: "grid", placeItems: "center", cursor: "pointer", opacity: uploading ? 0.5 : 1 }}
+              >
+                {uploading ? "…" : "+"}
+              </button>
+            </div>
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
               {([
                 { value: "1:1" as const, label: t.ratioSquare },
