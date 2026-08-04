@@ -149,7 +149,7 @@ function PostsManager() {
             </div>
             <div className="form-row">
               <label>동영상 링크 (선택)</label>
-              <input type="url" value={draft.videoUrl} onChange={(e) => setDraft({ ...draft, videoUrl: e.target.value })} placeholder="YouTube / Vimeo 링크" />
+              <input type="url" value={draft.videoUrl} onChange={(e) => setDraft({ ...draft, videoUrl: e.target.value })} placeholder="YouTube 링크" />
             </div>
             <div className="form-row full">
               <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
