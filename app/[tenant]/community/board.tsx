@@ -7,6 +7,7 @@ import { type Lang, pick } from "@/lib/i18n";
 import {
   ApiError,
   getCurrentUserId,
+  getCurrentUserName,
   isLoggedInForChurch,
   onchurchCommunity,
   uploadImages,
@@ -49,6 +50,83 @@ function ratioCss(r: PhotoRatio | undefined): string {
   return r === "4:5" ? "4 / 5" : "1 / 1";
 }
 
+// 피드 카드 — 글쓰기 폼의 실시간 미리보기에서도 같은 모습으로 재사용한다.
+function PostCard({ p, videoBadge, onClick }: { p: CommunityPost; videoBadge: string; onClick?: () => void }) {
+  const hasVideo = !!p.videoUrl;
+  const videoThumb = hasVideo ? toVideoThumbnailUrl(p.videoUrl) : null;
+  const thumb = p.photoUrls[0] ?? videoThumb;
+  const hasMedia = !!thumb || hasVideo;
+  const manyPhotos = p.photoUrls.length > 1;
+  return (
+    <button
+      type="button"
+      className={`card ${onClick ? "card-hover" : ""}`}
+      onClick={onClick}
+      tabIndex={onClick ? undefined : -1}
+      style={{ textAlign: "left", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", cursor: onClick ? "pointer" : "default", width: "100%" }}
+    >
+      {/* 인스타 스타일: 게시글에서 고른 비율(1:1 / 4:5)대로 이미지가 카드를 지배하고 텍스트는 아래로 */}
+      {hasMedia && (
+        <div style={{ position: "relative", aspectRatio: ratioCss(p.photoRatio), background: "var(--surface-2, #f1f1f1)" }}>
+          {thumb ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={thumb} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            // 영상만 있고 썸네일을 못 만든 경우: 그라데이션 + 플레이 표시
+            <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", background: "linear-gradient(135deg, var(--primary), var(--primary-deep, #1f2937))", color: "rgba(255,255,255,0.92)" }}>
+              <span style={{ fontSize: 34, lineHeight: 1 }}>▶</span>
+            </div>
+          )}
+          {hasVideo && thumb && (
+            // 썸네일 위 중앙 플레이 버튼
+            <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none" }}>
+              <span style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(0,0,0,0.55)", color: "#fff", display: "grid", placeItems: "center", fontSize: 20, paddingLeft: 4 }}>▶</span>
+            </div>
+          )}
+          {hasVideo && (
+            <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.65)", color: "#fff", borderRadius: 999, padding: "3px 9px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 4 }}>
+              ▶ {videoBadge}
+            </span>
+          )}
+          {manyPhotos && !hasVideo && (
+            // 사진 여러 장: 인스타의 겹친 사각형 배지
+            <span aria-hidden="true" style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18, color: "#fff", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))" }}>
+              <span style={{ position: "absolute", top: 0, right: 0, width: 13, height: 13, borderRadius: 3, background: "rgba(255,255,255,0.55)" }} />
+              <span style={{ position: "absolute", bottom: 0, left: 0, width: 13, height: 13, borderRadius: 3, background: "#fff" }} />
+            </span>
+          )}
+        </div>
+      )}
+      {/* 이미지 아래 텍스트: 작성자 · 제목 · 본문 캡션 */}
+      <div style={{ padding: hasMedia ? "12px 14px 14px" : "16px 18px", display: "flex", flexDirection: "column", gap: 6, flex: 1, minHeight: hasMedia ? undefined : 168 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12.5 }}>
+          <span style={{ fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.authorName}</span>
+          <span style={{ color: "var(--muted)", flexShrink: 0 }}>{formatDate(p.createdAt)}</span>
+        </div>
+        {p.category && <span className="notice-cat" style={{ alignSelf: "flex-start" }}>{p.category}</span>}
+        <strong style={{ fontSize: 14.5, lineHeight: 1.4, color: "var(--ink)" }}>{p.title}</strong>
+        {p.content && (
+          <p
+            style={{
+              margin: 0,
+              color: "var(--muted)",
+              fontSize: 13.5,
+              lineHeight: 1.6,
+              whiteSpace: "pre-wrap",
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: hasMedia ? 2 : 4,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {p.content}
+          </p>
+        )}
+      </div>
+    </button>
+  );
+}
+
 export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categories, loginHref, lang = "ko" }: Props) {
   const t = pick(lang, {
     ko: {
@@ -65,6 +143,8 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       content: "내용",
       contentPh: "나누고 싶은 이야기를 자유롭게 적어주세요.",
       photos: "사진",
+      preview: "미리보기",
+      previewHint: "실제 목록에 이렇게 보여요",
       photoRatio: "이미지 비율",
       ratioSquare: "1:1 정사각형",
       ratioPortrait: "4:5 세로",
@@ -110,6 +190,8 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       content: "Message",
       contentPh: "Feel free to share what's on your mind.",
       photos: "Photos",
+      preview: "Preview",
+      previewHint: "This is how it will appear in the feed",
       photoRatio: "Image ratio",
       ratioSquare: "Square 1:1",
       ratioPortrait: "Portrait 4:5",
@@ -157,6 +239,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [myId, setMyId] = useState<number | null>(null);
+  const [myName, setMyName] = useState<string | null>(null);
 
   const [writing, setWriting] = useState(false);
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
@@ -170,6 +253,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
   useEffect(() => {
     setLoggedIn(isLoggedInForChurch(slug));
     setMyId(getCurrentUserId());
+    setMyName(getCurrentUserName());
   }, [slug]);
 
   useEffect(() => {
@@ -498,6 +582,32 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
               </div>
             </div>
           </div>
+          {/* 실시간 미리보기: 목록 카드와 동일한 컴포넌트로 렌더 — 이미지가 선택한 비율로 어떻게 잘리는지 그대로 보인다 */}
+          {(draft.title.trim() !== "" || draft.content.trim() !== "" || draft.photoUrls.length > 0 || draft.videoUrl.trim() !== "") && (
+            <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px dashed var(--line)" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
+                <strong style={{ fontSize: 13.5, color: "var(--ink)" }}>{t.preview}</strong>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>{t.previewHint}</span>
+              </div>
+              <div style={{ maxWidth: 320, pointerEvents: "none" }} aria-hidden="true">
+                <PostCard
+                  p={{
+                    id: 0,
+                    category: draft.category.trim() || null,
+                    authorName: myName ?? "",
+                    authorId: myId ?? 0,
+                    title: draft.title.trim() || t.titlePh,
+                    content: draft.content.trim() || null,
+                    photoUrls: draft.photoUrls,
+                    photoRatio: draft.photoRatio,
+                    videoUrl: draft.videoUrl.trim() || null,
+                    createdAt: new Date().toISOString(),
+                  }}
+                  videoBadge={t.videoBadge}
+                />
+              </div>
+            </div>
+          )}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
             <button type="button" className="btn btn-ghost" onClick={cancelWrite} disabled={saving}>{t.cancel}</button>
             <button type="button" className="btn btn-primary" onClick={submit} disabled={saving || !draft.title.trim()}>
@@ -520,81 +630,9 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
         </div>
       ) : (
         <div className="community-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
-          {posts.map((p) => {
-            const hasVideo = !!p.videoUrl;
-            const videoThumb = hasVideo ? toVideoThumbnailUrl(p.videoUrl) : null;
-            const thumb = p.photoUrls[0] ?? videoThumb;
-            const hasMedia = !!thumb || hasVideo;
-            const manyPhotos = p.photoUrls.length > 1;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                className="card card-hover"
-                onClick={() => setActive(p)}
-                style={{ textAlign: "left", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", cursor: "pointer" }}
-              >
-                {/* 인스타 스타일: 게시글에서 고른 비율(1:1 / 4:5)대로 이미지가 카드를 지배하고 텍스트는 아래로 */}
-                {hasMedia && (
-                  <div style={{ position: "relative", aspectRatio: ratioCss(p.photoRatio), background: "var(--surface-2, #f1f1f1)" }}>
-                    {thumb ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={thumb} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      // 영상만 있고 썸네일을 못 만든 경우: 그라데이션 + 플레이 표시
-                      <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", background: "linear-gradient(135deg, var(--primary), var(--primary-deep, #1f2937))", color: "rgba(255,255,255,0.92)" }}>
-                        <span style={{ fontSize: 34, lineHeight: 1 }}>▶</span>
-                      </div>
-                    )}
-                    {hasVideo && thumb && (
-                      // 썸네일 위 중앙 플레이 버튼
-                      <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none" }}>
-                        <span style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(0,0,0,0.55)", color: "#fff", display: "grid", placeItems: "center", fontSize: 20, paddingLeft: 4 }}>▶</span>
-                      </div>
-                    )}
-                    {hasVideo && (
-                      <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.65)", color: "#fff", borderRadius: 999, padding: "3px 9px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        ▶ {t.videoBadge}
-                      </span>
-                    )}
-                    {manyPhotos && !hasVideo && (
-                      // 사진 여러 장: 인스타의 겹친 사각형 배지
-                      <span aria-hidden="true" style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18, color: "#fff", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))" }}>
-                        <span style={{ position: "absolute", top: 0, right: 0, width: 13, height: 13, borderRadius: 3, background: "rgba(255,255,255,0.55)" }} />
-                        <span style={{ position: "absolute", bottom: 0, left: 0, width: 13, height: 13, borderRadius: 3, background: "#fff" }} />
-                      </span>
-                    )}
-                  </div>
-                )}
-                {/* 이미지 아래 텍스트: 작성자 · 제목 · 본문 캡션 */}
-                <div style={{ padding: hasMedia ? "12px 14px 14px" : "16px 18px", display: "flex", flexDirection: "column", gap: 6, flex: 1, minHeight: hasMedia ? undefined : 168 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12.5 }}>
-                    <span style={{ fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.authorName}</span>
-                    <span style={{ color: "var(--muted)", flexShrink: 0 }}>{formatDate(p.createdAt)}</span>
-                  </div>
-                  {p.category && <span className="notice-cat" style={{ alignSelf: "flex-start" }}>{p.category}</span>}
-                  <strong style={{ fontSize: 14.5, lineHeight: 1.4, color: "var(--ink)" }}>{p.title}</strong>
-                  {p.content && (
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "var(--muted)",
-                        fontSize: 13.5,
-                        lineHeight: 1.6,
-                        whiteSpace: "pre-wrap",
-                        overflow: "hidden",
-                        display: "-webkit-box",
-                        WebkitLineClamp: hasMedia ? 2 : 4,
-                        WebkitBoxOrient: "vertical",
-                      }}
-                    >
-                      {p.content}
-                    </p>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+          {posts.map((p) => (
+            <PostCard key={p.id} p={p} videoBadge={t.videoBadge} onClick={() => setActive(p)} />
+          ))}
         </div>
       )}
 
