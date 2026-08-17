@@ -33,6 +33,7 @@ export function BannersEditor() {
   const [errMsg, setErrMsg] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [choosingType, setChoosingType] = useState(false);
+  const [bannerType, setBannerType] = useState<BannerType>("image");
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [uploading, setUploading] = useState(false);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -52,6 +53,7 @@ export function BannersEditor() {
     try {
       const res = await onchurchBanner.listMine();
       setBanners(res.banners);
+      setBannerType(res.bannerType);
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "배너 목록을 불러오지 못했습니다.");
     } finally {
@@ -68,6 +70,21 @@ export function BannersEditor() {
     setChoosingType(false);
     setEditingId(0);
     setDraft({ ...EMPTY_DRAFT, type, sortOrder: banners.length });
+  }
+
+  // 홈에 노출할 배너 타입 전환. 다른 타입 배너는 삭제하지 않고 보관한다.
+  async function changeBannerType(type: BannerType) {
+    if (type === bannerType || status === "saving") return;
+    setStatus("saving");
+    setErrMsg("");
+    try {
+      await onchurchBanner.setType(type);
+      setBannerType(type);
+    } catch (err) {
+      setErrMsg(err instanceof ApiError ? err.message : "노출 타입 변경에 실패했습니다.");
+    } finally {
+      setStatus("idle");
+    }
   }
 
   function startEdit(banner: Banner) {
@@ -168,6 +185,10 @@ export function BannersEditor() {
             : { imageUrl: draft.imageUrls[0], videoUrl: null, linkUrl, sortOrder: baseOrder };
         await onchurchBanner.update(editingId, payload);
       }
+      // 방금 추가한 배너가 바로 홈에 보이도록 노출 타입을 함께 전환
+      if (isNew && draft.type !== bannerType) {
+        await onchurchBanner.setType(draft.type);
+      }
       cancel();
       await load();
     } catch (err) {
@@ -220,6 +241,35 @@ export function BannersEditor() {
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
+
+        {banners.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>홈에 노출할 배너</span>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button
+                type="button"
+                className={`btn ${bannerType === "image" ? "btn-primary" : "btn-ghost"}`}
+                onClick={() => changeBannerType("image")}
+                disabled={status === "saving"}
+                aria-pressed={bannerType === "image"}
+              >
+                🖼 사진
+              </button>
+              <button
+                type="button"
+                className={`btn ${bannerType === "video" ? "btn-primary" : "btn-ghost"}`}
+                onClick={() => changeBannerType("video")}
+                disabled={status === "saving"}
+                aria-pressed={bannerType === "video"}
+              >
+                🎬 영상
+              </button>
+            </div>
+            <span className="form-hint" style={{ fontSize: 12 }}>
+              선택한 타입의 배너만 홈에 노출됩니다. 다른 타입 배너는 삭제되지 않고 보관됩니다.
+            </span>
+          </div>
+        )}
 
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button type="button" className="btn btn-primary" onClick={startNew} disabled={editingId !== null || choosingType}>
@@ -336,10 +386,13 @@ export function BannersEditor() {
           {status !== "loading" && banners.length === 0 && editingId === null && (
             <p style={{ color: "var(--muted)" }}>등록된 배너가 없습니다. 새 배너를 추가해보세요. 등록 전까지는 기본 환영 배너가 노출됩니다.</p>
           )}
-          {banners.map((b, idx) => (
+          {banners.map((b, idx) => {
+            const exposed = (b.videoUrl ? "video" : "image") === bannerType;
+            return (
             <div
               key={b.id}
               className="admin-banner-card"
+              style={exposed ? undefined : { opacity: 0.55 }}
               {...(dragDisabled ? {} : getItemProps(idx))}
             >
               <DragHandle disabled={dragDisabled} />
@@ -354,7 +407,9 @@ export function BannersEditor() {
                 </div>
               ) : null}
               <div className="banner-meta">
-                {b.videoUrl && <div className="banner-link">🎬 영상 배너</div>}
+                <div className="banner-link">
+                  {b.videoUrl ? "🎬 영상" : "🖼 사진"} · {exposed ? "노출 중" : "보관 중 (홈에 표시되지 않음)"}
+                </div>
                 {b.linkUrl ? (
                   <div className="banner-link">→ {b.linkUrl}</div>
                 ) : (
@@ -370,7 +425,8 @@ export function BannersEditor() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

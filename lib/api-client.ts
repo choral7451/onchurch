@@ -1029,9 +1029,17 @@ export type PublicBanner = {
   isDefault: boolean;
 };
 
+export type BannerType = "image" | "video";
+
 export const onchurchBanner = {
   listMine: () =>
-    request<{ banners: Banner[] }>("/onchurch/banners/me", { method: "GET", auth: true }),
+    request<{ bannerType: BannerType; banners: Banner[] }>("/onchurch/banners/me", { method: "GET", auth: true }),
+  setType: (type: BannerType) =>
+    request<unknown>("/onchurch/banners/me/type", {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ type }),
+    }),
   create: (input: BannerWriteInput) =>
     request<Banner>("/onchurch/banners/me", {
       method: "POST",
