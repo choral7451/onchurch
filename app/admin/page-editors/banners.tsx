@@ -381,43 +381,57 @@ export function BannersEditor() {
                 : `등록된 ${bannerType === "video" ? "영상" : "사진"} 배너가 없습니다. 새 배너를 추가하거나 노출 타입을 바꿔보세요.`}
             </p>
           )}
-          {visibleBanners.map((b, idx) => {
-            return (
-            <div
-              key={b.id}
-              className="admin-banner-card"
-              {...(dragDisabled ? {} : getItemProps(idx))}
-            >
-              <DragHandle disabled={dragDisabled} />
-              {b.videoUrl ? (
-                <div className="banner-thumb">
-                  <video src={b.videoUrl} muted playsInline preload="metadata" />
+          {bannerType === "video"
+            ? visibleBanners.map((b) => (
+                <div key={b.id} className="banner-video-preview">
+                  {b.videoUrl && (
+                    <video src={b.videoUrl} controls muted loop playsInline preload="metadata" />
+                  )}
+                  <div className="banner-video-preview-meta">
+                    <div className="banner-link">
+                      {b.linkUrl ? `→ ${b.linkUrl}` : "이동 링크 없음"}
+                    </div>
+                    <div className="banner-actions">
+                      <button type="button" className="btn btn-ghost" onClick={() => startEdit(b)} disabled={editingId !== null}>
+                        편집
+                      </button>
+                      <button type="button" className="btn btn-ghost" onClick={() => remove(b.id)} disabled={status === "deleting"}>
+                        삭제
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ) : b.imageUrl ? (
-                <div className="banner-thumb">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={b.imageUrl} alt="" />
+              ))
+            : visibleBanners.map((b, idx) => (
+                <div
+                  key={b.id}
+                  className="admin-banner-card"
+                  {...(dragDisabled ? {} : getItemProps(idx))}
+                >
+                  <DragHandle disabled={dragDisabled} />
+                  {b.imageUrl && (
+                    <div className="banner-thumb">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={b.imageUrl} alt="" />
+                    </div>
+                  )}
+                  <div className="banner-meta">
+                    {b.linkUrl ? (
+                      <div className="banner-link">→ {b.linkUrl}</div>
+                    ) : (
+                      <div className="banner-link">이동 링크 없음</div>
+                    )}
+                  </div>
+                  <div className="banner-actions">
+                    <button type="button" className="btn btn-ghost" onClick={() => startEdit(b)} disabled={editingId !== null}>
+                      편집
+                    </button>
+                    <button type="button" className="btn btn-ghost" onClick={() => remove(b.id)} disabled={status === "deleting"}>
+                      삭제
+                    </button>
+                  </div>
                 </div>
-              ) : null}
-              <div className="banner-meta">
-                {b.videoUrl && <div className="banner-link">🎬 영상 배너</div>}
-                {b.linkUrl ? (
-                  <div className="banner-link">→ {b.linkUrl}</div>
-                ) : (
-                  <div className="banner-link">이동 링크 없음</div>
-                )}
-              </div>
-              <div className="banner-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => startEdit(b)} disabled={editingId !== null}>
-                  편집
-                </button>
-                <button type="button" className="btn btn-ghost" onClick={() => remove(b.id)} disabled={status === "deleting"}>
-                  삭제
-                </button>
-              </div>
-            </div>
-            );
-          })}
+              ))}
         </div>
       </div>
 
