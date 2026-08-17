@@ -39,9 +39,12 @@ export function BannersEditor() {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const dragDisabled = editingId !== null || status === "saving" || status === "deleting";
-  const { getItemProps } = useDragSort(banners.length, (f, t) => void move(f, t));
 
   const isNew = editingId === 0;
+  // 목록에는 노출 타입으로 선택된 배너만 표시한다
+  const visibleBanners = banners.filter((b) => (b.videoUrl ? "video" : "image") === bannerType);
+  const hasVideoBanner = banners.some((b) => Boolean(b.videoUrl));
+  const { getItemProps } = useDragSort(visibleBanners.length, (f, t) => void move(f, t));
 
   useEffect(() => {
     void load();
@@ -164,6 +167,10 @@ export function BannersEditor() {
       setErrMsg(draft.type === "image" ? "배너 이미지는 필수입니다." : "배너 영상은 필수입니다.");
       return;
     }
+    if (isNew && draft.type === "video" && hasVideoBanner) {
+      setErrMsg("영상 배너는 1개만 등록할 수 있습니다. 기존 영상 배너를 편집하거나 삭제해 주세요.");
+      return;
+    }
     setStatus("saving");
     setErrMsg("");
     try {
@@ -215,7 +222,7 @@ export function BannersEditor() {
   async function move(fromIndex: number, toIndex: number) {
     setStatus("saving"); setErrMsg("");
     try {
-      await applyReorder(banners, fromIndex, toIndex, (it, next) =>
+      await applyReorder(visibleBanners, fromIndex, toIndex, (it, next) =>
         onchurchBanner.update(it.id, {
           imageUrl: it.imageUrl ?? null,
           videoUrl: it.videoUrl ?? null,
@@ -285,13 +292,18 @@ export function BannersEditor() {
                 <button type="button" className="btn btn-secondary" onClick={() => pickType("image")}>
                   🖼 사진 배너 (여러 장 가능)
                 </button>
-                <button type="button" className="btn btn-secondary" onClick={() => pickType("video")}>
+                <button type="button" className="btn btn-secondary" onClick={() => pickType("video")} disabled={hasVideoBanner}>
                   🎬 영상 배너
                 </button>
                 <button type="button" className="btn btn-ghost" onClick={cancel}>
                   취소
                 </button>
               </div>
+              {hasVideoBanner && (
+                <span className="form-hint" style={{ fontSize: 12 }}>
+                  영상 배너는 1개만 등록할 수 있습니다. 바꾸려면 기존 영상 배너를 편집하거나 삭제해 주세요.
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -383,16 +395,18 @@ export function BannersEditor() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {status === "loading" && <p style={{ color: "var(--muted)" }}>불러오는 중...</p>}
-          {status !== "loading" && banners.length === 0 && editingId === null && (
-            <p style={{ color: "var(--muted)" }}>등록된 배너가 없습니다. 새 배너를 추가해보세요. 등록 전까지는 기본 환영 배너가 노출됩니다.</p>
+          {status !== "loading" && visibleBanners.length === 0 && editingId === null && (
+            <p style={{ color: "var(--muted)" }}>
+              {banners.length === 0
+                ? "등록된 배너가 없습니다. 새 배너를 추가해보세요. 등록 전까지는 기본 환영 배너가 노출됩니다."
+                : `등록된 ${bannerType === "video" ? "영상" : "사진"} 배너가 없습니다. 새 배너를 추가하거나 노출 타입을 바꿔보세요.`}
+            </p>
           )}
-          {banners.map((b, idx) => {
-            const exposed = (b.videoUrl ? "video" : "image") === bannerType;
+          {visibleBanners.map((b, idx) => {
             return (
             <div
               key={b.id}
               className="admin-banner-card"
-              style={exposed ? undefined : { opacity: 0.55 }}
               {...(dragDisabled ? {} : getItemProps(idx))}
             >
               <DragHandle disabled={dragDisabled} />
@@ -407,9 +421,7 @@ export function BannersEditor() {
                 </div>
               ) : null}
               <div className="banner-meta">
-                <div className="banner-link">
-                  {b.videoUrl ? "🎬 영상" : "🖼 사진"} · {exposed ? "노출 중" : "보관 중 (홈에 표시되지 않음)"}
-                </div>
+                {b.videoUrl && <div className="banner-link">🎬 영상 배너</div>}
                 {b.linkUrl ? (
                   <div className="banner-link">→ {b.linkUrl}</div>
                 ) : (
