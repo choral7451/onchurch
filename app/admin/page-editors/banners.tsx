@@ -32,6 +32,7 @@ export function BannersEditor() {
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [showVideoLimit, setShowVideoLimit] = useState(false);
   const [bannerType, setBannerType] = useState<BannerType>("image");
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [uploading, setUploading] = useState(false);
@@ -63,11 +64,21 @@ export function BannersEditor() {
     }
   }
 
-  // 현재 선택된 노출 타입의 배너를 바로 추가한다
+  // 현재 선택된 노출 타입의 배너를 바로 추가한다. 영상은 1개 제한이라 이미 있으면 안내 모달을 띄운다.
   function startNew() {
     setErrMsg("");
+    if (bannerType === "video" && hasVideoBanner) {
+      setShowVideoLimit(true);
+      return;
+    }
     setEditingId(0);
     setDraft({ ...EMPTY_DRAFT, type: bannerType, sortOrder: banners.length });
+  }
+
+  function editExistingVideo() {
+    setShowVideoLimit(false);
+    const videoBanner = banners.find((b) => Boolean(b.videoUrl));
+    if (videoBanner) startEdit(videoBanner);
   }
 
   // 홈에 노출할 배너 타입 전환. 다른 타입 배너는 삭제하지 않고 보관한다.
@@ -267,15 +278,13 @@ export function BannersEditor() {
             type="button"
             className="btn btn-primary banner-add-btn"
             onClick={startNew}
-            disabled={editingId !== null || (bannerType === "video" && hasVideoBanner)}
+            disabled={editingId !== null}
           >
-            + 새 {bannerType === "video" ? "영상" : "사진"} 배너 추가
+            + 배너 추가
           </button>
         </div>
         <p className="banner-type-hint">
-          {bannerType === "video" && hasVideoBanner
-            ? "영상 배너는 1개만 등록할 수 있습니다. 바꾸려면 아래에서 편집하거나 삭제해 주세요."
-            : "선택한 타입의 배너만 홈에 노출됩니다. 다른 타입 배너는 삭제되지 않고 보관됩니다."}
+          선택한 타입의 배너만 홈에 노출됩니다. 다른 타입 배너는 삭제되지 않고 보관됩니다.
         </p>
 
         {editingId !== null && (
@@ -411,6 +420,30 @@ export function BannersEditor() {
           })}
         </div>
       </div>
+
+      {showVideoLimit && (
+        <div
+          className="admin-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowVideoLimit(false)}
+        >
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="admin-modal-title">영상 배너는 1개만 등록할 수 있어요</h3>
+            <p className="admin-modal-body">
+              이미 등록된 영상 배너가 있습니다. 새 영상으로 바꾸려면 기존 영상 배너를 <strong>편집</strong>해서 교체하거나, 삭제 후 다시 추가해 주세요.
+            </p>
+            <div className="admin-modal-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setShowVideoLimit(false)}>
+                닫기
+              </button>
+              <button type="button" className="btn btn-primary" onClick={editExistingVideo}>
+                기존 영상 편집
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
