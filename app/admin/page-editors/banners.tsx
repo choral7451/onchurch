@@ -89,6 +89,8 @@ export function BannersEditor() {
     try {
       await onchurchBanner.setType(type);
       setBannerType(type);
+      // 열려 있던 편집 폼은 타입이 달라지므로 닫는다
+      cancel();
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "노출 타입 변경에 실패했습니다.");
     } finally {
