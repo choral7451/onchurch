@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ApiError, onchurchBanner, uploadImages, uploadFiles, type Banner, type BannerWriteInput } from "@/lib/api-client";
+import { ApiError, onchurchBanner, uploadImages, uploadVideo, type Banner, type BannerWriteInput } from "@/lib/api-client";
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
@@ -25,7 +25,7 @@ const EMPTY_DRAFT: Draft = {
   sortOrder: 0,
 };
 
-const MAX_VIDEO_BYTES = 32 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 
 export function BannersEditor() {
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -139,13 +139,13 @@ export function BannersEditor() {
     if (videoInputRef.current) videoInputRef.current.value = "";
     if (!file) return;
     if (file.size > MAX_VIDEO_BYTES) {
-      setErrMsg("영상 파일은 최대 32MB까지 업로드할 수 있습니다.");
+      setErrMsg("영상 파일은 최대 200MB까지 업로드할 수 있습니다.");
       return;
     }
     setErrMsg("");
     setUploading(true);
     try {
-      const [uploaded] = await uploadFiles([file]);
+      const uploaded = await uploadVideo(file);
       if (uploaded?.url) {
         setDraft((d) => ({ ...d, videoUrl: uploaded.url }));
       }
@@ -364,7 +364,7 @@ export function BannersEditor() {
                       <button type="button" className="btn btn-secondary" onClick={() => videoInputRef.current?.click()} disabled={uploading}>
                         {uploading ? "업로드 중..." : draft.videoUrl ? "영상 교체" : "영상 업로드"}
                       </button>
-                      <span className="form-hint" style={{ fontSize: 12 }}>MP4/WebM · 최대 32MB · 10~20초 내외의 짧은 영상 권장 · 소리 없이 자동 반복 재생됩니다</span>
+                      <span className="form-hint" style={{ fontSize: 12 }}>MP4/WebM · 최대 200MB · 소리 없이 자동 반복 재생됩니다 · 용량이 클수록 첫 화면 로딩이 느려지니 압축을 권장합니다</span>
                     </div>
                   </div>
                 </div>

@@ -383,6 +383,28 @@ export async function uploadFiles(files: File[]): Promise<UploadedFile[]> {
   return (body?.item?.files ?? []) as UploadedFile[];
 }
 
+// 페이지 내 인라인 재생용 영상 업로드(배너 등). 최대 200MB.
+export async function uploadVideo(file: File): Promise<UploadedFile | null> {
+  const accessToken = getAccessToken();
+  const form = new FormData();
+  form.append("videoFiles", file);
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+  const res = await fetch(`${API_BASE}/system/upload/videos`, {
+    method: "POST",
+    headers,
+    body: form,
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    const code = body?.code ?? "ERROR";
+    const rawMessage = body?.message;
+    const message = Array.isArray(rawMessage) ? rawMessage.join("\n") : rawMessage ?? "영상 업로드에 실패했습니다.";
+    throw new ApiError(message, code, res.status);
+  }
+  return ((body?.item?.files ?? []) as UploadedFile[])[0] ?? null;
+}
+
 export type FoundAccount = {
   loginId: string;
   name: string;
