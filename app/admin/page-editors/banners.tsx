@@ -32,7 +32,6 @@ export function BannersEditor() {
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [choosingType, setChoosingType] = useState(false);
   const [bannerType, setBannerType] = useState<BannerType>("image");
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [uploading, setUploading] = useState(false);
@@ -64,15 +63,11 @@ export function BannersEditor() {
     }
   }
 
+  // 현재 선택된 노출 타입의 배너를 바로 추가한다
   function startNew() {
-    setChoosingType(true);
     setErrMsg("");
-  }
-
-  function pickType(type: BannerType) {
-    setChoosingType(false);
     setEditingId(0);
-    setDraft({ ...EMPTY_DRAFT, type, sortOrder: banners.length });
+    setDraft({ ...EMPTY_DRAFT, type: bannerType, sortOrder: banners.length });
   }
 
   // 홈에 노출할 배너 타입 전환. 다른 타입 배너는 삭제하지 않고 보관한다.
@@ -102,7 +97,6 @@ export function BannersEditor() {
   }
 
   function cancel() {
-    setChoosingType(false);
     setEditingId(null);
     setDraft(EMPTY_DRAFT);
     setErrMsg("");
@@ -192,10 +186,6 @@ export function BannersEditor() {
             : { imageUrl: draft.imageUrls[0], videoUrl: null, linkUrl, sortOrder: baseOrder };
         await onchurchBanner.update(editingId, payload);
       }
-      // 방금 추가한 배너가 바로 홈에 보이도록 노출 타입을 함께 전환
-      if (isNew && draft.type !== bannerType) {
-        await onchurchBanner.setType(draft.type);
-      }
       cancel();
       await load();
     } catch (err) {
@@ -249,13 +239,13 @@ export function BannersEditor() {
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
 
-        {banners.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ fontWeight: 600, fontSize: 14 }}>홈에 노출할 배너</span>
-            <div style={{ display: "flex", gap: 6 }}>
+        <div className="banner-toolbar">
+          <div className="banner-toolbar-left">
+            <span className="banner-type-label">홈에 노출할 배너</span>
+            <div className="banner-type-toggle" role="group" aria-label="홈에 노출할 배너 타입">
               <button
                 type="button"
-                className={`btn ${bannerType === "image" ? "btn-primary" : "btn-ghost"}`}
+                className={bannerType === "image" ? "active" : ""}
                 onClick={() => changeBannerType("image")}
                 disabled={status === "saving"}
                 aria-pressed={bannerType === "image"}
@@ -264,7 +254,7 @@ export function BannersEditor() {
               </button>
               <button
                 type="button"
-                className={`btn ${bannerType === "video" ? "btn-primary" : "btn-ghost"}`}
+                className={bannerType === "video" ? "active" : ""}
                 onClick={() => changeBannerType("video")}
                 disabled={status === "saving"}
                 aria-pressed={bannerType === "video"}
@@ -272,41 +262,21 @@ export function BannersEditor() {
                 🎬 영상
               </button>
             </div>
-            <span className="form-hint" style={{ fontSize: 12 }}>
-              선택한 타입의 배너만 홈에 노출됩니다. 다른 타입 배너는 삭제되지 않고 보관됩니다.
-            </span>
           </div>
-        )}
-
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button type="button" className="btn btn-primary" onClick={startNew} disabled={editingId !== null || choosingType}>
-            + 새 배너 추가
+          <button
+            type="button"
+            className="btn btn-primary banner-add-btn"
+            onClick={startNew}
+            disabled={editingId !== null || (bannerType === "video" && hasVideoBanner)}
+          >
+            + 새 {bannerType === "video" ? "영상" : "사진"} 배너 추가
           </button>
         </div>
-
-        {choosingType && (
-          <div className="admin-banner-card editing">
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div style={{ fontWeight: 600 }}>어떤 배너를 추가할까요?</div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button type="button" className="btn btn-secondary" onClick={() => pickType("image")}>
-                  🖼 사진 배너 (여러 장 가능)
-                </button>
-                <button type="button" className="btn btn-secondary" onClick={() => pickType("video")} disabled={hasVideoBanner}>
-                  🎬 영상 배너
-                </button>
-                <button type="button" className="btn btn-ghost" onClick={cancel}>
-                  취소
-                </button>
-              </div>
-              {hasVideoBanner && (
-                <span className="form-hint" style={{ fontSize: 12 }}>
-                  영상 배너는 1개만 등록할 수 있습니다. 바꾸려면 기존 영상 배너를 편집하거나 삭제해 주세요.
-                </span>
-              )}
-            </div>
-          </div>
-        )}
+        <p className="banner-type-hint">
+          {bannerType === "video" && hasVideoBanner
+            ? "영상 배너는 1개만 등록할 수 있습니다. 바꾸려면 아래에서 편집하거나 삭제해 주세요."
+            : "선택한 타입의 배너만 홈에 노출됩니다. 다른 타입 배너는 삭제되지 않고 보관됩니다."}
+        </p>
 
         {editingId !== null && (
           <div className="admin-banner-card editing">

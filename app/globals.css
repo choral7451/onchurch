@@ -922,6 +922,20 @@ main { flex: 1; }
 .top-banner-dots { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 2; }
 .top-banner-dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: oklch(1 0 0 / 0.5); cursor: pointer; padding: 0; transition: background 0.15s ease, transform 0.15s ease; }
 .top-banner-dot.active { background: white; transform: scale(1.25); }
+.banner-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.banner-toolbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.banner-type-label { font-weight: 600; font-size: 14px; color: var(--ink); }
+.banner-type-toggle { display: inline-flex; align-items: center; gap: 2px; padding: 3px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; }
+.banner-type-toggle button { border: none; background: transparent; padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: background 0.15s ease, color 0.15s ease; white-space: nowrap; }
+.banner-type-toggle button:hover:not(.active):not(:disabled) { color: var(--ink); }
+.banner-type-toggle button.active { background: var(--primary); color: white; box-shadow: 0 1px 4px oklch(0 0 0 / 0.15); }
+.banner-type-toggle button:disabled { opacity: 0.6; cursor: default; }
+.banner-type-hint { margin: -4px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+@media (max-width: 560px) {
+  .banner-toolbar { flex-direction: column; align-items: stretch; }
+  .banner-toolbar-left { justify-content: space-between; }
+  .banner-add-btn { width: 100%; }
+}
 .admin-banner-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
 .admin-banner-card.editing { flex-direction: column; align-items: stretch; background: var(--bg-tinted); }
 .admin-banner-card.inactive { opacity: 0.55; }
