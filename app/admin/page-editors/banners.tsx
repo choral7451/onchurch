@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { ApiError, onchurchBanner, uploadImages, uploadVideo, type Banner, type BannerWriteInput } from "@/lib/api-client";
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
@@ -236,6 +236,94 @@ export function BannersEditor() {
     finally { setStatus("idle"); }
   }
 
+  // 편집 폼 카드. 새 배너/사진 편집은 목록 위에, 영상 편집은 미리보기 아래에 렌더링한다.
+  function renderEditorCard() {
+    return (
+      <div className="admin-banner-card editing">
+        <div className="form-grid">
+          {draft.type === "image" && (
+            <div className="form-row full">
+              <label>배너 이미지 <span className="required-mark" aria-hidden="true">*</span></label>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                {draft.imageUrls.map((url, i) => (
+                  <div key={`${url}-${i}`} style={{ position: "relative", width: 180, height: 100, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <button
+                      type="button"
+                      aria-label="제거"
+                      onClick={() => removeImageAt(i)}
+                      style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "oklch(0 0 0 / 0.6)", color: "white", border: "none", cursor: "pointer", fontSize: 13, lineHeight: 1, display: "grid", placeItems: "center" }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+                  <input ref={imageInputRef} type="file" accept="image/*" multiple={isNew} onChange={onPickImages} style={{ display: "none" }} />
+                  <button type="button" className="btn btn-secondary" onClick={() => imageInputRef.current?.click()} disabled={uploading}>
+                    {uploading ? "업로드 중..." : draft.imageUrls.length ? (isNew ? "이미지 추가" : "이미지 교체") : "이미지 업로드"}
+                  </button>
+                  <span className="form-hint" style={{ fontSize: 12 }}>
+                    권장 16:9 · 1920×1080 · JPG/PNG · 최대 32MB{isNew ? " · 여러 장을 올리면 각각 슬라이드로 등록됩니다" : ""}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {draft.type === "video" && (
+            <div className="form-row full">
+              <label>배너 영상 <span className="required-mark" aria-hidden="true">*</span></label>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                {draft.videoUrl && (
+                  <div style={{ position: "relative", width: 180, height: 100, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
+                    <video src={draft.videoUrl} muted playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <button
+                      type="button"
+                      aria-label="제거"
+                      onClick={() => setDraft((d) => ({ ...d, videoUrl: "" }))}
+                      style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "oklch(0 0 0 / 0.6)", color: "white", border: "none", cursor: "pointer", fontSize: 13, lineHeight: 1, display: "grid", placeItems: "center" }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+                  <input ref={videoInputRef} type="file" accept="video/mp4,video/webm" onChange={onPickVideo} style={{ display: "none" }} />
+                  <button type="button" className="btn btn-secondary" onClick={() => videoInputRef.current?.click()} disabled={uploading}>
+                    {uploading ? "업로드 중..." : draft.videoUrl ? "영상 교체" : "영상 업로드"}
+                  </button>
+                  <span className="form-hint" style={{ fontSize: 12 }}>MP4/WebM · 최대 200MB · 소리 없이 자동 반복 재생됩니다 · 용량이 클수록 첫 화면 로딩이 느려지니 압축을 권장합니다</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="form-row full">
+            <label htmlFor="bn-link">클릭 시 이동할 URL</label>
+            <input
+              id="bn-link"
+              type="url"
+              value={draft.linkUrl ?? ""}
+              onChange={(e) => setDraft((d) => ({ ...d, linkUrl: e.target.value }))}
+              placeholder="https://... (선택)"
+            />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
+          <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>
+            취소
+          </button>
+          <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || uploading || !draftReady}>
+            {status === "saving" ? "저장 중..." : "저장"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <section className="admin-section">
       <div className="admin-section-head">
@@ -287,90 +375,7 @@ export function BannersEditor() {
           선택한 타입의 배너만 홈에 노출됩니다. 다른 타입 배너는 삭제되지 않고 보관됩니다.
         </p>
 
-        {editingId !== null && (
-          <div className="admin-banner-card editing">
-            <div className="form-grid">
-              {draft.type === "image" && (
-                <div className="form-row full">
-                  <label>배너 이미지 <span className="required-mark" aria-hidden="true">*</span></label>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-                    {draft.imageUrls.map((url, i) => (
-                      <div key={`${url}-${i}`} style={{ position: "relative", width: 180, height: 100, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        <button
-                          type="button"
-                          aria-label="제거"
-                          onClick={() => removeImageAt(i)}
-                          style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "oklch(0 0 0 / 0.6)", color: "white", border: "none", cursor: "pointer", fontSize: 13, lineHeight: 1, display: "grid", placeItems: "center" }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
-                      <input ref={imageInputRef} type="file" accept="image/*" multiple={isNew} onChange={onPickImages} style={{ display: "none" }} />
-                      <button type="button" className="btn btn-secondary" onClick={() => imageInputRef.current?.click()} disabled={uploading}>
-                        {uploading ? "업로드 중..." : draft.imageUrls.length ? (isNew ? "이미지 추가" : "이미지 교체") : "이미지 업로드"}
-                      </button>
-                      <span className="form-hint" style={{ fontSize: 12 }}>
-                        권장 16:9 · 1920×1080 · JPG/PNG · 최대 32MB{isNew ? " · 여러 장을 올리면 각각 슬라이드로 등록됩니다" : ""}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {draft.type === "video" && (
-                <div className="form-row full">
-                  <label>배너 영상 <span className="required-mark" aria-hidden="true">*</span></label>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-                    {draft.videoUrl && (
-                      <div style={{ position: "relative", width: 180, height: 100, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
-                        <video src={draft.videoUrl} muted playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        <button
-                          type="button"
-                          aria-label="제거"
-                          onClick={() => setDraft((d) => ({ ...d, videoUrl: "" }))}
-                          style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "oklch(0 0 0 / 0.6)", color: "white", border: "none", cursor: "pointer", fontSize: 13, lineHeight: 1, display: "grid", placeItems: "center" }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    )}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
-                      <input ref={videoInputRef} type="file" accept="video/mp4,video/webm" onChange={onPickVideo} style={{ display: "none" }} />
-                      <button type="button" className="btn btn-secondary" onClick={() => videoInputRef.current?.click()} disabled={uploading}>
-                        {uploading ? "업로드 중..." : draft.videoUrl ? "영상 교체" : "영상 업로드"}
-                      </button>
-                      <span className="form-hint" style={{ fontSize: 12 }}>MP4/WebM · 최대 200MB · 소리 없이 자동 반복 재생됩니다 · 용량이 클수록 첫 화면 로딩이 느려지니 압축을 권장합니다</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="form-row full">
-                <label htmlFor="bn-link">클릭 시 이동할 URL</label>
-                <input
-                  id="bn-link"
-                  type="url"
-                  value={draft.linkUrl ?? ""}
-                  onChange={(e) => setDraft((d) => ({ ...d, linkUrl: e.target.value }))}
-                  placeholder="https://... (선택)"
-                />
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
-              <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>
-                취소
-              </button>
-              <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || uploading || !draftReady}>
-                {status === "saving" ? "저장 중..." : "저장"}
-              </button>
-            </div>
-          </div>
-        )}
+        {editingId !== null && (isNew || draft.type !== "video") && renderEditorCard()}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {status === "loading" && <p style={{ color: "var(--muted)" }}>불러오는 중...</p>}
@@ -383,24 +388,27 @@ export function BannersEditor() {
           )}
           {bannerType === "video"
             ? visibleBanners.map((b) => (
-                <div key={b.id} className="banner-video-preview">
-                  {b.videoUrl && (
-                    <video src={b.videoUrl} controls muted loop playsInline preload="metadata" />
-                  )}
-                  <div className="banner-video-preview-meta">
-                    <div className="banner-link">
-                      {b.linkUrl ? `→ ${b.linkUrl}` : "이동 링크 없음"}
-                    </div>
-                    <div className="banner-actions">
-                      <button type="button" className="btn btn-ghost" onClick={() => startEdit(b)} disabled={editingId !== null}>
-                        편집
-                      </button>
-                      <button type="button" className="btn btn-ghost" onClick={() => remove(b.id)} disabled={status === "deleting"}>
-                        삭제
-                      </button>
+                <Fragment key={b.id}>
+                  <div className="banner-video-preview">
+                    {b.videoUrl && (
+                      <video src={b.videoUrl} controls muted loop playsInline preload="metadata" />
+                    )}
+                    <div className="banner-video-preview-meta">
+                      <div className="banner-link">
+                        {b.linkUrl ? `→ ${b.linkUrl}` : "이동 링크 없음"}
+                      </div>
+                      <div className="banner-actions">
+                        <button type="button" className="btn btn-ghost" onClick={() => startEdit(b)} disabled={editingId !== null}>
+                          편집
+                        </button>
+                        <button type="button" className="btn btn-ghost" onClick={() => remove(b.id)} disabled={status === "deleting"}>
+                          삭제
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                  {editingId === b.id && renderEditorCard()}
+                </Fragment>
               ))
             : visibleBanners.map((b, idx) => (
                 <div
