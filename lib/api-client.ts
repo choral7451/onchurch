@@ -1006,13 +1006,15 @@ export type Banner = {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  videoUrl: string | null;
   linkUrl: string | null;
   sortOrder: number;
   isActive: boolean;
 };
 
 export type BannerWriteInput = {
-  imageUrl: string;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
   linkUrl?: string | null;
   sortOrder: number;
 };
@@ -1022,6 +1024,7 @@ export type PublicBanner = {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  videoUrl: string | null;
   linkUrl: string | null;
   isDefault: boolean;
 };
@@ -1034,7 +1037,8 @@ export const onchurchBanner = {
       method: "POST",
       auth: true,
       body: JSON.stringify({
-        imageUrl: input.imageUrl,
+        imageUrl: input.imageUrl ?? null,
+        videoUrl: input.videoUrl ?? null,
         linkUrl: input.linkUrl ?? null,
         sortOrder: input.sortOrder,
       }),
@@ -1044,7 +1048,8 @@ export const onchurchBanner = {
       method: "PUT",
       auth: true,
       body: JSON.stringify({
-        imageUrl: input.imageUrl,
+        imageUrl: input.imageUrl ?? null,
+        videoUrl: input.videoUrl ?? null,
         linkUrl: input.linkUrl ?? null,
         sortOrder: input.sortOrder,
       }),

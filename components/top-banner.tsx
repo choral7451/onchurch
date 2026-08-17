@@ -7,6 +7,7 @@ type PublicBanner = {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  videoUrl: string | null;
   linkUrl: string | null;
   isDefault: boolean;
 };
@@ -138,17 +139,31 @@ export function TopBanner({ banners }: { banners: PublicBanner[] }) {
 
 function BannerCard({ banner }: { banner: PublicBanner }) {
   const hasText = Boolean(banner.title || banner.description);
+  const isVideo = Boolean(banner.videoUrl);
   const inner = (
     <div
-      className={`top-banner ${banner.isDefault ? "top-banner-default" : ""} ${hasText ? "" : "top-banner-plain"}`}
+      className={`top-banner ${banner.isDefault ? "top-banner-default" : ""} ${hasText ? "" : "top-banner-plain"} ${isVideo ? "top-banner-has-video" : ""}`}
       style={
-        banner.imageUrl
+        !isVideo && banner.imageUrl
           ? hasText
             ? { backgroundImage: `linear-gradient(180deg, oklch(0 0 0 / 0.35), oklch(0 0 0 / 0.55)), url("${banner.imageUrl}")` }
             : { backgroundImage: `url("${banner.imageUrl}")` }
           : undefined
       }
     >
+      {isVideo && (
+        <video
+          className="top-banner-video"
+          src={banner.videoUrl!}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        />
+      )}
+      {isVideo && hasText && <span className="top-banner-scrim" aria-hidden="true" />}
       {hasText && (
         <div className="top-banner-inner">
           {banner.title && <h2 className="top-banner-title">{banner.title}</h2>}

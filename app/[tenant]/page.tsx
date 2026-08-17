@@ -24,6 +24,7 @@ type PublicBanner = {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  videoUrl: string | null;
   linkUrl: string | null;
   isDefault: boolean;
 };

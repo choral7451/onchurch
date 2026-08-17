@@ -7,6 +7,7 @@ export type ClassicHeroSlide = {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  videoUrl: string | null;
   linkUrl: string | null;
 };
 
@@ -78,13 +79,26 @@ export function ClassicHero({ slides }: { slides: ClassicHeroSlide[] }) {
 
 function ClassicSlide({ slide, active }: { slide: ClassicHeroSlide; active: boolean }) {
   const hasText = Boolean(slide.title || slide.description);
+  const isVideo = Boolean(slide.videoUrl);
   const inner = (
     <div
-      className={`chc-hero-slide ${slide.imageUrl ? "" : "chc-hero-slide-plain"}`}
-      style={slide.imageUrl ? { backgroundImage: `url("${slide.imageUrl}")` } : undefined}
+      className={`chc-hero-slide ${slide.imageUrl || isVideo ? "" : "chc-hero-slide-plain"}`}
+      style={!isVideo && slide.imageUrl ? { backgroundImage: `url("${slide.imageUrl}")` } : undefined}
       aria-hidden={!active}
     >
-      {slide.imageUrl && <span className="chc-hero-scrim" aria-hidden="true" />}
+      {isVideo && (
+        <video
+          className="chc-hero-video"
+          src={slide.videoUrl!}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        />
+      )}
+      {(slide.imageUrl || isVideo) && <span className="chc-hero-scrim" aria-hidden="true" />}
       {hasText && (
         <div className="chc-hero-caption">
           {slide.title && <h2 className="chc-hero-title">{slide.title}</h2>}

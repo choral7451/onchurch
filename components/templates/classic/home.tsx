@@ -23,7 +23,7 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
 }
 
 // ------ Types ------
-type PublicBanner = { id: number | null; title: string; description: string | null; imageUrl: string | null; linkUrl: string | null; isDefault: boolean };
+type PublicBanner = { id: number | null; title: string; description: string | null; imageUrl: string | null; videoUrl: string | null; linkUrl: string | null; isDefault: boolean };
 type PublicSermon = { id: number; seriesId: number | null; title: string; pastor: string | null; date: string | null; videoUrl: string | null; isFeatured: boolean };
 type PublicSermonSeries = { id: number; name: string };
 type PublicNotice = { id: number; category: string | null; title: string; imageUrls: string[]; publishedAt: string | null; createdAt: string };
@@ -47,10 +47,10 @@ const GRADS = ["ph-grad-1", "ph-grad-2", "ph-grad-3", "ph-grad-4"];
 async function HeroSection({ slug, church }: { slug: string; church: PublicChurch }) {
   const data = await fetchJson<{ banners: PublicBanner[] }>(`/onchurch/sites/${slug}/banners`, { banners: [] });
   const slides: ClassicHeroSlide[] = data.banners.map((b) => ({
-    id: b.id, title: b.title, description: b.description, imageUrl: b.imageUrl, linkUrl: b.linkUrl,
+    id: b.id, title: b.title, description: b.description, imageUrl: b.imageUrl, videoUrl: b.videoUrl, linkUrl: b.linkUrl,
   }));
   if (slides.length === 0) {
-    slides.push({ id: null, title: church.name, description: church.tagline, imageUrl: null, linkUrl: null });
+    slides.push({ id: null, title: church.name, description: church.tagline, imageUrl: null, videoUrl: null, linkUrl: null });
   }
   return <ClassicHero slides={slides} />;
 }
