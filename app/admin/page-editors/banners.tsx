@@ -32,6 +32,7 @@ export function BannersEditor() {
   const [status, setStatus] = useState<Status>("loading");
   const [errMsg, setErrMsg] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [choosingType, setChoosingType] = useState(false);
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [uploading, setUploading] = useState(false);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -59,8 +60,14 @@ export function BannersEditor() {
   }
 
   function startNew() {
+    setChoosingType(true);
+    setErrMsg("");
+  }
+
+  function pickType(type: BannerType) {
+    setChoosingType(false);
     setEditingId(0);
-    setDraft({ ...EMPTY_DRAFT, sortOrder: banners.length });
+    setDraft({ ...EMPTY_DRAFT, type, sortOrder: banners.length });
   }
 
   function startEdit(banner: Banner) {
@@ -75,16 +82,12 @@ export function BannersEditor() {
   }
 
   function cancel() {
+    setChoosingType(false);
     setEditingId(null);
     setDraft(EMPTY_DRAFT);
     setErrMsg("");
     if (imageInputRef.current) imageInputRef.current.value = "";
     if (videoInputRef.current) videoInputRef.current.value = "";
-  }
-
-  function switchType(type: BannerType) {
-    setDraft((d) => ({ ...d, type }));
-    setErrMsg("");
   }
 
   async function onPickImages(e: React.ChangeEvent<HTMLInputElement>) {
@@ -147,7 +150,7 @@ export function BannersEditor() {
     setStatus("saving");
     setErrMsg("");
     try {
-      const linkUrl = draft.linkUrl?.trim() || null;
+      const linkUrl = draft.type === "video" ? null : draft.linkUrl?.trim() || null;
       const baseOrder = Number(draft.sortOrder) || 0;
       if (isNew) {
         if (draft.type === "video") {
@@ -219,40 +222,33 @@ export function BannersEditor() {
         {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
 
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button type="button" className="btn btn-primary" onClick={startNew} disabled={editingId !== null}>
+          <button type="button" className="btn btn-primary" onClick={startNew} disabled={editingId !== null || choosingType}>
             + 새 배너 추가
           </button>
         </div>
 
+        {choosingType && (
+          <div className="admin-banner-card editing">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ fontWeight: 600 }}>어떤 배너를 추가할까요?</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button type="button" className="btn btn-secondary" onClick={() => pickType("image")}>
+                  🖼 사진 배너 (여러 장 가능)
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => pickType("video")}>
+                  🎬 영상 배너
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={cancel}>
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {editingId !== null && (
           <div className="admin-banner-card editing">
             <div className="form-grid">
-              <div className="form-row full">
-                <label>배너 종류</label>
-                <div style={{ display: "flex", gap: 16 }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="banner-type"
-                      checked={draft.type === "image"}
-                      onChange={() => switchType("image")}
-                      disabled={uploading}
-                    />
-                    사진{isNew ? " (여러 장 가능)" : ""}
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="banner-type"
-                      checked={draft.type === "video"}
-                      onChange={() => switchType("video")}
-                      disabled={uploading}
-                    />
-                    영상
-                  </label>
-                </div>
-              </div>
-
               {draft.type === "image" && (
                 <div className="form-row full">
                   <label>배너 이미지 <span className="required-mark" aria-hidden="true">*</span></label>
@@ -312,16 +308,18 @@ export function BannersEditor() {
                 </div>
               )}
 
-              <div className="form-row full">
-                <label htmlFor="bn-link">클릭 시 이동할 URL</label>
-                <input
-                  id="bn-link"
-                  type="url"
-                  value={draft.linkUrl ?? ""}
-                  onChange={(e) => setDraft((d) => ({ ...d, linkUrl: e.target.value }))}
-                  placeholder="https://... (선택)"
-                />
-              </div>
+              {draft.type === "image" && (
+                <div className="form-row full">
+                  <label htmlFor="bn-link">클릭 시 이동할 URL</label>
+                  <input
+                    id="bn-link"
+                    type="url"
+                    value={draft.linkUrl ?? ""}
+                    onChange={(e) => setDraft((d) => ({ ...d, linkUrl: e.target.value }))}
+                    placeholder="https://... (선택)"
+                  />
+                </div>
+              )}
             </div>
 
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
@@ -358,8 +356,9 @@ export function BannersEditor() {
                 </div>
               ) : null}
               <div className="banner-meta">
-                {b.videoUrl && <div className="banner-link">🎬 영상 배너</div>}
-                {b.linkUrl ? (
+                {b.videoUrl ? (
+                  <div className="banner-link">🎬 영상 배너</div>
+                ) : b.linkUrl ? (
                   <div className="banner-link">→ {b.linkUrl}</div>
                 ) : (
                   <div className="banner-link">이동 링크 없음</div>
