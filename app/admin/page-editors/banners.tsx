@@ -150,7 +150,7 @@ export function BannersEditor() {
     setStatus("saving");
     setErrMsg("");
     try {
-      const linkUrl = draft.type === "video" ? null : draft.linkUrl?.trim() || null;
+      const linkUrl = draft.linkUrl?.trim() || null;
       const baseOrder = Number(draft.sortOrder) || 0;
       if (isNew) {
         if (draft.type === "video") {
@@ -308,18 +308,16 @@ export function BannersEditor() {
                 </div>
               )}
 
-              {draft.type === "image" && (
-                <div className="form-row full">
-                  <label htmlFor="bn-link">클릭 시 이동할 URL</label>
-                  <input
-                    id="bn-link"
-                    type="url"
-                    value={draft.linkUrl ?? ""}
-                    onChange={(e) => setDraft((d) => ({ ...d, linkUrl: e.target.value }))}
-                    placeholder="https://... (선택)"
-                  />
-                </div>
-              )}
+              <div className="form-row full">
+                <label htmlFor="bn-link">클릭 시 이동할 URL</label>
+                <input
+                  id="bn-link"
+                  type="url"
+                  value={draft.linkUrl ?? ""}
+                  onChange={(e) => setDraft((d) => ({ ...d, linkUrl: e.target.value }))}
+                  placeholder="https://... (선택)"
+                />
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
@@ -356,9 +354,8 @@ export function BannersEditor() {
                 </div>
               ) : null}
               <div className="banner-meta">
-                {b.videoUrl ? (
-                  <div className="banner-link">🎬 영상 배너</div>
-                ) : b.linkUrl ? (
+                {b.videoUrl && <div className="banner-link">🎬 영상 배너</div>}
+                {b.linkUrl ? (
                   <div className="banner-link">→ {b.linkUrl}</div>
                 ) : (
                   <div className="banner-link">이동 링크 없음</div>
