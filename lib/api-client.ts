@@ -1606,6 +1606,9 @@ export type GalleryCategoryWriteInput = {
   isActive: boolean;
 };
 
+// 갤러리 사진 공개 범위: 전체공개(public) | 회원공개(member).
+export type GalleryVisibility = "public" | "member";
+
 export type GalleryItemRow = {
   id: number;
   categoryId: number | null;
@@ -1614,6 +1617,7 @@ export type GalleryItemRow = {
   date: string | null;
   photoUrl: string | null;
   grad: string | null;
+  visibility: GalleryVisibility;
   sortOrder: number;
   isActive: boolean;
 };
@@ -1625,6 +1629,7 @@ export type GalleryWriteInput = {
   date?: string | null;
   photoUrl?: string | null;
   grad?: string | null;
+  visibility?: GalleryVisibility;
   sortOrder: number;
   isActive: boolean;
 };
@@ -1684,8 +1689,10 @@ export const onchurchGallery = {
     if (opts?.size) qs.set("size", String(opts.size));
     const query = qs.toString();
     const path = `/onchurch/sites/${encodeURIComponent(slug)}/galleries${query ? `?${query}` : ""}`;
+    // auth: 로그인한 교인이면 토큰을 함께 보내 회원공개 사진까지 받는다 (비로그인은 헤더 없이 전체공개만).
     return request<{ categories: GalleryCategoryItem[]; groups: GalleryGroup[]; totalCount: number }>(path, {
       method: "GET",
+      auth: true,
     });
   },
 };

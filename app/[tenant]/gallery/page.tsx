@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shell/page-header";
 import { GalleryView } from "./view";
@@ -52,8 +53,11 @@ async function fetchGalleryFirstPage(
 ): Promise<{ categories: ApiCategory[]; groups: ApiGroup[]; totalCount: number }> {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
   try {
+    // 로그인한 교인이면 토큰을 함께 보내 회원공개 사진까지 받는다 (비로그인은 전체공개만).
+    const token = (await cookies()).get("onchurch.accessToken")?.value;
     const res = await fetch(`${base}/onchurch/sites/${encodeURIComponent(slug)}/galleries?page=1&size=${PAGE_SIZE}`, {
       cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     if (!res.ok) return { categories: [], groups: [], totalCount: 0 };
     const body = await res.json();

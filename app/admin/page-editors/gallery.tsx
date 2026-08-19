@@ -9,6 +9,7 @@ import {
   type GalleryItemRow,
   type GalleryCategoryItem,
   type GalleryCategoryWriteInput,
+  type GalleryVisibility,
 } from "@/lib/api-client";
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
@@ -103,6 +104,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftCategoryId, setDraftCategoryId] = useState<number | null>(null);
+  const [draftVisibility, setDraftVisibility] = useState<GalleryVisibility>("public");
   const [draftPhotos, setDraftPhotos] = useState<DraftPhoto[]>([]);
   const [removedIds, setRemovedIds] = useState<number[]>([]);
   const [status, setStatus] = useState<Status>("loading");
@@ -130,6 +132,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     setEditingKey("new");
     setDraftTitle("");
     setDraftCategoryId(null);
+    setDraftVisibility("public");
     setDraftPhotos([]);
     setRemovedIds([]);
     setDraftGrouped(true); // 여러 장 등록 시 묶어서 보여주기를 기본 체크로 시작.
@@ -140,13 +143,14 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     setDraftGrouped(!!g.batchId); // 이미 묶음(batchId 있음)이면 체크 상태로 시작.
     setDraftTitle(g.items[0].title);
     setDraftCategoryId(g.items[0].categoryId);
+    setDraftVisibility(g.items[0].visibility ?? "public");
     setDraftPhotos(g.items.map((it) => ({ id: it.id, url: it.photoUrl ?? "", grad: it.grad })));
     setRemovedIds([]);
     setErrMsg("");
   }
   function cancel() {
     setEditingKey(null);
-    setDraftTitle(""); setDraftCategoryId(null); setDraftPhotos([]); setRemovedIds([]); setDraftGrouped(false); setErrMsg("");
+    setDraftTitle(""); setDraftCategoryId(null); setDraftVisibility("public"); setDraftPhotos([]); setRemovedIds([]); setDraftGrouped(false); setErrMsg("");
   }
 
   async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
@@ -207,6 +211,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
           date: null,
           photoUrl: p.url,
           grad: p.grad,
+          visibility: draftVisibility,
           sortOrder: grouped ? order++ : 0,
           isActive: true,
         };
@@ -304,6 +309,31 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
               )}
             </div>
             <div className="form-row">
+              <label>공개 범위</label>
+              <div style={{ display: "flex", gap: 16, alignItems: "center", minHeight: 38 }}>
+                {([
+                  { value: "public", label: "전체공개" },
+                  { value: "member", label: "회원공개" },
+                ] as const).map((opt) => (
+                  <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13.5 }}>
+                    <input
+                      type="radio"
+                      name="gallery-visibility"
+                      value={opt.value}
+                      checked={draftVisibility === opt.value}
+                      onChange={() => setDraftVisibility(opt.value)}
+                    />
+                    <span>{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+              <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
+                {draftVisibility === "member"
+                  ? "로그인한 우리 교회 교인에게만 보입니다."
+                  : "누구나 볼 수 있습니다. (기본)"}
+              </span>
+            </div>
+            <div className="form-row">
               <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
               <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder="2026 신년 감사예배" required />
               {draftPhotos.length > 1 && (
@@ -387,6 +417,9 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                   <span className="admin-sidebar-pill complete" style={{ fontSize: 10 }}>{categoryName(head.categoryId)}</span>
+                  {head.visibility === "member" && (
+                    <span className="admin-sidebar-pill billing" style={{ fontSize: 10 }}>회원공개</span>
+                  )}
                   <strong>{head.title}</strong>
                   {g.items.length > 1 && (
                     <span style={{ color: "var(--muted)", fontSize: 12 }}>사진 {g.items.length}장</span>
