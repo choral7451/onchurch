@@ -34,6 +34,14 @@ function fmtMeta(ev: CalendarEvent): string {
   return parts.join(" · ");
 }
 
+// 일정이 이미 지났는지 판정. 종일 일정은 종료일(없으면 시작일)의 하루가 끝날 때까지 진행 중으로 본다.
+function isPastEvent(ev: CalendarEvent, now: Date): boolean {
+  const end = new Date(ev.endAt ?? ev.startAt);
+  if (Number.isNaN(end.getTime())) return false;
+  if (ev.isAllDay) end.setHours(23, 59, 59, 999);
+  return end.getTime() < now.getTime();
+}
+
 function fmtDateLabel(iso: string): string {
   const d = new Date(iso);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
@@ -118,13 +126,18 @@ export function Calendar({ events, initialYm, lang = "ko" }: { events: CalendarE
 
   const upcoming = useMemo(() => {
     // 캘린더에서 보고 있는 달의 일정은 지난 일정 포함 모두 표시 (startAt 기준).
-    return events
+    // 지나지 않은 일정을 가까운 순으로 먼저 보여주고, 지난 일정은 뒤로 붙인다.
+    const monthEvents = events
       .filter((e) => {
         const d = new Date(e.startAt);
         if (Number.isNaN(d.getTime())) return false;
         return d.getFullYear() === view.year && d.getMonth() + 1 === view.month;
       })
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+    return [
+      ...monthEvents.filter((e) => !isPastEvent(e, today)),
+      ...monthEvents.filter((e) => isPastEvent(e, today)),
+    ];
   }, [events, view]);
 
   // 달이 바뀌면 펼친 상태를 닫고 페이지를 처음으로 되돌린다 (새 달 기준으로 다시 처음부터).
@@ -179,7 +192,7 @@ export function Calendar({ events, initialYm, lang = "ko" }: { events: CalendarE
     <button
       type="button"
       key={e.id}
-      className="upcoming-item upcoming-item-btn"
+      className={`upcoming-item upcoming-item-btn${isPastEvent(e, today) ? " past" : ""}`}
       onClick={() => openEvent(e)}
       aria-label={pick(lang, { ko: `${e.title} 상세 보기`, en: `View ${e.title}` })}
     >
