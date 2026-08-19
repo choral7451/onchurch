@@ -335,6 +335,16 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [modal, setModal] = useState<null | "required" | "payment" | "trial-started">(null);
   const [trialEndDateLabel, setTrialEndDateLabel] = useState<string>("");
 
+  // 모달이 열려 있는 동안 배경 페이지 스크롤을 잠근다(스크롤은 모달 내부에서만).
+  useEffect(() => {
+    if (!modal) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [modal]);
+
   // 성도관리(성도 명부·심방·출석·홈페이지 회원)는 무료 체험 중이거나 결제된 교회만 접근 가능.
   const saintsLocked = !subscription?.isActive;
   const inSaintsSection =

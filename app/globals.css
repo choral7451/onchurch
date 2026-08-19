@@ -1001,8 +1001,8 @@ main { flex: 1; }
 .admin-publish-state { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 999px; letter-spacing: 0.04em; }
 .admin-publish-state.on { background: oklch(0.6 0.14 145 / 0.16); color: oklch(0.42 0.16 145); }
 .admin-publish-state.off { background: var(--bg-tinted); color: var(--muted); }
-.admin-modal-backdrop { position: fixed; inset: 0; background: oklch(0 0 0 / 0.5); display: grid; place-items: center; z-index: 100; padding: 20px; }
-.admin-modal { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 28px 24px; max-width: 440px; width: 100%; box-shadow: 0 20px 50px -10px oklch(0 0 0 / 0.25); }
+.admin-modal-backdrop { position: fixed; inset: 0; background: oklch(0 0 0 / 0.5); display: grid; place-items: center; z-index: 100; padding: 20px; overscroll-behavior: contain; }
+.admin-modal { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 28px 24px; max-width: 440px; width: 100%; max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 20px 50px -10px oklch(0 0 0 / 0.25); }
 .admin-modal-title { font-size: 18px; font-weight: 700; color: var(--ink); margin: 0 0 12px; }
 .admin-modal-body { font-size: 14px; color: var(--ink); line-height: 1.55; margin: 0 0 22px; }
 .admin-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
