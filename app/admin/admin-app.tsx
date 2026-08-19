@@ -251,6 +251,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
   }
 
   function selectNavGroup(group: NavGroup) {
+    // 성도관리는 무료 체험 중이거나 결제된 교회만 이용 가능 — 아니면 결제 안내 모달.
+    if (group === "saints" && saintsLocked) {
+      setModal("payment");
+      return;
+    }
     setNavGroup(group);
     setMobileDetail(false); // 그룹 전환 시 모바일은 메뉴 목록부터 보여준다.
     if (group === "saints") setActiveSection("saints-roster");
@@ -329,6 +334,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [publishLoading, setPublishLoading] = useState(false);
   const [modal, setModal] = useState<null | "required" | "payment" | "trial-started">(null);
   const [trialEndDateLabel, setTrialEndDateLabel] = useState<string>("");
+
+  // 성도관리(성도 명부·심방·출석·홈페이지 회원)는 무료 체험 중이거나 결제된 교회만 접근 가능.
+  const saintsLocked = !subscription?.isActive;
+  const inSaintsSection =
+    activeSection === "saints-roster" ||
+    activeSection === "visitations" ||
+    activeSection === "attendance" ||
+    activeSection === "members";
 
   const [aboutFilled, setAboutFilled] = useState(false);
   const [worshipFilled, setWorshipFilled] = useState(false);
@@ -1859,9 +1872,23 @@ export function AdminApp({ initial }: { initial: Initial }) {
               */}
 
 
-              {activeSection === "members" && <MembersEditor />}
+              {/* 구독 미활성(결제·무료체험 없음) 상태에서 성도관리 섹션에 있으면 에디터 대신 결제 안내 표시 */}
+              {inSaintsSection && saintsLocked && (
+                <section className="admin-section">
+                  <div className="admin-section-head">
+                    <div className="admin-section-eyebrow">MEMBERS</div>
+                    <h2>결제 후 이용할 수 있습니다</h2>
+                    <p>성도관리는 무료 체험 중이거나 결제된 교회만 이용할 수 있습니다. 아래 계좌로 입금해주시면 이용이 가능합니다.</p>
+                  </div>
+                  <div className="admin-section-body">
+                    <PaymentAccountCard />
+                  </div>
+                </section>
+              )}
 
-              {activeSection === "saints-roster" && (
+              {activeSection === "members" && !saintsLocked && <MembersEditor />}
+
+              {activeSection === "saints-roster" && !saintsLocked && (
                 <SaintsEditor
                   focusSaintId={saintFocusId}
                   onFocusConsumed={() => setSaintFocusId(null)}
@@ -1873,7 +1900,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 />
               )}
 
-              {activeSection === "visitations" && (
+              {activeSection === "visitations" && !saintsLocked && (
                 <VisitationsEditor
                   focusId={visitationFocusId}
                   onFocusConsumed={() => setVisitationFocusId(null)}
@@ -1890,7 +1917,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 />
               )}
 
-              {activeSection === "attendance" && <AttendanceEditor />}
+              {activeSection === "attendance" && !saintsLocked && <AttendanceEditor />}
 
               {activePage && activePageItem && (
                 <div className="admin-page-editor">
