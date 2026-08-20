@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { onchurchGallery, type GalleryGroup } from "@/lib/api-client";
+import { isLoggedIn, onchurchGallery, type GalleryGroup } from "@/lib/api-client";
 import { type Lang, pick } from "@/lib/i18n";
 
 type Category = { id: number; name: string; isAll: boolean };
@@ -85,11 +85,13 @@ export function GalleryView({ slug, categories, initialGroups, totalCount, pageS
   );
 
   // '전체'가 없어 기본값이 특정 카테고리인 경우, 서버가 내려준 전체 목록을 기본 카테고리로 좁힌다.
+  // 로그인 상태면 항상 1페이지를 다시 불러온다 — SSR은 쿠키의 액세스 토큰이 만료됐으면
+  // 익명으로 렌더링되어 회원공개 사진이 빠질 수 있는데, 클라이언트 재조회는 만료 시 토큰을 갱신해 보낸다.
   const didInit = useRef(false);
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;
-    if (initialFilter != null && queryCategoryId(initialFilter) != null) {
+    if (isLoggedIn() || (initialFilter != null && queryCategoryId(initialFilter) != null)) {
       void fetchPage1(initialFilter);
     }
   }, [initialFilter, queryCategoryId, fetchPage1]);

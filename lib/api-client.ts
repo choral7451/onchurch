@@ -301,8 +301,24 @@ export function refreshTokens(): Promise<AuthTokens | null> {
   return p;
 }
 
+// 액세스 토큰이 만료(임박 30초 포함)됐는지. 만료 정보가 없으면 false(그대로 시도 → 401 시 재시도 경로).
+function isAccessTokenExpired(): boolean {
+  if (typeof window === "undefined") return false;
+  const raw = getCookie(TOKEN_KEYS.accessTokenExpiresIn) ?? localStorage.getItem(TOKEN_KEYS.accessTokenExpiresIn);
+  if (!raw) return false;
+  const t = new Date(raw).getTime();
+  if (Number.isNaN(t)) return false;
+  return t - Date.now() < 30 * 1000;
+}
+
 async function request<T>(path: string, opts: RequestOpts = {}): Promise<T> {
-  const accessToken = opts.auth ? getAccessToken() : null;
+  let accessToken = opts.auth ? getAccessToken() : null;
+  // 선택 인증 API(공개 갤러리 등)는 만료된 토큰을 보내도 401 없이 익명 취급되므로,
+  // 만료가 확인되면 요청 전에 미리 갱신한다. (갱신 실패 시 기존 토큰으로 그대로 시도)
+  if (accessToken && isAccessTokenExpired()) {
+    const refreshed = await refreshTokens();
+    if (refreshed) accessToken = refreshed.accessToken;
+  }
   const result = await rawRequest<T>(path, opts, accessToken);
 
   if (result.ok) return result.data;
