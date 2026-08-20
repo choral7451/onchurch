@@ -255,9 +255,9 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
           <div className="form-grid">
             <div className="form-row full">
               <label>사진 <span className="required-mark" aria-hidden="true">*</span></label>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
                 {draftPhotos.length > 0 && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 90px)", gap: 8, flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 90px)", gap: 8, width: "100%" }}>
                     {draftPhotos.map((p, i) => (
                       <div key={`${p.id ?? "n"}-${p.url}-${i}`} style={{ position: "relative", width: 90, height: 68, borderRadius: "var(--r-sm)", overflow: "hidden", background: "var(--surface-2)" }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -274,7 +274,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                     ))}
                   </div>
                 )}
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   <input ref={photoInputRef} type="file" accept="image/*" multiple onChange={onPickPhoto} style={{ display: "none" }} />
                   <button type="button" className="btn btn-secondary" onClick={() => photoInputRef.current?.click()} disabled={uploading}>
                     {uploading
@@ -309,8 +309,17 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
               )}
             </div>
             <div className="form-row">
+              <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
+              <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder="2026 신년 감사예배" required />
+              {draftPhotos.length > 1 && (
+                <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
+                  {draftPhotos.length}장 모두에 동일한 제목으로 적용됩니다.
+                </span>
+              )}
+            </div>
+            <div className="form-row full">
               <label>공개 범위</label>
-              <div style={{ display: "flex", gap: 16, alignItems: "center", minHeight: 38 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                 {([
                   { value: "public", label: "전체공개" },
                   { value: "member", label: "회원공개" },
@@ -326,21 +335,12 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                     <span>{opt.label}</span>
                   </label>
                 ))}
-              </div>
-              <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
-                {draftVisibility === "member"
-                  ? "로그인한 우리 교회 교인에게만 보입니다."
-                  : "누구나 볼 수 있습니다. (기본)"}
-              </span>
-            </div>
-            <div className="form-row">
-              <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
-              <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder="2026 신년 감사예배" required />
-              {draftPhotos.length > 1 && (
-                <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
-                  {draftPhotos.length}장 모두에 동일한 제목으로 적용됩니다.
+                <span className="form-hint" style={{ fontSize: 12 }}>
+                  {draftVisibility === "member"
+                    ? "로그인한 우리 교회 교인에게만 보입니다."
+                    : "누구나 볼 수 있습니다."}
                 </span>
-              )}
+              </div>
             </div>
             {draftPhotos.length > 1 && (
               <div className="form-row full">
