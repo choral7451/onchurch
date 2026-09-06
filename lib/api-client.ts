@@ -1,4 +1,5 @@
 import type { Lang } from "@/lib/i18n";
+import type { HomeCustomLink } from "@/lib/quick-links";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
@@ -30,6 +31,7 @@ export type Church = {
   enabledPages: string[];
   homeSectionOrder: string[];
   homeQuickLinks: string[];
+  homeCustomLink: HomeCustomLink | null;
   siteLang: Lang;
   isPublished: boolean;
   // 최초 사이트 오픈(첫 공개) 시각. 한 번이라도 오픈하면 채워지고 OFF해도 유지 — 온보딩 완료 판단에 사용.
@@ -61,6 +63,7 @@ export type UpsertChurchInput = {
   enabledPages: string[];
   homeSectionOrder?: string[];
   homeQuickLinks?: string[];
+  homeCustomLink?: HomeCustomLink | null;
   siteLang?: Lang;
 };
 
@@ -1023,6 +1026,7 @@ export const onchurchChurch = {
         enabledPages: input.enabledPages,
         homeSectionOrder: input.homeSectionOrder ?? [],
         homeQuickLinks: input.homeQuickLinks ?? [],
+        homeCustomLink: input.homeCustomLink ?? null,
         siteLang: input.siteLang ?? "ko",
       }),
     }),

@@ -5,7 +5,7 @@ import { LiveBadge } from "@/components/live-badge";
 import { ClassicHero, type ClassicHeroSlide } from "@/components/templates/classic/hero";
 import type { PublicChurch } from "@/lib/public-site";
 import { fetchLiveStatus } from "@/lib/public-site";
-import { QUICK_LINK_DEFS, quickLinkLabels } from "@/lib/quick-links";
+import { QUICK_LINK_DEFS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
 import { parseYouTubeId, youtubeThumbnail } from "@/lib/youtube";
 import { type Lang, pick } from "@/lib/i18n";
 
@@ -246,6 +246,12 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
     .map((k) => QUICK_LINK_DEFS.find((d) => d.key === k))
     .filter((d): d is (typeof QUICK_LINK_DEFS)[number] => !!d)
     .map((d) => {
+      if (d.kind === "custom") {
+        const custom = church.homeCustomLink;
+        return isCustomLinkReady(custom)
+          ? { key: d.key as string, ic: d.ic, label: custom.title, href: normalizeCustomLinkUrl(custom.url), external: true }
+          : null;
+      }
       if (d.kind === "external") {
         const href = d.external === "youtube" ? youtubeUrl : instagramUrl;
         return href ? { key: d.key as string, ic: d.ic, label: quickLinkLabels(d, lang).title, href, external: true } : null;

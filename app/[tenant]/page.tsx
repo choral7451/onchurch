@@ -13,7 +13,7 @@ import { TopBanner } from "@/components/top-banner";
 import { Reveal } from "@/components/reveal";
 import type { Sermon } from "@/lib/types";
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
-import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, quickLinkLabels } from "@/lib/quick-links";
+import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
 import { type Lang, pick, normalizeLang } from "@/lib/i18n";
 import { resolveTemplateHome } from "@/components/templates/registry";
 
@@ -440,19 +440,26 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
 
   // 관리자가 고른 홈 바로가기 항목(순서 포함). 비어 있으면 기본 항목. 각 항목은 사용 가능 여부로 한 번 더 필터.
   const quickKeys = (church.homeQuickLinks?.length ? church.homeQuickLinks : DEFAULT_QUICK_LINK_KEYS).slice(0, 4);
+  type QuickItem = { def: (typeof QUICK_LINK_DEFS)[number]; href: string; external: boolean; labels: { title: string; desc: string } | null };
   const quickItems = quickKeys
     .map((k) => QUICK_LINK_DEFS.find((d) => d.key === k))
     .filter((d): d is (typeof QUICK_LINK_DEFS)[number] => !!d)
-    .map((d) => {
+    .map((d): QuickItem | null => {
+      if (d.kind === "custom") {
+        const custom = church.homeCustomLink;
+        return isCustomLinkReady(custom)
+          ? { def: d, href: normalizeCustomLinkUrl(custom.url), external: true, labels: { title: custom.title, desc: custom.desc } }
+          : null;
+      }
       if (d.kind === "external") {
         const href = d.external === "youtube" ? youtubeUrl : instagramUrl;
-        return href ? { def: d, href, external: true as const } : null;
+        return href ? { def: d, href, external: true, labels: null } : null;
       }
       return d.pageId && isPageEnabled(d.pageId)
-        ? { def: d, href: url(`/${d.pageId}`), external: false as const }
+        ? { def: d, href: url(`/${d.pageId}`), external: false, labels: null }
         : null;
     })
-    .filter((x): x is { def: (typeof QUICK_LINK_DEFS)[number]; href: string; external: boolean } => !!x);
+    .filter((x): x is QuickItem => !!x);
   const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder);
   const sermonsEnabled = isPageEnabled("sermons");
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
@@ -489,9 +496,9 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
       <section className="hero hero-quick-only">
         <div className="container">
           <div className="quick-strip" style={{ "--quick-count": Math.min(quickItems.length, 4) } as CSSProperties}>
-            {quickItems.map(({ def, href, external }) => {
+            {quickItems.map(({ def, href, external, labels: customLabels }) => {
               const QuickIcon = Icon[def.ic];
-              const labels = quickLinkLabels(def, lang);
+              const labels = customLabels ?? quickLinkLabels(def, lang);
               const inner = (
                 <>
                   <div className="quick-card-icon"><QuickIcon width={22} height={22} /></div>

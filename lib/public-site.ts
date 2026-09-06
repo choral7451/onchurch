@@ -1,6 +1,7 @@
 import { cache } from "react";
 import type { Brand, NavItem } from "@/lib/types";
 import { type Lang, pick, NAV_LABELS, FOOTER_HEADINGS } from "@/lib/i18n";
+import type { HomeCustomLink } from "@/lib/quick-links";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
@@ -25,6 +26,7 @@ export type PublicChurch = {
   enabledPages: string[];
   homeSectionOrder: string[];
   homeQuickLinks: string[];
+  homeCustomLink: HomeCustomLink | null;
   siteLang: Lang;
   // 공개 홈페이지 템플릿 ID. 지원 목록·렌더 매핑은 components/templates/registry.tsx(레지스트리)가 관리.
   // 지정은 마스터 페이지의 교회 목록에서 변경. 미등록 값은 default 홈으로 폴백.

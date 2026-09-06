@@ -4,6 +4,7 @@ import { type Lang, pick } from "@/lib/i18n";
 // 홈 '바로가기' 후보 정의. 관리자가 이 중에서 노출할 항목을 고른다.
 //  - kind "page": enabledPages에 pageId가 켜져 있어야 노출, /<pageId>로 이동
 //  - kind "external": 해당 URL(youtube/instagram)이 입력돼 있어야 노출, 새 탭으로 이동
+//  - kind "custom": 관리자가 입력한 제목·설명·이동 주소(homeCustomLink)를 그대로 노출, 새 탭으로 이동
 export type QuickLinkKey =
   | "worship"
   | "sermons"
@@ -12,7 +13,8 @@ export type QuickLinkKey =
   | "gallery"
   | "community"
   | "youtube"
-  | "instagram";
+  | "instagram"
+  | "custom";
 
 export type QuickLinkDef = {
   key: QuickLinkKey;
@@ -21,7 +23,7 @@ export type QuickLinkDef = {
   titleEn: string;
   descEn: string;
   ic: IconKey;
-  kind: "page" | "external";
+  kind: "page" | "external" | "custom";
   pageId?: string;
   external?: "youtube" | "instagram";
 };
@@ -35,6 +37,7 @@ export const QUICK_LINK_DEFS: QuickLinkDef[] = [
   { key: "community", title: "교제", desc: "성도들과 나누는 따뜻한 소통의 공간", titleEn: "Community", descEn: "A warm space to connect with the congregation", ic: "users", kind: "page", pageId: "community" },
   { key: "youtube", title: "유튜브", desc: "예배와 설교 영상을 유튜브 채널에서 만나보세요", titleEn: "YouTube", descEn: "Watch worship and sermon videos on our YouTube channel", ic: "play", kind: "external", external: "youtube" },
   { key: "instagram", title: "인스타그램", desc: "교회의 일상과 소식을 인스타그램에서", titleEn: "Instagram", descEn: "Church life and updates on Instagram", ic: "instagram", kind: "external", external: "instagram" },
+  { key: "custom", title: "커스텀 링크", desc: "제목·설명·이동 주소를 직접 입력해 노출합니다", titleEn: "Custom link", descEn: "Show a link with your own title, description and URL", ic: "link", kind: "custom" },
 ];
 
 // 공개 홈의 '바로가기' 카드 라벨을 사이트 언어에 맞게 반환. (관리자 콘솔은 한국어 고정이라 title/desc 원본을 그대로 쓴다.)
@@ -47,6 +50,21 @@ export function quickLinkLabels(def: QuickLinkDef, lang: Lang): { title: string;
 
 // 관리자가 따로 선택하지 않았을 때(homeQuickLinks 비어 있음)의 기본 노출 항목.
 export const DEFAULT_QUICK_LINK_KEYS: QuickLinkKey[] = ["worship", "sermons", "gallery", "community"];
+
+// 홈 바로가기 커스텀 항목. 제목과 이동 주소가 모두 있어야 노출한다.
+export type HomeCustomLink = { title: string; desc: string; url: string };
+
+export function isCustomLinkReady(link: HomeCustomLink | null | undefined): link is HomeCustomLink {
+  return !!link && !!link.title.trim() && !!link.url.trim();
+}
+
+// 커스텀 링크 이동 주소 정규화: 스킴이 없으면 https:// 를 붙인다.
+export function normalizeCustomLinkUrl(raw: string): string {
+  const v = raw.trim();
+  if (!v) return "";
+  if (/^(https?:)?\/\//i.test(v) || v.startsWith("/") || v.startsWith("mailto:") || v.startsWith("tel:")) return v;
+  return `https://${v}`;
+}
 
 export function quickLinkDef(key: string): QuickLinkDef | undefined {
   return QUICK_LINK_DEFS.find((d) => d.key === key);

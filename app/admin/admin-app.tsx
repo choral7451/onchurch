@@ -44,7 +44,7 @@ import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { HomeOrderEditor } from "./page-editors/home-order";
 import { QrCodesEditor } from "./page-editors/qr-codes";
-import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS } from "@/lib/quick-links";
+import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, isCustomLinkReady, type HomeCustomLink } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 import { type Lang, normalizeLang } from "@/lib/i18n";
@@ -308,6 +308,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
   const [homeQuickLinks, setHomeQuickLinks] = useState<string[]>([]);
   const [quickLimitMsg, setQuickLimitMsg] = useState("");
+  // 홈 바로가기 커스텀 항목(제목·설명·이동 주소). 서버 저장값과 편집 중인 초안을 분리해 둔다.
+  const [homeCustomLink, setHomeCustomLink] = useState<HomeCustomLink | null>(null);
+  const [customDraft, setCustomDraft] = useState<HomeCustomLink>({ title: "", desc: "", url: "" });
+  const [customSaveMsg, setCustomSaveMsg] = useState("");
 
   const [notices, setNotices] = useState<Notice[]>(initial.notices);
   const [noticeCategories, setNoticeCategories] = useState<string[]>(initial.noticeCategories);
@@ -441,6 +445,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
           setYoutubeUrl(c.youtubeUrl ?? null);
           setInstagramUrl(c.instagramUrl ?? null);
           setHomeQuickLinks(c.homeQuickLinks ?? []);
+          setHomeCustomLink(c.homeCustomLink ?? null);
+          setCustomDraft(c.homeCustomLink ?? { title: "", desc: "", url: "" });
           setLiveUrl(c.liveUrl ?? null);
           setIsLive(c.isLive ?? false);
           if (c.enabledPages?.length) {
@@ -605,6 +611,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         isLive,
         enabledPages,
         homeQuickLinks,
+        homeCustomLink,
         homeSectionOrder,
       });
     } catch (err) {
@@ -645,6 +652,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         isLive: nextIsLive,
         enabledPages,
         homeQuickLinks,
+        homeCustomLink,
         homeSectionOrder,
       });
     } catch (err) {
@@ -680,6 +688,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         isLive,
         enabledPages,
         homeQuickLinks,
+        homeCustomLink,
         homeSectionOrder: nextOrder,
       });
     } catch (err) {
@@ -690,8 +699,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
     }
   }
 
-  async function persistHomeQuickLinks(nextKeys: string[]) {
+  async function persistHomeQuickLinks(nextKeys: string[], nextCustom: HomeCustomLink | null = homeCustomLink) {
     setHomeQuickLinks(nextKeys);
+    setHomeCustomLink(nextCustom);
     if (!churchExistsOnServer || !slug.trim() || !name.trim()) return;
     const enabledPages = Object.entries(boards).filter(([, on]) => on).map(([id]) => id);
     try {
@@ -713,6 +723,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         isLive,
         enabledPages,
         homeQuickLinks: nextKeys,
+        homeCustomLink: nextCustom,
         homeSectionOrder,
       });
     } catch (err) {
@@ -804,6 +815,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         isLive,
         enabledPages,
         homeQuickLinks,
+        homeCustomLink,
         homeSectionOrder,
       });
       setIsPublished(updated.isPublished);
@@ -1807,6 +1819,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     set.delete(k);
                   } else {
                     const def = QUICK_LINK_DEFS.find((d) => d.key === k);
+                    // 커스텀 링크는 제목과 이동 주소를 먼저 저장해야 선택 가능
+                    if (def?.kind === "custom" && !isCustomLinkReady(homeCustomLink)) {
+                      showQuickToast("커스텀 링크의 제목과 이동 주소를 아래에서 먼저 입력·저장해주세요.");
+                      return;
+                    }
                     // 유튜브/인스타는 주소가 없으면 선택 불가 — 연락처 메뉴에서 먼저 입력하도록 안내
                     if (def?.kind === "external") {
                       const hasUrl = def.external === "youtube" ? !!youtubeUrl?.trim() : !!instagramUrl?.trim();
@@ -1827,6 +1844,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 const availability = (key: string): string => {
                   const def = QUICK_LINK_DEFS.find((d) => d.key === key);
                   if (!def) return "";
+                  if (def.kind === "custom") return isCustomLinkReady(homeCustomLink) ? "" : "제목·이동 주소 입력 필요";
                   if (def.kind === "external") {
                     const has = def.external === "youtube" ? !!youtubeUrl?.trim() : !!instagramUrl?.trim();
                     return has ? "" : (def.external === "youtube" ? "유튜브 주소 입력 필요" : "인스타그램 주소 입력 필요");
@@ -1864,7 +1882,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                             </span>
                             <div style={{ flex: 1 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                                <strong>{d.title}</strong>
+                                <strong>{d.kind === "custom" && homeCustomLink?.title ? `${d.title} · ${homeCustomLink.title}` : d.title}</strong>
                                 {note && <span style={{ color: "var(--muted)", fontSize: 11.5 }}>· {note}</span>}
                               </div>
                               <div style={{ color: "var(--muted)", fontSize: 12 }}>{d.desc}</div>
@@ -1872,6 +1890,88 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           </button>
                         );
                       })}
+                    </div>
+
+                    {/* 커스텀 링크 내용 입력 — 제목·설명·이동 주소. 저장 후 위 목록에서 '커스텀 링크'를 선택하면 홈에 노출된다. */}
+                    <div className="admin-custom-link" style={{ marginTop: 20, padding: 18, border: "1px solid var(--line)", borderRadius: "var(--r-md)", background: "var(--surface-2, var(--surface))" }}>
+                      <h4 style={{ margin: "0 0 4px", fontSize: 14 }}>커스텀 링크 내용</h4>
+                      <p className="form-hint" style={{ marginBottom: 12 }}>
+                        새가족 등록 폼, 헌금 안내, 외부 사이트 등 원하는 주소로 이동하는 바로가기를 만들 수 있습니다. 제목과 이동 주소는 필수입니다.
+                      </p>
+                      <div className="form-row full">
+                        <label htmlFor="custom-link-title">제목 <span style={{ color: "var(--accent)" }}>*</span></label>
+                        <input
+                          id="custom-link-title"
+                          type="text"
+                          maxLength={40}
+                          value={customDraft.title}
+                          onChange={(e) => setCustomDraft((d) => ({ ...d, title: e.target.value }))}
+                          placeholder="예: 새가족 등록"
+                        />
+                      </div>
+                      <div className="form-row full">
+                        <label htmlFor="custom-link-desc">설명</label>
+                        <input
+                          id="custom-link-desc"
+                          type="text"
+                          maxLength={120}
+                          value={customDraft.desc}
+                          onChange={(e) => setCustomDraft((d) => ({ ...d, desc: e.target.value }))}
+                          placeholder="예: 처음 오신 분은 여기서 등록해주세요"
+                        />
+                      </div>
+                      <div className="form-row full">
+                        <label htmlFor="custom-link-url">이동 주소 <span style={{ color: "var(--accent)" }}>*</span></label>
+                        <input
+                          id="custom-link-url"
+                          type="url"
+                          inputMode="url"
+                          maxLength={2000}
+                          value={customDraft.url}
+                          onChange={(e) => setCustomDraft((d) => ({ ...d, url: e.target.value }))}
+                          placeholder="https://forms.gle/xxxx"
+                        />
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          disabled={!customDraft.title.trim() || !customDraft.url.trim()}
+                          onClick={() => {
+                            const next: HomeCustomLink = {
+                              title: customDraft.title.trim(),
+                              desc: customDraft.desc.trim(),
+                              url: customDraft.url.trim(),
+                            };
+                            // 저장과 동시에 아직 선택 전이면(자리 여유가 있을 때) 커스텀 항목을 바로가기에 추가한다.
+                            const set = new Set(selected);
+                            if (!set.has("custom") && set.size < MAX_QUICK) set.add("custom");
+                            const nextKeys = QUICK_LINK_DEFS.filter((d) => set.has(d.key)).map((d) => d.key);
+                            void persistHomeQuickLinks(nextKeys, next);
+                            setCustomSaveMsg(set.has("custom") ? "저장했습니다. 홈 바로가기에 노출됩니다." : "저장했습니다.");
+                            window.setTimeout(() => setCustomSaveMsg(""), 2800);
+                          }}
+                        >
+                          커스텀 링크 저장
+                        </button>
+                        {homeCustomLink && (
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={() => {
+                              if (!confirm("커스텀 링크를 삭제할까요? 홈 바로가기에서도 제외됩니다.")) return;
+                              setCustomDraft({ title: "", desc: "", url: "" });
+                              const nextKeys = selected.filter((k) => k !== "custom");
+                              void persistHomeQuickLinks(nextKeys, null);
+                              setCustomSaveMsg("삭제했습니다.");
+                              window.setTimeout(() => setCustomSaveMsg(""), 2800);
+                            }}
+                          >
+                            삭제
+                          </button>
+                        )}
+                        {customSaveMsg && <span style={{ fontSize: 12.5, color: "var(--muted)" }}>{customSaveMsg}</span>}
+                      </div>
                     </div>
                   </div>
                 );
