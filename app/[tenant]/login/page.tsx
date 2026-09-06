@@ -16,8 +16,17 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
   };
 }
 
-export default async function MemberLoginPage({ params }: { params: Promise<{ tenant: string }> }) {
+export default async function MemberLoginPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ tenant: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { tenant } = await params;
+  const { tab } = await searchParams;
+  // QR·안내 링크(/login?tab=join)로 진입하면 가입 탭을 바로 연다.
+  const initialTab = tab === "join" ? "join" : "login";
   const church = await fetchPublicChurch(tenant);
   if (!church) notFound();
   const prefix = await getPathPrefix(tenant);
@@ -35,7 +44,7 @@ export default async function MemberLoginPage({ params }: { params: Promise<{ te
       />
       <section className="section">
         <div className="container" style={{ maxWidth: 480 }}>
-          <MemberAuth slug={tenant} churchName={church.name} redirectTo={prefix || "/"} lang={lang} />
+          <MemberAuth slug={tenant} churchName={church.name} redirectTo={prefix || "/"} lang={lang} initialTab={initialTab} />
         </div>
       </section>
     </div>

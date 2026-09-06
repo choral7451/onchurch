@@ -43,6 +43,7 @@ import { AttendanceEditor } from "./page-editors/attendance";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { HomeOrderEditor } from "./page-editors/home-order";
+import { QrCodesEditor } from "./page-editors/qr-codes";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
@@ -91,7 +92,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}`;
+type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "qr" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}`;
 
 type NavGroup = "home" | "saints";
 
@@ -1248,6 +1249,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
               </button>
             </div>
 
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">도구</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "qr" ? "active" : ""}`}
+                onClick={() => openSection("qr")}
+              >
+                <span className="admin-sidebar-item-label">QR 코드</span>
+                <span className="admin-sidebar-pill optional">다운로드</span>
+              </button>
+            </div>
+
             {/* 주보 만들기 - 임시 숨김
             <div className="admin-sidebar-group">
               <div className="admin-sidebar-eyebrow">도구</div>
@@ -1876,6 +1889,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </div>
                 </section>
               )}
+
+              {activeSection === "qr" && <QrCodesEditor slug={savedRequired.slug} />}
 
               {/* 주보 만들기 - 임시 숨김
               {activeSection === "bulletin" && <BulletinEditor />}

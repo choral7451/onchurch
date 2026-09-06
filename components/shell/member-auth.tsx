@@ -21,9 +21,9 @@ function formatPhone(raw: string) {
  * 교회 공개 사이트의 성도 로그인/가입 UI.
  * slug 종속 가입(churchId 자동 연결). 완료 후 redirectTo로 이동.
  */
-export function MemberAuth({ slug, churchName, redirectTo, lang = "ko" }: { slug: string; churchName: string; redirectTo: string; lang?: Lang }) {
+export function MemberAuth({ slug, churchName, redirectTo, lang = "ko", initialTab = "login" }: { slug: string; churchName: string; redirectTo: string; lang?: Lang; initialTab?: Tab }) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("login");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const done = () => {
     router.push(redirectTo);
     router.refresh();
