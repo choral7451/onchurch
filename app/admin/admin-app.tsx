@@ -1861,117 +1861,139 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       {QUICK_LINK_DEFS.map((d) => {
                         const sel = isSel(d.key);
                         const note = availability(d.key);
-                        return (
-                          <button
-                            key={d.key}
-                            type="button"
-                            onClick={() => toggle(d.key)}
-                            className="admin-banner-card"
-                            style={{ textAlign: "left", cursor: "pointer", borderColor: sel ? "var(--accent)" : undefined }}
-                          >
-                            <span
-                              aria-hidden="true"
-                              style={{
-                                width: 18, height: 18, borderRadius: 5, flexShrink: 0,
-                                display: "grid", placeItems: "center", fontSize: 12, color: "#fff",
-                                background: sel ? "var(--accent)" : "transparent",
-                                border: `1.5px solid ${sel ? "var(--accent)" : "var(--line)"}`,
-                              }}
-                            >
-                              {sel ? "✓" : ""}
-                            </span>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                                <strong>{d.kind === "custom" && homeCustomLink?.title ? `${d.title} · ${homeCustomLink.title}` : d.title}</strong>
-                                {note && <span style={{ color: "var(--muted)", fontSize: 11.5 }}>· {note}</span>}
-                              </div>
-                              <div style={{ color: "var(--muted)", fontSize: 12 }}>{d.desc}</div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* 커스텀 링크 내용 입력 — 제목·설명·이동 주소. 저장 후 위 목록에서 '커스텀 링크'를 선택하면 홈에 노출된다. */}
-                    <div className="admin-custom-link" style={{ marginTop: 20, padding: 18, border: "1px solid var(--line)", borderRadius: "var(--r-md)", background: "var(--surface-2, var(--surface))" }}>
-                      <h4 style={{ margin: "0 0 4px", fontSize: 14 }}>커스텀 링크 내용</h4>
-                      <p className="form-hint" style={{ marginBottom: 12 }}>
-                        새가족 등록 폼, 헌금 안내, 외부 사이트 등 원하는 주소로 이동하는 바로가기를 만들 수 있습니다. 제목과 이동 주소는 필수입니다.
-                      </p>
-                      <div className="form-row full">
-                        <label htmlFor="custom-link-title">제목 <span style={{ color: "var(--accent)" }}>*</span></label>
-                        <input
-                          id="custom-link-title"
-                          type="text"
-                          maxLength={40}
-                          value={customDraft.title}
-                          onChange={(e) => setCustomDraft((d) => ({ ...d, title: e.target.value }))}
-                          placeholder="예: 새가족 등록"
-                        />
-                      </div>
-                      <div className="form-row full">
-                        <label htmlFor="custom-link-desc">설명</label>
-                        <input
-                          id="custom-link-desc"
-                          type="text"
-                          maxLength={120}
-                          value={customDraft.desc}
-                          onChange={(e) => setCustomDraft((d) => ({ ...d, desc: e.target.value }))}
-                          placeholder="예: 처음 오신 분은 여기서 등록해주세요"
-                        />
-                      </div>
-                      <div className="form-row full">
-                        <label htmlFor="custom-link-url">이동 주소 <span style={{ color: "var(--accent)" }}>*</span></label>
-                        <input
-                          id="custom-link-url"
-                          type="url"
-                          inputMode="url"
-                          maxLength={2000}
-                          value={customDraft.url}
-                          onChange={(e) => setCustomDraft((d) => ({ ...d, url: e.target.value }))}
-                          placeholder="https://forms.gle/xxxx"
-                        />
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          disabled={!customDraft.title.trim() || !customDraft.url.trim()}
-                          onClick={() => {
-                            const next: HomeCustomLink = {
-                              title: customDraft.title.trim(),
-                              desc: customDraft.desc.trim(),
-                              url: customDraft.url.trim(),
-                            };
-                            // 저장과 동시에 아직 선택 전이면(자리 여유가 있을 때) 커스텀 항목을 바로가기에 추가한다.
-                            const set = new Set(selected);
-                            if (!set.has("custom") && set.size < MAX_QUICK) set.add("custom");
-                            const nextKeys = QUICK_LINK_DEFS.filter((d) => set.has(d.key)).map((d) => d.key);
-                            void persistHomeQuickLinks(nextKeys, next);
-                            setCustomSaveMsg(set.has("custom") ? "저장했습니다. 홈 바로가기에 노출됩니다." : "저장했습니다.");
-                            window.setTimeout(() => setCustomSaveMsg(""), 2800);
-                          }}
-                        >
-                          커스텀 링크 저장
-                        </button>
-                        {homeCustomLink && (
-                          <button
-                            type="button"
-                            className="btn btn-ghost"
-                            onClick={() => {
-                              if (!confirm("커스텀 링크를 삭제할까요? 홈 바로가기에서도 제외됩니다.")) return;
-                              setCustomDraft({ title: "", desc: "", url: "" });
-                              const nextKeys = selected.filter((k) => k !== "custom");
-                              void persistHomeQuickLinks(nextKeys, null);
-                              setCustomSaveMsg("삭제했습니다.");
-                              window.setTimeout(() => setCustomSaveMsg(""), 2800);
+                        const checkbox = (
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              width: 18, height: 18, borderRadius: 5, flexShrink: 0,
+                              display: "grid", placeItems: "center", fontSize: 12, color: "#fff",
+                              background: sel ? "var(--accent)" : "transparent",
+                              border: `1.5px solid ${sel ? "var(--accent)" : "var(--line)"}`,
                             }}
                           >
-                            삭제
-                          </button>
-                        )}
-                        {customSaveMsg && <span style={{ fontSize: 12.5, color: "var(--muted)" }}>{customSaveMsg}</span>}
-                      </div>
+                            {sel ? "✓" : ""}
+                          </span>
+                        );
+                        const labelBlock = (
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                              <strong>{d.kind === "custom" && homeCustomLink?.title ? `${d.title} · ${homeCustomLink.title}` : d.title}</strong>
+                              {note && <span style={{ color: "var(--muted)", fontSize: 11.5 }}>· {note}</span>}
+                            </div>
+                            <div style={{ color: "var(--muted)", fontSize: 12 }}>{d.desc}</div>
+                          </div>
+                        );
+
+                        if (d.kind !== "custom") {
+                          return (
+                            <button
+                              key={d.key}
+                              type="button"
+                              onClick={() => toggle(d.key)}
+                              className="admin-banner-card"
+                              style={{ textAlign: "left", cursor: "pointer", borderColor: sel ? "var(--accent)" : undefined }}
+                            >
+                              {checkbox}
+                              {labelBlock}
+                            </button>
+                          );
+                        }
+
+                        // 커스텀 링크: 같은 카드 안에 선택 행 + 제목·설명·이동 주소 입력 폼을 함께 둔다.
+                        const draftReady = !!customDraft.title.trim() && !!customDraft.url.trim();
+                        return (
+                          <div
+                            key={d.key}
+                            className="admin-banner-card"
+                            style={{ flexDirection: "column", alignItems: "stretch", gap: 0, padding: 0, borderColor: sel ? "var(--accent)" : undefined }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => toggle(d.key)}
+                              style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", textAlign: "left", cursor: "pointer", background: "none", border: 0, font: "inherit", color: "inherit", width: "100%" }}
+                            >
+                              {checkbox}
+                              {labelBlock}
+                            </button>
+                            <div style={{ borderTop: "1px solid var(--line)", padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+                              <div className="form-row full">
+                                <label htmlFor="custom-link-title">제목 <span style={{ color: "var(--accent)" }}>*</span></label>
+                                <input
+                                  id="custom-link-title"
+                                  type="text"
+                                  maxLength={40}
+                                  value={customDraft.title}
+                                  onChange={(e) => setCustomDraft((c) => ({ ...c, title: e.target.value }))}
+                                  placeholder="예: 새가족 등록"
+                                />
+                              </div>
+                              <div className="form-row full">
+                                <label htmlFor="custom-link-desc">설명</label>
+                                <input
+                                  id="custom-link-desc"
+                                  type="text"
+                                  maxLength={120}
+                                  value={customDraft.desc}
+                                  onChange={(e) => setCustomDraft((c) => ({ ...c, desc: e.target.value }))}
+                                  placeholder="예: 처음 오신 분은 여기서 등록해주세요"
+                                />
+                              </div>
+                              <div className="form-row full">
+                                <label htmlFor="custom-link-url">이동 주소 <span style={{ color: "var(--accent)" }}>*</span></label>
+                                <input
+                                  id="custom-link-url"
+                                  type="url"
+                                  inputMode="url"
+                                  maxLength={2000}
+                                  value={customDraft.url}
+                                  onChange={(e) => setCustomDraft((c) => ({ ...c, url: e.target.value }))}
+                                  placeholder="https://forms.gle/xxxx"
+                                />
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                                <button
+                                  type="button"
+                                  className="btn btn-primary"
+                                  disabled={!draftReady}
+                                  onClick={() => {
+                                    const next: HomeCustomLink = {
+                                      title: customDraft.title.trim(),
+                                      desc: customDraft.desc.trim(),
+                                      url: customDraft.url.trim(),
+                                    };
+                                    // 저장과 동시에 아직 선택 전이면(자리 여유가 있을 때) 커스텀 항목을 바로가기에 추가한다.
+                                    const set = new Set(selected);
+                                    if (!set.has("custom") && set.size < MAX_QUICK) set.add("custom");
+                                    const nextKeys = QUICK_LINK_DEFS.filter((x) => set.has(x.key)).map((x) => x.key);
+                                    void persistHomeQuickLinks(nextKeys, next);
+                                    setCustomSaveMsg(set.has("custom") ? "저장했습니다. 홈 바로가기에 노출됩니다." : "저장했습니다.");
+                                    window.setTimeout(() => setCustomSaveMsg(""), 2800);
+                                  }}
+                                >
+                                  저장
+                                </button>
+                                {homeCustomLink && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost"
+                                    onClick={() => {
+                                      if (!confirm("커스텀 링크를 삭제할까요? 홈 바로가기에서도 제외됩니다.")) return;
+                                      setCustomDraft({ title: "", desc: "", url: "" });
+                                      const nextKeys = selected.filter((k) => k !== "custom");
+                                      void persistHomeQuickLinks(nextKeys, null);
+                                      setCustomSaveMsg("삭제했습니다.");
+                                      window.setTimeout(() => setCustomSaveMsg(""), 2800);
+                                    }}
+                                  >
+                                    삭제
+                                  </button>
+                                )}
+                                {customSaveMsg && <span style={{ fontSize: 12.5, color: "var(--muted)" }}>{customSaveMsg}</span>}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
