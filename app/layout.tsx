@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Inter_Tight, JetBrains_Mono, Noto_Serif_KR } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { AuthBootstrap } from "@/components/shell/auth-bootstrap";
@@ -24,6 +24,15 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+});
+
+// 'classic' 템플릿 제목용 명조. CSS에서 .chc-root 하위에서만 참조하므로 다른 페이지는 폰트 파일을 받지 않는다.
+const notoSerifKr = Noto_Serif_KR({
+  variable: "--font-serif-kr",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+  preload: false,
 });
 
 // Pretendard 자체 호스팅(variable woff2). 외부 CDN(jsdelivr) 장애로 전 페이지가 멈추던 문제 해결.
@@ -114,7 +123,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { kind } = await resolveHost();
   const isLanding = kind === "root";
   return (
-    <html lang="ko" className={`${pretendard.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
+    <html lang="ko" className={`${pretendard.variable} ${interTight.variable} ${jetbrainsMono.variable} ${notoSerifKr.variable}`}>
       <body>
         <AuthBootstrap />
         {children}
