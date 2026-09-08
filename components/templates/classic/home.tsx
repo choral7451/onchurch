@@ -448,7 +448,7 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
 
   const sections: Record<HomeSectionKey, React.ReactNode> = {
     banner: (
-      <Suspense fallback={<div className="chc-hero-skel" aria-hidden />}>
+      <Suspense fallback={<div className="chc-hero-band"><div className="chc-hero-skel" aria-hidden /></div>}>
         <HeroSection slug={slug} church={church} />
       </Suspense>
     ),

@@ -1743,15 +1743,17 @@ main { flex: 1; }
 .chc-grad-4 { background: linear-gradient(140deg, oklch(0.88 0.04 82), oklch(0.66 0.08 40)) !important; }
 
 /* ---------- Hero (full-bleed slider) ---------- */
-.chc-hero { position: relative; width: 100%; overflow: hidden; background: var(--chc-wine-deep); }
+/* 배너 비율은 기본 템플릿(.top-banner)과 동일한 16:9 · 최대 1280px. 관리자 안내(1920×1080)대로 올린 이미지가 잘리지 않는다. */
+.chc-hero { position: relative; width: 100%; max-width: 1280px; margin: 0 auto; overflow: hidden; background: var(--chc-wine-deep); }
+.chc-hero-band { background: var(--chc-wine-deep); }
 .chc-hero-track { display: flex; transition: transform 0.7s var(--chc-ease); }
 .chc-hero-track.no-motion { transition: none; }
 .chc-hero-cell { flex: 0 0 100%; display: block; }
-.chc-hero-slide { position: relative; height: clamp(440px, 56vh, 640px); background-size: cover; background-position: center; display: flex; align-items: flex-end; }
+.chc-hero-slide { position: relative; aspect-ratio: 16 / 9; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
 .chc-hero-slide-plain { background: radial-gradient(120% 90% at 20% 10%, oklch(0.46 0.12 22) 0%, var(--chc-wine-deep) 62%); }
 .chc-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0.06 20 / 0.05) 35%, oklch(0.18 0.07 20 / 0.72) 100%); }
 .chc-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.chc-hero-caption { position: relative; z-index: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 32px 92px; color: oklch(0.98 0.01 85); }
+.chc-hero-caption { position: relative; z-index: 1; width: 100%; padding: 0 56px 84px; color: oklch(0.98 0.01 85); }
 .chc-hero-rule { display: block; width: 44px; height: 2px; background: var(--chc-gold); margin-bottom: 18px; }
 .chc-hero-title { font-family: var(--chc-serif); font-size: clamp(30px, 4.2vw, 50px); font-weight: 700; letter-spacing: -0.01em; margin: 0; line-height: 1.22; word-break: keep-all; text-shadow: 0 2px 18px oklch(0 0 0 / 0.25); }
 .chc-hero-desc { font-size: clamp(14px, 1.3vw, 17px); line-height: 1.7; opacity: 0.92; margin: 14px 0 0; max-width: 56ch; word-break: keep-all; }
@@ -1762,7 +1764,7 @@ main { flex: 1; }
 .chc-hero-nav:focus-visible { outline: 2px solid var(--chc-gold); outline-offset: 2px; }
 .chc-hero-nav.prev { left: 24px; }
 .chc-hero-nav.next { right: 24px; }
-.chc-hero-bottombar { position: absolute; left: 0; right: 0; bottom: 52px; z-index: 3; max-width: 1180px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+.chc-hero-bottombar { position: absolute; left: 0; right: 0; bottom: 28px; z-index: 3; padding: 0 56px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
 .chc-hero-dots { display: flex; gap: 2px; pointer-events: auto; }
 .chc-hero-dot { width: 32px; height: 28px; display: grid; place-items: center; padding: 0; }
 .chc-hero-dot span { display: block; width: 100%; height: 2px; background: oklch(1 0 0 / 0.35); transition: background 0.25s; }
@@ -1774,7 +1776,7 @@ main { flex: 1; }
 .chc-hero-pause:focus-visible { outline: 2px solid var(--chc-gold); outline-offset: 2px; }
 .chc-hero-counter { font-family: var(--chc-serif); font-size: 13px; letter-spacing: 0.12em; color: oklch(0.98 0.01 85 / 0.75); font-variant-numeric: tabular-nums; }
 .chc-hero-counter b { color: var(--chc-gold); font-weight: 600; }
-.chc-hero-skel { width: 100%; height: clamp(440px, 56vh, 640px); background: var(--chc-wine-deep); }
+.chc-hero-skel { width: 100%; max-width: 1280px; margin: 0 auto; aspect-ratio: 16 / 9; background: var(--chc-wine-deep); }
 
 /* ---------- Guide strip (히어로에 겹쳐 올라오는 바로가기) ---------- */
 .chc-guide-wrap { padding-top: 40px; }
@@ -1944,16 +1946,17 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   .chc-rule { margin-top: 12px; }
 
   /* 히어로: 세로 비율을 화면에 맞추고, 스와이프 + 줄(dot) 탭으로 넘김 */
-  .chc-hero-slide, .chc-hero-skel { height: clamp(340px, 60vh, 460px); }
-  .chc-hero-caption { padding: 0 18px 82px; }
+  /* 모바일도 16:9 유지. 기본 템플릿처럼 사진 배너의 글자는 숨기고(이미지 자체 문구 우선), 사진 없는 폴백 슬라이드만 교회명을 보여준다 */
+  .chc-hero-slide:not(.chc-hero-slide-plain) .chc-hero-caption { display: none; }
+  .chc-hero-caption { padding: 0 18px 40px; }
   .chc-hero-rule { width: 32px; margin-bottom: 14px; }
-  .chc-hero-title { font-size: 26px; line-height: 1.28; }
+  .chc-hero-title { font-size: 22px; line-height: 1.28; }
   .chc-hero-desc { font-size: 14px; margin-top: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .chc-hero-cta { margin-top: 16px; }
   .chc-hero-nav { display: none; }
-  .chc-hero-bottombar { padding: 0 18px; bottom: 40px; }
-  .chc-hero-dot { width: 28px; height: 40px; }
-  .chc-hero-pause { width: 40px; height: 40px; }
+  .chc-hero-bottombar { padding: 0 12px; bottom: 6px; }
+  .chc-hero-dot { width: 24px; height: 36px; }
+  .chc-hero-pause { width: 36px; height: 36px; }
   .chc-hero-counter { font-size: 12px; }
 
   /* 바로가기: 4열 아이콘 그리드(3·5·6·9개는 3열), 44px 이상 탭 영역 */
@@ -2019,7 +2022,7 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 }
 
 @media (max-width: 400px) {
-  .chc-hero-title { font-size: 23px; }
+  .chc-hero-title { font-size: 20px; }
   .chc-sermon-grid { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
   .chc-worship-time { font-size: 17px; }
 }

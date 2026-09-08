@@ -65,6 +65,7 @@ export function ClassicHero({ slides, churchName }: { slides: ClassicHeroSlide[]
   };
 
   return (
+    <div className="chc-hero-band">
     <section
       className="chc-hero"
       aria-label={`${churchName} 홈 배너`}
@@ -131,6 +132,7 @@ export function ClassicHero({ slides, churchName }: { slides: ClassicHeroSlide[]
         </>
       )}
     </section>
+    </div>
   );
 }
 
