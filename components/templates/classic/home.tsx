@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Icon, type IconKey } from "@/components/icons";
 import { LiveBadge } from "@/components/live-badge";
 import { ClassicHero, type ClassicHeroSlide } from "@/components/templates/classic/hero";
+import { ClassicLiveLink } from "@/components/templates/classic/live-link";
 import type { PublicChurch } from "@/lib/public-site";
 import { fetchLiveStatus } from "@/lib/public-site";
 import { QUICK_LINK_DEFS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
@@ -78,7 +79,7 @@ function GuideStrip({ items }: { items: GuideItem[] }) {
   if (items.length === 0) return null;
   return (
     <div className="chc-container">
-      <nav className="chc-guide" aria-label="바로가기">
+      <nav className="chc-guide" aria-label="바로가기" data-count={items.length}>
         {items.map((it) => {
           const GuideIcon = Icon[it.ic];
           const inner = (
@@ -97,7 +98,11 @@ function GuideStrip({ items }: { items: GuideItem[] }) {
 }
 
 // 예배 안내. 왼쪽에 제목·링크, 오른쪽에 괘선 표(예배명 / 시간 / 장소). 대표 예배를 맨 위에 둔다.
-async function WorshipSection({ slug, url, lang, liveHref, enabled }: { slug: string; url: (p: string) => string; lang: Lang; liveHref: string | null; enabled: boolean }) {
+type WorshipProps = {
+  slug: string; tenant: string; url: (p: string) => string; lang: Lang; enabled: boolean;
+  initialLive: boolean; sermonsHref: string | null; youtubeUrl: string | null;
+};
+async function WorshipSection({ slug, tenant, url, lang, enabled, initialLive, sermonsHref, youtubeUrl }: WorshipProps) {
   const data = enabled
     ? await fetchJson<{ services: PublicWorshipService[] }>(`/onchurch/sites/${slug}/worship`, { services: [] })
     : { services: [] as PublicWorshipService[] };
@@ -117,12 +122,7 @@ async function WorshipSection({ slug, url, lang, liveHref, enabled }: { slug: st
             <Link href={url("/worship")} className="chc-more">
               {pick(lang, { ko: "전체 예배 안내", en: "All services" })} <Icon.arrow style={{ width: 12, height: 12 }} />
             </Link>
-            {liveHref && (
-              <a href={liveHref} target="_blank" rel="noopener noreferrer" className="chc-live-btn">
-                <Icon.play style={{ width: 14, height: 14 }} />
-                <span>{pick(lang, { ko: "실시간 예배", en: "Live worship" })}</span>
-              </a>
-            )}
+            <ClassicLiveLink slug={tenant} initialLive={initialLive} sermonsHref={sermonsHref} youtubeUrl={youtubeUrl} lang={lang} />
           </div>
         </div>
         <ul className="chc-worship-list">
@@ -324,7 +324,16 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
       <GuideStrip items={guideItems} />
 
       <Suspense fallback={null}>
-        <WorshipSection slug={slug} url={url} lang={lang} liveHref={youtubeUrl || church.liveUrl?.trim() || null} enabled={isPageEnabled("worship")} />
+        <WorshipSection
+          slug={slug}
+          tenant={tenant}
+          url={url}
+          lang={lang}
+          enabled={isPageEnabled("worship")}
+          initialLive={initialLive}
+          sermonsHref={sermonsEnabled ? url("/sermons") : null}
+          youtubeUrl={youtubeUrl}
+        />
       </Suspense>
 
       {sermonsEnabled && (
