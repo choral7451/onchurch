@@ -96,49 +96,47 @@ function GuideStrip({ items }: { items: GuideItem[] }) {
   );
 }
 
-// 예배 시간 띠. 대표 예배를 앞세워 최대 4개를 한 줄로 보여주고, 유튜브 채널이 있으면 실시간 예배 버튼을 같이 둔다.
-async function WorshipBand({ slug, url, lang, liveHref, enabled }: { slug: string; url: (p: string) => string; lang: Lang; liveHref: string | null; enabled: boolean }) {
+// 예배 안내. 왼쪽에 제목·링크, 오른쪽에 괘선 표(예배명 / 시간 / 장소). 대표 예배를 맨 위에 둔다.
+async function WorshipSection({ slug, url, lang, liveHref, enabled }: { slug: string; url: (p: string) => string; lang: Lang; liveHref: string | null; enabled: boolean }) {
   const data = enabled
     ? await fetchJson<{ services: PublicWorshipService[] }>(`/onchurch/sites/${slug}/worship`, { services: [] })
     : { services: [] as PublicWorshipService[] };
   const featured = data.services.filter((w) => w.isFeatured);
   const others = data.services.filter((w) => !w.isFeatured);
-  const services = [...featured, ...others].slice(0, 4);
-  if (services.length === 0 && !liveHref) return null;
+  const services = [...featured, ...others].slice(0, 5);
+  if (services.length === 0) return null;
 
   return (
-    <section className="chc-band" aria-label={pick(lang, { ko: "예배 시간", en: "Worship times" })}>
-      <div className="chc-container chc-band-inner">
-        {services.length > 0 && (
-          <div className="chc-band-main">
-            <div className="chc-band-title">
-              <span className="chc-band-eyebrow">Worship</span>
-              <strong>{pick(lang, { ko: "예배 안내", en: "Worship Times" })}</strong>
-            </div>
-            <ul className="chc-band-list">
-              {services.map((w) => (
-                <li key={w.id} className={`chc-band-item ${w.isFeatured ? "feat" : ""}`}>
-                  <span className="chc-band-name">{w.name}</span>
-                  <span className="chc-band-time">{w.time}</span>
-                  {w.meta && <span className="chc-band-meta">{w.meta}</span>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <div className="chc-band-actions">
-          {liveHref && (
-            <a href={liveHref} target="_blank" rel="noopener noreferrer" className="chc-band-live">
-              <Icon.play style={{ width: 16, height: 16 }} />
-              <span>{pick(lang, { ko: "실시간 예배", en: "Live Worship" })}</span>
-            </a>
-          )}
-          {services.length > 0 && enabled && (
-            <Link href={url("/worship")} className="chc-band-more">
+    <section className="chc-section chc-worship">
+      <div className="chc-container chc-worship-grid">
+        <div className="chc-worship-intro">
+          <span className="chc-eyebrow">Worship</span>
+          <h2 className="chc-heading">{pick(lang, { ko: "예배 안내", en: "Worship Times" })}</h2>
+          <span className="chc-rule" aria-hidden="true" />
+          <div className="chc-worship-links">
+            <Link href={url("/worship")} className="chc-more">
               {pick(lang, { ko: "전체 예배 안내", en: "All services" })} <Icon.arrow style={{ width: 12, height: 12 }} />
             </Link>
-          )}
+            {liveHref && (
+              <a href={liveHref} target="_blank" rel="noopener noreferrer" className="chc-live-btn">
+                <Icon.play style={{ width: 14, height: 14 }} />
+                <span>{pick(lang, { ko: "실시간 예배", en: "Live worship" })}</span>
+              </a>
+            )}
+          </div>
         </div>
+        <ul className="chc-worship-list">
+          {services.map((w) => (
+            <li key={w.id} className={`chc-worship-row ${w.isFeatured ? "feat" : ""}`}>
+              <span className="chc-worship-name">
+                {w.name}
+                {w.isFeatured && <span className="chc-worship-feat">{pick(lang, { ko: "대표 예배", en: "Main" })}</span>}
+              </span>
+              <span className="chc-worship-time">{w.time}</span>
+              <span className="chc-worship-meta">{w.meta ?? ""}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
@@ -326,7 +324,7 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
       <GuideStrip items={guideItems} />
 
       <Suspense fallback={null}>
-        <WorshipBand slug={slug} url={url} lang={lang} liveHref={youtubeUrl || church.liveUrl?.trim() || null} enabled={isPageEnabled("worship")} />
+        <WorshipSection slug={slug} url={url} lang={lang} liveHref={youtubeUrl || church.liveUrl?.trim() || null} enabled={isPageEnabled("worship")} />
       </Suspense>
 
       {sermonsEnabled && (

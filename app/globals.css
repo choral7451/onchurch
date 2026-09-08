@@ -1661,6 +1661,51 @@ main { flex: 1; }
 }
 
 /* =========================================================
+   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 와인·골드로.
+   siteTemplate === 'classic' 인 교회의 .app 에 .tpl-classic 이 붙는다(app/[tenant]/layout.tsx).
+   ========================================================= */
+.app.tpl-classic {
+  --primary: oklch(0.36 0.11 20);
+  --primary-deep: oklch(0.27 0.09 18);
+  --primary-soft: oklch(0.46 0.11 22);
+  --accent: oklch(0.60 0.11 76);
+  --accent-glow: oklch(0.78 0.09 82);
+  --bg: oklch(0.985 0.007 85);
+  --bg-tinted: oklch(0.96 0.012 82);
+  --surface: oklch(0.995 0.004 85);
+  --surface-2: oklch(0.965 0.010 82);
+  --surface-elevated: oklch(0.995 0.004 85);
+  --ink: oklch(0.23 0.02 40);
+  --ink-2: oklch(0.40 0.02 40);
+  --muted: oklch(0.56 0.02 50);
+  --muted-2: oklch(0.72 0.015 60);
+  --line: oklch(0.89 0.018 78);
+  --line-2: oklch(0.94 0.012 80);
+  --shadow-sm: 0 1px 2px oklch(0.27 0.09 18 / 0.05), 0 2px 8px oklch(0.27 0.09 18 / 0.05);
+  --shadow-md: 0 2px 6px oklch(0.27 0.09 18 / 0.07), 0 12px 32px oklch(0.27 0.09 18 / 0.10);
+  --shadow-lg: 0 8px 24px oklch(0.27 0.09 18 / 0.12), 0 24px 60px oklch(0.27 0.09 18 / 0.14);
+}
+.tpl-classic .utilbar { color: oklch(0.95 0.015 85); }
+.tpl-classic .nav { background: oklch(0.985 0.007 85 / 0.88); }
+.tpl-classic .brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; font-weight: 700; }
+.tpl-classic .brand-eng { color: var(--accent); }
+.tpl-classic .brand-mark { border-radius: 4px; background: var(--primary); }
+.tpl-classic .brand-logo { border-radius: 4px; }
+.tpl-classic .nav-link.active, .tpl-classic .nav-drawer-link.active { background: oklch(0.36 0.11 20 / 0.07); }
+.tpl-classic .footer { color: oklch(0.94 0.012 85); }
+.tpl-classic main:has(.chc-root) + .footer { margin-top: 0; } /* 클래식 홈은 마지막 섹션 여백으로 충분 */
+.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.60 0.11 76 / 0.16), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.46 0.11 22 / 0.35), transparent 60%); }
+.tpl-classic .footer-brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; }
+.tpl-classic .footer h4, .tpl-classic .footer-col h4 { color: var(--accent-glow); }
+.tpl-classic .footer-grid { border-bottom-color: oklch(0.78 0.09 82 / 0.22); }
+.tpl-classic .card-hover:hover, .tpl-classic .quick-card:hover { border-color: oklch(0.60 0.11 76 / 0.6); }
+.tpl-classic .quick-card-icon { background: oklch(0.36 0.11 20 / 0.08); }
+.tpl-classic .worship-table-row.feat { background: linear-gradient(90deg, oklch(0.36 0.11 20 / 0.06), transparent 60%); }
+.tpl-classic .worship-table-row.feat:hover { background: linear-gradient(90deg, oklch(0.36 0.11 20 / 0.1), var(--surface-2) 60%); }
+.tpl-classic .sermon-search:focus { box-shadow: 0 0 0 3px oklch(0.36 0.11 20 / 0.12); }
+.tpl-classic main { background: var(--bg); }
+
+/* =========================================================
    'classic' 템플릿 — 전통형 메인 (.chc-*)
    기본(모던 네이비) 템플릿과 대비되는 따뜻한 와인·골드·크림 팔레트와 명조 제목.
    색 토큰은 .chc-root 안에서만 유효하므로 헤더/푸터 등 공용 셸에는 영향 없음.
@@ -1741,24 +1786,20 @@ main { flex: 1; }
 .chc-guide-item:focus-visible { outline: 2px solid var(--chc-gold-deep); outline-offset: -2px; }
 .chc-guide-label { font-size: 13.5px; font-weight: 600; text-align: center; line-height: 1.3; word-break: keep-all; }
 
-/* ---------- Worship band (예배 시간 띠) ---------- */
-.chc-band { background: var(--chc-wine); color: oklch(0.96 0.015 85); margin-top: 40px; }
-.chc-band-inner { display: flex; align-items: stretch; gap: 32px; padding-top: 22px; padding-bottom: 22px; }
-.chc-band-main { display: flex; align-items: center; gap: 32px; flex: 1 1 auto; min-width: 0; }
-.chc-band-title { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; padding-right: 28px; border-right: 1px solid oklch(1 0 0 / 0.18); }
-.chc-band-eyebrow { font-family: var(--chc-serif); font-style: italic; font-size: 13px; color: var(--chc-gold); font-weight: 600; }
-.chc-band-title strong { font-family: var(--chc-serif); font-size: 18px; font-weight: 600; }
-.chc-band-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 36px; }
-.chc-band-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.chc-band-name { font-size: 12.5px; color: oklch(0.96 0.015 85 / 0.72); display: flex; align-items: center; gap: 6px; }
-.chc-band-item.feat .chc-band-name::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--chc-gold); }
-.chc-band-time { font-family: var(--chc-serif); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
-.chc-band-meta { font-size: 12px; color: oklch(0.96 0.015 85 / 0.6); }
-.chc-band-actions { display: flex; align-items: center; gap: 18px; flex-shrink: 0; margin-left: auto; }
-.chc-band-live { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border: 1px solid var(--chc-gold); color: var(--chc-gold); font-size: 13.5px; font-weight: 700; letter-spacing: 0.02em; transition: background 0.2s var(--chc-ease), color 0.2s; }
-.chc-band-live:hover { background: var(--chc-gold); color: var(--chc-wine-deep); }
-.chc-band-more { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: oklch(0.96 0.015 85 / 0.8); border-bottom: 1px solid transparent; }
-.chc-band-more:hover { color: var(--chc-gold); border-bottom-color: var(--chc-gold); }
+/* ---------- Worship (예배 안내: 좌 제목 / 우 괘선 표) ---------- */
+.chc-worship { padding-top: clamp(48px, 6vw, 72px); }
+.chc-worship-grid { display: grid; grid-template-columns: minmax(220px, 1fr) 2fr; gap: 40px clamp(40px, 6vw, 96px); align-items: start; }
+.chc-worship-intro { display: flex; flex-direction: column; align-items: flex-start; }
+.chc-worship-links { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 24px; }
+.chc-live-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--chc-wine); color: var(--chc-wine); font-size: 13.5px; font-weight: 700; transition: background 0.2s var(--chc-ease), color 0.2s; }
+.chc-live-btn:hover { background: var(--chc-wine); color: var(--chc-gold); }
+.chc-worship-list { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--chc-wine); }
+.chc-worship-row { display: grid; grid-template-columns: 1.3fr auto 1fr; gap: 16px 24px; align-items: baseline; padding: 18px 4px; border-bottom: 1px solid var(--chc-line); }
+.chc-worship-name { font-size: 15.5px; font-weight: 600; color: var(--chc-ink); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.chc-worship-row.feat .chc-worship-name { color: var(--chc-wine); }
+.chc-worship-feat { font-size: 11.5px; font-weight: 600; color: var(--chc-gold-deep); border: 1px solid oklch(0.60 0.11 76 / 0.5); padding: 2px 8px; }
+.chc-worship-time { font-family: var(--chc-serif); font-size: 20px; font-weight: 600; color: var(--chc-ink); font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -0.01em; }
+.chc-worship-meta { font-size: 13px; color: var(--chc-muted); text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ---------- Section scaffold ---------- */
 .chc-section { padding: clamp(56px, 8vw, 96px) 0; }
@@ -1832,8 +1873,7 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 }
 
 @media (max-width: 960px) {
-  .chc-band-inner { flex-direction: column; gap: 18px; }
-  .chc-band-actions { margin-left: 0; }
+  .chc-worship-grid { grid-template-columns: 1fr; gap: 28px; }
   .chc-sermon-grid { grid-template-columns: repeat(2, 1fr); }
   .chc-news-grid { grid-template-columns: 1fr; gap: 28px 0; }
   .chc-gallery-grid, .chc-gallery-grid.count-3, .chc-gallery-grid.count-5 { grid-template-columns: repeat(2, 1fr); }
@@ -1852,11 +1892,10 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   .chc-guide-item:last-child { border-right: 1px solid var(--chc-line-2); }
   .chc-guide-icon { width: 42px; height: 42px; }
   .chc-guide-label { font-size: 12.5px; }
-  .chc-band { margin-top: 28px; }
-  .chc-band-main { flex-direction: column; align-items: flex-start; gap: 14px; }
-  .chc-band-title { flex-direction: row; align-items: baseline; gap: 10px; padding-right: 0; border-right: none; }
-  .chc-band-list { gap: 12px 24px; }
-  .chc-band-time { font-size: 17px; }
+  .chc-worship-row { grid-template-columns: 1fr auto; padding: 14px 2px; }
+  .chc-worship-meta { grid-column: 1 / -1; text-align: left; white-space: normal; margin-top: -8px; }
+  .chc-worship-meta:empty { display: none; }
+  .chc-worship-time { font-size: 18px; }
   .chc-head { padding-right: 0; }
   .chc-head-more { position: static; margin-top: 14px; }
   .chc-sermon-feature { grid-template-columns: 1fr; gap: 14px; }

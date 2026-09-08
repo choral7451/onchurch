@@ -48,7 +48,7 @@ export default async function TenantLayout({
   const lang = normalizeLang(church.siteLang);
 
   return (
-    <div className="app" lang={lang}>
+    <div className={`app ${church.siteTemplate === "classic" ? "tpl-classic" : ""}`} lang={lang}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd }}
