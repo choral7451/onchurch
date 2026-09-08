@@ -36,42 +36,33 @@ function buildTargets(slug: string): QrTarget[] {
   ];
 }
 
-// 관리자 콘솔 — 홈페이지 / 회원가입 QR 코드 미리보기·다운로드
-export function QrCodesEditor({ slug }: { slug: string }) {
-  if (!slug) {
-    return (
-      <section className="admin-section">
-        <div className="admin-section-head">
-          <div className="admin-section-eyebrow">QR CODE</div>
-          <h2>QR 코드</h2>
-          <p>QR 코드를 만들려면 먼저 사이트 주소(영문 주소)를 저장해주세요.</p>
-        </div>
-        <div className="admin-section-body">
-          <div className="admin-section-banner">
-            <span className="admin-section-banner-icon">!</span>
-            <span>필수 설정 → 사이트 정보에서 사이트 주소를 입력하고 저장하면 QR 코드가 생성됩니다.</span>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  const targets = buildTargets(slug);
+// 관리자 콘솔 — 기본 정보 섹션 하단에 들어가는 홈페이지 / 회원가입 QR 코드 미리보기·다운로드 블록
+export function QrCodesBlock({ slug }: { slug: string }) {
+  const targets = slug ? buildTargets(slug) : [];
   return (
-    <section className="admin-section">
-      <div className="admin-section-head">
+    <div className="admin-qr-block">
+      <div className="admin-qr-block-head">
         <div className="admin-section-eyebrow">QR CODE</div>
-        <h2>QR 코드</h2>
-        <p>홈페이지와 회원가입 페이지로 연결되는 QR 코드입니다. 인쇄용은 PNG 또는 SVG로 내려받으세요.</p>
+        <h3>QR 코드</h3>
+        <p>
+          {slug
+            ? "홈페이지와 회원가입 페이지로 연결되는 QR 코드입니다. 인쇄용은 PNG 또는 SVG로 내려받으세요."
+            : "서브도메인을 입력하고 저장하면 홈페이지·회원가입 QR 코드가 자동으로 생성됩니다."}
+        </p>
       </div>
-      <div className="admin-section-body">
+      {slug ? (
         <div className="admin-qr-grid">
           {targets.map((t) => (
             <QrCard key={t.key} target={t} />
           ))}
         </div>
-      </div>
-    </section>
+      ) : (
+        <div className="admin-section-banner">
+          <span className="admin-section-banner-icon">!</span>
+          <span>위 서브도메인을 입력하고 저장하면 QR 코드가 생성됩니다.</span>
+        </div>
+      )}
+    </div>
   );
 }
 
