@@ -1743,14 +1743,13 @@ main { flex: 1; }
 .chc-grad-4 { background: linear-gradient(140deg, oklch(0.88 0.04 82), oklch(0.66 0.08 40)) !important; }
 
 /* ---------- Hero (full-bleed slider) ---------- */
-/* 배너 비율은 기본 템플릿(.top-banner)과 동일한 16:9. 좌우를 꽉 채우며 비율을 유지하고,
-   아주 넓은 화면에서만 높이를 화면의 86%(최대 900px)로 제한한다(그때만 위아래가 살짝 잘림). */
+/* 배너 비율은 기본 템플릿(.top-banner)과 동일한 16:9. 좌우를 꽉 채우며 비율을 그대로 유지한다(높이 제한 없음). */
 .chc-hero { position: relative; width: 100%; overflow: hidden; background: var(--chc-wine-deep); }
 .chc-hero-band { background: var(--chc-wine-deep); }
 .chc-hero-track { display: flex; transition: transform 0.7s var(--chc-ease); }
 .chc-hero-track.no-motion { transition: none; }
 .chc-hero-cell { flex: 0 0 100%; display: block; }
-.chc-hero-slide { position: relative; aspect-ratio: 16 / 9; max-height: min(86vh, 900px); background-size: cover; background-position: center; display: flex; align-items: flex-end; }
+.chc-hero-slide { position: relative; width: 100%; aspect-ratio: 16 / 9; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
 .chc-hero-slide-plain { background: radial-gradient(120% 90% at 20% 10%, oklch(0.46 0.12 22) 0%, var(--chc-wine-deep) 62%); }
 .chc-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0.06 20 / 0.05) 35%, oklch(0.18 0.07 20 / 0.72) 100%); }
 .chc-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -1777,7 +1776,7 @@ main { flex: 1; }
 .chc-hero-pause:focus-visible { outline: 2px solid var(--chc-gold); outline-offset: 2px; }
 .chc-hero-counter { font-family: var(--chc-serif); font-size: 13px; letter-spacing: 0.12em; color: oklch(0.98 0.01 85 / 0.75); font-variant-numeric: tabular-nums; }
 .chc-hero-counter b { color: var(--chc-gold); font-weight: 600; }
-.chc-hero-skel { width: 100%; aspect-ratio: 16 / 9; max-height: min(86vh, 900px); background: var(--chc-wine-deep); }
+.chc-hero-skel { width: 100%; aspect-ratio: 16 / 9; background: var(--chc-wine-deep); }
 
 /* ---------- Guide strip (히어로에 겹쳐 올라오는 바로가기) ---------- */
 .chc-guide-wrap { padding-top: 40px; }
