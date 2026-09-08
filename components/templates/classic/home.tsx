@@ -145,12 +145,10 @@ async function WorshipSection({ slug, tenant, url, lang, enabled, initialLive, s
           <h2 className="chc-heading">{pick(lang, { ko: "예배 안내", en: "Worship Times" })}</h2>
           <span className="chc-rule" aria-hidden="true" />
           <div className="chc-worship-links">
-            <Link href={url("/worship")} className="chc-more">
-              {pick(lang, { ko: "전체 예배 안내", en: "All services" })} <Icon.arrow style={{ width: 12, height: 12 }} />
-            </Link>
             <ClassicLiveLink slug={tenant} initialLive={initialLive} sermonsHref={sermonsHref} youtubeUrl={youtubeUrl} lang={lang} />
           </div>
         </div>
+        <div className="chc-worship-table">
         <ul className="chc-worship-list">
           {services.map((w) => (
             <li key={w.id} className={`chc-worship-row ${w.isFeatured ? "feat" : ""}`}>
@@ -163,6 +161,14 @@ async function WorshipSection({ slug, tenant, url, lang, enabled, initialLive, s
             </li>
           ))}
         </ul>
+        {enabled && (
+          <div className="chc-worship-foot">
+            <Link href={url("/worship")} className="chc-more">
+              {pick(lang, { ko: "전체 예배 안내", en: "All services" })} <Icon.arrow style={{ width: 12, height: 12 }} />
+            </Link>
+          </div>
+        )}
+        </div>
       </div>
     </section>
   );
@@ -197,6 +203,7 @@ async function EventsSection({ slug, url, lang }: { slug: string; url: (p: strin
                   </time>
                   <span className="chc-event-body">
                     <span className="chc-event-title">{e.title}</span>
+                    {e.description?.trim() && <span className="chc-event-desc">{e.description.trim()}</span>}
                     {(time || e.location) && (
                       <span className="chc-event-meta">
                         {time && <span>{time}</span>}

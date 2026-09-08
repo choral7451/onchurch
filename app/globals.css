@@ -1795,6 +1795,9 @@ main { flex: 1; }
 .chc-worship-grid { display: grid; grid-template-columns: minmax(220px, 1fr) 2fr; gap: 40px clamp(40px, 6vw, 96px); align-items: start; }
 .chc-worship-intro { display: flex; flex-direction: column; align-items: flex-start; }
 .chc-worship-links { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 24px; }
+.chc-worship-links:empty { display: none; }
+.chc-worship-table { min-width: 0; }
+.chc-worship-foot { display: flex; justify-content: flex-end; padding-top: 14px; }
 .chc-live-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--chc-wine); color: var(--chc-wine); font-size: 13.5px; font-weight: 700; transition: background 0.2s var(--chc-ease), color 0.2s; }
 .chc-live-btn:hover { background: var(--chc-wine); color: var(--chc-gold); }
 .chc-live-btn.is-live { background: oklch(0.55 0.21 25); border-color: oklch(0.55 0.21 25); color: oklch(0.99 0.01 85); padding: 9px 16px 9px 14px; box-shadow: 0 8px 22px -10px oklch(0.55 0.21 25 / 0.7); }
@@ -1826,14 +1829,15 @@ main { flex: 1; }
 .chc-head-more { position: absolute; right: 0; bottom: 4px; }
 
 /* ---------- Upcoming events (괘선 리스트) ---------- */
-.chc-events { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--chc-wine); }
-.chc-event { display: grid; grid-template-columns: 76px 1fr; gap: 20px; align-items: center; padding: 16px 4px; border-bottom: 1px solid var(--chc-line); }
+.chc-events { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--chc-wine); display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; }
+.chc-event { display: grid; grid-template-columns: 72px 1fr; gap: 18px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--chc-line); height: 100%; }
 .chc-event-date { display: flex; flex-direction: column; align-items: center; line-height: 1.1; color: var(--chc-wine); border-right: 1px solid var(--chc-line); padding-right: 16px; }
 .chc-event-date b { font-family: var(--chc-serif); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .chc-event-date span { font-size: 12px; color: var(--chc-muted); margin-top: 4px; white-space: nowrap; }
 .chc-event-body { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .chc-event-title { font-size: 16px; font-weight: 600; color: var(--chc-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 0.2s; }
 .chc-event:hover .chc-event-title { color: var(--chc-wine); }
+.chc-event-desc { font-size: 13.5px; color: var(--chc-ink-2); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chc-event-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--chc-muted); }
 
 /* ---------- Visit (와인 띠) ---------- */
@@ -1927,6 +1931,7 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 
 @media (max-width: 960px) {
   .chc-worship-grid { grid-template-columns: 1fr; gap: 28px; }
+  .chc-events { grid-template-columns: 1fr; }
   .chc-pastor { grid-template-columns: 1fr; gap: 24px; }
   .chc-pastor-photo { max-width: 320px; }
   .chc-visit-inner { flex-direction: column; align-items: flex-start; gap: 22px; }
@@ -1977,7 +1982,8 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   /* 예배 안내: 한 단, 링크는 탭하기 쉽게 */
   .chc-worship { padding-top: 40px; }
   .chc-worship-links { margin-top: 18px; gap: 12px 20px; width: 100%; }
-  .chc-worship-links .chc-more { padding: 8px 0; }
+  .chc-worship-foot { justify-content: flex-start; padding-top: 10px; }
+  .chc-worship-foot .chc-more { padding: 8px 0; }
   .chc-live-btn { min-height: 44px; }
   .chc-worship-row { grid-template-columns: 1fr auto; gap: 4px 16px; padding: 14px 2px; }
   .chc-worship-name { font-size: 15px; }
@@ -2010,6 +2016,7 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   .chc-event-date { padding-right: 10px; }
   .chc-event-date b { font-size: 22px; }
   .chc-event-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; font-size: 15px; }
+  .chc-event-desc { display: none; }
   .chc-visit-btn { width: 100%; justify-content: center; min-height: 48px; }
   .chc-pastor-photo { max-width: 100%; aspect-ratio: 4 / 3; }
   .chc-pastor-msg { font-size: 15.5px; line-height: 1.85; -webkit-line-clamp: 5; }

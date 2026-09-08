@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Icon } from "@/components/icons";
 import { type Lang, pick } from "@/lib/i18n";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
@@ -17,7 +16,7 @@ type Props = {
 
 // 예배 안내 섹션의 실시간 예배 링크. 방송 상태(온에어)에 따라 모양과 목적지가 달라진다.
 // - 온에어: 빨간 점 + '지금 예배 중' → 말씀 페이지(페이지 안에서 바로 재생)
-// - 오프: 조용한 '유튜브 채널' 링크 (채널이 없으면 아무것도 표시하지 않음)
+// - 오프: 표시하지 않음
 // LiveBadge/SermonLive 와 같은 주기(90초)로 live-status 를 폴링해 자동 갱신한다.
 export function ClassicLiveLink({ slug, initialLive, sermonsHref, youtubeUrl, lang }: Props) {
   const [live, setLive] = useState(initialLive);
@@ -60,11 +59,6 @@ export function ClassicLiveLink({ slug, initialLive, sermonsHref, youtubeUrl, la
     return null;
   }
 
-  if (!youtubeUrl) return null;
-  return (
-    <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="chc-live-btn">
-      <Icon.play style={{ width: 14, height: 14 }} />
-      <span>{pick(lang, { ko: "유튜브 채널", en: "YouTube channel" })}</span>
-    </a>
-  );
+  // 방송 중이 아니면 아무것도 표시하지 않는다. 유튜브 채널은 바로가기에서 이미 연결된다.
+  return null;
 }
