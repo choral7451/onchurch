@@ -9,6 +9,7 @@ import { fetchLiveStatus } from "@/lib/public-site";
 import { QUICK_LINK_DEFS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
 import { parseYouTubeId, youtubeThumbnail } from "@/lib/youtube";
 import { type Lang, pick } from "@/lib/i18n";
+import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
@@ -31,6 +32,8 @@ type PublicSermonSeries = { id: number; name: string };
 type PublicNotice = { id: number; category: string | null; title: string; imageUrls: string[]; publishedAt: string | null; createdAt: string };
 type GalleryGroup = { groupKey: string; title: string; date: string | null; coverUrl: string | null; grad: string | null; count: number };
 type GuideItem = { key: string; ic: IconKey; label: string; href: string; external: boolean };
+type PublicEvent = { id: number; title: string; description: string | null; location: string | null; startAt: string; endAt: string | null; isAllDay: boolean };
+type PublicPastor = { id: number; name: string; role: string | null; eng: string | null; message: string | null; photoUrl: string | null } | null;
 
 const SEOUL_TZ = "Asia/Seoul";
 function shortDate(iso: string | null): string {
@@ -41,6 +44,29 @@ function shortDate(iso: string | null): string {
     .formatToParts(d)
     .reduce<Record<string, string>>((acc, p) => { acc[p.type] = p.value; return acc; }, {});
   return `${parts.month}.${parts.day}`;
+}
+
+function seoulParts(iso: string): { year: number; month: number; day: number; hours: number; minutes: number; weekday: string } | null {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: SEOUL_TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, weekday: "short" })
+    .formatToParts(d)
+    .reduce<Record<string, string>>((acc, p) => { acc[p.type] = p.value; return acc; }, {});
+  return { year: Number(parts.year), month: Number(parts.month), day: Number(parts.day), hours: Number(parts.hour) % 24, minutes: Number(parts.minute), weekday: parts.weekday };
+}
+const WEEKDAY_KO: Record<string, string> = { Sun: "일", Mon: "월", Tue: "화", Wed: "수", Thu: "목", Fri: "금", Sat: "토" };
+
+// 지금 이후로 가장 가까운 일정부터. 종일 일정은 그 날 하루 동안 계속 노출.
+function pickUpcoming(events: PublicEvent[]): PublicEvent[] {
+  const cutoff = Date.now();
+  return events
+    .filter((e) => {
+      const ref = new Date(e.startAt);
+      if (Number.isNaN(ref.getTime())) return false;
+      if (e.isAllDay) ref.setHours(23, 59, 59, 999);
+      return ref.getTime() >= cutoff;
+    })
+    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 }
 
 const GRADS = ["chc-grad-1", "chc-grad-2", "chc-grad-3", "chc-grad-4"];
@@ -75,11 +101,11 @@ async function HeroSection({ slug, church }: { slug: string; church: PublicChurc
 }
 
 // 히어로 바로 아래 겹쳐 올라오는 바로가기 카드. 방문자가 가장 자주 찾는 메뉴를 첫 화면에서 바로 잡을 수 있게 한다.
-function GuideStrip({ items }: { items: GuideItem[] }) {
+function GuideStrip({ items, overlap }: { items: GuideItem[]; overlap: boolean }) {
   if (items.length === 0) return null;
   return (
-    <div className="chc-container">
-      <nav className="chc-guide" aria-label="바로가기" data-count={items.length}>
+    <div className={`chc-container ${overlap ? "" : "chc-guide-wrap"}`}>
+      <nav className={`chc-guide ${overlap ? "is-overlap" : ""}`} aria-label="바로가기" data-count={items.length}>
         {items.map((it) => {
           const GuideIcon = Icon[it.ic];
           const inner = (
@@ -137,6 +163,108 @@ async function WorshipSection({ slug, tenant, url, lang, enabled, initialLive, s
             </li>
           ))}
         </ul>
+      </div>
+    </section>
+  );
+}
+
+// 다가오는 일정. 날짜 칸 + 제목 + 시간·장소를 괘선으로. 없으면 섹션 자체를 숨긴다.
+async function EventsSection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
+  const data = await fetchJson<{ events: PublicEvent[] }>(`/onchurch/sites/${slug}/events`, { events: [] });
+  const upcoming = pickUpcoming(data.events).slice(0, 5);
+  if (upcoming.length === 0) return null;
+  const schedulePath = (iso: string) => {
+    const p = seoulParts(iso);
+    return p ? url(`/schedule?ym=${p.year}-${String(p.month).padStart(2, "0")}`) : url("/schedule");
+  };
+  return (
+    <section className="chc-section chc-tinted">
+      <div className="chc-container">
+        <SectionHead eyebrow="Upcoming" title={pick(lang, { ko: "다가오는 일정", en: "Upcoming Events" })} more={{ href: url("/schedule"), label: pick(lang, { ko: "전체 일정 보기", en: "Full calendar" }) }} />
+        <ul className="chc-events">
+          {upcoming.map((e) => {
+            const p = seoulParts(e.startAt);
+            const time = e.isAllDay
+              ? pick(lang, { ko: "종일", en: "All day" })
+              : p ? `${String(p.hours).padStart(2, "0")}:${String(p.minutes).padStart(2, "0")}` : "";
+            const weekday = p ? (lang === "ko" ? WEEKDAY_KO[p.weekday] ?? p.weekday : p.weekday) : "";
+            return (
+              <li key={e.id}>
+                <Link href={schedulePath(e.startAt)} className="chc-event">
+                  <time className="chc-event-date" dateTime={e.startAt}>
+                    <b>{p ? String(p.day).padStart(2, "0") : "--"}</b>
+                    <span>{p ? `${p.month}${pick(lang, { ko: "월", en: "" })} ${weekday}` : ""}</span>
+                  </time>
+                  <span className="chc-event-body">
+                    <span className="chc-event-title">{e.title}</span>
+                    {(time || e.location) && (
+                      <span className="chc-event-meta">
+                        {time && <span>{time}</span>}
+                        {e.location && <span>{e.location}</span>}
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+// 방문 안내. 와인색 띠에 환영 문구와 찾아오시는 길 버튼. 주소가 있으면 함께 보여준다.
+function VisitSection({ church, url, lang }: { church: PublicChurch; url: (p: string) => string; lang: Lang }) {
+  const address = church.address?.trim() || null;
+  return (
+    <section className="chc-visit">
+      <div className="chc-container chc-visit-inner">
+        <div className="chc-visit-text">
+          <span className="chc-eyebrow">Visit</span>
+          <h2 className="chc-visit-title">{pick(lang, { ko: "처음 오시는 분을 환영합니다", en: "Welcome, first-time visitors" })}</h2>
+          <p className="chc-visit-desc">
+            {pick(lang, { ko: "예배 시간과 오시는 길을 확인하시고 언제든 편하게 방문해 주세요.", en: "Check our service times and directions, and feel free to visit anytime." })}
+          </p>
+          {address && <p className="chc-visit-address"><Icon.mapPin style={{ width: 14, height: 14 }} /><span>{address}</span></p>}
+        </div>
+        <Link href={url("/directions")} className="chc-visit-btn">
+          {pick(lang, { ko: "찾아오시는 길", en: "Directions" })} <Icon.arrow style={{ width: 13, height: 13 }} />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+// 담임목사 인사. 사진 + 명조 인사말(5줄까지) + 교회 소개 링크.
+async function PastorSection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
+  const data = await fetchJson<{ pastor: PublicPastor }>(`/onchurch/sites/${slug}/about`, { pastor: null });
+  const pastor = data.pastor;
+  if (!pastor || (!pastor.message?.trim() && !pastor.name)) return null;
+  const roleLine = [pastor.role, pastor.eng].filter(Boolean).join(" / ");
+  return (
+    <section className="chc-section">
+      <div className="chc-container chc-pastor">
+        <div className="chc-pastor-photo">
+          {pastor.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={pastor.photoUrl} alt={pastor.name} width={480} height={600} loading="lazy" />
+          ) : (
+            <div className="chc-pastor-photo-empty">{pick(lang, { ko: "담임목사", en: "Senior Pastor" })}</div>
+          )}
+        </div>
+        <div className="chc-pastor-body">
+          <span className="chc-eyebrow">Greetings</span>
+          <h2 className="chc-heading">{pick(lang, { ko: "담임목사 인사", en: "From the Pastor" })}</h2>
+          <span className="chc-rule" aria-hidden="true" />
+          {pastor.message && <p className="chc-pastor-msg">{pastor.message}</p>}
+          <p className="chc-pastor-sign">
+            <span>{pick(lang, { ko: "담임목사", en: "Senior Pastor" })}</span>
+            <b>{pastor.name}</b>
+            {roleLine && <span className="chc-pastor-role">{roleLine}</span>}
+          </p>
+          <Link href={url("/about")} className="chc-more">{pick(lang, { ko: "교회 소개 보기", en: "About us" })} <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+        </div>
       </div>
     </section>
   );
@@ -313,16 +441,24 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
   const sermonsEnabled = isPageEnabled("sermons");
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
 
-  return (
-    <div className="chc-root">
-      {sermonsEnabled && <LiveBadge slug={tenant} sermonsHref={url("/sermons")} initialLive={initialLive} />}
+  // 관리자 '홈화면 구성'에서 정한 섹션 순서를 따른다(기본 템플릿과 같은 키).
+  // 클래식 전용 섹션인 소식·앨범은 관리자 목록에 없으므로 말씀 뒤(소식)와 맨 끝(앨범)에 고정으로 붙인다.
+  const order = normalizeHomeSectionOrder(church.homeSectionOrder);
+  const quickOverlapsHero = order.indexOf("quick") === order.indexOf("banner") + 1 && guideItems.length > 0;
 
+  const sections: Record<HomeSectionKey, React.ReactNode> = {
+    banner: (
       <Suspense fallback={<div className="chc-hero-skel" aria-hidden />}>
         <HeroSection slug={slug} church={church} />
       </Suspense>
-
-      <GuideStrip items={guideItems} />
-
+    ),
+    quick: <GuideStrip items={guideItems} overlap={quickOverlapsHero} />,
+    events: isPageEnabled("schedule") ? (
+      <Suspense fallback={null}>
+        <EventsSection slug={slug} url={url} lang={lang} />
+      </Suspense>
+    ) : null,
+    worship: (
       <Suspense fallback={null}>
         <WorshipSection
           slug={slug}
@@ -335,24 +471,40 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
           youtubeUrl={youtubeUrl}
         />
       </Suspense>
+    ),
+    sermons: sermonsEnabled ? (
+      <Suspense fallback={null}>
+        <SermonsSection slug={slug} url={url} lang={lang} />
+      </Suspense>
+    ) : null,
+    visit: <VisitSection church={church} url={url} lang={lang} />,
+    pastor: (
+      <Suspense fallback={null}>
+        <PastorSection slug={slug} url={url} lang={lang} />
+      </Suspense>
+    ),
+  };
+  const news = isPageEnabled("notices") ? (
+    <Suspense fallback={null}>
+      <NewsSection slug={slug} url={url} lang={lang} />
+    </Suspense>
+  ) : null;
+  const gallery = isPageEnabled("gallery") ? (
+    <Suspense fallback={null}>
+      <GallerySection slug={slug} url={url} lang={lang} />
+    </Suspense>
+  ) : null;
 
-      {sermonsEnabled && (
-        <Suspense fallback={null}>
-          <SermonsSection slug={slug} url={url} lang={lang} />
-        </Suspense>
-      )}
-
-      {isPageEnabled("notices") && (
-        <Suspense fallback={null}>
-          <NewsSection slug={slug} url={url} lang={lang} />
-        </Suspense>
-      )}
-
-      {isPageEnabled("gallery") && (
-        <Suspense fallback={null}>
-          <GallerySection slug={slug} url={url} lang={lang} />
-        </Suspense>
-      )}
+  return (
+    <div className="chc-root">
+      {sermonsEnabled && <LiveBadge slug={tenant} sermonsHref={url("/sermons")} initialLive={initialLive} />}
+      {order.map((key) => (
+        <div key={key} style={{ display: "contents" }}>
+          {sections[key]}
+          {key === "sermons" && news}
+        </div>
+      ))}
+      {gallery}
     </div>
   );
 }
