@@ -1661,15 +1661,15 @@ main { flex: 1; }
 }
 
 /* =========================================================
-   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 블랙·화이트 모노톤으로.
+   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 화이트 + 슬레이트 네이비로.
    siteTemplate === 'classic' 인 교회의 .app 에 .tpl-classic 이 붙는다(app/[tenant]/layout.tsx).
    ========================================================= */
 .app.tpl-classic {
-  --primary: oklch(0.18 0 0);
-  --primary-deep: oklch(0.14 0 0);
-  --primary-soft: oklch(0.32 0 0);
-  --accent: oklch(0.18 0 0);
-  --accent-glow: oklch(0.92 0 0);
+  --primary: oklch(0.33 0.05 258);
+  --primary-deep: oklch(0.26 0.045 260);
+  --primary-soft: oklch(0.45 0.06 256);
+  --accent: oklch(0.33 0.05 258);
+  --accent-glow: oklch(0.86 0.03 250);
   --bg: #ffffff;
   --bg-tinted: oklch(0.965 0.001 286);
   --surface: #ffffff;
@@ -1694,7 +1694,7 @@ main { flex: 1; }
 .tpl-classic .nav-link.active, .tpl-classic .nav-drawer-link.active { background: oklch(0.40 0 0 / 0.07); }
 .tpl-classic .footer { color: oklch(0.94 0 0); }
 .tpl-classic main:has(.chc-root) + .footer { margin-top: 0; } /* 클래식 홈은 마지막 섹션 여백으로 충분 */
-.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.52 0 0 / 0.16), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.52 0 0 / 0.35), transparent 60%); }
+.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.55 0.06 250 / 0.18), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.45 0.06 256 / 0.35), transparent 60%); }
 .tpl-classic .footer-brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; }
 .tpl-classic .footer h4, .tpl-classic .footer-col h4 { color: var(--accent-glow); }
 .tpl-classic .footer-grid { border-bottom-color: oklch(0.84 0 0 / 0.22); }
@@ -1707,15 +1707,15 @@ main { flex: 1; }
 
 /* =========================================================
    'classic' 템플릿 — 전통형 메인 (.chc-*)
-   기본(모던 네이비) 템플릿과 대비되는 흑백 모노톤(사진이 돋보이게) + 명조 제목 + 둥근 모서리.
+   기본(모던 네이비) 템플릿과 대비되는 흰 배경 + 슬레이트 네이비 포인트(사진이 돋보이게) + 명조 제목 + 둥근 모서리.
    색 토큰은 .chc-root 안에서만 유효하므로 헤더/푸터 등 공용 셸에는 영향 없음.
    ========================================================= */
 .chc-root {
-  --chc-primary: oklch(0.17 0 0);
-  --chc-primary-deep: oklch(0.14 0 0);
-  --chc-primary-soft: oklch(0.17 0 0 / 0.05);
+  --chc-primary: oklch(0.33 0.05 258);
+  --chc-primary-deep: oklch(0.26 0.045 260);
+  --chc-primary-soft: oklch(0.33 0.05 258 / 0.06);
   --chc-accent: #ffffff;
-  --chc-accent-deep: oklch(0.17 0 0);
+  --chc-accent-deep: oklch(0.33 0.05 258);
   --chc-bg: #ffffff;
   --chc-bg-2: oklch(0.965 0.001 286);
   --chc-paper: oklch(0.975 0.001 286);
@@ -1842,7 +1842,7 @@ main { flex: 1; }
 .chc-event-desc { font-size: 13.5px; color: var(--chc-ink-2); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chc-event-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--chc-muted); }
 
-/* ---------- Visit (블랙 띠) ---------- */
+/* ---------- Visit (네이비 띠) ---------- */
 .chc-visit { background: var(--chc-primary); color: oklch(0.97 0 0); }
 .chc-visit-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding-top: clamp(40px, 5vw, 56px); padding-bottom: clamp(40px, 5vw, 56px); }
 .chc-visit .chc-eyebrow { color: var(--chc-accent); }
@@ -2050,13 +2050,12 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   .chc-event-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; font-size: 15px; }
   .chc-event-desc { display: none; }
   /* .chc-container 모바일 padding 단축속성이 위아래 여백을 0으로 덮어쓰므로 여기서 다시 지정 */
-  .chc-visit-inner { padding: 44px 18px 40px; gap: 24px; }
-  .chc-visit-title { font-size: 22px; margin-top: 10px; }
-  .chc-visit-desc { font-size: 14px; margin-top: 10px; }
-  .chc-visit-address { align-items: flex-start; line-height: 1.5; margin-top: 16px; padding-top: 16px; border-top: 1px solid oklch(1 0 0 / 0.14); width: 100%; }
+  .chc-visit-inner { padding: 48px 18px; gap: 22px; }
+  .chc-visit-title { font-size: 21px; margin-top: 8px; }
+  .chc-visit-desc { font-size: 14px; line-height: 1.65; margin-top: 8px; }
+  .chc-visit-address { align-items: flex-start; font-size: 13.5px; line-height: 1.5; margin-top: 18px; }
   .chc-visit-address svg { margin-top: 2px; }
-  .chc-visit-text { width: 100%; }
-  .chc-visit-btn { width: 100%; justify-content: center; min-height: 52px; }
+  .chc-visit-btn { min-height: 46px; padding: 0 22px; font-size: 14px; }
   .chc-pastor-photo { max-width: 100%; aspect-ratio: 4 / 3; }
   .chc-pastor-msg { font-size: 15.5px; line-height: 1.85; -webkit-line-clamp: 5; }
   .chc-guide-wrap { padding-top: 24px; }

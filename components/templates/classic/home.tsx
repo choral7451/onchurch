@@ -29,6 +29,7 @@ type PublicBanner = { id: number | null; title: string; description: string | nu
 type PublicWorshipService = { id: number; tag: "WEEK" | "DAILY"; name: string; time: string; meta: string | null; isFeatured: boolean };
 type PublicSermon = { id: number; seriesId: number | null; title: string; pastor: string | null; date: string | null; videoUrl: string | null; isFeatured: boolean };
 type PublicSermonSeries = { id: number; name: string };
+type PublicNoticeCategory = { id: number; name: string; sortOrder: number; isActive: boolean; isAll: boolean };
 type PublicNotice = { id: number; category: string | null; title: string; imageUrls: string[]; publishedAt: string | null; createdAt: string };
 type GalleryGroup = { groupKey: string; title: string; date: string | null; coverUrl: string | null; grad: string | null; count: number };
 type GuideItem = { key: string; ic: IconKey; label: string; href: string; external: boolean };
@@ -343,18 +344,23 @@ async function SermonsSection({ slug, url, lang }: { slug: string; url: (p: stri
 }
 
 async function NewsSection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
-  const data = await fetchJson<{ notices: PublicNotice[] }>(`/onchurch/sites/${slug}/notices?page=1&size=40`, { notices: [] });
+  const [data, catData] = await Promise.all([
+    fetchJson<{ notices: PublicNotice[] }>(`/onchurch/sites/${slug}/notices?page=1&size=40`, { notices: [] }),
+    fetchJson<{ categories: PublicNoticeCategory[] }>(`/onchurch/sites/${slug}/notice-categories`, { categories: [] }),
+  ]);
   if (data.notices.length === 0) return null;
 
-  // 카테고리별로 묶어 최대 3개 카드. 카테고리가 없으면 '교회 소식' 한 묶음.
-  const buckets = new Map<string, PublicNotice[]>();
-  const fallbackCat = pick(lang, { ko: "교회 소식", en: "Church News" });
-  for (const n of data.notices) {
-    const key = n.category?.trim() || fallbackCat;
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key)!.push(n);
-  }
-  const cards = Array.from(buckets.entries()).slice(0, 3);
+  // 관리자가 설정한 공지 카테고리(소식 페이지 탭과 같은 순서)로 카드를 만든다. '전체' 카테고리는 모든 글.
+  // 글에 남아 있는 옛 카테고리 값으로 묶으면 소식 페이지에 없는 카테고리가 홈에 보이므로 쓰지 않는다.
+  // 설정된 카테고리가 없으면 '교회 소식' 한 묶음. 글이 없는 카테고리 카드는 숨기고 최대 3개.
+  const configured = catData.categories.filter((c) => c.isActive);
+  const cards: [string, PublicNotice[]][] = configured.length
+    ? configured
+        .map((c): [string, PublicNotice[]] => [c.name, c.isAll ? data.notices : data.notices.filter((n) => n.category?.trim() === c.name)])
+        .filter(([, items]) => items.length > 0)
+        .slice(0, 3)
+    : [[pick(lang, { ko: "교회 소식", en: "Church News" }), data.notices]];
+  if (cards.length === 0) return null;
 
   return (
     <section className="chc-section chc-tinted">
