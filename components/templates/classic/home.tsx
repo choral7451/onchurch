@@ -71,7 +71,7 @@ function pickUpcoming(events: PublicEvent[]): PublicEvent[] {
 
 const GRADS = ["chc-grad-1", "chc-grad-2", "chc-grad-3", "chc-grad-4"];
 
-// 섹션 공통 머리말: 영문 eyebrow + 명조 제목 + 짧은 금색 괘선. 우측에 '전체 보기' 링크를 붙일 수 있다.
+// 섹션 공통 머리말: 영문 eyebrow + 명조 제목 + 짧은 애프리콧 괘선. 우측에 '전체 보기' 링크를 붙일 수 있다.
 function SectionHead({ eyebrow, title, more }: { eyebrow: string; title: string; more?: { href: string; label: string } }) {
   return (
     <div className="chc-head">
@@ -221,7 +221,7 @@ async function EventsSection({ slug, url, lang }: { slug: string; url: (p: strin
   );
 }
 
-// 방문 안내. 와인색 띠에 환영 문구와 찾아오시는 길 버튼. 주소가 있으면 함께 보여준다.
+// 방문 안내. 짙은 에버그린 띠에 환영 문구와 찾아오시는 길 버튼. 주소가 있으면 함께 보여준다.
 function VisitSection({ church, url, lang }: { church: PublicChurch; url: (p: string) => string; lang: Lang }) {
   const address = church.address?.trim() || null;
   return (

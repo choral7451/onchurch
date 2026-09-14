@@ -1661,122 +1661,124 @@ main { flex: 1; }
 }
 
 /* =========================================================
-   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 와인·골드로.
+   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 에버그린·애프리콧으로.
    siteTemplate === 'classic' 인 교회의 .app 에 .tpl-classic 이 붙는다(app/[tenant]/layout.tsx).
    ========================================================= */
 .app.tpl-classic {
-  --primary: oklch(0.36 0.11 20);
-  --primary-deep: oklch(0.27 0.09 18);
-  --primary-soft: oklch(0.46 0.11 22);
-  --accent: oklch(0.60 0.11 76);
-  --accent-glow: oklch(0.78 0.09 82);
-  --bg: oklch(0.985 0.007 85);
-  --bg-tinted: oklch(0.96 0.012 82);
-  --surface: oklch(0.995 0.004 85);
-  --surface-2: oklch(0.965 0.010 82);
-  --surface-elevated: oklch(0.995 0.004 85);
-  --ink: oklch(0.23 0.02 40);
-  --ink-2: oklch(0.40 0.02 40);
-  --muted: oklch(0.56 0.02 50);
-  --muted-2: oklch(0.72 0.015 60);
-  --line: oklch(0.89 0.018 78);
-  --line-2: oklch(0.94 0.012 80);
-  --shadow-sm: 0 1px 2px oklch(0.27 0.09 18 / 0.05), 0 2px 8px oklch(0.27 0.09 18 / 0.05);
-  --shadow-md: 0 2px 6px oklch(0.27 0.09 18 / 0.07), 0 12px 32px oklch(0.27 0.09 18 / 0.10);
-  --shadow-lg: 0 8px 24px oklch(0.27 0.09 18 / 0.12), 0 24px 60px oklch(0.27 0.09 18 / 0.14);
+  --primary: oklch(0.40 0.075 172);
+  --primary-deep: oklch(0.27 0.05 185);
+  --primary-soft: oklch(0.52 0.08 170);
+  --accent: oklch(0.52 0.13 45);
+  --accent-glow: oklch(0.84 0.09 62);
+  --bg: oklch(0.985 0.004 170);
+  --bg-tinted: oklch(0.955 0.012 170);
+  --surface: oklch(0.998 0.002 170);
+  --surface-2: oklch(0.965 0.008 170);
+  --surface-elevated: oklch(0.998 0.002 170);
+  --ink: oklch(0.22 0.015 210);
+  --ink-2: oklch(0.40 0.015 210);
+  --muted: oklch(0.53 0.012 210);
+  --muted-2: oklch(0.72 0.010 210);
+  --line: oklch(0.905 0.010 190);
+  --line-2: oklch(0.945 0.008 190);
+  --shadow-sm: 0 1px 2px oklch(0.27 0.05 185 / 0.05), 0 2px 8px oklch(0.27 0.05 185 / 0.05);
+  --shadow-md: 0 2px 6px oklch(0.27 0.05 185 / 0.07), 0 12px 32px oklch(0.27 0.05 185 / 0.10);
+  --shadow-lg: 0 8px 24px oklch(0.27 0.05 185 / 0.12), 0 24px 60px oklch(0.27 0.05 185 / 0.14);
 }
-.tpl-classic .utilbar { color: oklch(0.95 0.015 85); }
-.tpl-classic .nav { background: oklch(0.985 0.007 85 / 0.88); }
+.tpl-classic .utilbar { color: oklch(0.96 0.01 170); }
+.tpl-classic .nav { background: oklch(0.985 0.004 170 / 0.88); }
 .tpl-classic .brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; font-weight: 700; }
 .tpl-classic .brand-eng { color: var(--accent); }
 .tpl-classic .brand-mark { border-radius: 4px; background: var(--primary); }
 .tpl-classic .brand-logo { border-radius: 4px; }
-.tpl-classic .nav-link.active, .tpl-classic .nav-drawer-link.active { background: oklch(0.36 0.11 20 / 0.07); }
-.tpl-classic .footer { color: oklch(0.94 0.012 85); }
+.tpl-classic .nav-link.active, .tpl-classic .nav-drawer-link.active { background: oklch(0.40 0.075 172 / 0.07); }
+.tpl-classic .footer { color: oklch(0.94 0.01 170); }
 .tpl-classic main:has(.chc-root) + .footer { margin-top: 0; } /* 클래식 홈은 마지막 섹션 여백으로 충분 */
-.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.60 0.11 76 / 0.16), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.46 0.11 22 / 0.35), transparent 60%); }
+.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.52 0.13 45 / 0.16), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.52 0.08 170 / 0.35), transparent 60%); }
 .tpl-classic .footer-brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; }
 .tpl-classic .footer h4, .tpl-classic .footer-col h4 { color: var(--accent-glow); }
-.tpl-classic .footer-grid { border-bottom-color: oklch(0.78 0.09 82 / 0.22); }
-.tpl-classic .card-hover:hover, .tpl-classic .quick-card:hover { border-color: oklch(0.60 0.11 76 / 0.6); }
-.tpl-classic .quick-card-icon { background: oklch(0.36 0.11 20 / 0.08); }
-.tpl-classic .worship-table-row.feat { background: linear-gradient(90deg, oklch(0.36 0.11 20 / 0.06), transparent 60%); }
-.tpl-classic .worship-table-row.feat:hover { background: linear-gradient(90deg, oklch(0.36 0.11 20 / 0.1), var(--surface-2) 60%); }
-.tpl-classic .sermon-search:focus { box-shadow: 0 0 0 3px oklch(0.36 0.11 20 / 0.12); }
+.tpl-classic .footer-grid { border-bottom-color: oklch(0.84 0.09 62 / 0.22); }
+.tpl-classic .card-hover:hover, .tpl-classic .quick-card:hover { border-color: oklch(0.52 0.13 45 / 0.6); }
+.tpl-classic .quick-card-icon { background: oklch(0.40 0.075 172 / 0.08); }
+.tpl-classic .worship-table-row.feat { background: linear-gradient(90deg, oklch(0.40 0.075 172 / 0.06), transparent 60%); }
+.tpl-classic .worship-table-row.feat:hover { background: linear-gradient(90deg, oklch(0.40 0.075 172 / 0.1), var(--surface-2) 60%); }
+.tpl-classic .sermon-search:focus { box-shadow: 0 0 0 3px oklch(0.40 0.075 172 / 0.12); }
 .tpl-classic main { background: var(--bg); }
 
 /* =========================================================
    'classic' 템플릿 — 전통형 메인 (.chc-*)
-   기본(모던 네이비) 템플릿과 대비되는 따뜻한 와인·골드·크림 팔레트와 명조 제목.
+   기본(모던 네이비) 템플릿과 대비되는 차분한 에버그린·애프리콧·스톤 팔레트, 명조 제목에 둥근 모서리로 현대적으로.
    색 토큰은 .chc-root 안에서만 유효하므로 헤더/푸터 등 공용 셸에는 영향 없음.
    ========================================================= */
 .chc-root {
-  --chc-wine: oklch(0.36 0.11 20);
-  --chc-wine-deep: oklch(0.27 0.09 18);
-  --chc-wine-soft: oklch(0.36 0.11 20 / 0.08);
-  --chc-gold: oklch(0.74 0.10 82);
-  --chc-gold-deep: oklch(0.60 0.11 76);
-  --chc-cream: oklch(0.985 0.007 85);
-  --chc-cream-2: oklch(0.96 0.012 82);
-  --chc-paper: oklch(0.995 0.004 85);
-  --chc-ink: oklch(0.23 0.02 40);
-  --chc-ink-2: oklch(0.40 0.02 40);
-  --chc-muted: oklch(0.56 0.02 50);
-  --chc-line: oklch(0.89 0.018 78);
-  --chc-line-2: oklch(0.93 0.014 80);
+  --chc-primary: oklch(0.40 0.075 172);
+  --chc-primary-deep: oklch(0.27 0.05 185);
+  --chc-primary-soft: oklch(0.40 0.075 172 / 0.08);
+  --chc-accent: oklch(0.82 0.10 60);
+  --chc-accent-deep: oklch(0.52 0.13 45);
+  --chc-bg: oklch(0.985 0.004 170);
+  --chc-bg-2: oklch(0.955 0.012 170);
+  --chc-paper: oklch(0.998 0.002 170);
+  --chc-ink: oklch(0.22 0.015 210);
+  --chc-ink-2: oklch(0.40 0.015 210);
+  --chc-muted: oklch(0.53 0.012 210);
+  --chc-line: oklch(0.905 0.010 190);
+  --chc-line-2: oklch(0.94 0.008 190);
   --chc-serif: var(--font-serif-kr), "Noto Serif KR", "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
   --chc-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --chc-shadow: 0 18px 40px -22px oklch(0.27 0.09 18 / 0.45);
+  --chc-shadow: 0 18px 40px -22px oklch(0.27 0.05 185 / 0.45);
+  --chc-radius: 16px;
+  --chc-radius-sm: 12px;
   display: block;
-  background: var(--chc-cream);
+  background: var(--chc-bg);
   color: var(--chc-ink);
 }
-.chc-root .onair-bar { background: var(--chc-cream); }
+.chc-root .onair-bar { background: var(--chc-bg); }
 .chc-root h2, .chc-root h3 { text-wrap: balance; }
 .chc-root a, .chc-root button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.chc-root a:focus-visible { outline: 2px solid var(--chc-gold-deep); outline-offset: 3px; }
+.chc-root a:focus-visible { outline: 2px solid var(--chc-accent-deep); outline-offset: 3px; }
 
-/* 사진 없는 카드용 그라디언트 — 와인/골드 계열 */
-.chc-grad-1 { background: linear-gradient(140deg, oklch(0.52 0.11 22), oklch(0.32 0.10 18)) !important; }
-.chc-grad-2 { background: linear-gradient(140deg, oklch(0.80 0.08 80), oklch(0.60 0.11 70)) !important; }
-.chc-grad-3 { background: linear-gradient(150deg, oklch(0.42 0.10 22), oklch(0.62 0.10 60)) !important; }
-.chc-grad-4 { background: linear-gradient(140deg, oklch(0.88 0.04 82), oklch(0.66 0.08 40)) !important; }
+/* 사진 없는 카드용 그라디언트 — 에버그린/애프리콧 계열 */
+.chc-grad-1 { background: linear-gradient(140deg, oklch(0.52 0.08 168), oklch(0.30 0.05 185)) !important; }
+.chc-grad-2 { background: linear-gradient(140deg, oklch(0.86 0.07 70), oklch(0.66 0.12 45)) !important; }
+.chc-grad-3 { background: linear-gradient(150deg, oklch(0.40 0.07 180), oklch(0.66 0.09 140)) !important; }
+.chc-grad-4 { background: linear-gradient(140deg, oklch(0.92 0.03 170), oklch(0.62 0.06 200)) !important; }
 
 /* ---------- Hero (full-bleed slider) ---------- */
 /* 배너 비율은 기본 템플릿(.top-banner)과 동일한 16:9. 좌우를 꽉 채우며 비율을 그대로 유지한다(높이 제한 없음). */
-.chc-hero { position: relative; width: 100%; overflow: hidden; background: var(--chc-wine-deep); }
-.chc-hero-band { background: var(--chc-wine-deep); }
+.chc-hero { position: relative; width: 100%; overflow: hidden; background: var(--chc-primary-deep); }
+.chc-hero-band { background: var(--chc-primary-deep); }
 .chc-hero-track { display: flex; transition: transform 0.7s var(--chc-ease); }
 .chc-hero-track.no-motion { transition: none; }
 .chc-hero-cell { flex: 0 0 100%; display: block; }
 .chc-hero-slide { position: relative; width: 100%; aspect-ratio: 16 / 9; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
-.chc-hero-slide-plain { background: radial-gradient(120% 90% at 20% 10%, oklch(0.46 0.12 22) 0%, var(--chc-wine-deep) 62%); }
-.chc-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0.06 20 / 0.05) 35%, oklch(0.18 0.07 20 / 0.72) 100%); }
+.chc-hero-slide-plain { background: radial-gradient(120% 90% at 20% 10%, oklch(0.44 0.08 175) 0%, var(--chc-primary-deep) 62%); }
+.chc-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0.04 190 / 0.05) 35%, oklch(0.17 0.04 190 / 0.72) 100%); }
 .chc-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.chc-hero-caption { position: relative; z-index: 1; width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 32px 84px; color: oklch(0.98 0.01 85); }
-.chc-hero-rule { display: block; width: 44px; height: 2px; background: var(--chc-gold); margin-bottom: 18px; }
+.chc-hero-caption { position: relative; z-index: 1; width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 32px 84px; color: oklch(0.99 0.005 170); }
+.chc-hero-rule { display: block; width: 44px; height: 2px; background: var(--chc-accent); margin-bottom: 18px; }
 .chc-hero-title { font-family: var(--chc-serif); font-size: clamp(30px, 4.2vw, 50px); font-weight: 700; letter-spacing: -0.01em; margin: 0; line-height: 1.22; word-break: keep-all; text-shadow: 0 2px 18px oklch(0 0 0 / 0.25); }
 .chc-hero-desc { font-size: clamp(14px, 1.3vw, 17px); line-height: 1.7; opacity: 0.92; margin: 14px 0 0; max-width: 56ch; word-break: keep-all; }
-.chc-hero-cta { display: inline-block; margin-top: 22px; font-size: 13.5px; font-weight: 600; color: var(--chc-gold); border-bottom: 1px solid oklch(0.74 0.10 82 / 0.5); padding-bottom: 3px; transition: border-color 0.2s; }
-.chc-hero-cell:hover .chc-hero-cta { border-bottom-color: var(--chc-gold); }
-.chc-hero-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.35); color: oklch(0.98 0.01 85); display: grid; place-items: center; z-index: 3; background: oklch(0.2 0.06 20 / 0.25); transition: background 0.2s var(--chc-ease), border-color 0.2s; }
-.chc-hero-nav:hover { background: oklch(0.2 0.06 20 / 0.55); border-color: var(--chc-gold); }
-.chc-hero-nav:focus-visible { outline: 2px solid var(--chc-gold); outline-offset: 2px; }
+.chc-hero-cta { display: inline-block; margin-top: 22px; font-size: 13.5px; font-weight: 600; color: var(--chc-accent); border-bottom: 1px solid oklch(0.82 0.10 60 / 0.5); padding-bottom: 3px; transition: border-color 0.2s; }
+.chc-hero-cell:hover .chc-hero-cta { border-bottom-color: var(--chc-accent); }
+.chc-hero-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.35); color: oklch(0.99 0.005 170); display: grid; place-items: center; z-index: 3; background: oklch(0.2 0.04 190 / 0.25); transition: background 0.2s var(--chc-ease), border-color 0.2s; }
+.chc-hero-nav:hover { background: oklch(0.2 0.04 190 / 0.55); border-color: var(--chc-accent); }
+.chc-hero-nav:focus-visible { outline: 2px solid var(--chc-accent); outline-offset: 2px; }
 .chc-hero-nav.prev { left: 24px; }
 .chc-hero-nav.next { right: 24px; }
 .chc-hero-bottombar { position: absolute; left: 0; right: 0; bottom: 28px; z-index: 3; max-width: 1280px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
 .chc-hero-dots { display: flex; gap: 2px; pointer-events: auto; }
 .chc-hero-dot { width: 32px; height: 28px; display: grid; place-items: center; padding: 0; }
 .chc-hero-dot span { display: block; width: 100%; height: 2px; background: oklch(1 0 0 / 0.35); transition: background 0.25s; }
-.chc-hero-dot.active span { background: var(--chc-gold); }
-.chc-hero-dot:focus-visible { outline: 2px solid var(--chc-gold); outline-offset: -4px; }
+.chc-hero-dot.active span { background: var(--chc-accent); }
+.chc-hero-dot:focus-visible { outline: 2px solid var(--chc-accent); outline-offset: -4px; }
 .chc-hero-ctrl { display: flex; align-items: center; gap: 10px; pointer-events: auto; }
-.chc-hero-pause { width: 32px; height: 32px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.35); color: oklch(0.98 0.01 85); display: grid; place-items: center; background: oklch(0.2 0.06 20 / 0.25); transition: background 0.2s var(--chc-ease), border-color 0.2s; touch-action: manipulation; }
-.chc-hero-pause:hover { border-color: var(--chc-gold); background: oklch(0.2 0.06 20 / 0.55); }
-.chc-hero-pause:focus-visible { outline: 2px solid var(--chc-gold); outline-offset: 2px; }
-.chc-hero-counter { font-family: var(--chc-serif); font-size: 13px; letter-spacing: 0.12em; color: oklch(0.98 0.01 85 / 0.75); font-variant-numeric: tabular-nums; }
-.chc-hero-counter b { color: var(--chc-gold); font-weight: 600; }
-.chc-hero-skel { width: 100%; aspect-ratio: 16 / 9; background: var(--chc-wine-deep); }
+.chc-hero-pause { width: 32px; height: 32px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.35); color: oklch(0.99 0.005 170); display: grid; place-items: center; background: oklch(0.2 0.04 190 / 0.25); transition: background 0.2s var(--chc-ease), border-color 0.2s; touch-action: manipulation; }
+.chc-hero-pause:hover { border-color: var(--chc-accent); background: oklch(0.2 0.04 190 / 0.55); }
+.chc-hero-pause:focus-visible { outline: 2px solid var(--chc-accent); outline-offset: 2px; }
+.chc-hero-counter { font-family: var(--chc-serif); font-size: 13px; letter-spacing: 0.12em; color: oklch(0.99 0.005 170 / 0.75); font-variant-numeric: tabular-nums; }
+.chc-hero-counter b { color: var(--chc-accent); font-weight: 600; }
+.chc-hero-skel { width: 100%; aspect-ratio: 16 / 9; background: var(--chc-primary-deep); }
 
 /* ---------- Guide strip (히어로에 겹쳐 올라오는 바로가기) ---------- */
 .chc-guide-wrap { padding-top: 40px; }
@@ -1784,10 +1786,10 @@ main { flex: 1; }
 .chc-guide.is-overlap { margin-top: -40px; }
 .chc-guide-item { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 10px 18px; border-right: 1px solid var(--chc-line-2); color: var(--chc-ink-2); transition: background 0.2s var(--chc-ease), color 0.2s; }
 .chc-guide-item:last-child { border-right: none; }
-.chc-guide-icon { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: var(--chc-wine); background: var(--chc-cream-2); transition: background 0.2s var(--chc-ease), color 0.2s, transform 0.3s var(--chc-ease); }
-.chc-guide-item:hover { background: var(--chc-cream); color: var(--chc-wine); }
-.chc-guide-item:hover .chc-guide-icon { background: var(--chc-wine); color: var(--chc-gold); transform: translateY(-2px); }
-.chc-guide-item:focus-visible { outline: 2px solid var(--chc-gold-deep); outline-offset: -2px; }
+.chc-guide-icon { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: var(--chc-primary); background: var(--chc-bg-2); transition: background 0.2s var(--chc-ease), color 0.2s, transform 0.3s var(--chc-ease); }
+.chc-guide-item:hover { background: var(--chc-bg); color: var(--chc-primary); }
+.chc-guide-item:hover .chc-guide-icon { background: var(--chc-primary); color: var(--chc-accent); transform: translateY(-2px); }
+.chc-guide-item:focus-visible { outline: 2px solid var(--chc-accent-deep); outline-offset: -2px; }
 .chc-guide-label { font-size: 13.5px; font-weight: 600; text-align: center; line-height: 1.3; word-break: keep-all; }
 
 /* ---------- Worship (예배 안내: 좌 제목 / 우 괘선 표) ---------- */
@@ -1798,19 +1800,19 @@ main { flex: 1; }
 .chc-worship-links:empty { display: none; }
 .chc-worship-table { min-width: 0; }
 .chc-worship-foot { display: flex; justify-content: flex-end; padding-top: 14px; }
-.chc-live-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--chc-wine); color: var(--chc-wine); font-size: 13.5px; font-weight: 700; transition: background 0.2s var(--chc-ease), color 0.2s; }
-.chc-live-btn:hover { background: var(--chc-wine); color: var(--chc-gold); }
-.chc-live-btn.is-live { background: oklch(0.55 0.21 25); border-color: oklch(0.55 0.21 25); color: oklch(0.99 0.01 85); padding: 9px 16px 9px 14px; box-shadow: 0 8px 22px -10px oklch(0.55 0.21 25 / 0.7); }
-.chc-live-btn.is-live:hover { background: oklch(0.48 0.2 25); border-color: oklch(0.48 0.2 25); color: oklch(0.99 0.01 85); }
-.chc-live-dot { width: 9px; height: 9px; border-radius: 50%; background: oklch(0.99 0.01 85); animation: onair-pulse 1.3s ease-in-out infinite; flex-shrink: 0; }
+.chc-live-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--chc-primary); color: var(--chc-primary); font-size: 13.5px; font-weight: 700; transition: background 0.2s var(--chc-ease), color 0.2s; }
+.chc-live-btn:hover { background: var(--chc-primary); color: var(--chc-accent); }
+.chc-live-btn.is-live { background: oklch(0.55 0.21 25); border-color: oklch(0.55 0.21 25); color: oklch(0.995 0.005 170); padding: 9px 16px 9px 14px; box-shadow: 0 8px 22px -10px oklch(0.55 0.21 25 / 0.7); }
+.chc-live-btn.is-live:hover { background: oklch(0.48 0.2 25); border-color: oklch(0.48 0.2 25); color: oklch(0.995 0.005 170); }
+.chc-live-dot { width: 9px; height: 9px; border-radius: 50%; background: oklch(0.995 0.005 170); animation: onair-pulse 1.3s ease-in-out infinite; flex-shrink: 0; }
 .chc-live-text { display: flex; flex-direction: column; line-height: 1.2; gap: 2px; }
 .chc-live-text b { font-size: 13.5px; font-weight: 700; }
 .chc-live-text span { font-size: 11.5px; font-weight: 500; opacity: 0.85; }
-.chc-worship-list { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--chc-wine); }
+.chc-worship-list { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--chc-primary); }
 .chc-worship-row { display: grid; grid-template-columns: 1.3fr auto 1fr; gap: 16px 24px; align-items: baseline; padding: 18px 4px; border-bottom: 1px solid var(--chc-line); }
 .chc-worship-name { font-size: 15.5px; font-weight: 600; color: var(--chc-ink); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
-.chc-worship-row.feat .chc-worship-name { color: var(--chc-wine); }
-.chc-worship-feat { font-size: 11.5px; font-weight: 600; color: var(--chc-gold-deep); border: 1px solid oklch(0.60 0.11 76 / 0.5); padding: 2px 8px; }
+.chc-worship-row.feat .chc-worship-name { color: var(--chc-primary); }
+.chc-worship-feat { font-size: 11.5px; font-weight: 600; color: var(--chc-accent-deep); border: 1px solid oklch(0.52 0.13 45 / 0.5); padding: 2px 8px; }
 .chc-worship-time { font-family: var(--chc-serif); font-size: 20px; font-weight: 600; color: var(--chc-ink); font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -0.01em; }
 .chc-worship-meta { font-size: 13px; color: var(--chc-muted); text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -1819,43 +1821,43 @@ main { flex: 1; }
 .chc-tinted { background: var(--chc-paper); border-top: 1px solid var(--chc-line-2); border-bottom: 1px solid var(--chc-line-2); }
 .chc-container { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
 .chc-head { position: relative; display: flex; flex-direction: column; align-items: flex-start; margin-bottom: clamp(28px, 4vw, 44px); padding-right: 160px; }
-.chc-eyebrow { display: block; font-family: var(--chc-serif); font-style: italic; font-size: 14px; color: var(--chc-gold-deep); font-weight: 600; }
+.chc-eyebrow { display: block; font-family: var(--chc-serif); font-style: italic; font-size: 14px; color: var(--chc-accent-deep); font-weight: 600; }
 .chc-heading { font-family: var(--chc-serif); font-size: clamp(24px, 2.6vw, 32px); font-weight: 700; color: var(--chc-ink); letter-spacing: -0.015em; margin: 8px 0 0; line-height: 1.25; }
-.chc-rule { display: block; width: 36px; height: 2px; background: var(--chc-gold); margin-top: 16px; }
-.chc-more { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--chc-wine); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: border-color 0.2s; }
-.chc-more:hover { border-bottom-color: var(--chc-wine); }
+.chc-rule { display: block; width: 36px; height: 2px; background: var(--chc-accent); margin-top: 16px; }
+.chc-more { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--chc-primary); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: border-color 0.2s; }
+.chc-more:hover { border-bottom-color: var(--chc-primary); }
 .chc-more svg { transition: transform 0.25s var(--chc-ease); }
 .chc-more:hover svg { transform: translateX(3px); }
 .chc-head-more { position: absolute; right: 0; bottom: 4px; }
 
 /* ---------- Upcoming events (괘선 리스트) ---------- */
-.chc-events { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--chc-wine); display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; }
+.chc-events { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--chc-primary); display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; }
 .chc-event { display: grid; grid-template-columns: 72px 1fr; gap: 18px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--chc-line); height: 100%; }
-.chc-event-date { display: flex; flex-direction: column; align-items: center; line-height: 1.1; color: var(--chc-wine); border-right: 1px solid var(--chc-line); padding-right: 16px; }
+.chc-event-date { display: flex; flex-direction: column; align-items: center; line-height: 1.1; color: var(--chc-primary); border-right: 1px solid var(--chc-line); padding-right: 16px; }
 .chc-event-date b { font-family: var(--chc-serif); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .chc-event-date span { font-size: 12px; color: var(--chc-muted); margin-top: 4px; white-space: nowrap; }
 .chc-event-body { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .chc-event-title { font-size: 16px; font-weight: 600; color: var(--chc-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 0.2s; }
-.chc-event:hover .chc-event-title { color: var(--chc-wine); }
+.chc-event:hover .chc-event-title { color: var(--chc-primary); }
 .chc-event-desc { font-size: 13.5px; color: var(--chc-ink-2); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chc-event-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--chc-muted); }
 
-/* ---------- Visit (와인 띠) ---------- */
-.chc-visit { background: var(--chc-wine); color: oklch(0.96 0.015 85); }
+/* ---------- Visit (에버그린 띠) ---------- */
+.chc-visit { background: var(--chc-primary); color: oklch(0.97 0.01 170); }
 .chc-visit-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding-top: clamp(40px, 5vw, 56px); padding-bottom: clamp(40px, 5vw, 56px); }
-.chc-visit .chc-eyebrow { color: var(--chc-gold); }
+.chc-visit .chc-eyebrow { color: var(--chc-accent); }
 .chc-visit-title { font-family: var(--chc-serif); font-size: clamp(22px, 2.4vw, 28px); font-weight: 700; margin: 8px 0 0; line-height: 1.3; }
-.chc-visit-desc { font-size: 14.5px; line-height: 1.7; margin: 12px 0 0; color: oklch(0.96 0.015 85 / 0.8); max-width: 52ch; word-break: keep-all; }
-.chc-visit-address { display: flex; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 13.5px; color: oklch(0.96 0.015 85 / 0.85); }
-.chc-visit-address svg { color: var(--chc-gold); flex-shrink: 0; }
-.chc-visit-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border: 1px solid var(--chc-gold); color: var(--chc-gold); font-size: 14.5px; font-weight: 700; transition: background 0.2s var(--chc-ease), color 0.2s; }
-.chc-visit-btn:hover { background: var(--chc-gold); color: var(--chc-wine-deep); }
-.chc-visit-btn:focus-visible { outline: 2px solid var(--chc-gold); outline-offset: 3px; }
+.chc-visit-desc { font-size: 14.5px; line-height: 1.7; margin: 12px 0 0; color: oklch(0.97 0.01 170 / 0.8); max-width: 52ch; word-break: keep-all; }
+.chc-visit-address { display: flex; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 13.5px; color: oklch(0.97 0.01 170 / 0.85); }
+.chc-visit-address svg { color: var(--chc-accent); flex-shrink: 0; }
+.chc-visit-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border: 1px solid var(--chc-accent); color: var(--chc-accent); font-size: 14.5px; font-weight: 700; transition: background 0.2s var(--chc-ease), color 0.2s; }
+.chc-visit-btn:hover { background: var(--chc-accent); color: var(--chc-primary-deep); }
+.chc-visit-btn:focus-visible { outline: 2px solid var(--chc-accent); outline-offset: 3px; }
 
 /* ---------- Pastor ---------- */
 .chc-pastor { display: grid; grid-template-columns: minmax(240px, 2fr) 3fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
-.chc-pastor-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--chc-cream-2); }
-.chc-pastor-photo::after { content: ""; position: absolute; inset: 12px; border: 1px solid oklch(0.74 0.10 82 / 0.55); pointer-events: none; }
+.chc-pastor-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--chc-bg-2); }
+.chc-pastor-photo::after { content: ""; position: absolute; inset: 12px; border: 1px solid oklch(0.82 0.10 60 / 0.55); pointer-events: none; }
 .chc-pastor-photo img { width: 100%; height: 100%; object-fit: cover; }
 .chc-pastor-photo-empty { width: 100%; height: 100%; display: grid; place-items: center; font-family: var(--chc-serif); color: var(--chc-muted); font-size: 15px; }
 .chc-pastor-body { display: flex; flex-direction: column; align-items: flex-start; }
@@ -1867,38 +1869,38 @@ main { flex: 1; }
 
 /* ---------- Sermons ---------- */
 .chc-sermon-feature { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.chc-sermon-hero { display: block; overflow: hidden; }
+.chc-sermon-hero { display: block; overflow: hidden; isolation: isolate; }
 .chc-sermon-hero-media { position: relative; aspect-ratio: 16 / 9; background-size: cover; background-position: center; display: flex; align-items: flex-end; transition: transform 0.6s var(--chc-ease); }
 .chc-sermon-hero:hover .chc-sermon-hero-media { transform: scale(1.02); }
-.chc-sermon-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0.06 20 / 0.05) 35%, oklch(0.18 0.07 20 / 0.85) 100%); }
-.chc-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.55); background: oklch(0.2 0.06 20 / 0.35); color: oklch(0.98 0.01 85); display: grid; place-items: center; z-index: 2; transition: background 0.2s var(--chc-ease), border-color 0.2s; }
+.chc-sermon-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0.04 190 / 0.05) 35%, oklch(0.17 0.04 190 / 0.85) 100%); }
+.chc-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.55); background: oklch(0.2 0.04 190 / 0.35); color: oklch(0.99 0.005 170); display: grid; place-items: center; z-index: 2; transition: background 0.2s var(--chc-ease), border-color 0.2s; }
 .chc-play svg { margin-left: 3px; }
 .chc-play.sm { width: 40px; height: 40px; }
-a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hover .chc-play { background: var(--chc-gold); border-color: var(--chc-gold); color: var(--chc-wine-deep); }
-.chc-sermon-hero-cap { position: relative; z-index: 1; padding: 24px 26px; color: oklch(0.98 0.01 85); }
-.chc-sermon-tag { display: inline-block; font-size: 12.5px; font-weight: 600; color: var(--chc-gold); }
+a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hover .chc-play { background: var(--chc-accent); border-color: var(--chc-accent); color: var(--chc-primary-deep); }
+.chc-sermon-hero-cap { position: relative; z-index: 1; padding: 24px 26px; color: oklch(0.99 0.005 170); }
+.chc-sermon-tag { display: inline-block; font-size: 12.5px; font-weight: 600; color: var(--chc-accent); }
 .chc-sermon-hero-title { font-family: var(--chc-serif); font-size: clamp(18px, 1.9vw, 24px); font-weight: 700; margin: 8px 0 0; line-height: 1.3; word-break: keep-all; }
 .chc-sermon-hero-sub { display: flex; gap: 12px; font-size: 13px; opacity: 0.8; margin: 8px 0 0; }
 .chc-sermon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--chc-line); }
 .chc-sermon-mini { display: block; }
 .chc-sermon-mini-media { position: relative; aspect-ratio: 16 / 9; background-size: cover; background-position: center; overflow: hidden; }
 .chc-sermon-mini-body { padding-top: 12px; }
-.chc-sermon-mini-tag { font-size: 12px; font-weight: 600; color: var(--chc-gold-deep); }
+.chc-sermon-mini-tag { font-size: 12px; font-weight: 600; color: var(--chc-accent-deep); }
 .chc-sermon-mini-title { font-size: 14.5px; font-weight: 600; color: var(--chc-ink); margin-top: 4px; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: keep-all; transition: color 0.2s; }
-.chc-sermon-mini:hover .chc-sermon-mini-title { color: var(--chc-wine); }
+.chc-sermon-mini:hover .chc-sermon-mini-title { color: var(--chc-primary); }
 .chc-sermon-mini-meta { display: flex; gap: 10px; font-size: 12px; color: var(--chc-muted); margin: 4px 0 0; }
 
 /* ---------- Church news (괘선 리스트, 카드 그림자 없음) ---------- */
 .chc-news-grid { display: grid; grid-template-columns: repeat(var(--news-cols, 3), 1fr); gap: 0 40px; }
 .chc-news-card { min-width: 0; }
-.chc-news-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--chc-wine); }
-.chc-news-head-title { font-family: var(--chc-serif); font-size: 18px; font-weight: 700; color: var(--chc-wine); }
+.chc-news-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--chc-primary); }
+.chc-news-head-title { font-family: var(--chc-serif); font-size: 18px; font-weight: 700; color: var(--chc-primary); }
 .chc-news-head-count { font-size: 12px; color: var(--chc-muted); font-variant-numeric: tabular-nums; }
 .chc-news-list { list-style: none; margin: 0; padding: 0; }
 .chc-news-list li a { display: flex; gap: 14px; align-items: baseline; justify-content: space-between; padding: 12px 0; font-size: 14px; border-bottom: 1px solid var(--chc-line-2); }
 .chc-news-title { color: var(--chc-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; transition: color 0.2s; }
 .chc-news-date { color: var(--chc-muted); flex-shrink: 0; font-size: 12.5px; font-variant-numeric: tabular-nums; }
-.chc-news-list li a:hover .chc-news-title { color: var(--chc-wine); }
+.chc-news-list li a:hover .chc-news-title { color: var(--chc-primary); }
 .chc-news-card + .chc-news-card { position: relative; }
 
 /* ---------- Gallery (모자이크: 첫 장 크게) ---------- */
@@ -1912,11 +1914,28 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 .chc-gallery-media { position: relative; height: 100%; min-height: 0; aspect-ratio: 4 / 3; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
 .chc-gallery-grid.count-3 .chc-gallery-tile:first-child .chc-gallery-media,
 .chc-gallery-grid.count-5 .chc-gallery-tile:first-child .chc-gallery-media { aspect-ratio: auto; }
-.chc-gallery-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, oklch(0.18 0.06 20 / 0.7)); opacity: 0.9; transition: opacity 0.3s; }
+.chc-gallery-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, oklch(0.17 0.04 190 / 0.7)); opacity: 0.9; transition: opacity 0.3s; }
 .chc-gallery-tile:hover .chc-gallery-scrim { opacity: 1; }
-.chc-gallery-cap { position: relative; z-index: 1; padding: 14px 16px; color: oklch(0.98 0.01 85); display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; }
+.chc-gallery-cap { position: relative; z-index: 1; padding: 14px 16px; color: oklch(0.99 0.005 170); display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; }
 .chc-gallery-cap-title { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chc-gallery-cap-count { font-size: 12px; color: var(--chc-gold); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.chc-gallery-cap-count { font-size: 12px; color: var(--chc-accent); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+/* ---------- 모던 리프레시: 둥근 모서리·산세리프 eyebrow·필 버튼 ---------- */
+.chc-eyebrow { font-family: inherit; font-style: normal; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.chc-rule { width: 28px; height: 3px; border-radius: 2px; }
+.chc-hero-rule { height: 3px; border-radius: 2px; }
+.chc-guide { border-radius: var(--chc-radius); overflow: hidden; }
+.chc-guide-icon { border-radius: 14px; }
+.chc-sermon-hero, .chc-sermon-mini-media, .chc-gallery-media { border-radius: var(--chc-radius-sm); overflow: hidden; }
+.chc-sermon-hero-media { border-radius: inherit; }
+.chc-pastor-photo { border-radius: 20px; }
+.chc-pastor-photo::after { border-radius: 12px; }
+.chc-live-btn, .chc-visit-btn { border-radius: 999px; }
+.chc-worship-feat { border: none; border-radius: 999px; padding: 3px 10px; background: oklch(0.52 0.13 45 / 0.1); }
+.chc-visit { background: linear-gradient(135deg, var(--chc-primary) 0%, var(--chc-primary-deep) 100%); }
+.chc-visit-btn { background: var(--chc-accent); color: var(--chc-primary-deep); border-color: var(--chc-accent); }
+.chc-visit-btn:hover { background: oklch(0.88 0.08 64); border-color: oklch(0.88 0.08 64); }
+.chc-news-list li a:hover .chc-news-title, .chc-event:hover .chc-event-title { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 
 @media (prefers-reduced-motion: reduce) {
   .chc-hero-track, .chc-sermon-hero-media, .chc-guide-icon, .chc-more svg { transition: none; }
@@ -1926,7 +1945,14 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 /* 마우스 없는 기기(대부분 모바일): 호버 확대 효과 제거 */
 @media (hover: none) {
   .chc-sermon-hero:hover .chc-sermon-hero-media { transform: none; }
-  .chc-guide-item:hover .chc-guide-icon { transform: none; }
+  .chc-guide-item:hover { background: none; color: var(--chc-ink-2); }
+  .chc-guide-item:hover .chc-guide-icon { transform: none; background: var(--chc-bg-2); color: var(--chc-primary); }
+  /* 터치 피드백: 누르는 순간 살짝 눌림 */
+  .chc-guide-item, .chc-sermon-hero, .chc-sermon-mini, .chc-gallery-tile, .chc-event, .chc-news-list li a, .chc-visit-btn, .chc-live-btn { transition: transform 0.15s var(--chc-ease), background 0.15s; }
+  .chc-guide-item:active { background: var(--chc-bg-2); }
+  .chc-guide-item:active .chc-guide-icon { background: var(--chc-primary); color: var(--chc-accent); }
+  .chc-sermon-hero:active, .chc-sermon-mini:active, .chc-gallery-tile:active, .chc-visit-btn:active, .chc-live-btn:active { transform: scale(0.98); }
+  .chc-event:active, .chc-news-list li a:active { background: var(--chc-primary-soft); }
 }
 
 @media (max-width: 960px) {
@@ -1946,7 +1972,7 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 
 @media (max-width: 768px) {
   .chc-container { padding: 0 18px; }
-  .chc-section { padding: 48px 0; }
+  .chc-section { padding: 44px 0; }
   .chc-heading { font-size: 23px; }
   .chc-rule { margin-top: 12px; }
 
@@ -1962,7 +1988,7 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   .chc-hero-bottombar { padding: 0 12px; bottom: 6px; }
   .chc-hero-dot { width: 24px; height: 36px; }
   .chc-hero-pause { width: 36px; height: 36px; }
-  .chc-hero-counter { font-size: 12px; }
+  .chc-hero-counter { display: none; }
 
   /* 바로가기: 4열 아이콘 그리드(3·5·6·9개는 3열), 44px 이상 탭 영역 */
   .chc-guide { display: grid; grid-template-columns: repeat(4, 1fr); }
@@ -1992,22 +2018,32 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   .chc-worship-time { font-size: 18px; }
 
   /* 섹션 머리말: '전체 보기'는 제목 아래로 */
-  .chc-head { padding-right: 0; margin-bottom: 24px; }
-  .chc-head-more { position: static; margin-top: 12px; padding: 6px 0; }
+  .chc-head { padding-right: 104px; margin-bottom: 20px; }
+  .chc-head-more { bottom: -8px; padding: 12px 0; font-size: 13px; white-space: nowrap; }
 
   /* 설교: 대표 1장 크게 + 나머지는 가로 2열 */
   .chc-sermon-feature { grid-template-columns: 1fr; gap: 14px; }
   .chc-sermon-hero-cap { padding: 16px 18px; }
   .chc-sermon-hero-title { font-size: 18px; }
   .chc-play { width: 48px; height: 48px; }
-  .chc-sermon-grid { gap: 16px 12px; margin-top: 16px; padding-top: 16px; }
+  /* 나머지 설교는 가로 스와이프 카드(다음 카드가 살짝 보이게) */
+  .chc-sermon-grid { display: flex; gap: 12px; margin: 16px -18px 0; padding: 16px 18px 4px; border-top: none; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .chc-sermon-grid::-webkit-scrollbar { display: none; }
+  .chc-sermon-mini { flex: 0 0 64%; scroll-snap-align: start; }
   .chc-sermon-mini-body { padding-top: 8px; }
   .chc-sermon-mini-title { font-size: 13.5px; }
 
   /* 소식: 카테고리당 3건만, 제목은 두 줄까지 */
-  .chc-news-grid { gap: 24px 0; }
+  /* 카테고리 카드를 가로로 넘겨 보기 — 세 묶음이 세로로 길게 쌓이지 않게 */
+  .chc-news-grid { display: flex; gap: 12px; margin: 0 -18px; padding: 0 18px 4px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .chc-news-grid::-webkit-scrollbar { display: none; }
+  .chc-news-card { flex: 0 0 86%; scroll-snap-align: start; background: var(--chc-paper); border: 1px solid var(--chc-line); border-radius: var(--chc-radius); padding: 16px 16px 4px; }
+  .chc-news-card:only-child { flex-basis: 100%; }
+  .chc-news-head { border-bottom-width: 1px; border-bottom-color: var(--chc-line); }
+  .chc-news-head-title { font-size: 17px; }
   .chc-news-list li:nth-child(n+4) { display: none; }
-  .chc-news-list li a { padding: 12px 0; align-items: flex-start; }
+  .chc-news-list li:nth-child(3) a { border-bottom: none; }
+  .chc-news-list li a { padding: 13px 0; min-height: 48px; align-items: flex-start; }
   .chc-news-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.45; }
   .chc-news-date { padding-top: 2px; }
 
@@ -2024,12 +2060,16 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 
   /* 앨범 */
   .chc-gallery-grid, .chc-gallery-grid.count-3, .chc-gallery-grid.count-5 { gap: 8px; }
+  .chc-sermon-hero, .chc-sermon-mini-media, .chc-gallery-media { border-radius: 10px; }
+  .chc-pastor-photo { border-radius: var(--chc-radius); }
   .chc-gallery-cap { padding: 10px 12px; }
   .chc-gallery-cap-title { font-size: 13px; }
 }
 
 @media (max-width: 400px) {
   .chc-hero-title { font-size: 20px; }
-  .chc-sermon-grid { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
+  .chc-sermon-mini { flex-basis: 72%; }
+  .chc-head { padding-right: 96px; }
+  .chc-heading { font-size: 21px; }
   .chc-worship-time { font-size: 17px; }
 }
