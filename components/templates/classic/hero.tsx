@@ -168,7 +168,6 @@ function ClassicSlide({ slide, active, reducedMotion }: { slide: ClassicHeroSlid
       {hasMedia && <span className="chc-hero-scrim" aria-hidden="true" />}
       {hasText && (
         <div className="chc-hero-caption">
-          <span className="chc-hero-rule" aria-hidden="true" />
           {slide.title && <h2 className="chc-hero-title">{slide.title}</h2>}
           {slide.description && <p className="chc-hero-desc">{slide.description}</p>}
           {slide.linkUrl && <span className="chc-hero-cta">자세히 보기</span>}
