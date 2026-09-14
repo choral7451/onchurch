@@ -26,7 +26,7 @@ export function ClassicHero({ slides, churchName }: { slides: ClassicHeroSlide[]
   const hasSlider = total > 1;
   const index = rawIndex < total ? rawIndex : 0;
   const hoverPausedRef = useRef(false);
-  const touchStartX = useRef<number | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const goTo = useCallback((i: number) => setRawIndex(((i % total) + total) % total), [total]);
 
@@ -50,12 +50,19 @@ export function ClassicHero({ slides, churchName }: { slides: ClassicHeroSlide[]
 
   if (total === 0) return null;
 
-  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0]?.clientX ?? null; };
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStart.current = t ? { x: t.clientX, y: t.clientY } : null;
+  };
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (!hasSlider || touchStartX.current == null) return;
-    const dx = (e.changedTouches[0]?.clientX ?? touchStartX.current) - touchStartX.current;
-    touchStartX.current = null;
-    if (Math.abs(dx) < SWIPE_THRESHOLD_PX) return;
+    const start = touchStart.current;
+    touchStart.current = null;
+    const t = e.changedTouches[0];
+    if (!hasSlider || !start || !t) return;
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    // 세로 스크롤 중 손가락이 조금 비껴간 경우엔 넘기지 않는다(가로 이동이 확실히 클 때만).
+    if (Math.abs(dx) < SWIPE_THRESHOLD_PX || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     goTo(dx < 0 ? index + 1 : index - 1);
   };
   const onKeyDown = (e: React.KeyboardEvent) => {

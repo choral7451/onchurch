@@ -40,7 +40,7 @@
 }
 
 /* 기본 element 리셋은 base 레이어에 넣는다. 그래야 Tailwind 유틸리티(utilities 레이어)가
-   버튼 등에서 bg-*/text-*/border-* 를 정상적으로 덮어쓸 수 있다. (레이어 밖이면 유틸리티를 이겨버림) */
+   버튼 등에서 bg-*, text-*, border-* 를 정상적으로 덮어쓸 수 있다. (레이어 밖이면 유틸리티를 이겨버림) */
 @layer base {
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -1661,72 +1661,72 @@ main { flex: 1; }
 }
 
 /* =========================================================
-   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 에버그린·애프리콧으로.
+   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 블랙·화이트 모노톤으로.
    siteTemplate === 'classic' 인 교회의 .app 에 .tpl-classic 이 붙는다(app/[tenant]/layout.tsx).
    ========================================================= */
 .app.tpl-classic {
-  --primary: oklch(0.40 0.075 172);
-  --primary-deep: oklch(0.27 0.05 185);
-  --primary-soft: oklch(0.52 0.08 170);
-  --accent: oklch(0.52 0.13 45);
-  --accent-glow: oklch(0.84 0.09 62);
-  --bg: oklch(0.985 0.004 170);
-  --bg-tinted: oklch(0.955 0.012 170);
-  --surface: oklch(0.998 0.002 170);
-  --surface-2: oklch(0.965 0.008 170);
-  --surface-elevated: oklch(0.998 0.002 170);
-  --ink: oklch(0.22 0.015 210);
-  --ink-2: oklch(0.40 0.015 210);
-  --muted: oklch(0.53 0.012 210);
-  --muted-2: oklch(0.72 0.010 210);
-  --line: oklch(0.905 0.010 190);
-  --line-2: oklch(0.945 0.008 190);
-  --shadow-sm: 0 1px 2px oklch(0.27 0.05 185 / 0.05), 0 2px 8px oklch(0.27 0.05 185 / 0.05);
-  --shadow-md: 0 2px 6px oklch(0.27 0.05 185 / 0.07), 0 12px 32px oklch(0.27 0.05 185 / 0.10);
-  --shadow-lg: 0 8px 24px oklch(0.27 0.05 185 / 0.12), 0 24px 60px oklch(0.27 0.05 185 / 0.14);
+  --primary: oklch(0.18 0 0);
+  --primary-deep: oklch(0.14 0 0);
+  --primary-soft: oklch(0.32 0 0);
+  --accent: oklch(0.18 0 0);
+  --accent-glow: oklch(0.92 0 0);
+  --bg: #ffffff;
+  --bg-tinted: oklch(0.965 0.001 286);
+  --surface: #ffffff;
+  --surface-2: oklch(0.965 0.001 286);
+  --surface-elevated: #ffffff;
+  --ink: oklch(0.17 0 0);
+  --ink-2: oklch(0.36 0 0);
+  --muted: oklch(0.52 0 0);
+  --muted-2: oklch(0.72 0 0);
+  --line: oklch(0.91 0.002 286);
+  --line-2: oklch(0.95 0.001 286);
+  --shadow-sm: 0 1px 2px oklch(0.27 0 0 / 0.05), 0 2px 8px oklch(0.27 0 0 / 0.05);
+  --shadow-md: 0 2px 6px oklch(0.27 0 0 / 0.07), 0 12px 32px oklch(0.27 0 0 / 0.10);
+  --shadow-lg: 0 8px 24px oklch(0.27 0 0 / 0.12), 0 24px 60px oklch(0.27 0 0 / 0.14);
 }
-.tpl-classic .utilbar { color: oklch(0.96 0.01 170); }
-.tpl-classic .nav { background: oklch(0.985 0.004 170 / 0.88); }
+.tpl-classic .utilbar { color: oklch(0.96 0 0); }
+.tpl-classic .nav { background: oklch(0.985 0 0 / 0.88); }
 .tpl-classic .brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; font-weight: 700; }
 .tpl-classic .brand-eng { color: var(--accent); }
 .tpl-classic .brand-mark { border-radius: 4px; background: var(--primary); }
 .tpl-classic .brand-logo { border-radius: 4px; }
-.tpl-classic .nav-link.active, .tpl-classic .nav-drawer-link.active { background: oklch(0.40 0.075 172 / 0.07); }
-.tpl-classic .footer { color: oklch(0.94 0.01 170); }
+.tpl-classic .nav-link.active, .tpl-classic .nav-drawer-link.active { background: oklch(0.40 0 0 / 0.07); }
+.tpl-classic .footer { color: oklch(0.94 0 0); }
 .tpl-classic main:has(.chc-root) + .footer { margin-top: 0; } /* 클래식 홈은 마지막 섹션 여백으로 충분 */
-.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.52 0.13 45 / 0.16), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.52 0.08 170 / 0.35), transparent 60%); }
+.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.52 0 0 / 0.16), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.52 0 0 / 0.35), transparent 60%); }
 .tpl-classic .footer-brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; }
 .tpl-classic .footer h4, .tpl-classic .footer-col h4 { color: var(--accent-glow); }
-.tpl-classic .footer-grid { border-bottom-color: oklch(0.84 0.09 62 / 0.22); }
-.tpl-classic .card-hover:hover, .tpl-classic .quick-card:hover { border-color: oklch(0.52 0.13 45 / 0.6); }
-.tpl-classic .quick-card-icon { background: oklch(0.40 0.075 172 / 0.08); }
-.tpl-classic .worship-table-row.feat { background: linear-gradient(90deg, oklch(0.40 0.075 172 / 0.06), transparent 60%); }
-.tpl-classic .worship-table-row.feat:hover { background: linear-gradient(90deg, oklch(0.40 0.075 172 / 0.1), var(--surface-2) 60%); }
-.tpl-classic .sermon-search:focus { box-shadow: 0 0 0 3px oklch(0.40 0.075 172 / 0.12); }
+.tpl-classic .footer-grid { border-bottom-color: oklch(0.84 0 0 / 0.22); }
+.tpl-classic .card-hover:hover, .tpl-classic .quick-card:hover { border-color: oklch(0.52 0 0 / 0.6); }
+.tpl-classic .quick-card-icon { background: oklch(0.40 0 0 / 0.08); }
+.tpl-classic .worship-table-row.feat { background: linear-gradient(90deg, oklch(0.40 0 0 / 0.06), transparent 60%); }
+.tpl-classic .worship-table-row.feat:hover { background: linear-gradient(90deg, oklch(0.40 0 0 / 0.1), var(--surface-2) 60%); }
+.tpl-classic .sermon-search:focus { box-shadow: 0 0 0 3px oklch(0.40 0 0 / 0.12); }
 .tpl-classic main { background: var(--bg); }
 
 /* =========================================================
    'classic' 템플릿 — 전통형 메인 (.chc-*)
-   기본(모던 네이비) 템플릿과 대비되는 차분한 에버그린·애프리콧·스톤 팔레트, 명조 제목에 둥근 모서리로 현대적으로.
+   기본(모던 네이비) 템플릿과 대비되는 흑백 모노톤(사진이 돋보이게) + 명조 제목 + 둥근 모서리.
    색 토큰은 .chc-root 안에서만 유효하므로 헤더/푸터 등 공용 셸에는 영향 없음.
    ========================================================= */
 .chc-root {
-  --chc-primary: oklch(0.40 0.075 172);
-  --chc-primary-deep: oklch(0.27 0.05 185);
-  --chc-primary-soft: oklch(0.40 0.075 172 / 0.08);
-  --chc-accent: oklch(0.82 0.10 60);
-  --chc-accent-deep: oklch(0.52 0.13 45);
-  --chc-bg: oklch(0.985 0.004 170);
-  --chc-bg-2: oklch(0.955 0.012 170);
-  --chc-paper: oklch(0.998 0.002 170);
-  --chc-ink: oklch(0.22 0.015 210);
-  --chc-ink-2: oklch(0.40 0.015 210);
-  --chc-muted: oklch(0.53 0.012 210);
-  --chc-line: oklch(0.905 0.010 190);
-  --chc-line-2: oklch(0.94 0.008 190);
+  --chc-primary: oklch(0.17 0 0);
+  --chc-primary-deep: oklch(0.14 0 0);
+  --chc-primary-soft: oklch(0.17 0 0 / 0.05);
+  --chc-accent: #ffffff;
+  --chc-accent-deep: oklch(0.17 0 0);
+  --chc-bg: #ffffff;
+  --chc-bg-2: oklch(0.965 0.001 286);
+  --chc-paper: oklch(0.975 0.001 286);
+  --chc-ink: oklch(0.17 0 0);
+  --chc-ink-2: oklch(0.36 0 0);
+  --chc-muted: oklch(0.52 0 0);
+  --chc-line: oklch(0.91 0.002 286);
+  --chc-line-2: oklch(0.95 0.001 286);
   --chc-serif: var(--font-serif-kr), "Noto Serif KR", "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
   --chc-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --chc-shadow: 0 18px 40px -22px oklch(0.27 0.05 185 / 0.45);
+  --chc-shadow: 0 18px 40px -22px oklch(0.27 0 0 / 0.45);
   --chc-radius: 16px;
   --chc-radius-sm: 12px;
   display: block;
@@ -1738,31 +1738,31 @@ main { flex: 1; }
 .chc-root a, .chc-root button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .chc-root a:focus-visible { outline: 2px solid var(--chc-accent-deep); outline-offset: 3px; }
 
-/* 사진 없는 카드용 그라디언트 — 에버그린/애프리콧 계열 */
-.chc-grad-1 { background: linear-gradient(140deg, oklch(0.52 0.08 168), oklch(0.30 0.05 185)) !important; }
-.chc-grad-2 { background: linear-gradient(140deg, oklch(0.86 0.07 70), oklch(0.66 0.12 45)) !important; }
-.chc-grad-3 { background: linear-gradient(150deg, oklch(0.40 0.07 180), oklch(0.66 0.09 140)) !important; }
-.chc-grad-4 { background: linear-gradient(140deg, oklch(0.92 0.03 170), oklch(0.62 0.06 200)) !important; }
+/* 사진 없는 카드용 그라디언트 — 그레이 톤 */
+.chc-grad-1 { background: linear-gradient(140deg, oklch(0.52 0 0), oklch(0.30 0 0)) !important; }
+.chc-grad-2 { background: linear-gradient(140deg, oklch(0.86 0 0), oklch(0.66 0 0)) !important; }
+.chc-grad-3 { background: linear-gradient(150deg, oklch(0.40 0 0), oklch(0.66 0 0)) !important; }
+.chc-grad-4 { background: linear-gradient(140deg, oklch(0.92 0 0), oklch(0.62 0 0)) !important; }
 
 /* ---------- Hero (full-bleed slider) ---------- */
 /* 배너 비율은 기본 템플릿(.top-banner)과 동일한 16:9. 좌우를 꽉 채우며 비율을 그대로 유지한다(높이 제한 없음). */
-.chc-hero { position: relative; width: 100%; overflow: hidden; background: var(--chc-primary-deep); }
+.chc-hero { position: relative; width: 100%; overflow: hidden; touch-action: pan-y; background: var(--chc-primary-deep); }
 .chc-hero-band { background: var(--chc-primary-deep); }
 .chc-hero-track { display: flex; transition: transform 0.7s var(--chc-ease); }
 .chc-hero-track.no-motion { transition: none; }
 .chc-hero-cell { flex: 0 0 100%; display: block; }
 .chc-hero-slide { position: relative; width: 100%; aspect-ratio: 16 / 9; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
-.chc-hero-slide-plain { background: radial-gradient(120% 90% at 20% 10%, oklch(0.44 0.08 175) 0%, var(--chc-primary-deep) 62%); }
-.chc-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0.04 190 / 0.05) 35%, oklch(0.17 0.04 190 / 0.72) 100%); }
+.chc-hero-slide-plain { background: radial-gradient(120% 90% at 20% 10%, oklch(0.44 0 0) 0%, var(--chc-primary-deep) 62%); }
+.chc-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0 0 / 0.05) 35%, oklch(0.17 0 0 / 0.72) 100%); }
 .chc-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.chc-hero-caption { position: relative; z-index: 1; width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 32px 84px; color: oklch(0.99 0.005 170); }
+.chc-hero-caption { position: relative; z-index: 1; width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 32px 84px; color: oklch(0.99 0 0); }
 .chc-hero-rule { display: block; width: 44px; height: 2px; background: var(--chc-accent); margin-bottom: 18px; }
 .chc-hero-title { font-family: var(--chc-serif); font-size: clamp(30px, 4.2vw, 50px); font-weight: 700; letter-spacing: -0.01em; margin: 0; line-height: 1.22; word-break: keep-all; text-shadow: 0 2px 18px oklch(0 0 0 / 0.25); }
 .chc-hero-desc { font-size: clamp(14px, 1.3vw, 17px); line-height: 1.7; opacity: 0.92; margin: 14px 0 0; max-width: 56ch; word-break: keep-all; }
-.chc-hero-cta { display: inline-block; margin-top: 22px; font-size: 13.5px; font-weight: 600; color: var(--chc-accent); border-bottom: 1px solid oklch(0.82 0.10 60 / 0.5); padding-bottom: 3px; transition: border-color 0.2s; }
+.chc-hero-cta { display: inline-block; margin-top: 22px; font-size: 13.5px; font-weight: 600; color: var(--chc-accent); border-bottom: 1px solid oklch(0.82 0 0 / 0.5); padding-bottom: 3px; transition: border-color 0.2s; }
 .chc-hero-cell:hover .chc-hero-cta { border-bottom-color: var(--chc-accent); }
-.chc-hero-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.35); color: oklch(0.99 0.005 170); display: grid; place-items: center; z-index: 3; background: oklch(0.2 0.04 190 / 0.25); transition: background 0.2s var(--chc-ease), border-color 0.2s; }
-.chc-hero-nav:hover { background: oklch(0.2 0.04 190 / 0.55); border-color: var(--chc-accent); }
+.chc-hero-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.35); color: oklch(0.99 0 0); display: grid; place-items: center; z-index: 3; background: oklch(0.2 0 0 / 0.25); transition: background 0.2s var(--chc-ease), border-color 0.2s; }
+.chc-hero-nav:hover { background: oklch(0.2 0 0 / 0.55); border-color: var(--chc-accent); }
 .chc-hero-nav:focus-visible { outline: 2px solid var(--chc-accent); outline-offset: 2px; }
 .chc-hero-nav.prev { left: 24px; }
 .chc-hero-nav.next { right: 24px; }
@@ -1773,10 +1773,10 @@ main { flex: 1; }
 .chc-hero-dot.active span { background: var(--chc-accent); }
 .chc-hero-dot:focus-visible { outline: 2px solid var(--chc-accent); outline-offset: -4px; }
 .chc-hero-ctrl { display: flex; align-items: center; gap: 10px; pointer-events: auto; }
-.chc-hero-pause { width: 32px; height: 32px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.35); color: oklch(0.99 0.005 170); display: grid; place-items: center; background: oklch(0.2 0.04 190 / 0.25); transition: background 0.2s var(--chc-ease), border-color 0.2s; touch-action: manipulation; }
-.chc-hero-pause:hover { border-color: var(--chc-accent); background: oklch(0.2 0.04 190 / 0.55); }
+.chc-hero-pause { width: 32px; height: 32px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.35); color: oklch(0.99 0 0); display: grid; place-items: center; background: oklch(0.2 0 0 / 0.25); transition: background 0.2s var(--chc-ease), border-color 0.2s; touch-action: manipulation; }
+.chc-hero-pause:hover { border-color: var(--chc-accent); background: oklch(0.2 0 0 / 0.55); }
 .chc-hero-pause:focus-visible { outline: 2px solid var(--chc-accent); outline-offset: 2px; }
-.chc-hero-counter { font-family: var(--chc-serif); font-size: 13px; letter-spacing: 0.12em; color: oklch(0.99 0.005 170 / 0.75); font-variant-numeric: tabular-nums; }
+.chc-hero-counter { font-family: var(--chc-serif); font-size: 13px; letter-spacing: 0.12em; color: oklch(0.99 0 0 / 0.75); font-variant-numeric: tabular-nums; }
 .chc-hero-counter b { color: var(--chc-accent); font-weight: 600; }
 .chc-hero-skel { width: 100%; aspect-ratio: 16 / 9; background: var(--chc-primary-deep); }
 
@@ -1802,9 +1802,9 @@ main { flex: 1; }
 .chc-worship-foot { display: flex; justify-content: flex-end; padding-top: 14px; }
 .chc-live-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--chc-primary); color: var(--chc-primary); font-size: 13.5px; font-weight: 700; transition: background 0.2s var(--chc-ease), color 0.2s; }
 .chc-live-btn:hover { background: var(--chc-primary); color: var(--chc-accent); }
-.chc-live-btn.is-live { background: oklch(0.55 0.21 25); border-color: oklch(0.55 0.21 25); color: oklch(0.995 0.005 170); padding: 9px 16px 9px 14px; box-shadow: 0 8px 22px -10px oklch(0.55 0.21 25 / 0.7); }
-.chc-live-btn.is-live:hover { background: oklch(0.48 0.2 25); border-color: oklch(0.48 0.2 25); color: oklch(0.995 0.005 170); }
-.chc-live-dot { width: 9px; height: 9px; border-radius: 50%; background: oklch(0.995 0.005 170); animation: onair-pulse 1.3s ease-in-out infinite; flex-shrink: 0; }
+.chc-live-btn.is-live { background: oklch(0.55 0.21 25); border-color: oklch(0.55 0.21 25); color: oklch(0.995 0 0); padding: 9px 16px 9px 14px; box-shadow: 0 8px 22px -10px oklch(0.55 0.21 25 / 0.7); }
+.chc-live-btn.is-live:hover { background: oklch(0.48 0.2 25); border-color: oklch(0.48 0.2 25); color: oklch(0.995 0 0); }
+.chc-live-dot { width: 9px; height: 9px; border-radius: 50%; background: oklch(0.995 0 0); animation: onair-pulse 1.3s ease-in-out infinite; flex-shrink: 0; }
 .chc-live-text { display: flex; flex-direction: column; line-height: 1.2; gap: 2px; }
 .chc-live-text b { font-size: 13.5px; font-weight: 700; }
 .chc-live-text span { font-size: 11.5px; font-weight: 500; opacity: 0.85; }
@@ -1812,7 +1812,7 @@ main { flex: 1; }
 .chc-worship-row { display: grid; grid-template-columns: 1.3fr auto 1fr; gap: 16px 24px; align-items: baseline; padding: 18px 4px; border-bottom: 1px solid var(--chc-line); }
 .chc-worship-name { font-size: 15.5px; font-weight: 600; color: var(--chc-ink); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
 .chc-worship-row.feat .chc-worship-name { color: var(--chc-primary); }
-.chc-worship-feat { font-size: 11.5px; font-weight: 600; color: var(--chc-accent-deep); border: 1px solid oklch(0.52 0.13 45 / 0.5); padding: 2px 8px; }
+.chc-worship-feat { font-size: 11.5px; font-weight: 600; color: var(--chc-accent-deep); border: 1px solid oklch(0.52 0 0 / 0.5); padding: 2px 8px; }
 .chc-worship-time { font-family: var(--chc-serif); font-size: 20px; font-weight: 600; color: var(--chc-ink); font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -0.01em; }
 .chc-worship-meta { font-size: 13px; color: var(--chc-muted); text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -1823,7 +1823,7 @@ main { flex: 1; }
 .chc-head { position: relative; display: flex; flex-direction: column; align-items: flex-start; margin-bottom: clamp(28px, 4vw, 44px); padding-right: 160px; }
 .chc-eyebrow { display: block; font-family: var(--chc-serif); font-style: italic; font-size: 14px; color: var(--chc-accent-deep); font-weight: 600; }
 .chc-heading { font-family: var(--chc-serif); font-size: clamp(24px, 2.6vw, 32px); font-weight: 700; color: var(--chc-ink); letter-spacing: -0.015em; margin: 8px 0 0; line-height: 1.25; }
-.chc-rule { display: block; width: 36px; height: 2px; background: var(--chc-accent); margin-top: 16px; }
+.chc-rule { display: block; width: 36px; height: 2px; background: var(--chc-primary); margin-top: 16px; }
 .chc-more { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--chc-primary); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: border-color 0.2s; }
 .chc-more:hover { border-bottom-color: var(--chc-primary); }
 .chc-more svg { transition: transform 0.25s var(--chc-ease); }
@@ -1842,13 +1842,13 @@ main { flex: 1; }
 .chc-event-desc { font-size: 13.5px; color: var(--chc-ink-2); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chc-event-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--chc-muted); }
 
-/* ---------- Visit (에버그린 띠) ---------- */
-.chc-visit { background: var(--chc-primary); color: oklch(0.97 0.01 170); }
+/* ---------- Visit (블랙 띠) ---------- */
+.chc-visit { background: var(--chc-primary); color: oklch(0.97 0 0); }
 .chc-visit-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding-top: clamp(40px, 5vw, 56px); padding-bottom: clamp(40px, 5vw, 56px); }
 .chc-visit .chc-eyebrow { color: var(--chc-accent); }
 .chc-visit-title { font-family: var(--chc-serif); font-size: clamp(22px, 2.4vw, 28px); font-weight: 700; margin: 8px 0 0; line-height: 1.3; }
-.chc-visit-desc { font-size: 14.5px; line-height: 1.7; margin: 12px 0 0; color: oklch(0.97 0.01 170 / 0.8); max-width: 52ch; word-break: keep-all; }
-.chc-visit-address { display: flex; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 13.5px; color: oklch(0.97 0.01 170 / 0.85); }
+.chc-visit-desc { font-size: 14.5px; line-height: 1.7; margin: 12px 0 0; color: oklch(0.97 0 0 / 0.8); max-width: 52ch; word-break: keep-all; }
+.chc-visit-address { display: flex; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 13.5px; color: oklch(0.97 0 0 / 0.85); }
 .chc-visit-address svg { color: var(--chc-accent); flex-shrink: 0; }
 .chc-visit-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border: 1px solid var(--chc-accent); color: var(--chc-accent); font-size: 14.5px; font-weight: 700; transition: background 0.2s var(--chc-ease), color 0.2s; }
 .chc-visit-btn:hover { background: var(--chc-accent); color: var(--chc-primary-deep); }
@@ -1857,7 +1857,7 @@ main { flex: 1; }
 /* ---------- Pastor ---------- */
 .chc-pastor { display: grid; grid-template-columns: minmax(240px, 2fr) 3fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
 .chc-pastor-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--chc-bg-2); }
-.chc-pastor-photo::after { content: ""; position: absolute; inset: 12px; border: 1px solid oklch(0.82 0.10 60 / 0.55); pointer-events: none; }
+.chc-pastor-photo::after { content: ""; position: absolute; inset: 12px; border: 1px solid oklch(0.82 0 0 / 0.55); pointer-events: none; }
 .chc-pastor-photo img { width: 100%; height: 100%; object-fit: cover; }
 .chc-pastor-photo-empty { width: 100%; height: 100%; display: grid; place-items: center; font-family: var(--chc-serif); color: var(--chc-muted); font-size: 15px; }
 .chc-pastor-body { display: flex; flex-direction: column; align-items: flex-start; }
@@ -1872,12 +1872,12 @@ main { flex: 1; }
 .chc-sermon-hero { display: block; overflow: hidden; isolation: isolate; }
 .chc-sermon-hero-media { position: relative; aspect-ratio: 16 / 9; background-size: cover; background-position: center; display: flex; align-items: flex-end; transition: transform 0.6s var(--chc-ease); }
 .chc-sermon-hero:hover .chc-sermon-hero-media { transform: scale(1.02); }
-.chc-sermon-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0.04 190 / 0.05) 35%, oklch(0.17 0.04 190 / 0.85) 100%); }
-.chc-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.55); background: oklch(0.2 0.04 190 / 0.35); color: oklch(0.99 0.005 170); display: grid; place-items: center; z-index: 2; transition: background 0.2s var(--chc-ease), border-color 0.2s; }
+.chc-sermon-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(0.2 0 0 / 0.05) 35%, oklch(0.17 0 0 / 0.85) 100%); }
+.chc-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.55); background: oklch(0.2 0 0 / 0.35); color: oklch(0.99 0 0); display: grid; place-items: center; z-index: 2; transition: background 0.2s var(--chc-ease), border-color 0.2s; }
 .chc-play svg { margin-left: 3px; }
 .chc-play.sm { width: 40px; height: 40px; }
 a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hover .chc-play { background: var(--chc-accent); border-color: var(--chc-accent); color: var(--chc-primary-deep); }
-.chc-sermon-hero-cap { position: relative; z-index: 1; padding: 24px 26px; color: oklch(0.99 0.005 170); }
+.chc-sermon-hero-cap { position: relative; z-index: 1; padding: 24px 26px; color: oklch(0.99 0 0); }
 .chc-sermon-tag { display: inline-block; font-size: 12.5px; font-weight: 600; color: var(--chc-accent); }
 .chc-sermon-hero-title { font-family: var(--chc-serif); font-size: clamp(18px, 1.9vw, 24px); font-weight: 700; margin: 8px 0 0; line-height: 1.3; word-break: keep-all; }
 .chc-sermon-hero-sub { display: flex; gap: 12px; font-size: 13px; opacity: 0.8; margin: 8px 0 0; }
@@ -1914,9 +1914,9 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 .chc-gallery-media { position: relative; height: 100%; min-height: 0; aspect-ratio: 4 / 3; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
 .chc-gallery-grid.count-3 .chc-gallery-tile:first-child .chc-gallery-media,
 .chc-gallery-grid.count-5 .chc-gallery-tile:first-child .chc-gallery-media { aspect-ratio: auto; }
-.chc-gallery-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, oklch(0.17 0.04 190 / 0.7)); opacity: 0.9; transition: opacity 0.3s; }
+.chc-gallery-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, oklch(0.17 0 0 / 0.7)); opacity: 0.9; transition: opacity 0.3s; }
 .chc-gallery-tile:hover .chc-gallery-scrim { opacity: 1; }
-.chc-gallery-cap { position: relative; z-index: 1; padding: 14px 16px; color: oklch(0.99 0.005 170); display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; }
+.chc-gallery-cap { position: relative; z-index: 1; padding: 14px 16px; color: oklch(0.99 0 0); display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; }
 .chc-gallery-cap-title { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chc-gallery-cap-count { font-size: 12px; color: var(--chc-accent); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
@@ -1931,10 +1931,10 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 .chc-pastor-photo { border-radius: 20px; }
 .chc-pastor-photo::after { border-radius: 12px; }
 .chc-live-btn, .chc-visit-btn { border-radius: 999px; }
-.chc-worship-feat { border: none; border-radius: 999px; padding: 3px 10px; background: oklch(0.52 0.13 45 / 0.1); }
+.chc-worship-feat { border: none; border-radius: 999px; padding: 3px 10px; background: oklch(0.52 0 0 / 0.1); }
 .chc-visit { background: linear-gradient(135deg, var(--chc-primary) 0%, var(--chc-primary-deep) 100%); }
 .chc-visit-btn { background: var(--chc-accent); color: var(--chc-primary-deep); border-color: var(--chc-accent); }
-.chc-visit-btn:hover { background: oklch(0.88 0.08 64); border-color: oklch(0.88 0.08 64); }
+.chc-visit-btn:hover { background: oklch(0.88 0 0); border-color: oklch(0.88 0 0); }
 .chc-news-list li a:hover .chc-news-title, .chc-event:hover .chc-event-title { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2026,19 +2026,15 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   .chc-sermon-hero-cap { padding: 16px 18px; }
   .chc-sermon-hero-title { font-size: 18px; }
   .chc-play { width: 48px; height: 48px; }
-  /* 나머지 설교는 가로 스와이프 카드(다음 카드가 살짝 보이게) */
-  .chc-sermon-grid { display: flex; gap: 12px; margin: 16px -18px 0; padding: 16px 18px 4px; border-top: none; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-  .chc-sermon-grid::-webkit-scrollbar { display: none; }
-  .chc-sermon-mini { flex: 0 0 64%; scroll-snap-align: start; }
+  /* 나머지 설교는 2열 그리드(가로 스크롤 없음) */
+  .chc-sermon-grid { grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-top: 16px; padding-top: 16px; }
   .chc-sermon-mini-body { padding-top: 8px; }
   .chc-sermon-mini-title { font-size: 13.5px; }
 
   /* 소식: 카테고리당 3건만, 제목은 두 줄까지 */
-  /* 카테고리 카드를 가로로 넘겨 보기 — 세 묶음이 세로로 길게 쌓이지 않게 */
-  .chc-news-grid { display: flex; gap: 12px; margin: 0 -18px; padding: 0 18px 4px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-  .chc-news-grid::-webkit-scrollbar { display: none; }
-  .chc-news-card { flex: 0 0 86%; scroll-snap-align: start; background: var(--chc-paper); border: 1px solid var(--chc-line); border-radius: var(--chc-radius); padding: 16px 16px 4px; }
-  .chc-news-card:only-child { flex-basis: 100%; }
+  /* 카테고리 카드는 세로로 쌓고(가로 스크롤 없음), 카테고리당 3건만 */
+  .chc-news-grid { gap: 12px 0; }
+  .chc-news-card { background: var(--chc-bg); border: 1px solid var(--chc-line); border-radius: var(--chc-radius); padding: 16px 16px 4px; }
   .chc-news-head { border-bottom-width: 1px; border-bottom-color: var(--chc-line); }
   .chc-news-head-title { font-size: 17px; }
   .chc-news-list li:nth-child(n+4) { display: none; }
@@ -2053,7 +2049,14 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
   .chc-event-date b { font-size: 22px; }
   .chc-event-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; font-size: 15px; }
   .chc-event-desc { display: none; }
-  .chc-visit-btn { width: 100%; justify-content: center; min-height: 48px; }
+  /* .chc-container 모바일 padding 단축속성이 위아래 여백을 0으로 덮어쓰므로 여기서 다시 지정 */
+  .chc-visit-inner { padding: 44px 18px 40px; gap: 24px; }
+  .chc-visit-title { font-size: 22px; margin-top: 10px; }
+  .chc-visit-desc { font-size: 14px; margin-top: 10px; }
+  .chc-visit-address { align-items: flex-start; line-height: 1.5; margin-top: 16px; padding-top: 16px; border-top: 1px solid oklch(1 0 0 / 0.14); width: 100%; }
+  .chc-visit-address svg { margin-top: 2px; }
+  .chc-visit-text { width: 100%; }
+  .chc-visit-btn { width: 100%; justify-content: center; min-height: 52px; }
   .chc-pastor-photo { max-width: 100%; aspect-ratio: 4 / 3; }
   .chc-pastor-msg { font-size: 15.5px; line-height: 1.85; -webkit-line-clamp: 5; }
   .chc-guide-wrap { padding-top: 24px; }
@@ -2068,7 +2071,6 @@ a:hover > * > .chc-play, .chc-sermon-hero:hover .chc-play, .chc-sermon-mini:hove
 
 @media (max-width: 400px) {
   .chc-hero-title { font-size: 20px; }
-  .chc-sermon-mini { flex-basis: 72%; }
   .chc-head { padding-right: 96px; }
   .chc-heading { font-size: 21px; }
   .chc-worship-time { font-size: 17px; }
