@@ -1661,15 +1661,15 @@ main { flex: 1; }
 }
 
 /* =========================================================
-   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 화이트 + 슬레이트 네이비로.
+   'classic' 템플릿 셸 팔레트 — 헤더·푸터·서브페이지까지 화이트 + 딥 틸로.
    siteTemplate === 'classic' 인 교회의 .app 에 .tpl-classic 이 붙는다(app/[tenant]/layout.tsx).
    ========================================================= */
 .app.tpl-classic {
-  --primary: oklch(0.33 0.05 258);
-  --primary-deep: oklch(0.26 0.045 260);
-  --primary-soft: oklch(0.45 0.06 256);
-  --accent: oklch(0.33 0.05 258);
-  --accent-glow: oklch(0.86 0.03 250);
+  --primary: oklch(0.42 0.07 205);
+  --primary-deep: oklch(0.30 0.05 212);
+  --primary-soft: oklch(0.52 0.07 200);
+  --accent: oklch(0.42 0.07 205);
+  --accent-glow: oklch(0.88 0.04 195);
   --bg: #ffffff;
   --bg-tinted: oklch(0.965 0.001 286);
   --surface: #ffffff;
@@ -1694,7 +1694,7 @@ main { flex: 1; }
 .tpl-classic .nav-link.active, .tpl-classic .nav-drawer-link.active { background: oklch(0.40 0 0 / 0.07); }
 .tpl-classic .footer { color: oklch(0.94 0 0); }
 .tpl-classic main:has(.chc-root) + .footer { margin-top: 0; } /* 클래식 홈은 마지막 섹션 여백으로 충분 */
-.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.55 0.06 250 / 0.18), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.45 0.06 256 / 0.35), transparent 60%); }
+.tpl-classic .footer::before { background: radial-gradient(800px 400px at 90% 0%, oklch(0.62 0.08 195 / 0.18), transparent 60%), radial-gradient(600px 300px at 10% 100%, oklch(0.52 0.07 200 / 0.35), transparent 60%); }
 .tpl-classic .footer-brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; }
 .tpl-classic .footer h4, .tpl-classic .footer-col h4 { color: var(--accent-glow); }
 .tpl-classic .footer-grid { border-bottom-color: oklch(0.84 0 0 / 0.22); }
@@ -1707,15 +1707,15 @@ main { flex: 1; }
 
 /* =========================================================
    'classic' 템플릿 — 전통형 메인 (.chc-*)
-   기본(모던 네이비) 템플릿과 대비되는 흰 배경 + 슬레이트 네이비 포인트(사진이 돋보이게) + 명조 제목 + 둥근 모서리.
+   기본(모던 네이비) 템플릿과 대비되는 흰 배경 + 딥 틸 포인트(사진이 돋보이게) + 명조 제목 + 둥근 모서리.
    색 토큰은 .chc-root 안에서만 유효하므로 헤더/푸터 등 공용 셸에는 영향 없음.
    ========================================================= */
 .chc-root {
-  --chc-primary: oklch(0.33 0.05 258);
-  --chc-primary-deep: oklch(0.26 0.045 260);
-  --chc-primary-soft: oklch(0.33 0.05 258 / 0.06);
+  --chc-primary: oklch(0.42 0.07 205);
+  --chc-primary-deep: oklch(0.30 0.05 212);
+  --chc-primary-soft: oklch(0.42 0.07 205 / 0.06);
   --chc-accent: #ffffff;
-  --chc-accent-deep: oklch(0.33 0.05 258);
+  --chc-accent-deep: oklch(0.42 0.07 205);
   --chc-bg: #ffffff;
   --chc-bg-2: oklch(0.965 0.001 286);
   --chc-paper: oklch(0.975 0.001 286);
