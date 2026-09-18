@@ -93,8 +93,10 @@ export function CustomPageEditor({ page, onSaved }: Props) {
   async function save() {
     const nextTitle = title.trim();
     const nextSlug = suggestSlug(eng);
+    const nextSummary = summary.trim();
     if (!nextTitle) { setErrMsg("페이지 이름을 입력해주세요."); return; }
     if (!nextSlug) { setErrMsg("영문 이름을 입력해주세요. 주소로도 함께 쓰입니다."); return; }
+    if (!nextSummary) { setErrMsg("한 줄 요약을 입력해주세요."); return; }
     setSaving(true);
     setErrMsg("");
     setSavedMsg("");
@@ -102,7 +104,7 @@ export function CustomPageEditor({ page, onSaved }: Props) {
     const input = {
       slug: nextSlug,
       title: nextTitle,
-      summary: summary.trim() || null,
+      summary: nextSummary,
       blocks: blocks.filter((b) => !isBlockEmpty(b)),
       isActive: page?.isActive ?? true,
     };
@@ -162,17 +164,15 @@ export function CustomPageEditor({ page, onSaved }: Props) {
       <div className="admin-section-body">
         <div className="form-grid">
           <div className="form-row">
-            <label htmlFor="cp-eng">영문 이름</label>
-            <input id="cp-eng" value={eng} maxLength={80} placeholder="Vision" onChange={(e) => setEng(e.target.value)} />
-            <span className="form-hint">제목 위에 작게 표시되고, 주소로도 쓰입니다 — /p/{suggestSlug(eng) || "vision"}</span>
+            <label htmlFor="cp-title">페이지 이름 <span className="required-mark" aria-hidden="true">*</span></label>
+            <input id="cp-title" value={title} maxLength={100} placeholder="비전" onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="form-row">
-            <label htmlFor="cp-title">페이지 이름</label>
-            <input id="cp-title" value={title} maxLength={100} placeholder="비전" onChange={(e) => setTitle(e.target.value)} />
-            <span className="form-hint">네비게이션과 제목에 이 이름으로 나옵니다.</span>
+            <label htmlFor="cp-eng">영문 이름 <span className="required-mark" aria-hidden="true">*</span></label>
+            <input id="cp-eng" value={eng} maxLength={80} placeholder="Vision" onChange={(e) => setEng(e.target.value)} />
           </div>
           <div className="form-row full">
-            <label htmlFor="cp-summary">한 줄 요약</label>
+            <label htmlFor="cp-summary">한 줄 요약 <span className="required-mark" aria-hidden="true">*</span></label>
             <input
               id="cp-summary"
               value={summary}
@@ -180,7 +180,6 @@ export function CustomPageEditor({ page, onSaved }: Props) {
               placeholder="예: 우리 교회가 바라보는 방향입니다."
               onChange={(e) => setSummary(e.target.value)}
             />
-            <span className="form-hint">제목 아래에 들어가는 안내 문구입니다. 비워두면 표시되지 않습니다.</span>
           </div>
         </div>
 
@@ -262,7 +261,7 @@ function BlockFields({ block: b, patch, pickImages, registerTextArea, wrapSelect
           <div className="cp-toolbar">
             <button type="button" title="굵게" onClick={() => wrapSelection(b.id, "**", "**", "굵은 글자")}><b>B</b></button>
             <button type="button" title="링크" onClick={() => wrapSelection(b.id, "[", "](https://)", "링크 글자")}>🔗</button>
-            <button type="button" title="목록" onClick={() => toggleList(b.id)}>≡</button>
+            <button type="button" title="목록" onClick={() => toggleList(b.id)}>목록</button>
             <span className="cp-toolbar-sep" />
             <Segmented
               value={b.size}

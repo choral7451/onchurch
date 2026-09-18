@@ -1088,8 +1088,8 @@ main { flex: 1; }
 .cp-block { min-width: 0; }
 .cp-h2 { font-size: clamp(21px, 2.4vw, 27px); font-weight: 700; letter-spacing: -0.02em; margin: 0; word-break: keep-all; }
 .cp-h3 { font-size: clamp(17px, 1.8vw, 20px); font-weight: 700; letter-spacing: -0.015em; margin: 0; word-break: keep-all; }
-.cp-text { font-size: 15.5px; line-height: 1.8; color: var(--ink-2); max-width: 78ch; }
-.cp-text.al-center { max-width: none; }
+/* 본문은 컨테이너 폭을 그대로 쓴다 — 폭을 따로 좁히면 제목·구분선과 오른쪽 끝이 어긋난다. */
+.cp-text { font-size: 15.5px; line-height: 1.8; color: var(--ink-2); }
 /* 블록 단위 글자 크기 — 글자마다 크기를 열면 템플릿 타이포가 무너지므로 세 단계만 둔다. */
 .cp-text.sz-sm { font-size: 14px; }
 .cp-text.sz-lg { font-size: 17.5px; line-height: 1.75; }
@@ -1097,7 +1097,6 @@ main { flex: 1; }
 /* 텍스트 블록 미리보기 — 공개 페이지와 같은 .cp-* 클래스로 렌더하므로 실제 화면과 같다. */
 .cp-preview { position: relative; padding: 18px 14px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); }
 .cp-preview-label { position: absolute; top: 6px; left: 12px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-.cp-preview .cp-text { max-width: none; }
 
 /* 텍스트 블록 툴바 */
 .cp-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
