@@ -17,6 +17,15 @@ export type NavItem = {
   children?: string[];
 };
 
+// 커스텀 페이지 네비 항목의 id 접두사. 고정 페이지 id와 섞이지 않게 하고,
+// enabledPages 필터를 통과시켜야 하는지 판단하는 기준이 된다(노출 여부는 서버가 이미 걸러 보낸다).
+// 클라이언트 컴포넌트(nav/footer)에서도 쓰므로 서버 전용 모듈이 아닌 여기에 둔다.
+export const CUSTOM_NAV_PREFIX = "custom:";
+
+export function isCustomNavId(id: string): boolean {
+  return id.startsWith(CUSTOM_NAV_PREFIX);
+}
+
 export type HeroFeature = {
   tag: string;
   title: string;

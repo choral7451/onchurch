@@ -1052,6 +1052,37 @@ export const onchurchChurch = {
     }),
 };
 
+export type CustomPage = {
+  id: number;
+  slug: string;
+  title: string;
+  blocks: unknown;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type CustomPageInput = {
+  slug: string;
+  title: string;
+  blocks: unknown[];
+  isActive: boolean;
+};
+
+export const onchurchCustomPage = {
+  listMine: () =>
+    request<{ pages: CustomPage[] }>("/onchurch/custom-pages/me", { method: "GET", auth: true }),
+  create: (input: CustomPageInput) =>
+    request<CustomPage>("/onchurch/custom-pages/me", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  update: (id: number, input: CustomPageInput) =>
+    request<CustomPage>(`/onchurch/custom-pages/me/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  setActive: (id: number, isActive: boolean) =>
+    request<CustomPage>(`/onchurch/custom-pages/me/${id}/active`, { method: "PUT", auth: true, body: JSON.stringify({ isActive }) }),
+  reorder: (orderedIds: number[]) =>
+    request<{ pages: CustomPage[] }>("/onchurch/custom-pages/me/reorder", { method: "PUT", auth: true, body: JSON.stringify({ orderedIds }) }),
+  remove: (id: number) =>
+    request<unknown>(`/onchurch/custom-pages/me/${id}`, { method: "DELETE", auth: true }),
+};
+
 export type Banner = {
   id: number;
   title: string;

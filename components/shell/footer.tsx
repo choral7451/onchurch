@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
-import type { Brand, NavItem } from "@/lib/types";
+import { type Brand, type NavItem, isCustomNavId } from "@/lib/types";
 import { type Lang, pick, SHELL } from "@/lib/i18n";
 
 type FooterNavGroup = { heading: string; ids: string[] };
@@ -18,7 +18,7 @@ export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang =
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const navById = new Map(nav.map((n) => [n.id, n] as const));
   const isEnabled = (id: string) =>
-    id === "directions" || !enabledPages || enabledPages.length === 0 || enabledPages.includes(id);
+    id === "directions" || isCustomNavId(id) || !enabledPages || enabledPages.length === 0 || enabledPages.includes(id);
 
   const groups = footerNav
     .map((g) => ({

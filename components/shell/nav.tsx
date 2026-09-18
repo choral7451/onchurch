@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
-import type { Brand, NavItem } from "@/lib/types";
+import { type Brand, type NavItem, isCustomNavId } from "@/lib/types";
 import { type Lang, pick, SHELL } from "@/lib/i18n";
 import { AUTH_CHANGE_EVENT, isLoggedInForChurch, onchurchChurch } from "@/lib/api-client";
 import { buildAdminUrl } from "@/lib/site-host";
@@ -39,7 +39,7 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
   };
 
   const visibleNav = enabledPages && enabledPages.length > 0
-    ? nav.filter((item) => item.id === "directions" || enabledPages.includes(item.id))
+    ? nav.filter((item) => item.id === "directions" || isCustomNavId(item.id) || enabledPages.includes(item.id))
     : nav;
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { cache } from "react";
-import type { Brand, NavItem } from "@/lib/types";
+import { type Brand, type NavItem, CUSTOM_NAV_PREFIX } from "@/lib/types";
 import { type Lang, pick, NAV_LABELS, FOOTER_HEADINGS } from "@/lib/i18n";
 import type { HomeCustomLink } from "@/lib/quick-links";
 
@@ -125,10 +125,61 @@ export function getPublicNav(lang: Lang): NavItem[] {
   }));
 }
 
-export function getPublicFooterNav(lang: Lang): { heading: string; ids: string[] }[] {
+export function getPublicFooterNav(lang: Lang, customPageIds: string[] = []): { heading: string; ids: string[] }[] {
   return [
     { heading: pick(lang, FOOTER_HEADINGS.church), ids: ["about", "worship", "directions"] },
     { heading: pick(lang, FOOTER_HEADINGS.content), ids: ["sermons", "notices", "gallery", "community"] },
-    { heading: pick(lang, FOOTER_HEADINGS.more), ids: ["schedule"] },
+    { heading: pick(lang, FOOTER_HEADINGS.more), ids: ["schedule", ...customPageIds] },
   ];
 }
+
+export function customPageNavItems(pages: PublicCustomPage[]): NavItem[] {
+  return pages.map((p) => ({ id: `${CUSTOM_NAV_PREFIX}${p.slug}`, label: p.title, href: `/p/${p.slug}` }));
+}
+
+// 커스텀 페이지를 '찾아오시는 길' 바로 앞에 끼워 넣는다. directions가 없으면 맨 뒤에 붙인다.
+export function withCustomPages(nav: NavItem[], pages: PublicCustomPage[]): NavItem[] {
+  const items = customPageNavItems(pages);
+  if (items.length === 0) return nav;
+  const at = nav.findIndex((n) => n.id === "directions");
+  if (at < 0) return [...nav, ...items];
+  return [...nav.slice(0, at), ...items, ...nav.slice(at)];
+}
+
+export type PublicCustomPage = {
+  id: number;
+  slug: string;
+  title: string;
+  blocks: unknown;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+// 공개 사이트의 커스텀 페이지 목록. 네비·푸터 구성에 쓰이므로 요청당 한 번만 부르도록 cache로 감싼다.
+export const fetchPublicCustomPages = cache(async (slug: string): Promise<PublicCustomPage[]> => {
+  try {
+    const res = await fetch(`${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/custom-pages`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    const pages = body?.item?.pages;
+    return Array.isArray(pages) ? (pages as PublicCustomPage[]) : [];
+  } catch {
+    return [];
+  }
+});
+
+export const fetchPublicCustomPage = cache(async (slug: string, pageSlug: string): Promise<PublicCustomPage | null> => {
+  try {
+    const res = await fetch(
+      `${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/custom-pages/${encodeURIComponent(pageSlug)}`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return null;
+    const body = await res.json();
+    return (body?.item ?? null) as PublicCustomPage | null;
+  } catch {
+    return null;
+  }
+});
