@@ -1094,6 +1094,11 @@ main { flex: 1; }
 .cp-text.sz-sm { font-size: 14px; }
 .cp-text.sz-lg { font-size: 17.5px; line-height: 1.75; }
 
+/* 텍스트 블록 미리보기 — 공개 페이지와 같은 .cp-* 클래스로 렌더하므로 실제 화면과 같다. */
+.cp-preview { position: relative; padding: 18px 14px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); }
+.cp-preview-label { position: absolute; top: 6px; left: 12px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.cp-preview .cp-text { max-width: none; }
+
 /* 텍스트 블록 툴바 */
 .cp-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .cp-toolbar > button { min-width: 34px; height: 30px; padding: 0 9px; font-size: 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--ink-2); cursor: pointer; transition: border-color 0.15s, color 0.15s; }

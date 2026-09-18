@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiError, onchurchCustomPage, uploadImages, type CustomPage } from "@/lib/api-client";
 import { DragHandle } from "@/components/admin/drag-handle";
+// 공개 페이지와 같은 렌더러를 그대로 쓴다 — 미리보기가 실제 화면과 어긋나지 않게.
+import { RichText } from "@/components/custom-page/rich-text";
 import { useDragSort } from "@/lib/use-drag-sort";
 import {
   BLOCK_LABELS,
@@ -276,6 +278,14 @@ function BlockFields({ block: b, patch, pickImages, registerTextArea, wrapSelect
             placeholder="내용을 입력하세요. 글자를 선택한 뒤 위 버튼을 누르면 서식이 적용됩니다."
             onChange={(e) => patch(b.id, { text: e.target.value })}
           />
+          {b.text.trim() && (
+            <div className="cp-preview">
+              <span className="cp-preview-label">미리보기</span>
+              <div className={`cp-text sz-${b.size} al-${b.align}`}>
+                <RichText text={b.text} />
+              </div>
+            </div>
+          )}
         </div>
       );
 
