@@ -25,7 +25,7 @@ function BlockView({ block: b }: { block: CustomPageBlock }) {
         : <h2 className={`cp-h2 al-${b.align}`}>{b.text}</h2>;
 
     case "text":
-      return <div className={`cp-text al-${b.align}`}><RichText text={b.text} /></div>;
+      return <div className={`cp-text sz-${b.size} al-${b.align}`}><RichText text={b.text} /></div>;
 
     case "image": {
       if (b.urls.length === 0) return null;

@@ -1056,6 +1056,7 @@ export type CustomPage = {
   id: number;
   slug: string;
   title: string;
+  summary: string | null;
   blocks: unknown;
   sortOrder: number;
   isActive: boolean;
@@ -1064,6 +1065,7 @@ export type CustomPage = {
 export type CustomPageInput = {
   slug: string;
   title: string;
+  summary: string | null;
   blocks: unknown[];
   isActive: boolean;
 };

@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { normalizeLang } from "@/lib/i18n";
 import { fetchPublicChurch, fetchPublicCustomPage } from "@/lib/public-site";
 import { fetchPublicPastor, buildChurchMetadata } from "@/lib/seo";
-import { normalizeBlocks } from "@/lib/custom-page-blocks";
+import { normalizeBlocks, engFromSlug } from "@/lib/custom-page-blocks";
 import { CustomPageBlocks } from "@/components/custom-page/blocks";
 
 type Params = { params: Promise<{ tenant: string; slug: string }> };
@@ -14,9 +14,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const [church, page] = await Promise.all([fetchPublicChurch(tenant), fetchPublicCustomPage(tenant, slug)]);
   if (!church || !page) return { title: "페이지", robots: { index: false, follow: false } };
   const pastor = await fetchPublicPastor(tenant);
-  // 첫 본문 블록의 앞부분을 설명으로 쓴다(없으면 교회 기본 설명으로 폴백).
+  // 한 줄 요약이 있으면 그것, 없으면 첫 본문 블록의 앞부분을 쓴다(둘 다 없으면 교회 기본 설명).
   const firstText = normalizeBlocks(page.blocks).find((b) => b.type === "text");
-  const desc = firstText && firstText.type === "text" ? firstText.text.replace(/\s+/g, " ").trim().slice(0, 160) : undefined;
+  const fromBody = firstText && firstText.type === "text" ? firstText.text.replace(/\s+/g, " ").trim().slice(0, 160) : undefined;
+  const desc = page.summary?.trim() || fromBody;
   return buildChurchMetadata(church, pastor, {
     pageTitle: page.title,
     path: `/p/${page.slug}`,
@@ -37,7 +38,7 @@ export default async function CustomPage({ params }: Params) {
 
   return (
     <div>
-      <PageHeader eyebrow="PAGE" title={page.title} />
+      <PageHeader eyebrow={engFromSlug(page.slug)} title={page.title} sub={page.summary?.trim() || undefined} />
       <section className="section">
         <div className="container">
           {blocks.length > 0 ? (

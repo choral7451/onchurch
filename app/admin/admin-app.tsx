@@ -97,7 +97,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | `custom:${number}`;
+type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
 
 type NavGroup = "home" | "saints";
 
@@ -313,9 +313,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   // 템플릿마다 홈 섹션 구성이 다르다(classic만 소식·갤러리 보유). 마스터도 바꿀 수 있고 여기서도 바꾼다.
   const [siteTemplate, setSiteTemplate] = useState<string>(DEFAULT_TEMPLATE_ID);
   const [templateSaving, setTemplateSaving] = useState(false);
-  // 교회가 직접 만든 커스텀 페이지. 고정 페이지와 달리 개수가 가변이라 서버에서 목록을 받아 쓴다.
-  const [customPages, setCustomPages] = useState<CustomPage[]>([]);
-  const [customPageBusy, setCustomPageBusy] = useState(false);
+  // 교회가 직접 꾸미는 자유 페이지. 한 교회에 하나이며, 없으면 아직 저장하지 않은 상태다.
+  const [customPage, setCustomPage] = useState<CustomPage | null>(null);
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
   const [homeQuickLinks, setHomeQuickLinks] = useState<string[]>([]);
   const [quickLimitMsg, setQuickLimitMsg] = useState("");
@@ -683,52 +682,28 @@ export function AdminApp({ initial }: { initial: Initial }) {
     (async () => {
       try {
         const { pages } = await onchurchCustomPage.listMine();
-        if (!cancelled) setCustomPages(pages ?? []);
+        if (!cancelled) setCustomPage(pages?.[0] ?? null);
       } catch {
-        // 목록을 못 받아도 나머지 관리 기능은 그대로 쓸 수 있게 조용히 넘어간다.
+        // 못 받아도 나머지 관리 기능은 그대로 쓸 수 있게 조용히 넘어간다.
       }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  // 새 페이지는 빈 상태로 만들고 곧바로 편집 화면을 연다.
-  // 이름/주소는 중복되지 않도록 순번을 붙인다(사용자가 바로 고칠 수 있다).
-  async function addCustomPage() {
-    if (customPageBusy) return;
-    setCustomPageBusy(true);
-    try {
-      const used = new Set(customPages.map((p) => p.slug));
-      let n = customPages.length + 1;
-      while (used.has(`page-${n}`)) n += 1;
-      const created = await onchurchCustomPage.create({
-        slug: `page-${n}`,
-        title: `새 페이지 ${n}`,
-        blocks: [],
-        isActive: true,
-      });
-      setCustomPages((prev) => [...prev, created]);
-      openSection(`custom:${created.id}` as SectionKey);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        clearTokens();
-        router.push("/login");
-      }
-    } finally {
-      setCustomPageBusy(false);
-    }
-  }
-
   // 사이드바 토글 — 본문은 그대로 두고 공개 사이트 노출 여부만 바꾼다.
-  async function toggleCustomPage(id: number) {
-    const target = customPages.find((p) => p.id === id);
-    if (!target) return;
-    const next = !target.isActive;
-    setCustomPages((prev) => prev.map((p) => (p.id === id ? { ...p, isActive: next } : p)));
+  // 아직 저장하지 않았으면 켤 내용이 없으므로 편집 화면으로 안내한다.
+  async function toggleCustomPage() {
+    if (!customPage) {
+      openSection("custom-page");
+      return;
+    }
+    const next = !customPage.isActive;
+    setCustomPage({ ...customPage, isActive: next });
     try {
-      await onchurchCustomPage.setActive(id, next);
+      await onchurchCustomPage.setActive(customPage.id, next);
     } catch (err) {
       // 실패하면 화면을 되돌린다(서버 값이 진실).
-      setCustomPages((prev) => prev.map((p) => (p.id === id ? { ...p, isActive: !next } : p)));
+      setCustomPage({ ...customPage, isActive: !next });
       if (err instanceof ApiError && err.status === 401) {
         clearTokens();
         router.push("/login");
@@ -1428,36 +1403,22 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 );
               })}
 
-              {customPages.map((cp) => (
-                <div
-                  key={cp.id}
-                  className={`admin-sidebar-page ${activeSection === `custom:${cp.id}` ? "active" : ""}`}
+              <div className={`admin-sidebar-page ${activeSection === "custom-page" ? "active" : ""}`}>
+                <button
+                  type="button"
+                  className="admin-sidebar-page-label"
+                  onClick={() => openSection("custom-page")}
                 >
-                  <button
-                    type="button"
-                    className="admin-sidebar-page-label"
-                    onClick={() => openSection(`custom:${cp.id}` as SectionKey)}
-                  >
-                    <span>{cp.title}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`toggle ${cp.isActive ? "on" : ""}`}
-                    onClick={() => void toggleCustomPage(cp.id)}
-                    aria-label={`${cp.title} 활성화`}
-                    aria-pressed={cp.isActive}
-                  />
-                </div>
-              ))}
-
-              <button
-                type="button"
-                className="admin-sidebar-add"
-                onClick={() => void addCustomPage()}
-                disabled={customPageBusy}
-              >
-                + 페이지 추가
-              </button>
+                  <span>{customPage?.title?.trim() || "새 페이지"}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`toggle ${customPage?.isActive ? "on" : ""}`}
+                  onClick={() => void toggleCustomPage()}
+                  aria-label="새 페이지 활성화"
+                  aria-pressed={!!customPage?.isActive}
+                />
+              </div>
             </div>
             </>
             )}
@@ -2120,22 +2081,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 );
               })()}
 
-              {activeSection.startsWith("custom:") && (() => {
-                const id = Number(activeSection.slice("custom:".length));
-                const page = customPages.find((p) => p.id === id);
-                if (!page) return null;
-                return (
-                  <CustomPageEditor
-                    key={page.id}
-                    page={page}
-                    onSaved={(saved) => setCustomPages((prev) => prev.map((p) => (p.id === saved.id ? saved : p)))}
-                    onDeleted={(deletedId) => {
-                      setCustomPages((prev) => prev.filter((p) => p.id !== deletedId));
-                      setActiveSection("home-order");
-                    }}
-                  />
-                );
-              })()}
+              {activeSection === "custom-page" && (
+                <CustomPageEditor page={customPage} onSaved={(saved) => setCustomPage(saved)} />
+              )}
 
               {activeSection === "billing" && (
                 <section className="admin-section">

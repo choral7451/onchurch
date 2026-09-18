@@ -11,36 +11,38 @@ import {
   isBlockEmpty,
   normalizeBlocks,
   suggestSlug,
+  engFromSlug,
   type BlockType,
   type CustomPageBlock,
 } from "@/lib/custom-page-blocks";
 
 type Props = {
-  page: CustomPage;
+  // 아직 만들지 않았으면 null — 저장 시점에 생성한다.
+  page: CustomPage | null;
   onSaved: (page: CustomPage) => void;
-  onDeleted: (id: number) => void;
 };
 
-type Status = "idle" | "saving" | "deleting";
-
-export function CustomPageEditor({ page, onSaved, onDeleted }: Props) {
-  const [title, setTitle] = useState(page.title);
-  const [slug, setSlug] = useState(page.slug);
-  const [blocks, setBlocks] = useState<CustomPageBlock[]>(() => normalizeBlocks(page.blocks));
-  const [status, setStatus] = useState<Status>("idle");
+export function CustomPageEditor({ page, onSaved }: Props) {
+  const [title, setTitle] = useState(page?.title ?? "");
+  // 영문 이름 하나로 주소(slug)와 제목 위 eyebrow를 함께 만든다.
+  const [eng, setEng] = useState(page?.slug ? engFromSlug(page.slug) : "");
+  const [summary, setSummary] = useState(page?.summary ?? "");
+  const [blocks, setBlocks] = useState<CustomPageBlock[]>(() => normalizeBlocks(page?.blocks));
+  const [saving, setSaving] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<string | null>(null);
+  const textAreas = useRef(new Map<string, HTMLTextAreaElement>());
 
-  // 사이드바에서 다른 페이지를 고르면 폼을 그 페이지로 갈아끼운다.
   useEffect(() => {
-    setTitle(page.title);
-    setSlug(page.slug);
-    setBlocks(normalizeBlocks(page.blocks));
+    setTitle(page?.title ?? "");
+    setEng(page?.slug ? engFromSlug(page.slug) : "");
+    setSummary(page?.summary ?? "");
+    setBlocks(normalizeBlocks(page?.blocks));
     setErrMsg("");
     setSavedMsg("");
-  }, [page.id, page.title, page.slug, page.blocks]);
+  }, [page?.id, page?.title, page?.slug, page?.summary, page?.blocks]);
 
   const { getItemProps } = useDragSort(blocks.length, (from, to) => {
     if (from === to) return;
@@ -88,101 +90,118 @@ export function CustomPageEditor({ page, onSaved, onDeleted }: Props) {
 
   async function save() {
     const nextTitle = title.trim();
-    const nextSlug = slug.trim().toLowerCase();
+    const nextSlug = suggestSlug(eng);
     if (!nextTitle) { setErrMsg("페이지 이름을 입력해주세요."); return; }
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(nextSlug)) {
-      setErrMsg("주소는 영문 소문자·숫자·하이픈만 사용할 수 있습니다.");
-      return;
-    }
-    setStatus("saving");
+    if (!nextSlug) { setErrMsg("영문 이름을 입력해주세요. 주소로도 함께 쓰입니다."); return; }
+    setSaving(true);
     setErrMsg("");
     setSavedMsg("");
+    // 비어 있는 블록은 저장하지 않는다 — 공개 페이지에 빈 자리로 남지 않도록.
+    const input = {
+      slug: nextSlug,
+      title: nextTitle,
+      summary: summary.trim() || null,
+      blocks: blocks.filter((b) => !isBlockEmpty(b)),
+      isActive: page?.isActive ?? true,
+    };
     try {
-      // 비어 있는 블록은 저장하지 않는다 — 공개 페이지에 빈 자리로 남지 않도록.
-      const saved = await onchurchCustomPage.update(page.id, {
-        slug: nextSlug,
-        title: nextTitle,
-        blocks: blocks.filter((b) => !isBlockEmpty(b)),
-        isActive: page.isActive,
-      });
+      const saved = page ? await onchurchCustomPage.update(page.id, input) : await onchurchCustomPage.create(input);
+      setEng(engFromSlug(saved.slug));
       onSaved(saved);
       setSavedMsg("저장했습니다.");
       window.setTimeout(() => setSavedMsg(""), 2500);
     } catch (err) {
       setErrMsg(err instanceof ApiError ? err.message : "저장에 실패했습니다.");
     } finally {
-      setStatus("idle");
+      setSaving(false);
     }
   }
 
-  async function remove() {
-    if (!window.confirm(`'${page.title}' 페이지를 삭제할까요? 되돌릴 수 없습니다.`)) return;
-    setStatus("deleting");
-    setErrMsg("");
-    try {
-      await onchurchCustomPage.remove(page.id);
-      onDeleted(page.id);
-    } catch (err) {
-      setErrMsg(err instanceof ApiError ? err.message : "삭제에 실패했습니다.");
-      setStatus("idle");
-    }
+  // 텍스트 블록 툴바 — 선택한 부분을 마크다운 서식으로 감싼다.
+  // 문법을 몰라도 쓸 수 있게 하되, 저장되는 건 여전히 HTML이 아닌 텍스트다.
+  function wrapSelection(blockId: string, before: string, after: string, placeholder: string) {
+    const ta = textAreas.current.get(blockId);
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const value = ta.value;
+    const picked = value.slice(start, end) || placeholder;
+    const next = `${value.slice(0, start)}${before}${picked}${after}${value.slice(end)}`;
+    patch(blockId, { text: next });
+    // 감싼 내용이 선택된 채로 남아 바로 덮어쓸 수 있게 한다.
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start + before.length, start + before.length + picked.length);
+    });
   }
 
-  const publicUrl = `/p/${slug || page.slug}`;
+  function toggleList(blockId: string) {
+    const ta = textAreas.current.get(blockId);
+    if (!ta) return;
+    const value = ta.value;
+    const lineStart = value.lastIndexOf("\n", Math.max(0, ta.selectionStart - 1)) + 1;
+    const lineEndRaw = value.indexOf("\n", ta.selectionEnd);
+    const lineEnd = lineEndRaw < 0 ? value.length : lineEndRaw;
+    const lines = value.slice(lineStart, lineEnd).split("\n");
+    const allListed = lines.every((l) => l.trim().startsWith("- "));
+    const next = lines.map((l) => (allListed ? l.replace(/^\s*-\s/, "") : `- ${l}`)).join("\n");
+    patch(blockId, { text: `${value.slice(0, lineStart)}${next}${value.slice(lineEnd)}` });
+    requestAnimationFrame(() => ta.focus());
+  }
 
   return (
     <section className="admin-section">
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">CUSTOM PAGE</div>
-        <h2>{page.title || "커스텀 페이지"}</h2>
-        <p>페이지 이름과 주소를 정하고, 아래에 블록을 쌓아 내용을 꾸밉니다.</p>
+        <h2>새 페이지</h2>
+        <p>페이지 이름을 정하고 블록을 쌓아 자유롭게 꾸밉니다. 공개 여부는 왼쪽 목록의 토글로 바꿉니다.</p>
       </div>
 
       <div className="admin-section-body">
         <div className="form-grid">
           <div className="form-row">
-            <label htmlFor="cp-title">페이지 이름</label>
-            <input
-              id="cp-title"
-              value={title}
-              maxLength={100}
-              placeholder="예: 비전"
-              onChange={(e) => {
-                const v = e.target.value;
-                setTitle(v);
-                // 주소를 아직 정하지 않았을 때만 제목에서 제안값을 채운다.
-                if (!page.slug && !slug) setSlug(suggestSlug(v));
-              }}
-            />
-            <span className="form-hint">네비게이션에 이 이름으로 나옵니다.</span>
+            <label htmlFor="cp-eng">영문 이름</label>
+            <input id="cp-eng" value={eng} maxLength={80} placeholder="Vision" onChange={(e) => setEng(e.target.value)} />
+            <span className="form-hint">제목 위에 작게 표시되고, 주소로도 쓰입니다 — /p/{suggestSlug(eng) || "vision"}</span>
           </div>
           <div className="form-row">
-            <label htmlFor="cp-slug">주소</label>
+            <label htmlFor="cp-title">페이지 이름</label>
+            <input id="cp-title" value={title} maxLength={100} placeholder="비전" onChange={(e) => setTitle(e.target.value)} />
+            <span className="form-hint">네비게이션과 제목에 이 이름으로 나옵니다.</span>
+          </div>
+          <div className="form-row full">
+            <label htmlFor="cp-summary">한 줄 요약</label>
             <input
-              id="cp-slug"
-              value={slug}
-              maxLength={80}
-              placeholder="vision"
-              onChange={(e) => setSlug(e.target.value)}
+              id="cp-summary"
+              value={summary}
+              maxLength={200}
+              placeholder="예: 우리 교회가 바라보는 방향입니다."
+              onChange={(e) => setSummary(e.target.value)}
             />
-            <span className="form-hint">{publicUrl}</span>
+            <span className="form-hint">제목 아래에 들어가는 안내 문구입니다. 비워두면 표시되지 않습니다.</span>
           </div>
         </div>
 
         <div className="cp-editor-blocks">
-          {blocks.length === 0 && (
-            <p className="cp-editor-empty">아래에서 블록을 추가해 내용을 채워보세요.</p>
-          )}
+          {blocks.length === 0 && <p className="cp-editor-empty">아래에서 블록을 추가해 내용을 채워보세요.</p>}
           {blocks.map((b, idx) => (
             <div key={b.id} className="cp-editor-block" {...getItemProps(idx)}>
               <div className="cp-editor-block-head">
                 <DragHandle />
                 <strong>{BLOCK_LABELS[b.type].title}</strong>
-                <button type="button" className="btn btn-ghost cp-btn-sm" onClick={() => removeBlock(b.id)}>
-                  삭제
-                </button>
+                <button type="button" className="btn btn-ghost cp-btn-sm" onClick={() => removeBlock(b.id)}>삭제</button>
               </div>
-              <BlockFields block={b} patch={patch} pickImages={pickImages} />
+              <BlockFields
+                block={b}
+                patch={patch}
+                pickImages={pickImages}
+                registerTextArea={(id, el) => {
+                  if (el) textAreas.current.set(id, el);
+                  else textAreas.current.delete(id);
+                }}
+                wrapSelection={wrapSelection}
+                toggleList={toggleList}
+              />
             </div>
           ))}
         </div>
@@ -202,11 +221,8 @@ export function CustomPageEditor({ page, onSaved, onDeleted }: Props) {
         {savedMsg && <p className="cp-editor-saved">{savedMsg}</p>}
 
         <div className="cp-editor-actions">
-          <button type="button" className="btn btn-primary" onClick={() => void save()} disabled={status !== "idle"}>
-            {status === "saving" ? "저장 중…" : "저장"}
-          </button>
-          <button type="button" className="btn btn-ghost" onClick={() => void remove()} disabled={status !== "idle"}>
-            페이지 삭제
+          <button type="button" className="btn btn-primary" onClick={() => void save()} disabled={saving}>
+            {saving ? "저장 중…" : "저장"}
           </button>
         </div>
       </div>
@@ -220,20 +236,19 @@ type FieldProps = {
   block: CustomPageBlock;
   patch: (id: string, changes: Partial<CustomPageBlock>) => void;
   pickImages: (blockId: string) => void;
+  registerTextArea: (id: string, el: HTMLTextAreaElement | null) => void;
+  wrapSelection: (blockId: string, before: string, after: string, placeholder: string) => void;
+  toggleList: (blockId: string) => void;
 };
 
-function BlockFields({ block: b, patch, pickImages }: FieldProps) {
+function BlockFields({ block: b, patch, pickImages, registerTextArea, wrapSelection, toggleList }: FieldProps) {
   switch (b.type) {
     case "heading":
       return (
         <div className="cp-editor-fields">
           <input value={b.text} placeholder="소제목" maxLength={120} onChange={(e) => patch(b.id, { text: e.target.value })} />
           <div className="cp-editor-opts">
-            <Segmented
-              value={String(b.level)}
-              options={[["2", "크게"], ["3", "작게"]]}
-              onChange={(v) => patch(b.id, { level: v === "3" ? 3 : 2 })}
-            />
+            <Segmented value={String(b.level)} options={[["2", "크게"], ["3", "작게"]]} onChange={(v) => patch(b.id, { level: v === "3" ? 3 : 2 })} />
             <AlignOpt value={b.align} onChange={(align) => patch(b.id, { align })} />
           </div>
         </div>
@@ -242,15 +257,25 @@ function BlockFields({ block: b, patch, pickImages }: FieldProps) {
     case "text":
       return (
         <div className="cp-editor-fields">
-          <textarea
-            value={b.text}
-            rows={6}
-            placeholder={"내용을 입력하세요.\n\n**굵게**, [링크](https://...), '- '로 시작하면 목록이 됩니다."}
-            onChange={(e) => patch(b.id, { text: e.target.value })}
-          />
-          <div className="cp-editor-opts">
+          <div className="cp-toolbar">
+            <button type="button" title="굵게" onClick={() => wrapSelection(b.id, "**", "**", "굵은 글자")}><b>B</b></button>
+            <button type="button" title="링크" onClick={() => wrapSelection(b.id, "[", "](https://)", "링크 글자")}>🔗</button>
+            <button type="button" title="목록" onClick={() => toggleList(b.id)}>≡</button>
+            <span className="cp-toolbar-sep" />
+            <Segmented
+              value={b.size}
+              options={[["sm", "작게"], ["md", "보통"], ["lg", "크게"]]}
+              onChange={(v) => patch(b.id, { size: v as "sm" | "md" | "lg" })}
+            />
             <AlignOpt value={b.align} onChange={(align) => patch(b.id, { align })} />
           </div>
+          <textarea
+            ref={(el) => registerTextArea(b.id, el)}
+            value={b.text}
+            rows={6}
+            placeholder="내용을 입력하세요. 글자를 선택한 뒤 위 버튼을 누르면 서식이 적용됩니다."
+            onChange={(e) => patch(b.id, { text: e.target.value })}
+          />
         </div>
       );
 
@@ -262,19 +287,11 @@ function BlockFields({ block: b, patch, pickImages }: FieldProps) {
               <div key={`${url}-${i}`} className="cp-editor-thumb">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="" />
-                <button
-                  type="button"
-                  aria-label="사진 제거"
-                  onClick={() => patch(b.id, { urls: b.urls.filter((_, j) => j !== i) })}
-                >
-                  ×
-                </button>
+                <button type="button" aria-label="사진 제거" onClick={() => patch(b.id, { urls: b.urls.filter((_, j) => j !== i) })}>×</button>
               </div>
             ))}
             {b.urls.length < 3 && (
-              <button type="button" className="cp-editor-thumb-add" onClick={() => pickImages(b.id)}>
-                + 사진
-              </button>
+              <button type="button" className="cp-editor-thumb-add" onClick={() => pickImages(b.id)}>+ 사진</button>
             )}
           </div>
           <input value={b.caption} placeholder="설명 (선택)" maxLength={200} onChange={(e) => patch(b.id, { caption: e.target.value })} />
@@ -316,9 +333,7 @@ function Segmented({ value, options, onChange }: { value: string; options: [stri
   return (
     <div className="cp-seg">
       {options.map(([v, label]) => (
-        <button key={v} type="button" className={value === v ? "active" : ""} onClick={() => onChange(v)}>
-          {label}
-        </button>
+        <button key={v} type="button" className={value === v ? "active" : ""} onClick={() => onChange(v)}>{label}</button>
       ))}
     </div>
   );
@@ -326,10 +341,6 @@ function Segmented({ value, options, onChange }: { value: string; options: [stri
 
 function AlignOpt({ value, onChange }: { value: "left" | "center"; onChange: (v: "left" | "center") => void }) {
   return (
-    <Segmented
-      value={value}
-      options={[["left", "왼쪽"], ["center", "가운데"]]}
-      onChange={(v) => onChange(v === "center" ? "center" : "left")}
-    />
+    <Segmented value={value} options={[["left", "왼쪽"], ["center", "가운데"]]} onChange={(v) => onChange(v === "center" ? "center" : "left")} />
   );
 }

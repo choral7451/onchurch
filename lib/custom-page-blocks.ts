@@ -8,10 +8,12 @@
 
 export type BlockWidth = "normal" | "wide" | "full";
 export type BlockAlign = "left" | "center";
+// 글자 단위가 아니라 블록 단위 크기 — 글자마다 크기를 열면 템플릿 타이포가 무너진다.
+export type BlockSize = "sm" | "md" | "lg";
 
 export type CustomPageBlock =
   | { id: string; type: "heading"; text: string; level: 2 | 3; align: BlockAlign }
-  | { id: string; type: "text"; text: string; align: BlockAlign }
+  | { id: string; type: "text"; text: string; align: BlockAlign; size: BlockSize }
   | { id: string; type: "image"; urls: string[]; caption: string; width: BlockWidth }
   | { id: string; type: "video"; url: string; caption: string }
   | { id: string; type: "button"; label: string; href: string; align: BlockAlign }
@@ -21,7 +23,7 @@ export type BlockType = CustomPageBlock["type"];
 
 export const BLOCK_LABELS: Record<BlockType, { title: string; desc: string }> = {
   heading: { title: "제목", desc: "소제목으로 단락을 나눕니다" },
-  text: { title: "본문", desc: "여러 줄 텍스트. **굵게**, [링크](주소) 사용 가능" },
+  text: { title: "본문", desc: "여러 줄 텍스트. 툴바로 굵게·링크·목록을 넣습니다" },
   image: { title: "이미지", desc: "사진 1~3장을 나란히 배치" },
   video: { title: "영상", desc: "유튜브 주소를 붙여넣으면 재생됩니다" },
   button: { title: "버튼", desc: "다른 페이지나 외부 링크로 이동" },
@@ -39,7 +41,7 @@ export function createBlock(type: BlockType): CustomPageBlock {
     case "heading":
       return { id: newId(), type, text: "", level: 2, align: "left" };
     case "text":
-      return { id: newId(), type, text: "", align: "left" };
+      return { id: newId(), type, text: "", align: "left", size: "md" };
     case "image":
       return { id: newId(), type, urls: [], caption: "", width: "normal" };
     case "video":
@@ -66,7 +68,7 @@ export function normalizeBlocks(raw: unknown): CustomPageBlock[] {
         out.push({ id, type: "heading", text: String(b.text ?? ""), level: b.level === 3 ? 3 : 2, align });
         break;
       case "text":
-        out.push({ id, type: "text", text: String(b.text ?? ""), align });
+        out.push({ id, type: "text", text: String(b.text ?? ""), align, size: b.size === "sm" || b.size === "lg" ? b.size : "md" });
         break;
       case "image": {
         const urls = Array.isArray(b.urls) ? b.urls.filter((u): u is string => typeof u === "string").slice(0, 3) : [];
@@ -118,4 +120,10 @@ export function suggestSlug(title: string): string {
     .replace(/-+/g, "-")
     .slice(0, 80)
     .replace(/^-|-$/g, "");
+}
+
+// 주소(slug)를 제목 위 영문 eyebrow로 되돌린다. .eyebrow가 uppercase로 렌더하므로
+// 영문 이름을 따로 저장하지 않아도 표시상 손실이 없다. (vision → VISION, our-vision → OUR VISION)
+export function engFromSlug(slug: string): string {
+  return slug.replace(/-/g, " ").trim().toUpperCase();
 }

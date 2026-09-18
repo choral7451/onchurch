@@ -150,6 +150,7 @@ export type PublicCustomPage = {
   id: number;
   slug: string;
   title: string;
+  summary: string | null;
   blocks: unknown;
   sortOrder: number;
   isActive: boolean;

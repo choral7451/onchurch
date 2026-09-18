@@ -1084,11 +1084,21 @@ main { flex: 1; }
 .admin-section-body { padding: 24px 32px 32px; display: flex; flex-direction: column; gap: 16px; }
 
 /* 커스텀 페이지 — 공개 본문 블록 */
-.cp-body { display: flex; flex-direction: column; gap: 26px; max-width: 760px; margin: 0 auto; }
+.cp-body { display: flex; flex-direction: column; gap: 26px; }
 .cp-block { min-width: 0; }
 .cp-h2 { font-size: clamp(21px, 2.4vw, 27px); font-weight: 700; letter-spacing: -0.02em; margin: 0; word-break: keep-all; }
 .cp-h3 { font-size: clamp(17px, 1.8vw, 20px); font-weight: 700; letter-spacing: -0.015em; margin: 0; word-break: keep-all; }
-.cp-text { font-size: 15.5px; line-height: 1.8; color: var(--ink-2); }
+.cp-text { font-size: 15.5px; line-height: 1.8; color: var(--ink-2); max-width: 78ch; }
+.cp-text.al-center { max-width: none; }
+/* 블록 단위 글자 크기 — 글자마다 크기를 열면 템플릿 타이포가 무너지므로 세 단계만 둔다. */
+.cp-text.sz-sm { font-size: 14px; }
+.cp-text.sz-lg { font-size: 17.5px; line-height: 1.75; }
+
+/* 텍스트 블록 툴바 */
+.cp-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cp-toolbar > button { min-width: 34px; height: 30px; padding: 0 9px; font-size: 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--ink-2); cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+.cp-toolbar > button:hover { border-color: var(--accent); color: var(--accent); }
+.cp-toolbar-sep { width: 1px; height: 20px; background: var(--line); }
 .cp-para { margin: 0 0 14px; word-break: keep-all; }
 .cp-para:last-child { margin-bottom: 0; }
 .cp-list { margin: 0 0 14px; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
@@ -1099,8 +1109,8 @@ main { flex: 1; }
 .cp-images { display: grid; grid-template-columns: repeat(var(--cp-cols, 1), minmax(0, 1fr)); gap: 10px; }
 .cp-images img { width: 100%; height: auto; display: block; border-radius: 10px; }
 .cp-figure figcaption { margin-top: 10px; font-size: 13px; color: var(--muted); text-align: center; }
-/* 본문 폭을 넘어 좌우로 더 넓게. 전체폭은 컨테이너 여백까지 밀어낸다. */
-.cp-figure.w-wide { width: min(100%, 1000px); margin-left: 50%; transform: translateX(-50%); }
+/* 보통=컨테이너 폭(다른 페이지와 동일), 넓게=컨테이너 밖으로, 전체폭=화면 끝까지. */
+.cp-figure.w-wide { width: min(100vw - 48px, 1600px); margin-left: 50%; transform: translateX(-50%); }
 .cp-figure.w-full { width: 100vw; margin-left: 50%; transform: translateX(-50%); }
 .cp-figure.w-full .cp-images img { border-radius: 0; }
 .cp-video { position: relative; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #000; }
@@ -1119,9 +1129,6 @@ main { flex: 1; }
 }
 
 /* 커스텀 페이지 — 관리자 블록 에디터 */
-.admin-sidebar-add { width: 100%; margin-top: 6px; padding: 10px 12px; font-size: 13px; font-weight: 600; color: var(--accent); background: var(--surface-2); border: 1px dashed var(--line); border-radius: var(--r-md); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-.admin-sidebar-add:hover:not(:disabled) { border-color: var(--accent); background: var(--surface); }
-.admin-sidebar-add:disabled { opacity: 0.6; cursor: default; }
 .cp-btn-sm { font-size: 12.5px; padding: 6px 12px; }
 .cp-editor-blocks { display: flex; flex-direction: column; gap: 10px; }
 .cp-editor-empty { font-size: 13.5px; color: var(--muted); margin: 0; padding: 20px; text-align: center; border: 1px dashed var(--line); border-radius: var(--r-md); }
