@@ -17,8 +17,8 @@ export type SiteTemplateMeta = {
 };
 
 export const SITE_TEMPLATE_META: SiteTemplateMeta[] = [
-  { id: "default", label: "기본", description: "온교회 기본 홈. 섹션 순서·바로가기 커스터마이징 지원" },
-  { id: "modern", label: "모던", description: "슬레이트 네이비 카드형 디자인. 전체폭 히어로 슬라이더 + 소식·갤러리 섹션" },
+  { id: "default", label: "기본", description: "밝은 화이트 배경에 여백이 넉넉한 단정한 스타일" },
+  { id: "modern", label: "모던", description: "슬레이트 네이비 톤에 둥근 카드가 얹힌 감각적인 스타일" },
 ];
 
 // 구 템플릿 ID → 현재 ID. DB에 남아 있는 예전 값을 '읽는 시점'에 흡수하므로,
