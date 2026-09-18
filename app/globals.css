@@ -1101,7 +1101,7 @@ main { flex: 1; }
   background-size: 84% 42%, 24% 18%, 24% 18%, 24% 18%;
   background-position: 50% 14%, 10% 78%, 50% 78%, 90% 78%;
 }
-.admin-template-preview.tpl-classic {
+.admin-template-preview.tpl-modern {
   background-image:
     linear-gradient(#14283d, #14283d),
     linear-gradient(#1e3a5f, #1e3a5f),
@@ -1726,7 +1726,7 @@ main { flex: 1; }
 .tpl-classic .brand-logo { border-radius: 6px; }
 .tpl-classic .nav-link.active, .tpl-classic .nav-drawer-link.active { background: rgb(30 58 95 / 0.07); color: var(--primary); }
 .tpl-classic .footer { background: #0e1b2a; color: #94a5b8; }
-.tpl-classic main:has(.chc-root) + .footer { margin-top: 0; } /* 클래식 홈은 마지막 섹션 여백으로 충분 */
+.tpl-modern main:has(.chc-root) + .footer { margin-top: 0; } /* 클래식 홈은 마지막 섹션 여백으로 충분 */
 .tpl-classic .footer::before { display: none; }
 .tpl-classic .footer-brand-name { font-family: var(--font-serif-kr), "Noto Serif KR", serif; color: #ffffff; }
 .tpl-classic .footer h4, .tpl-classic .footer-col h4 { color: #ffffff; }

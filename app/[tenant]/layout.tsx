@@ -7,6 +7,7 @@ import { DemoCtaSticky } from "@/components/shell/demo-cta-sticky";
 import { fetchPublicChurch, brandFromChurch, getPublicNav, getPublicFooterNav } from "@/lib/public-site";
 import { normalizeLang } from "@/lib/i18n";
 import { getPathPrefix } from "@/lib/path-prefix";
+import { resolveTemplateId } from "@/components/templates/meta";
 import {
   fetchPublicPastor,
   buildChurchMetadata,
@@ -48,7 +49,7 @@ export default async function TenantLayout({
   const lang = normalizeLang(church.siteLang);
 
   return (
-    <div className={`app ${church.siteTemplate === "classic" ? "tpl-classic" : ""}`} lang={lang}>
+    <div className={`app ${resolveTemplateId(church.siteTemplate) === "modern" ? "tpl-modern" : ""}`} lang={lang}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd }}

@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Icon, type IconKey } from "@/components/icons";
 import { GoogleMap } from "@/components/google-map";
 import { LiveBadge } from "@/components/live-badge";
-import { ClassicHero, type ClassicHeroSlide } from "@/components/templates/classic/hero";
-import { ClassicLiveLink } from "@/components/templates/classic/live-link";
+import { ModernHero, type ModernHeroSlide } from "@/components/templates/modern/hero";
+import { ModernLiveLink } from "@/components/templates/modern/live-link";
 import type { PublicChurch } from "@/lib/public-site";
 import { fetchLiveStatus } from "@/lib/public-site";
 import { QUICK_LINK_DEFS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
@@ -95,13 +95,13 @@ function SectionHead({ eyebrow, title, more, aside }: { eyebrow: string; title: 
 
 async function HeroSection({ slug, church }: { slug: string; church: PublicChurch }) {
   const data = await fetchJson<{ banners: PublicBanner[] }>(`/onchurch/sites/${slug}/banners`, { banners: [] });
-  const slides: ClassicHeroSlide[] = data.banners.map((b) => ({
+  const slides: ModernHeroSlide[] = data.banners.map((b) => ({
     id: b.id, title: b.title, description: b.description, imageUrl: b.imageUrl, videoUrl: b.videoUrl, linkUrl: b.linkUrl,
   }));
   if (slides.length === 0) {
     slides.push({ id: null, title: church.name, description: church.tagline, imageUrl: null, videoUrl: null, linkUrl: null });
   }
-  return <ClassicHero slides={slides} churchName={church.name} />;
+  return <ModernHero slides={slides} churchName={church.name} />;
 }
 
 // 배너에 바로 붙는 정보 띠: 대표 예배 시간 / 주소 / 대표 전화.
@@ -199,7 +199,7 @@ async function WorshipSection({ slug, tenant, url, lang, enabled, initialLive, s
           eyebrow="Worship"
           title={pick(lang, { ko: "예배 안내", en: "Worship Times" })}
           more={enabled ? { href: url("/worship"), label: pick(lang, { ko: "전체 예배 안내", en: "All services" }) } : undefined}
-          aside={<ClassicLiveLink slug={tenant} initialLive={initialLive} sermonsHref={sermonsHref} youtubeUrl={youtubeUrl} lang={lang} />}
+          aside={<ModernLiveLink slug={tenant} initialLive={initialLive} sermonsHref={sermonsHref} youtubeUrl={youtubeUrl} lang={lang} />}
         />
         <ul className="chc-worship-list">
           {services.map((w) => (
@@ -457,7 +457,7 @@ async function GallerySection({ slug, url, lang }: { slug: string; url: (p: stri
 
 type Props = { church: PublicChurch; tenant: string; lang: Lang; pathPrefix: string };
 
-export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
+export async function ModernHome({ church, tenant, lang, pathPrefix }: Props) {
   const slug = encodeURIComponent(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
   const enabled = church.enabledPages ?? [];
@@ -491,8 +491,8 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
 
   // 관리자 '홈화면 구성'에서 정한 섹션 순서를 따른다.
-  // 클래식은 공통 섹션에 소식·갤러리가 더해진 목록(CLASSIC_HOME_SECTION_KEYS)을 쓴다.
-  const order = normalizeHomeSectionOrder(church.homeSectionOrder, "classic");
+  // modern은 공통 섹션에 소식·갤러리가 더해진 목록(MODERN_HOME_SECTION_KEYS)을 쓴다.
+  const order = normalizeHomeSectionOrder(church.homeSectionOrder, "modern");
 
   const sections: Record<HomeSectionKey, React.ReactNode> = {
     banner: (

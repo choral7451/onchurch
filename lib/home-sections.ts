@@ -1,3 +1,5 @@
+import { resolveTemplateId } from "@/components/templates/meta";
+
 export type HomeSectionKey =
   | "banner"
   | "events"
@@ -20,9 +22,9 @@ export const HOME_SECTION_KEYS: readonly HomeSectionKey[] = [
   "pastor",
 ] as const;
 
-// 클래식 전용: 공통 섹션 + 소식(말씀 뒤) + 갤러리(맨 끝).
+// modern 전용: 공통 섹션 + 소식(말씀 뒤) + 갤러리(맨 끝).
 // 배열 순서 = 저장된 순서가 없을 때의 기본 배치이자, 새 섹션을 끼워 넣을 기준 위치.
-export const CLASSIC_HOME_SECTION_KEYS: readonly HomeSectionKey[] = [
+export const MODERN_HOME_SECTION_KEYS: readonly HomeSectionKey[] = [
   "banner",
   "events",
   "quick",
@@ -37,11 +39,11 @@ export const CLASSIC_HOME_SECTION_KEYS: readonly HomeSectionKey[] = [
 // 템플릿 ID → 그 템플릿이 렌더하는 섹션 목록. 미등록 템플릿은 공통 목록.
 // 템플릿 추가/매핑은 components/templates/meta.ts·registry.tsx 참고.
 const KEYS_BY_TEMPLATE: Record<string, readonly HomeSectionKey[]> = {
-  classic: CLASSIC_HOME_SECTION_KEYS,
+  modern: MODERN_HOME_SECTION_KEYS,
 };
 
 export function homeSectionKeys(siteTemplate?: string | null): readonly HomeSectionKey[] {
-  return (siteTemplate && KEYS_BY_TEMPLATE[siteTemplate]) || HOME_SECTION_KEYS;
+  return KEYS_BY_TEMPLATE[resolveTemplateId(siteTemplate)] || HOME_SECTION_KEYS;
 }
 
 export const HOME_SECTION_LABELS: Record<HomeSectionKey, { title: string; desc: string }> = {

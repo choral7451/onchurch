@@ -18,5 +18,15 @@ export type SiteTemplateMeta = {
 
 export const SITE_TEMPLATE_META: SiteTemplateMeta[] = [
   { id: "default", label: "기본", description: "온교회 기본 홈. 섹션 순서·바로가기 커스터마이징 지원" },
-  { id: "classic", label: "모던", description: "슬레이트 네이비 카드형 디자인. 전체폭 히어로 슬라이더 + 소식·갤러리 섹션" },
+  { id: "modern", label: "모던", description: "슬레이트 네이비 카드형 디자인. 전체폭 히어로 슬라이더 + 소식·갤러리 섹션" },
 ];
+
+// 구 템플릿 ID → 현재 ID. DB에 남아 있는 예전 값을 '읽는 시점'에 흡수하므로,
+// 데이터 마이그레이션 전후 어느 쪽이든 같은 템플릿이 렌더된다.
+// (classic은 2026-09-18 modern으로 개명 — 디자인이 전통형에서 카드형으로 개편되면서 이름이 실제와 어긋났다.)
+const LEGACY_TEMPLATE_IDS: Record<string, string> = { classic: "modern" };
+
+export function resolveTemplateId(siteTemplate?: string | null): string {
+  const id = siteTemplate?.trim() || DEFAULT_TEMPLATE_ID;
+  return LEGACY_TEMPLATE_IDS[id] ?? id;
+}

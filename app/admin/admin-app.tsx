@@ -48,7 +48,7 @@ import { QrCodesBlock } from "./page-editors/qr-codes";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, isCustomLinkReady, type HomeCustomLink } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
-import { DEFAULT_TEMPLATE_ID } from "@/components/templates/meta";
+import { DEFAULT_TEMPLATE_ID, resolveTemplateId } from "@/components/templates/meta";
 import { type Lang, normalizeLang } from "@/lib/i18n";
 
 type Initial = {
@@ -463,7 +463,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);
           }
-          const template = c.siteTemplate?.trim() || DEFAULT_TEMPLATE_ID;
+          const template = resolveTemplateId(c.siteTemplate);
           setSiteTemplate(template);
           setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? [], template));
           setIsPublished(c.isPublished);
@@ -1821,9 +1821,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     ) keys.push("quick");
                     if (boards["worship"]) keys.push("worship");
                     if (boards["sermons"]) keys.push("sermons");
-                    if (siteTemplate === "classic" && boards["notices"]) keys.push("news");
+                    if (siteTemplate === "modern" && boards["notices"]) keys.push("news");
                     keys.push("visit", "pastor");
-                    if (siteTemplate === "classic" && boards["gallery"]) keys.push("gallery");
+                    if (siteTemplate === "modern" && boards["gallery"]) keys.push("gallery");
                     return keys;
                   })()}
                   siteTemplate={siteTemplate}

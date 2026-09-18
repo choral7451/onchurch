@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type ClassicHeroSlide = {
+export type ModernHeroSlide = {
   id: number | null;
   title: string;
   description: string | null;
@@ -18,7 +18,7 @@ const SWIPE_THRESHOLD_PX = 40;
 // - 자동 넘김: 마우스 올리거나 포커스 중엔 잠시 멈추고, 일시정지 버튼으로 완전히 멈출 수 있다.
 // - prefers-reduced-motion 이면 자동 넘김·배경 영상 자동재생을 끈다.
 // - 모바일 스와이프 / 키보드 좌우 화살표 / 점(dot) 탭 모두 지원.
-export function ClassicHero({ slides, churchName }: { slides: ClassicHeroSlide[]; churchName: string }) {
+export function ModernHero({ slides, churchName }: { slides: ModernHeroSlide[]; churchName: string }) {
   const [rawIndex, setRawIndex] = useState(0);
   const [userPaused, setUserPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -87,7 +87,7 @@ export function ClassicHero({ slides, churchName }: { slides: ClassicHeroSlide[]
     >
       <div className={`chc-hero-track ${reducedMotion ? "no-motion" : ""}`} style={{ transform: `translateX(-${index * 100}%)` }}>
         {slides.map((s, i) => (
-          <ClassicSlide key={s.id ?? `slide-${i}`} slide={s} active={i === index} reducedMotion={reducedMotion} />
+          <ModernSlide key={s.id ?? `slide-${i}`} slide={s} active={i === index} reducedMotion={reducedMotion} />
         ))}
       </div>
 
@@ -143,7 +143,7 @@ export function ClassicHero({ slides, churchName }: { slides: ClassicHeroSlide[]
   );
 }
 
-function ClassicSlide({ slide, active, reducedMotion }: { slide: ClassicHeroSlide; active: boolean; reducedMotion: boolean }) {
+function ModernSlide({ slide, active, reducedMotion }: { slide: ModernHeroSlide; active: boolean; reducedMotion: boolean }) {
   const hasText = Boolean(slide.title || slide.description);
   const isVideo = Boolean(slide.videoUrl);
   const hasMedia = Boolean(slide.imageUrl || isVideo);

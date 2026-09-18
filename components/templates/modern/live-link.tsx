@@ -18,7 +18,7 @@ type Props = {
 // - 온에어: 빨간 점 + '지금 예배 중' → 말씀 페이지(페이지 안에서 바로 재생)
 // - 오프: 표시하지 않음
 // LiveBadge/SermonLive 와 같은 주기(90초)로 live-status 를 폴링해 자동 갱신한다.
-export function ClassicLiveLink({ slug, initialLive, sermonsHref, youtubeUrl, lang }: Props) {
+export function ModernLiveLink({ slug, initialLive, sermonsHref, youtubeUrl, lang }: Props) {
   const [live, setLive] = useState(initialLive);
 
   useEffect(() => {
