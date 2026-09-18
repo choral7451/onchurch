@@ -464,7 +464,7 @@ export default async function TenantHome({ params }: { params: Promise<{ tenant:
   const sermonsEnabled = isPageEnabled("sermons");
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
 
-  const sections: Record<HomeSectionKey, React.ReactNode> = {
+  const sections: Partial<Record<HomeSectionKey, React.ReactNode>> = {
     banner: (
       <Suspense fallback={null}>
         <TopBannerSection slug={slug} />

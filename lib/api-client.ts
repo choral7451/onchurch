@@ -33,6 +33,9 @@ export type Church = {
   homeQuickLinks: string[];
   homeCustomLink: HomeCustomLink | null;
   siteLang: Lang;
+  // 공개 홈페이지 템플릿 ID (미지정 시 'default'). 변경은 마스터 전용이고 관리자에서는 읽기만 —
+  // 템플릿마다 홈 섹션 구성이 달라서 '홈화면 순서' 편집에 필요하다.
+  siteTemplate: string;
   isPublished: boolean;
   // 최초 사이트 오픈(첫 공개) 시각. 한 번이라도 오픈하면 채워지고 OFF해도 유지 — 온보딩 완료 판단에 사용.
   firstPublishedAt: string | null;

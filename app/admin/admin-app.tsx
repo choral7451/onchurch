@@ -47,6 +47,7 @@ import { QrCodesBlock } from "./page-editors/qr-codes";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, isCustomLinkReady, type HomeCustomLink } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
+import { DEFAULT_TEMPLATE_ID } from "@/components/templates/meta";
 import { type Lang, normalizeLang } from "@/lib/i18n";
 
 type Initial = {
@@ -305,6 +306,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
     },
   );
 
+  // 템플릿마다 홈 섹션 구성이 다르다(클래식만 소식·갤러리 보유). 변경은 마스터 전용이라 여기선 읽기만.
+  const [siteTemplate, setSiteTemplate] = useState<string>(DEFAULT_TEMPLATE_ID);
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
   const [homeQuickLinks, setHomeQuickLinks] = useState<string[]>([]);
   const [quickLimitMsg, setQuickLimitMsg] = useState("");
@@ -458,7 +461,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);
           }
-          setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? []));
+          const template = c.siteTemplate?.trim() || DEFAULT_TEMPLATE_ID;
+          setSiteTemplate(template);
+          setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? [], template));
           setIsPublished(c.isPublished);
           setOnboardingDone(!!c.firstPublishedAt);
           setChurchExistsOnServer(true);
@@ -1787,9 +1792,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     ) keys.push("quick");
                     if (boards["worship"]) keys.push("worship");
                     if (boards["sermons"]) keys.push("sermons");
+                    if (siteTemplate === "classic" && boards["notices"]) keys.push("news");
                     keys.push("visit", "pastor");
+                    if (siteTemplate === "classic" && boards["gallery"]) keys.push("gallery");
                     return keys;
                   })()}
+                  siteTemplate={siteTemplate}
                   onChange={(next) => void persistHomeSectionOrder(next)}
                 />
               )}

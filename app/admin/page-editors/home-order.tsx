@@ -11,11 +11,13 @@ import {
 type Props = {
   order: string[];
   activeKeys: HomeSectionKey[];
+  // 템플릿마다 홈 섹션 목록이 다르므로 정규화·복원에 같은 기준을 써야 한다.
+  siteTemplate: string;
   onChange: (next: HomeSectionKey[]) => void;
 };
 
-export function HomeOrderEditor({ order, activeKeys, onChange }: Props) {
-  const normalized = normalizeHomeSectionOrder(order);
+export function HomeOrderEditor({ order, activeKeys, siteTemplate, onChange }: Props) {
+  const normalized = normalizeHomeSectionOrder(order, siteTemplate);
   const activeSet = new Set(activeKeys);
   const visible = normalized.filter((k) => activeSet.has(k));
 
@@ -31,7 +33,7 @@ export function HomeOrderEditor({ order, activeKeys, onChange }: Props) {
   });
 
   function reset() {
-    onChange(normalizeHomeSectionOrder([]));
+    onChange(normalizeHomeSectionOrder([], siteTemplate));
   }
 
   return (
