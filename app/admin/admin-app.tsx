@@ -48,6 +48,7 @@ import { HomeOrderEditor } from "./page-editors/home-order";
 import { SiteTemplateEditor } from "./page-editors/site-template";
 import { CustomPageEditor } from "./page-editors/custom-page";
 import { QrCodesBlock } from "./page-editors/qr-codes";
+import { ReferralCard } from "./page-editors/referral";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, isCustomLinkReady, type HomeCustomLink } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
@@ -2093,6 +2094,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <p>아래 계좌로 입금해주시면 사이트 운영이 연장됩니다.</p>
                   </div>
                   <div className="admin-section-body">
+                    <ReferralCard />
                     <PaymentAccountCard />
                   </div>
                 </section>

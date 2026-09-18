@@ -217,6 +217,25 @@ function NaverVerificationEditor({
   );
 }
 
+// 추천인 이벤트 현황. 보상(기간 연장)은 이 값을 보고 마스터가 '결제기간'에서 직접 처리한다.
+function ReferralCell({ church }: { church: ChurchOverview }) {
+  return (
+    <div className="flex min-w-[120px] flex-col gap-0.5 text-xs">
+      {church.referredByChurchName ? (
+        <span className="text-gray-700">
+          추천인 <span className="font-semibold">{church.referredByChurchName}</span>
+        </span>
+      ) : (
+        <span className="text-gray-400">추천인 없음</span>
+      )}
+      <span className={church.referredCount > 0 ? "font-semibold text-gray-900" : "text-gray-400"}>
+        추천 {church.referredCount}곳
+      </span>
+      <span className="font-mono text-[11px] text-gray-400">{church.referralCode ?? "코드 미발급"}</span>
+    </div>
+  );
+}
+
 // 공개 홈페이지 템플릿 선택. 목록은 템플릿 레지스트리 메타(SITE_TEMPLATE_META)에서 가져온다.
 function SiteTemplateSelect({
   church,
@@ -455,7 +474,7 @@ export function ChurchesFeature() {
 
         {status !== "loading" && items.length > 0 && (
           <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="w-full min-w-[1440px] border-collapse text-sm">
+            <table className="w-full min-w-[1580px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500 [&>th]:whitespace-nowrap">
                   <th className="px-4 py-3">교회이름</th>
@@ -469,6 +488,7 @@ export function ChurchesFeature() {
                   <th className="px-4 py-3">결제기간</th>
                   <th className="px-4 py-3">네이버 인증</th>
                   <th className="px-4 py-3">템플릿</th>
+                  <th className="px-4 py-3">추천</th>
                   <th className="px-4 py-3">관리</th>
                 </tr>
               </thead>
@@ -516,6 +536,9 @@ export function ChurchesFeature() {
                     </td>
                     <td className="px-4 py-3">
                       <SiteTemplateSelect church={c} onUpdated={handleTemplateUpdated} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <ReferralCell church={c} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">

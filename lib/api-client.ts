@@ -476,6 +476,8 @@ export const onchurchAuth = {
     worshipName: string;
     worshipTime: string;
     agree: boolean;
+    // 추천인 코드(선택). 유효하지 않으면 서버가 조용히 무시하고 가입은 그대로 진행된다.
+    referralCode?: string | null;
   }) =>
     request<AuthTokens>("/onchurch/auths/sign-up-with-church", {
       method: "POST",
@@ -732,6 +734,12 @@ export type ChurchOverview = {
   naverVerification: string | null;
   // 공개 홈페이지 템플릿 ID. 미지정 시 'default'.
   siteTemplate: string;
+  // 추천인 이벤트: 이 교회의 추천 코드(미발급이면 null).
+  referralCode: string | null;
+  // 이 교회가 입력한 추천인 교회 이름(미입력이면 null).
+  referredByChurchName: string | null;
+  // 이 교회 코드로 가입한 교회 수.
+  referredCount: number;
   isTest: boolean;
   // 소유자 마지막 접속(세션 갱신) 시각. 접속 이력 없으면 null.
   lastActivity: string | null;
@@ -1001,6 +1009,18 @@ export const onchurchAttendance = {
     request<AttendanceStats>(`/onchurch/attendances/me/stats?weeks=${weeks}`, { method: "GET", auth: true }),
 };
 
+// 추천인 이벤트 현황(GET/PUT /onchurch/churches/me/referral 공통 응답).
+export type MyReferral = {
+  // 우리 교회 코드 — 다른 교회에게 알려주는 값.
+  code: string;
+  // 우리 코드를 입력하고 가입한 교회 수.
+  referredCount: number;
+  // 우리가 입력한 추천인 교회 이름. 미입력이면 null.
+  referredByChurchName: string | null;
+  // 추천인 코드를 입력할 수 있는 상태인지(미입력 + 첫 결제 확인 전).
+  canApply: boolean;
+};
+
 export const onchurchChurch = {
   getMine: () =>
     request<{ church: Church | null; subscription: Subscription; churchRole: ChurchRole | null }>("/onchurch/churches/me", {
@@ -1032,6 +1052,16 @@ export const onchurchChurch = {
         homeCustomLink: input.homeCustomLink ?? null,
         siteLang: input.siteLang ?? "ko",
       }),
+    }),
+  // 우리 교회 추천 코드 + 추천 현황. 코드가 없으면 서버가 이 호출 시점에 발급한다.
+  getReferral: () =>
+    request<MyReferral>("/onchurch/churches/me/referral", { method: "GET", auth: true }),
+  // 다른 교회의 추천인 코드 입력(1회, 첫 결제 확인 전까지). 갱신된 추천 현황을 반환한다.
+  applyReferralCode: (code: string) =>
+    request<MyReferral>("/onchurch/churches/me/referral", {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ code }),
     }),
   updateSiteTemplate: (siteTemplate: string) =>
     request<Church>("/onchurch/churches/me/site-template", {

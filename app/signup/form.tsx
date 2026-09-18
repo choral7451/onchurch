@@ -79,6 +79,9 @@ export function SignupForm() {
   const [phoneMsg, setPhoneMsg] = useState<{ kind: "info" | "error" | "success"; text: string } | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [agree, setAgree] = useState(false);
+  // 추천인 코드(선택). 코드가 있는 사람만 펼쳐서 입력한다 — 기본은 접어 두어 가입 단계를 늘리지 않는다.
+  const [referralOpen, setReferralOpen] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
 
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -301,6 +304,7 @@ export function SignupForm() {
         worshipName: worshipName.trim(),
         worshipTime: worshipTime.trim(),
         agree,
+        referralCode: referralCode.trim() || null,
       });
       saveTokens(tokens);
       // 방금 만든 교회에 로그인된 상태로 세션 스코프를 지정한다(서브도메인 이동 후에도 로그인 유지).
@@ -522,6 +526,28 @@ export function SignupForm() {
                 <div className={`phone-msg phone-msg-${phoneMsg.kind}`} style={{ marginTop: 8 }}>
                   {phoneMsg.text}
                 </div>
+              )}
+            </div>
+
+            <div className="signup-referral">
+              {referralOpen ? (
+                <div className="form-row full">
+                  <input
+                    id="signup-referral"
+                    type="text"
+                    autoComplete="off"
+                    placeholder="추천인 코드 (선택)"
+                    aria-label="추천인 코드"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10))}
+                    maxLength={10}
+                  />
+                  <span className="form-hint">추천해주신 교회에서 받은 코드를 입력해주세요. 나중에 관리자 화면에서도 넣을 수 있어요.</span>
+                </div>
+              ) : (
+                <button type="button" className="signup-referral-toggle" onClick={() => setReferralOpen(true)}>
+                  추천인 코드가 있나요?
+                </button>
               )}
             </div>
 

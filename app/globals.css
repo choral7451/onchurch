@@ -810,6 +810,9 @@ main { flex: 1; }
 /* opacity:0에서 시작하지 않는다 — 단계 전환 직후 flushSync로 focus()할 때 입력란이
    보이는 상태여야(opacity>0) iOS Safari가 키보드/커서를 띄운다. 슬라이드만 유지. */
 @keyframes signupStepIn { from { transform: translateY(8px); } to { transform: none; } }
+/* 가입 마지막 단계의 추천인 코드(선택) — 기본은 링크형 버튼만 보이고, 누르면 입력란이 열린다. */
+.signup-referral { display: flex; flex-direction: column; }
+.signup-referral-toggle { align-self: flex-start; padding: 0; background: none; border: 0; font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: underline; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .signup-step { animation: none; } }
 
 .phone-msg { font-size: 12.5px; line-height: 1.5; padding: 10px 12px; border-radius: var(--r-md); border: 1px solid; }
@@ -875,6 +878,20 @@ main { flex: 1; }
 .admin-sidebar-pill.billing { background: oklch(0.6 0.16 250 / 0.14); color: oklch(0.45 0.18 250); }
 .admin-sidebar-item-billing.active { border-color: oklch(0.6 0.16 250 / 0.5); }
 
+/* 추천인 이벤트 카드 — 결제 화면 맨 위(입금 계좌 카드 위)에 놓인다. */
+.referral-card { border: 1px solid var(--line); border-radius: var(--r-lg, 14px); background: var(--surface-2); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+.referral-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.referral-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; color: var(--accent); }
+.referral-count { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); }
+.referral-desc { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); word-break: keep-all; }
+.referral-code-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); flex-wrap: wrap; }
+.referral-code { font-family: var(--font-mono); font-size: 22px; font-weight: 800; letter-spacing: 0.14em; color: var(--ink); }
+.referral-apply { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+.referral-apply-label { font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.referral-apply-row { display: flex; align-items: center; gap: 8px; }
+.referral-apply-row input { flex: 1; min-width: 0; font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.referral-apply-error { font-size: 12.5px; font-weight: 600; color: oklch(0.55 0.15 28); }
+.referral-applied { margin: 0; font-size: 13px; color: var(--ink-2); }
 .payment-account-card { border: 1px solid var(--border); border-radius: var(--r-lg, 14px); background: linear-gradient(180deg, oklch(0.6 0.16 250 / 0.06), transparent); padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
 .payment-account-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .payment-account-bank { font-size: 15px; font-weight: 700; color: var(--ink); }
@@ -1642,6 +1659,10 @@ main { flex: 1; }
   .admin-banner-card:not(.editing) > div:last-child { flex: 1 0 100%; justify-content: flex-end; }
 
   /* 결제 계좌 카드: 계좌번호는 한 줄로, 요금 카드는 1열로 스택해 글자 줄바꿈을 막는다. */
+  .referral-card { padding: 14px 16px; }
+  .referral-code-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .referral-code { font-size: 19px; text-align: center; }
+  .referral-code-row .btn { width: 100%; justify-content: center; }
   .payment-account-card { padding: 16px; }
   .payment-account-number-row { flex-direction: column; align-items: stretch; gap: 10px; }
   .payment-account-number { font-size: 19px; }
