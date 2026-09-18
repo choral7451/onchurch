@@ -18,5 +18,5 @@ export type SiteTemplateMeta = {
 
 export const SITE_TEMPLATE_META: SiteTemplateMeta[] = [
   { id: "default", label: "기본 (모던)", description: "온교회 기본 모던 홈. 섹션 순서·바로가기 커스터마이징 지원" },
-  { id: "classic", label: "클래식 (전통형)", description: "충현교회 스타일 전통형 홈. 전체폭 히어로 슬라이더 + 설교/소식/갤러리 섹션" },
+  { id: "classic", label: "클래식 (전통형)", description: "충현교회 스타일 전통형 홈. 전체폭 히어로 슬라이더 + 설교/소식 섹션" },
 ];

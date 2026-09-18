@@ -32,7 +32,6 @@ type PublicSermon = { id: number; seriesId: number | null; title: string; pastor
 type PublicSermonSeries = { id: number; name: string };
 type PublicNoticeCategory = { id: number; name: string; sortOrder: number; isActive: boolean; isAll: boolean };
 type PublicNotice = { id: number; category: string | null; title: string; imageUrls: string[]; publishedAt: string | null; createdAt: string };
-type GalleryGroup = { groupKey: string; title: string; date: string | null; coverUrl: string | null; grad: string | null; count: number };
 type GuideItem = { key: string; ic: IconKey; label: string; desc: string; href: string; external: boolean };
 type PublicEvent = { id: number; title: string; description: string | null; location: string | null; startAt: string; endAt: string | null; isAllDay: boolean };
 type PublicPastor = { id: number; name: string; role: string | null; eng: string | null; message: string | null; photoUrl: string | null } | null;
@@ -381,28 +380,6 @@ async function NewsSection({ slug, url, lang }: { slug: string; url: (p: string)
   );
 }
 
-async function GallerySection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
-  const data = await fetchJson<{ groups: GalleryGroup[] }>(`/onchurch/sites/${slug}/galleries?page=1&size=8`, { groups: [] });
-  const tiles = data.groups.slice(0, 3);
-  if (tiles.length === 0) return null;
-  return (
-    <section className="chc-section">
-      <div className="chc-container">
-        <SectionHead eyebrow="Gallery" title={pick(lang, { ko: "갤러리", en: "Gallery" })} more={{ href: url("/gallery"), label: pick(lang, { ko: "갤러리 더 보기", en: "View gallery" }) }} />
-        <div className="chc-gallery-grid">
-          {tiles.map((g, i) => (
-            <Link key={g.groupKey} href={url("/gallery")} className="chc-gallery-tile">
-              <div className={`chc-gallery-media ${g.coverUrl ? "" : GRADS[i % GRADS.length]}`} style={g.coverUrl ? { backgroundImage: `url("${g.coverUrl}")` } : undefined} />
-              <span className="chc-gallery-title">{g.title}</span>
-              {g.count > 0 && <span className="chc-gallery-count">{pick(lang, { ko: `사진 ${g.count}장`, en: `${g.count} photos` })}</span>}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // ============ Page ============
 
 type Props = { church: PublicChurch; tenant: string; lang: Lang; pathPrefix: string };
@@ -441,7 +418,7 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
 
   // 관리자 '홈화면 구성'에서 정한 섹션 순서를 따른다(기본 템플릿과 같은 키).
-  // 클래식 전용 섹션인 소식·앨범은 관리자 목록에 없으므로 말씀 뒤(소식)와 맨 끝(앨범)에 고정으로 붙인다.
+  // 클래식 전용 섹션인 소식은 관리자 목록에 없으므로 말씀 뒤에 고정으로 붙인다.
   const order = normalizeHomeSectionOrder(church.homeSectionOrder);
 
   const sections: Record<HomeSectionKey, React.ReactNode> = {
@@ -487,11 +464,6 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
       <NewsSection slug={slug} url={url} lang={lang} />
     </Suspense>
   ) : null;
-  const gallery = isPageEnabled("gallery") ? (
-    <Suspense fallback={null}>
-      <GallerySection slug={slug} url={url} lang={lang} />
-    </Suspense>
-  ) : null;
 
   return (
     <div className="chc-root">
@@ -502,7 +474,6 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
           {key === "sermons" && news}
         </div>
       ))}
-      {gallery}
     </div>
   );
 }
