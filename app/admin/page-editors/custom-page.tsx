@@ -260,8 +260,6 @@ function BlockFields({ block: b, patch, pickImages, registerTextArea, wrapSelect
         <div className="cp-editor-fields">
           <div className="cp-toolbar">
             <button type="button" title="굵게" onClick={() => wrapSelection(b.id, "**", "**", "굵은 글자")}><b>B</b></button>
-            <button type="button" title="고른 글자만 크게" onClick={() => wrapSelection(b.id, "++", "++", "큰 글자")}>가+</button>
-            <button type="button" title="고른 글자만 작게" onClick={() => wrapSelection(b.id, "--", "--", "작은 글자")}>가-</button>
             <button type="button" title="링크" onClick={() => wrapSelection(b.id, "[", "](https://)", "링크 글자")}>🔗</button>
             <button type="button" title="목록" onClick={() => toggleList(b.id)}>목록</button>
             <span className="cp-toolbar-sep" />

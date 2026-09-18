@@ -1090,12 +1090,9 @@ main { flex: 1; }
 .cp-h3 { font-size: clamp(17px, 1.8vw, 20px); font-weight: 700; letter-spacing: -0.015em; margin: 0; word-break: keep-all; }
 /* 본문은 컨테이너 폭을 그대로 쓴다 — 폭을 따로 좁히면 제목·구분선과 오른쪽 끝이 어긋난다. */
 .cp-text { font-size: 15.5px; line-height: 1.8; color: var(--ink-2); }
-/* 블록 단위 글자 크기 — 블록 전체의 기준 크기. */
+/* 블록 단위 글자 크기 — 글자마다 크기를 열면 템플릿 타이포가 무너지므로 세 단계만 둔다. */
 .cp-text.sz-sm { font-size: 14px; }
 .cp-text.sz-lg { font-size: 17.5px; line-height: 1.75; }
-/* 고른 부분만 키우거나 줄이는 인라인 크기 — 블록 크기에 비례하도록 em으로 둔다. */
-.cp-lg { font-size: 1.28em; }
-.cp-sm { font-size: 0.82em; }
 
 /* 텍스트 블록 미리보기 — 공개 페이지와 같은 .cp-* 클래스로 렌더하므로 실제 화면과 같다. */
 .cp-preview { position: relative; padding: 18px 14px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); }
