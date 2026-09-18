@@ -1,6 +1,6 @@
 import { Suspense, type CSSProperties } from "react";
 import Link from "next/link";
-import type { IconKey } from "@/components/icons";
+import { Icon, type IconKey } from "@/components/icons";
 import { GoogleMap } from "@/components/google-map";
 import { LiveBadge } from "@/components/live-badge";
 import { ClassicHero, type ClassicHeroSlide } from "@/components/templates/classic/hero";
@@ -101,6 +101,56 @@ async function HeroSection({ slug, church }: { slug: string; church: PublicChurc
     slides.push({ id: null, title: church.name, description: church.tagline, imageUrl: null, videoUrl: null, linkUrl: null });
   }
   return <ClassicHero slides={slides} churchName={church.name} />;
+}
+
+// 배너에 바로 붙는 정보 띠: 대표 예배 시간 / 주소 / 대표 전화.
+// 방문자가 첫 화면에서 가장 먼저 찾는 세 가지라 배너와 한 덩어리로 둔다(섹션 순서와 무관).
+type HeroInfoProps = { slug: string; church: PublicChurch; url: (p: string) => string; lang: Lang; worshipEnabled: boolean };
+async function HeroInfoBar({ slug, church, url, lang, worshipEnabled }: HeroInfoProps) {
+  const data = worshipEnabled
+    ? await fetchJson<{ services: PublicWorshipService[] }>(`/onchurch/sites/${slug}/worship`, { services: [] })
+    : { services: [] as PublicWorshipService[] };
+  const main = data.services.find((w) => w.isFeatured) ?? data.services[0] ?? null;
+  const address = church.address?.trim() || null;
+  const phone = church.phone?.trim() || null;
+  if (!main && !address && !phone) return null;
+
+  const Item = ({ ic, label, value, href, external }: { ic: IconKey; label: string; value: string; href: string; external?: boolean }) => {
+    const Ic = Icon[ic];
+    const inner = (
+      <>
+        <span className="chc-herobar-ic" aria-hidden="true"><Ic width={18} height={18} /></span>
+        <span className="chc-herobar-text">
+          <span className="chc-herobar-label">{label}</span>
+          <span className="chc-herobar-value">{value}</span>
+        </span>
+      </>
+    );
+    return external
+      ? <a href={href} className="chc-herobar-item">{inner}</a>
+      : <Link href={href} className="chc-herobar-item">{inner}</Link>;
+  };
+
+  return (
+    <section className="chc-herobar">
+      <div className="chc-container chc-herobar-inner">
+        {main && (
+          <Item
+            ic="clock"
+            label={pick(lang, { ko: "대표 예배", en: "Main Service" })}
+            value={[main.name, main.time].filter(Boolean).join(" · ")}
+            href={url("/worship")}
+          />
+        )}
+        {address && (
+          <Item ic="pin" label={pick(lang, { ko: "오시는 길", en: "Directions" })} value={address} href={url("/directions")} />
+        )}
+        {phone && (
+          <Item ic="phone" label={pick(lang, { ko: "대표 전화", en: "Phone" })} value={phone} href={`tel:${phone.replace(/[^0-9+]/g, "")}`} external />
+        )}
+      </div>
+    </section>
+  );
 }
 
 // 히어로 바로 아래 괘선으로 나뉜 바로가기 띠(제목 + 한 줄 설명). 방문자가 가장 자주 찾는 메뉴를 첫 화면에서 바로 잡을 수 있게 한다.
@@ -423,9 +473,14 @@ export async function ClassicHome({ church, tenant, lang, pathPrefix }: Props) {
 
   const sections: Record<HomeSectionKey, React.ReactNode> = {
     banner: (
-      <Suspense fallback={<div className="chc-hero-band"><div className="chc-hero-skel" aria-hidden /></div>}>
-        <HeroSection slug={slug} church={church} />
-      </Suspense>
+      <>
+        <Suspense fallback={<div className="chc-hero-band"><div className="chc-hero-skel" aria-hidden /></div>}>
+          <HeroSection slug={slug} church={church} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <HeroInfoBar slug={slug} church={church} url={url} lang={lang} worshipEnabled={isPageEnabled("worship")} />
+        </Suspense>
+      </>
     ),
     quick: <GuideStrip items={guideItems} />,
     events: isPageEnabled("schedule") ? (

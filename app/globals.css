@@ -1788,6 +1788,18 @@ main { flex: 1; }
 .chc-hero-counter b { color: #ffffff; font-weight: 600; }
 .chc-hero-skel { width: 100%; aspect-ratio: 16 / 9; background: var(--chc-navy); }
 
+/* ---------- Hero info bar (배너에 붙는 대표 예배·주소·전화 띠) ---------- */
+.chc-herobar { background: var(--chc-navy); color: #ffffff; }
+.chc-herobar-inner { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.chc-herobar-item { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 18px 22px; color: #ffffff; border-left: 1px solid rgb(255 255 255 / 0.13); transition: background 0.2s var(--chc-ease); }
+.chc-herobar-item:first-child { border-left: none; padding-left: 0; }
+.chc-herobar-item:hover { background: rgb(255 255 255 / 0.06); color: #ffffff; }
+.chc-herobar-item:focus-visible { outline: 2px solid #ffffff; outline-offset: -2px; }
+.chc-herobar-ic { flex-shrink: 0; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: rgb(255 255 255 / 0.12); color: #ffffff; }
+.chc-herobar-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.chc-herobar-label { font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(255 255 255 / 0.6); }
+.chc-herobar-value { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ---------- Guide strip (히어로 아래 괘선 바로가기 띠) ---------- */
 .chc-guide-band { border-bottom: 1px solid var(--chc-line-2); }
 .chc-guide { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
@@ -1900,7 +1912,7 @@ main { flex: 1; }
 .chc-news-date { font-size: 13px; color: var(--chc-muted-2); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
 @media (prefers-reduced-motion: reduce) {
-  .chc-hero-track, .chc-play, .chc-sermon-media { transition: none; }
+  .chc-hero-track, .chc-play, .chc-sermon-media, .chc-herobar-item { transition: none; }
   .chc-live-dot { animation: none; }
 }
 
@@ -1920,6 +1932,9 @@ main { flex: 1; }
   .chc-visit-inner { grid-template-columns: 1fr; gap: 36px; }
   .chc-sermon-grid { grid-template-columns: repeat(2, 1fr); }
   .chc-news-grid { grid-template-columns: 1fr; }
+  .chc-herobar-inner { grid-template-columns: 1fr; }
+  .chc-herobar-item { padding: 15px 0; border-left: none; border-top: 1px solid rgb(255 255 255 / 0.13); }
+  .chc-herobar-item:first-child { border-top: none; }
   .chc-guide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .chc-guide-item { border-left: none; border-right: none; border-bottom: 1px solid var(--chc-line-2); }
   .chc-guide-item:last-child { border-right: none; }
