@@ -36,7 +36,6 @@ export function SiteTemplateEditor({ value, saving, onChange }: Props) {
                 disabled={saving}
                 onClick={() => onChange(t.id)}
               >
-                <span className={`admin-template-preview tpl-${t.id}`} aria-hidden="true" />
                 <span className="admin-template-name">
                   {t.label}
                   {active && <span className="admin-template-badge">사용 중</span>}

@@ -1084,35 +1084,15 @@ main { flex: 1; }
 .admin-section-body { padding: 24px 32px 32px; display: flex; flex-direction: column; gap: 16px; }
 
 /* 홈 디자인(템플릿) 선택 카드 */
-.admin-template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
-.admin-template-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+.admin-template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.admin-template-card { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
 .admin-template-card:hover:not(:disabled) { border-color: var(--accent); }
 .admin-template-card.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .admin-template-card:disabled { opacity: 0.6; cursor: default; }
 .admin-template-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-/* 템플릿별 축소 목업 — 이미지 없이 그라데이션 블록으로 레이아웃 성격만 보여준다. */
-.admin-template-preview { display: block; aspect-ratio: 16 / 10; border: 1px solid var(--line); border-radius: 8px; background-color: #ffffff; background-repeat: no-repeat; }
-.admin-template-preview.tpl-default {
-  background-image:
-    linear-gradient(#dbe6f5, #dbe6f5),
-    linear-gradient(#eceef1, #eceef1),
-    linear-gradient(#eceef1, #eceef1),
-    linear-gradient(#eceef1, #eceef1);
-  background-size: 84% 42%, 24% 18%, 24% 18%, 24% 18%;
-  background-position: 50% 14%, 10% 78%, 50% 78%, 90% 78%;
-}
-.admin-template-preview.tpl-modern {
-  background-image:
-    linear-gradient(#14283d, #14283d),
-    linear-gradient(#1e3a5f, #1e3a5f),
-    linear-gradient(#eceef1, #eceef1),
-    linear-gradient(#eceef1, #eceef1);
-  background-size: 100% 46%, 100% 11%, 40% 17%, 40% 17%;
-  background-position: 0 0, 0 48%, 7% 86%, 93% 86%;
-}
-.admin-template-name { display: flex; align-items: center; gap: 6px; font-size: 14.5px; font-weight: 700; color: var(--primary-deep); }
+.admin-template-name { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--primary-deep); }
 .admin-template-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: var(--surface-2); color: var(--accent); }
-.admin-template-desc { font-size: 12.5px; line-height: 1.5; color: var(--muted); word-break: keep-all; }
+.admin-template-desc { font-size: 12.5px; line-height: 1.45; color: var(--muted); word-break: keep-all; }
 .admin-template-note { font-size: 12.5px; color: var(--muted); margin: 0; }
 .admin-template-note code { font-family: inherit; padding: 1px 5px; border-radius: 4px; background: var(--surface-2); }
 
