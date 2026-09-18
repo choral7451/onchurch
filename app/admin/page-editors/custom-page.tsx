@@ -139,20 +139,6 @@ export function CustomPageEditor({ page, onSaved }: Props) {
     });
   }
 
-  function toggleList(blockId: string) {
-    const ta = textAreas.current.get(blockId);
-    if (!ta) return;
-    const value = ta.value;
-    const lineStart = value.lastIndexOf("\n", Math.max(0, ta.selectionStart - 1)) + 1;
-    const lineEndRaw = value.indexOf("\n", ta.selectionEnd);
-    const lineEnd = lineEndRaw < 0 ? value.length : lineEndRaw;
-    const lines = value.slice(lineStart, lineEnd).split("\n");
-    const allListed = lines.every((l) => l.trim().startsWith("- "));
-    const next = lines.map((l) => (allListed ? l.replace(/^\s*-\s/, "") : `- ${l}`)).join("\n");
-    patch(blockId, { text: `${value.slice(0, lineStart)}${next}${value.slice(lineEnd)}` });
-    requestAnimationFrame(() => ta.focus());
-  }
-
   return (
     <section className="admin-section">
       <div className="admin-section-head">
@@ -201,7 +187,6 @@ export function CustomPageEditor({ page, onSaved }: Props) {
                   else textAreas.current.delete(id);
                 }}
                 wrapSelection={wrapSelection}
-                toggleList={toggleList}
               />
             </div>
           ))}
@@ -239,10 +224,9 @@ type FieldProps = {
   pickImages: (blockId: string) => void;
   registerTextArea: (id: string, el: HTMLTextAreaElement | null) => void;
   wrapSelection: (blockId: string, before: string, after: string, placeholder: string) => void;
-  toggleList: (blockId: string) => void;
 };
 
-function BlockFields({ block: b, patch, pickImages, registerTextArea, wrapSelection, toggleList }: FieldProps) {
+function BlockFields({ block: b, patch, pickImages, registerTextArea, wrapSelection }: FieldProps) {
   switch (b.type) {
     case "heading":
       return (
@@ -261,7 +245,6 @@ function BlockFields({ block: b, patch, pickImages, registerTextArea, wrapSelect
           <div className="cp-toolbar">
             <button type="button" title="굵게" onClick={() => wrapSelection(b.id, "**", "**", "굵은 글자")}><b>B</b></button>
             <button type="button" title="링크" onClick={() => wrapSelection(b.id, "[", "](https://)", "링크 글자")}>🔗</button>
-            <button type="button" title="목록" onClick={() => toggleList(b.id)}>목록</button>
             <span className="cp-toolbar-sep" />
             <Segmented
               value={b.size}
