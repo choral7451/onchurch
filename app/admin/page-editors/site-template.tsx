@@ -41,6 +41,16 @@ export function SiteTemplateEditor({ value, saving, onChange }: Props) {
                   {active && <span className="admin-template-badge">사용 중</span>}
                 </span>
                 <span className="admin-template-desc">{t.description}</span>
+                <span className="admin-template-swatches">
+                  <span className="admin-template-swatch">
+                    <i style={{ background: t.colors.main }} aria-hidden="true" />
+                    메인
+                  </span>
+                  <span className="admin-template-swatch">
+                    <i style={{ background: t.colors.point }} aria-hidden="true" />
+                    포인트
+                  </span>
+                </span>
               </button>
             );
           })}

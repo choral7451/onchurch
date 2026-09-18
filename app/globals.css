@@ -1170,6 +1170,9 @@ main { flex: 1; }
 .admin-template-name { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--primary-deep); }
 .admin-template-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: var(--surface-2); color: var(--accent); }
 .admin-template-desc { font-size: 12.5px; line-height: 1.45; color: var(--muted); word-break: keep-all; }
+.admin-template-swatches { display: flex; align-items: center; gap: 10px; margin-top: 7px; }
+.admin-template-swatch { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; color: var(--muted); }
+.admin-template-swatch i { width: 13px; height: 13px; border-radius: 4px; border: 1px solid var(--line); }
 .admin-template-note { font-size: 12.5px; color: var(--muted); margin: 0; }
 .admin-template-note code { font-family: inherit; padding: 1px 5px; border-radius: 4px; background: var(--surface-2); }
 

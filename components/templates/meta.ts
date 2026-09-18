@@ -14,11 +14,25 @@ export type SiteTemplateMeta = {
   id: string;
   label: string;
   description: string;
+  // 선택 화면에 색 견본으로 찍히는 대표색. main=홈 전반의 기본색, point=버튼·강조에 쓰는 포인트색.
+  colors: { main: string; point: string };
 };
 
 export const SITE_TEMPLATE_META: SiteTemplateMeta[] = [
-  { id: "default", label: "기본", description: "밝은 화이트 배경에 여백이 넉넉한 단정한 스타일" },
-  { id: "modern", label: "모던", description: "슬레이트 네이비 톤에 둥근 카드가 얹힌 감각적인 스타일" },
+  {
+    id: "default",
+    label: "기본",
+    description: "밝은 화이트 배경에 여백이 넉넉한 단정한 스타일",
+    // app/globals.css :root의 --primary / --accent
+    colors: { main: "oklch(0.32 0.08 250)", point: "oklch(0.62 0.14 245)" },
+  },
+  {
+    id: "modern",
+    label: "모던",
+    description: "슬레이트 네이비 톤에 둥근 카드가 얹힌 감각적인 스타일",
+    // app/globals.css .chc-root의 --chc-navy / --chc-primary
+    colors: { main: "#14283d", point: "#2f5480" },
+  },
 ];
 
 // 구 템플릿 ID → 현재 ID. DB에 남아 있는 예전 값을 '읽는 시점'에 흡수하므로,
