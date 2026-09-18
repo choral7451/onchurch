@@ -52,8 +52,8 @@ export const HOME_SECTION_LABELS: Record<HomeSectionKey, { title: string; desc: 
   sermons: { title: "함께 드리는 예배", desc: "최근 설교 영상 카드" },
   visit: { title: "방문 안내", desc: "처음 오시는 분들을 위한 안내 배너" },
   pastor: { title: "담임목사 인사", desc: "담임목사 사진과 인사말" },
-  news: { title: "교회 소식", desc: "공지 카테고리별 최신 글 목록 (클래식 템플릿 전용)" },
-  gallery: { title: "갤러리", desc: "최근 사진 앨범 카드 (클래식 템플릿 전용)" },
+  news: { title: "교회 소식", desc: "공지 카테고리별 최신 글 목록 (모던 템플릿 전용)" },
+  gallery: { title: "갤러리", desc: "최근 사진 앨범 카드 (모던 템플릿 전용)" },
 };
 
 export function normalizeHomeSectionOrder(

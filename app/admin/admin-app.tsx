@@ -43,6 +43,7 @@ import { AttendanceEditor } from "./page-editors/attendance";
 import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { HomeOrderEditor } from "./page-editors/home-order";
+import { SiteTemplateEditor } from "./page-editors/site-template";
 import { QrCodesBlock } from "./page-editors/qr-codes";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, isCustomLinkReady, type HomeCustomLink } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
@@ -306,8 +307,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
     },
   );
 
-  // 템플릿마다 홈 섹션 구성이 다르다(클래식만 소식·갤러리 보유). 변경은 마스터 전용이라 여기선 읽기만.
+  // 템플릿마다 홈 섹션 구성이 다르다(classic만 소식·갤러리 보유). 마스터도 바꿀 수 있고 여기서도 바꾼다.
   const [siteTemplate, setSiteTemplate] = useState<string>(DEFAULT_TEMPLATE_ID);
+  const [templateSaving, setTemplateSaving] = useState(false);
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
   const [homeQuickLinks, setHomeQuickLinks] = useState<string[]>([]);
   const [quickLimitMsg, setQuickLimitMsg] = useState("");
@@ -667,6 +669,29 @@ export function AdminApp({ initial }: { initial: Initial }) {
       }
     } finally {
       setLiveSaving(false);
+    }
+  }
+
+  async function persistSiteTemplate(next: string) {
+    if (next === siteTemplate || templateSaving) return;
+    const prev = siteTemplate;
+    // 템플릿마다 홈 섹션 목록이 다르므로 순서도 새 템플릿 기준으로 다시 정규화한다.
+    setSiteTemplate(next);
+    setHomeSectionOrder((order) => normalizeHomeSectionOrder(order, next));
+    if (!churchExistsOnServer) return;
+    setTemplateSaving(true);
+    try {
+      await onchurchChurch.updateSiteTemplate(next);
+    } catch (err) {
+      // 실패하면 화면을 원래 템플릿으로 되돌린다(서버 값이 진실).
+      setSiteTemplate(prev);
+      setHomeSectionOrder((order) => normalizeHomeSectionOrder(order, prev));
+      if (err instanceof ApiError && err.status === 401) {
+        clearTokens();
+        router.push("/login");
+      }
+    } finally {
+      setTemplateSaving(false);
     }
   }
 
@@ -1778,6 +1803,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
               )}
 
               {activeSection === "banners" && <BannersEditor />}
+
+              {activeSection === "home-order" && (
+                <SiteTemplateEditor value={siteTemplate} saving={templateSaving} onChange={(next) => void persistSiteTemplate(next)} />
+              )}
 
               {activeSection === "home-order" && (
                 <HomeOrderEditor

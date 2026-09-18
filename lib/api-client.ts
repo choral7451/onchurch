@@ -1033,6 +1033,12 @@ export const onchurchChurch = {
         siteLang: input.siteLang ?? "ko",
       }),
     }),
+  updateSiteTemplate: (siteTemplate: string) =>
+    request<Church>("/onchurch/churches/me/site-template", {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ siteTemplate }),
+    }),
   publish: (isPublished: boolean) =>
     request<{ church: Church; subscription: Subscription }>("/onchurch/churches/me/publish", {
       method: "PUT",
