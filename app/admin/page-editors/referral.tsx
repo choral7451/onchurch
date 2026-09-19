@@ -5,7 +5,8 @@ import { ApiError, onchurchChurch, type MyReferral } from "@/lib/api-client";
 
 // 추천인 이벤트 카드. '결제 · 입금 계좌' 화면 맨 위에 둔다 — 보상이 이용 기간으로 돌아오므로
 // 계좌·요금표와 같은 화면에서 보는 게 자연스럽고, 사이드바 항목을 늘리지 않는다.
-// 보상(기간 연장)은 마스터가 교회 목록의 '추천' 열을 보고 수동으로 처리한다.
+// 혜택: 추천받은 교회가 결제하면 양쪽 교회에 사용 기간 3개월 추가.
+// 지급은 마스터가 교회 목록의 '추천' 열을 보고 수동으로 처리한다(입금 확인 시점).
 export function ReferralCard() {
   const [referral, setReferral] = useState<MyReferral | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -60,7 +61,10 @@ export function ReferralCard() {
         <span className="referral-count">{referral.referredCount}개 교회 가입</span>
       </div>
 
-      <p className="referral-desc">아래 코드를 다른 교회에 알려주세요. 그 교회가 코드를 입력하고 가입하면 두 교회 모두 혜택을 받습니다.</p>
+      <p className="referral-desc">
+        아래 코드를 주변 교회에 알려주세요. 추천받은 교회가 결제하면{" "}
+        <b className="referral-reward">두 교회 모두 사용 기간 3개월이 추가</b>됩니다.
+      </p>
 
       <div className="referral-code-row">
         <span className="referral-code">{referral.code}</span>
@@ -73,6 +77,8 @@ export function ReferralCard() {
         {referral.referredByChurchName ? (
           <p className="referral-applied">
             추천인 등록 완료 — <b>{referral.referredByChurchName}</b>
+            <br />
+            <span className="form-hint">결제가 확인되면 두 교회 모두 사용 기간 3개월이 추가됩니다.</span>
           </p>
         ) : referral.canApply ? (
           <>
@@ -94,7 +100,9 @@ export function ReferralCard() {
                 {applying ? "등록 중" : "등록"}
               </button>
             </div>
-            <span className="form-hint">추천해주신 교회에서 받은 코드예요. 한 번 등록하면 변경할 수 없습니다.</span>
+            <span className="form-hint">
+              추천해주신 교회에서 받은 코드예요. 한 번 등록하면 변경할 수 없고, 결제 전까지만 등록할 수 있습니다. 혜택은 결제가 확인되면 순차적으로 반영됩니다.
+            </span>
             {applyError && <span className="referral-apply-error">{applyError}</span>}
           </>
         ) : (

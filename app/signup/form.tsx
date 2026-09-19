@@ -542,7 +542,7 @@ export function SignupForm() {
                     onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10))}
                     maxLength={10}
                   />
-                  <span className="form-hint">추천해주신 교회에서 받은 코드를 입력해주세요. 나중에 관리자 화면에서도 넣을 수 있어요.</span>
+                  <span className="form-hint">결제 시 두 교회 모두 사용 기간 3개월이 추가됩니다. 나중에 관리자 화면에서도 넣을 수 있어요.</span>
                 </div>
               ) : (
                 <button type="button" className="signup-referral-toggle" onClick={() => setReferralOpen(true)}>
