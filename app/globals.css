@@ -878,21 +878,28 @@ main { flex: 1; }
 .admin-sidebar-pill.billing { background: oklch(0.6 0.16 250 / 0.14); color: oklch(0.45 0.18 250); }
 .admin-sidebar-item-billing.active { border-color: oklch(0.6 0.16 250 / 0.5); }
 
-/* 추천인 이벤트 카드 — 결제 화면 맨 위(입금 계좌 카드 위)에 놓인다. */
-.referral-card { border: 1px solid var(--line); border-radius: var(--r-lg, 14px); background: var(--surface-2); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+/* 추천인 이벤트 카드 — 결제 화면 맨 위(입금 계좌 카드 위)에 놓인다.
+   '우리 코드 알려주기'와 '받은 코드 등록하기'는 하는 일이 달라 블록으로 분리한다. */
+.referral-card { border: 1px solid var(--line); border-radius: var(--r-lg, 14px); background: var(--surface); padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
 .referral-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .referral-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; color: var(--accent); }
-.referral-count { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); }
-.referral-desc { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); word-break: keep-all; }
-.referral-reward { color: var(--primary-deep); font-weight: 800; }
-.referral-code-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); flex-wrap: wrap; }
-.referral-code { font-family: var(--font-mono); font-size: 22px; font-weight: 800; letter-spacing: 0.14em; color: var(--ink); }
-.referral-apply { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
-.referral-apply-label { font-size: 13px; font-weight: 700; color: var(--ink-2); }
-.referral-apply-row { display: flex; align-items: center; gap: 8px; }
-.referral-apply-row input { flex: 1; min-width: 0; font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.referral-count { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-2); }
+.referral-reward { margin: 0; padding: 12px 14px; border-radius: var(--r-md); background: var(--bg-tinted); font-size: 13.5px; line-height: 1.5; color: var(--ink-2); word-break: keep-all; }
+.referral-reward b { color: var(--primary-deep); font-weight: 800; }
+.referral-block { display: flex; flex-direction: column; gap: 8px; }
+.referral-block-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.referral-block-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+.referral-block-desc { font-size: 12px; color: var(--muted); }
+.referral-code-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 10px 10px 16px; border-radius: var(--r-md); background: var(--surface-2); border: 1px dashed var(--line); flex-wrap: wrap; }
+.referral-code { font-family: var(--font-mono); font-size: 20px; font-weight: 800; letter-spacing: 0.16em; color: var(--ink); }
+.referral-apply-row { display: flex; align-items: center; gap: 8px; max-width: 420px; }
+.referral-apply-row input { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 15px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--ink); transition: border-color 0.15s ease; }
+.referral-apply-row input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px oklch(0.62 0.14 245 / 0.12); }
+.referral-apply-row input::placeholder { font-weight: 500; letter-spacing: 0.14em; color: var(--muted-2); }
+.referral-apply-row input:disabled { opacity: 0.6; }
+.referral-note { font-size: 12.5px; color: var(--muted); }
 .referral-apply-error { font-size: 12.5px; font-weight: 600; color: oklch(0.55 0.15 28); }
-.referral-applied { margin: 0; font-size: 13px; color: var(--ink-2); }
+.referral-applied { margin: 0; font-size: 13.5px; color: var(--ink-2); }
 .payment-account-card { border: 1px solid var(--border); border-radius: var(--r-lg, 14px); background: linear-gradient(180deg, oklch(0.6 0.16 250 / 0.06), transparent); padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
 .payment-account-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .payment-account-bank { font-size: 15px; font-weight: 700; color: var(--ink); }
@@ -1661,9 +1668,10 @@ main { flex: 1; }
 
   /* 결제 계좌 카드: 계좌번호는 한 줄로, 요금 카드는 1열로 스택해 글자 줄바꿈을 막는다. */
   .referral-card { padding: 14px 16px; }
-  .referral-code-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .referral-code-row { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px; }
   .referral-code { font-size: 19px; text-align: center; }
   .referral-code-row .btn { width: 100%; justify-content: center; }
+  .referral-apply-row { max-width: none; }
   .payment-account-card { padding: 16px; }
   .payment-account-number-row { flex-direction: column; align-items: stretch; gap: 10px; }
   .payment-account-number { font-size: 19px; }

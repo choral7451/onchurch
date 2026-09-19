@@ -58,39 +58,50 @@ export function ReferralCard() {
     <div className="referral-card">
       <div className="referral-head">
         <span className="referral-eyebrow">추천 이벤트</span>
-        <span className="referral-count">{referral.referredCount}개 교회 가입</span>
+        {referral.referredCount > 0 && <span className="referral-count">추천한 교회 {referral.referredCount}곳</span>}
       </div>
 
-      <p className="referral-desc">
-        아래 코드를 주변 교회에 알려주세요. 추천받은 교회가 결제하면{" "}
-        <b className="referral-reward">두 교회 모두 사용 기간 3개월이 추가</b>됩니다.
+      <p className="referral-reward">
+        추천받은 교회가 결제하면 <b>두 교회 모두 사용 기간 3개월</b>이 추가됩니다.
       </p>
 
-      <div className="referral-code-row">
-        <span className="referral-code">{referral.code}</span>
-        <button type="button" className="btn btn-secondary" onClick={copyCode}>
-          {copied ? "복사됨 ✓" : "코드 복사"}
-        </button>
+      <div className="referral-block">
+        <div className="referral-block-head">
+          <span className="referral-block-title">우리 교회 코드</span>
+          <span className="referral-block-desc">주변 교회에 알려주세요</span>
+        </div>
+        <div className="referral-code-row">
+          <span className="referral-code">{referral.code}</span>
+          <button type="button" className="btn btn-secondary" onClick={copyCode}>
+            {copied ? "복사됨 ✓" : "코드 복사"}
+          </button>
+        </div>
       </div>
 
-      <div className="referral-apply">
+      <div className="referral-block">
         {referral.referredByChurchName ? (
-          <p className="referral-applied">
-            추천인 등록 완료 — <b>{referral.referredByChurchName}</b>
-            <br />
-            <span className="form-hint">결제가 확인되면 두 교회 모두 사용 기간 3개월이 추가됩니다.</span>
-          </p>
+          <>
+            <div className="referral-block-head">
+              <span className="referral-block-title">받은 추천인 코드</span>
+              <span className="referral-block-desc">등록 완료</span>
+            </div>
+            <p className="referral-applied">
+              <b>{referral.referredByChurchName}</b> 교회의 추천으로 등록되었습니다.
+            </p>
+          </>
         ) : referral.canApply ? (
           <>
-            <label className="referral-apply-label" htmlFor="referral-input">
-              추천인 코드 입력
-            </label>
+            <div className="referral-block-head">
+              <span className="referral-block-title">받은 추천인 코드</span>
+              <span className="referral-block-desc">있으면 등록해주세요</span>
+            </div>
             <div className="referral-apply-row">
               <input
                 id="referral-input"
                 type="text"
                 autoComplete="off"
-                placeholder="예: A3K9QF"
+                placeholder="A3K9QF"
+                aria-label="받은 추천인 코드"
                 value={input}
                 onChange={(e) => setInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10))}
                 maxLength={10}
@@ -100,13 +111,16 @@ export function ReferralCard() {
                 {applying ? "등록 중" : "등록"}
               </button>
             </div>
-            <span className="form-hint">
-              추천해주신 교회에서 받은 코드예요. 한 번 등록하면 변경할 수 없고, 결제 전까지만 등록할 수 있습니다. 혜택은 결제가 확인되면 순차적으로 반영됩니다.
-            </span>
+            <span className="referral-note">결제 전까지 한 번만 등록할 수 있어요.</span>
             {applyError && <span className="referral-apply-error">{applyError}</span>}
           </>
         ) : (
-          <p className="form-hint">첫 결제가 확인된 뒤에는 추천인 코드를 등록할 수 없습니다.</p>
+          <>
+            <div className="referral-block-head">
+              <span className="referral-block-title">받은 추천인 코드</span>
+            </div>
+            <span className="referral-note">첫 결제가 확인된 뒤에는 등록할 수 없습니다.</span>
+          </>
         )}
       </div>
     </div>
