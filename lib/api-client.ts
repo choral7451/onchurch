@@ -726,6 +726,8 @@ export type ChurchOverview = {
   isPublished: boolean;
   ownerName: string | null;
   ownerPhone: string | null;
+  // 담임목사 이름(교회소개 > 담임목사). 미등록이면 null.
+  pastorName: string | null;
   freeTrialStartAt: string | null;
   freeTrialUntil: string | null;
   paidUntil: string | null;

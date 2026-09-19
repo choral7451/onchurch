@@ -451,7 +451,7 @@ export function ChurchesFeature() {
           type="text"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          placeholder="교회명, 소유자명, 연락처 검색"
+          placeholder="교회명, 목사님 이름, 소유자명, 연락처 검색"
           className="w-full max-w-md flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
         />
         <label className="flex shrink-0 cursor-pointer select-none items-center gap-2 text-sm text-gray-700">
@@ -482,7 +482,7 @@ export function ChurchesFeature() {
                   <th className="px-4 py-3">마지막 접속</th>
                   <th className="px-4 py-3">운영</th>
                   <th className="px-4 py-3">주소</th>
-                  <th className="px-4 py-3">교회소유자이름</th>
+                  <th className="px-4 py-3">목사님 이름</th>
                   <th className="px-4 py-3">소유자 연락처</th>
                   <th className="px-4 py-3">프리티어 기간</th>
                   <th className="px-4 py-3">결제기간</th>
@@ -520,7 +520,9 @@ export function ChurchesFeature() {
                         {c.address ?? "—"}
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">{c.ownerName ?? "—"}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {c.pastorName ?? <span className="text-gray-400">미등록</span>}
+                    </td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{c.ownerPhone ?? "—"}</td>
                     <td className="px-4 py-3">
                       <PeriodCell
