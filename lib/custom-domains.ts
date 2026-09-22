@@ -38,6 +38,9 @@ let cachedIndex: DomainIndex | null = null;
 let cachedAt = 0;
 let nextAttemptAt = 0;
 let inflight: Promise<DomainIndex> | null = null;
+// 진단용 — Proxy 안에서 매핑 조회가 왜 비었는지 밖에서 볼 방법이 없어 임시로 노출한다.
+let lastError: string | null = null;
+let loadCount = 0;
 
 function buildIndex(mappings: { host: string; slug: string }[]): DomainIndex {
   const index: DomainIndex = new Map();
@@ -79,9 +82,12 @@ async function getIndex(): Promise<DomainIndex> {
       cachedIndex = index;
       cachedAt = Date.now();
       nextAttemptAt = 0;
+      lastError = null;
+      loadCount += 1;
       return index;
     })
-    .catch(() => {
+    .catch((e) => {
+      lastError = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
       // 서버 장애로 교회 홈페이지가 랜딩 페이지로 바뀌면 안 되므로 이전 매핑을 그대로 쓴다.
       nextAttemptAt = Date.now() + RETRY_MS;
       return cachedIndex ?? new Map();
@@ -102,4 +108,15 @@ export async function matchCustomDomain(host: string | null | undefined): Promis
   if (!hostname || isServiceHost(hostname)) return null;
   const index = await getIndex();
   return index.get(hostname) ?? null;
+}
+
+/** 진단용 — 매핑 캐시 상태. 임시 조사용이며 정리 대상. */
+export function domainIndexStatus(): string {
+  return JSON.stringify({
+    size: cachedIndex ? cachedIndex.size : -1,
+    age: cachedIndex ? Date.now() - cachedAt : -1,
+    loads: loadCount,
+    err: lastError,
+    base: API_BASE,
+  });
 }

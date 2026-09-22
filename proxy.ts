@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { KNOWN_TENANT_SLUGS } from "@/lib/tenants";
-import { matchCustomDomain } from "@/lib/custom-domains";
+import { domainIndexStatus, matchCustomDomain } from "@/lib/custom-domains";
 import { ORIGINAL_PATH_HEADER, normalizeHostname } from "@/lib/host";
 
 const RESERVED = new Set(["www", "app"]);
@@ -54,6 +54,8 @@ export async function proxy(req: NextRequest) {
   // 교회가 연결한 자체 도메인 — 서브도메인과 똑같이 그 교회 사이트를 서빙한다.
   // 서비스 도메인(서브도메인·랜딩·프리뷰·로컬)이면 matchCustomDomain 이 조회 없이 null 을 준다.
   const custom = await matchCustomDomain(host);
+  // 진단용 임시 헤더 — 자체 도메인 라우팅이 간헐적으로 빠지는 원인 조사. 확인 후 제거한다.
+  const diag = domainIndexStatus();
   if (custom) {
     if (custom.isAlias) {
       // www ↔ non-www 는 대표 호스트 한쪽으로 모은다 — 같은 내용이 두 주소로 색인되지 않도록.
@@ -83,7 +85,9 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  res.headers.set("x-onchurch-diag", diag);
+  return res;
 }
 
 export const config = {
