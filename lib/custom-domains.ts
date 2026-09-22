@@ -1,27 +1,29 @@
 // 교회가 직접 보유한 도메인 → 교회 slug 매핑.
 //
-// 매핑은 DB(onchurch_churches.custom_domain)가 단일 소스이고, 서버가 전체 목록을
-// GET /onchurch/sites/domains 로 내려준다. 마스터 화면에서 도메인을 바꾸면 최대 TTL 만큼 뒤에 반영된다.
+// DB(onchurch_churches.custom_domain)가 단일 소스이고, 서버가 GET /onchurch/sites/domains 로 전체를 준다.
+// 이 매핑만으로는 접속되지 않는다 — Vercel 프로젝트 Domains 등록 + 교회 DNS 변경이 함께 끝나야 한다.
 //
-// 이 매핑만으로는 접속되지 않는다 — Vercel 프로젝트 Domains 에 대표 호스트와 www 짝을 등록하고
-// (자동 SSL) 교회 DNS 를 Vercel 로 바꾸는 작업이 함께 끝나야 한다.
-//
-// Proxy(미들웨어)에서도 쓰기 때문에 지켜야 하는 제약이 있다.
+// Proxy(미들웨어)에서 쓰기 때문에 지켜야 하는 제약이 있다.
 //   - Proxy 에서는 fetch 의 cache/next.revalidate 옵션이 무효다 → TTL 캐시를 직접 들고 있는다.
-//   - Proxy 는 CDN 에 배포될 수 있어 모듈 전역이 유지된다고 가정하면 안 된다
-//     → 캐시는 '있으면 빠른' 최적화일 뿐, 없어도 동작이 같아야 한다.
-//   - Proxy 는 느린 데이터 조회에 쓰면 안 된다
-//     → 서비스 도메인(서브도메인·랜딩·프리뷰)은 조회 없이 빠져나가고, 정체불명 호스트일 때만 조회한다.
+//   - Proxy 는 CDN 에 배포될 수 있어 모듈 전역이 유지된다고 가정하면 안 된다.
+//   - Proxy 는 느린 데이터 조회에 쓰면 안 된다.
+//
+// 그래서 조회 결과에 의존하지 않는 구조로 둔다.
+//   1. 빌드 시점 스냅샷(custom-domains.generated.ts)을 번들에 넣어 콜드 isolate 도 네트워크 없이 라우팅한다.
+//   2. 이미 아는 호스트는 기다리지 않고 바로 응답하고, 갱신은 뒤에서 한다.
+//   3. 조회에 실패해도 '빈 매핑'을 정답처럼 쓰지 않는다 — 갖고 있는 매핑을 유지한다.
+//      (실패를 정답으로 쓰면 교회 홈페이지가 랜딩 페이지로 바뀌고 robots 가 전체 차단된다)
 
+import { CUSTOM_DOMAIN_SNAPSHOT } from "@/lib/custom-domains.generated";
 import { counterpartHost, isServiceHost, normalizeHostname } from "@/lib/host";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
 const TTL_MS = 5 * 60 * 1000;
-// 조회 실패 시 매 요청마다 재시도하지 않도록 두는 간격.
-const RETRY_MS = 30 * 1000;
-// Proxy 가 이 시간 이상 막히지 않게 한다.
-const TIMEOUT_MS = 2000;
+// 조회 실패 후 재시도까지의 간격. 이 동안에도 매핑은 '갖고 있는 값'을 계속 쓴다.
+const RETRY_MS = 10 * 1000;
+const TIMEOUT_MS = 3000;
+const FETCH_ATTEMPTS = 2;
 
 export type CustomDomainEntry = {
   // 교회 slug
@@ -33,14 +35,6 @@ export type CustomDomainEntry = {
 };
 
 type DomainIndex = Map<string, CustomDomainEntry>;
-
-let cachedIndex: DomainIndex | null = null;
-let cachedAt = 0;
-let nextAttemptAt = 0;
-let inflight: Promise<DomainIndex> | null = null;
-// 진단용 — Proxy 안에서 매핑 조회가 왜 비었는지 밖에서 볼 방법이 없어 임시로 노출한다.
-let lastError: string | null = null;
-let loadCount = 0;
 
 function buildIndex(mappings: { host: string; slug: string }[]): DomainIndex {
   const index: DomainIndex = new Map();
@@ -59,64 +53,82 @@ function buildIndex(mappings: { host: string; slug: string }[]): DomainIndex {
   return index;
 }
 
+// 빌드 시점 스냅샷으로 시작한다. null 이 되는 순간이 없어야 한다.
+let cachedIndex: DomainIndex = buildIndex(CUSTOM_DOMAIN_SNAPSHOT);
+// 스냅샷은 '오래된 값'으로 본다 → 첫 요청 때 갱신을 건다.
+let cachedAt = 0;
+let nextAttemptAt = 0;
+let inflight: Promise<DomainIndex> | null = null;
+
 async function fetchIndex(): Promise<DomainIndex> {
-  const res = await fetch(`${API_BASE}/onchurch/sites/domains`, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
-  if (!res.ok) throw new Error(`domains ${res.status}`);
-  const body = await res.json();
-  const domains = body?.item?.domains;
-  return buildIndex(Array.isArray(domains) ? domains : []);
+  let lastError: unknown;
+  // 한 번의 블립으로 매핑이 통째로 비어 보이지 않도록 짧게 재시도한다.
+  for (let attempt = 0; attempt < FETCH_ATTEMPTS; attempt += 1) {
+    try {
+      const res = await fetch(`${API_BASE}/onchurch/sites/domains`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      if (!res.ok) throw new Error(`domains ${res.status}`);
+      const body = await res.json();
+      const domains = body?.item?.domains;
+      if (!Array.isArray(domains)) throw new Error("domains payload");
+      return buildIndex(domains);
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("domains fetch failed");
 }
 
-async function getIndex(): Promise<DomainIndex> {
-  const now = Date.now();
-  if (cachedIndex && now - cachedAt < TTL_MS) return cachedIndex;
-  // 직전 조회가 실패했으면 잠시 이전 값(없으면 빈 매핑)으로 버틴다.
-  if (!cachedIndex && now < nextAttemptAt) return new Map();
-  if (cachedIndex && now < nextAttemptAt) return cachedIndex;
-
+function refresh(): Promise<DomainIndex> {
   inflight ??= fetchIndex()
     .then((index) => {
       cachedIndex = index;
       cachedAt = Date.now();
       nextAttemptAt = 0;
-      lastError = null;
-      loadCount += 1;
       return index;
     })
-    .catch((e) => {
-      lastError = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
-      // 서버 장애로 교회 홈페이지가 랜딩 페이지로 바뀌면 안 되므로 이전 매핑을 그대로 쓴다.
+    .catch(() => {
+      // 갖고 있는 매핑을 그대로 유지한다 — 실패를 '연결된 도메인 없음'으로 해석하지 않는다.
       nextAttemptAt = Date.now() + RETRY_MS;
-      return cachedIndex ?? new Map();
+      return cachedIndex;
     })
     .finally(() => {
       inflight = null;
     });
-
   return inflight;
+}
+
+function isStale(): boolean {
+  const now = Date.now();
+  return now - cachedAt >= TTL_MS && now >= nextAttemptAt;
 }
 
 /**
  * 요청 호스트에 연결된 교회. 자체 도메인이 아니면 null.
- * 서비스 도메인은 조회 없이 즉시 null 이라 Proxy 의 일반 경로에는 비용이 없다.
+ *
+ * 이미 아는 호스트는 네트워크를 기다리지 않는다 — 배포 이후 추가된 도메인(스냅샷에 없는 호스트)일 때만
+ * 조회를 기다린다. waitUntil 을 주면 갱신을 응답 이후로 미룬다.
  */
-export async function matchCustomDomain(host: string | null | undefined): Promise<CustomDomainEntry | null> {
+export async function matchCustomDomain(
+  host: string | null | undefined,
+  waitUntil?: (promise: Promise<unknown>) => void,
+): Promise<CustomDomainEntry | null> {
   const hostname = normalizeHostname(host);
   if (!hostname || isServiceHost(hostname)) return null;
-  const index = await getIndex();
-  return index.get(hostname) ?? null;
-}
 
-/** 진단용 — 매핑 캐시 상태. 임시 조사용이며 정리 대상. */
-export function domainIndexStatus(): string {
-  return JSON.stringify({
-    size: cachedIndex ? cachedIndex.size : -1,
-    age: cachedIndex ? Date.now() - cachedAt : -1,
-    loads: loadCount,
-    err: lastError,
-    base: API_BASE,
-  });
+  const known = cachedIndex.get(hostname);
+  if (known) {
+    if (isStale()) {
+      const p = refresh();
+      if (waitUntil) waitUntil(p);
+    }
+    return known;
+  }
+
+  // 모르는 호스트 — 새로 연결한 도메인일 수 있으므로 이때만 기다린다.
+  if (!isStale()) return null;
+  const index = await refresh();
+  return index.get(hostname) ?? null;
 }
