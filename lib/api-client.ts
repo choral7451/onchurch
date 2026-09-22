@@ -36,6 +36,8 @@ export type Church = {
   // 공개 홈페이지 템플릿 ID (미지정 시 'default'). 변경은 마스터 전용이고 관리자에서는 읽기만 —
   // 템플릿마다 홈 섹션 구성이 달라서 '홈화면 순서' 편집에 필요하다.
   siteTemplate: string;
+  // 교회가 연결한 자체 도메인 대표 호스트. 미연결이면 null. 변경은 마스터 전용이고 관리자에서는 읽기만.
+  customDomain: string | null;
   isPublished: boolean;
   // 최초 사이트 오픈(첫 공개) 시각. 한 번이라도 오픈하면 채워지고 OFF해도 유지 — 온보딩 완료 판단에 사용.
   firstPublishedAt: string | null;
@@ -638,6 +640,13 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ naverVerification }),
     }),
+  // 교회 자체 도메인 연결/해제. 저장은 매핑일 뿐이고, 실제 접속에는 Vercel Domains 등록 + 교회 DNS 변경이 함께 필요하다.
+  updateChurchCustomDomain: (churchId: number, customDomain: string | null) =>
+    request<{ customDomain: string | null }>(`/onchurch/master/churches/${churchId}/custom-domain`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ customDomain }),
+    }),
   // 교회 공개 홈페이지 템플릿 설정. null이면 'default'로 초기화. 응답으로 정규화된 값 반환.
   updateChurchSiteTemplate: (churchId: number, siteTemplate: string | null) =>
     request<{ siteTemplate: string }>(`/onchurch/master/churches/${churchId}/site-template`, {
@@ -734,6 +743,8 @@ export type ChurchOverview = {
   isFreeTrialActive: boolean;
   isPaidActive: boolean;
   naverVerification: string | null;
+  // 교회가 연결한 자체 도메인 대표 호스트. 미연결이면 null.
+  customDomain: string | null;
   // 공개 홈페이지 템플릿 ID. 미지정 시 'default'.
   siteTemplate: string;
   // 추천인 이벤트: 이 교회의 추천 코드(미발급이면 null).

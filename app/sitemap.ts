@@ -34,8 +34,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
     const churches = await fetchPublicChurchList();
     for (const c of churches) {
+      // 자체 도메인이 연결된 교회는 서브도메인이 아니라 대표 주소를 싣는다(서브도메인은 canonical 로 대표 주소를 가리킨다).
+      const churchUrl = c.customDomain
+        ? `https://${c.customDomain}/`
+        : `${origin.replace("://", `://${c.slug}.`)}/`;
       entries.push({
-        url: `${origin.replace("://", `://${c.slug}.`)}/`,
+        url: churchUrl,
         lastModified: now,
         changeFrequency: "weekly",
         priority: 0.8,

@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { KNOWN_TENANT_SLUGS } from "@/lib/tenants";
+import { matchCustomDomain } from "@/lib/custom-domains";
+import { ORIGINAL_PATH_HEADER, normalizeHostname } from "@/lib/host";
 
 const RESERVED = new Set(["www", "app"]);
 
@@ -9,7 +11,7 @@ const ROOT_DOMAINS = [
 ];
 
 function parseHost(host: string): { hostname: string; root: string | null; sub: string | null } {
-  const hostname = host.split(":")[0] ?? "";
+  const hostname = normalizeHostname(host);
   if (!hostname) return { hostname, root: null, sub: null };
 
   if (hostname === "localhost" || hostname === "127.0.0.1") {
@@ -32,16 +34,43 @@ function parseHost(host: string): { hostname: string; root: string | null; sub: 
 
 const KNOWN_SLUGS = new Set(KNOWN_TENANT_SLUGS);
 
-export function proxy(req: NextRequest) {
-  const { root, sub } = parseHost(req.headers.get("host") ?? "");
+// 교회 사이트 경로(/{slug}/...)로 rewrite 한다. 주소창은 그대로 유지된다.
+function rewriteToTenant(req: NextRequest, slug: string) {
+  const url = req.nextUrl.clone();
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set(ORIGINAL_PATH_HEADER, `${req.nextUrl.pathname}${req.nextUrl.search}`);
 
-  if (sub && !RESERVED.has(sub)) {
-    const url = req.nextUrl.clone();
-    if (!url.pathname.startsWith(`/${sub}`)) {
-      url.pathname = `/${sub}${url.pathname === "/" ? "" : url.pathname}`;
-      return NextResponse.rewrite(url);
+  // 경계까지 본다 — slug 가 'eun' 일 때 '/eunseok' 을 이미 rewrite 된 경로로 오인하면 안 된다.
+  if (url.pathname === `/${slug}` || url.pathname.startsWith(`/${slug}/`)) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+  url.pathname = `/${slug}${url.pathname === "/" ? "" : url.pathname}`;
+  return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+}
+
+export async function proxy(req: NextRequest) {
+  const host = req.headers.get("host") ?? "";
+
+  // 교회가 연결한 자체 도메인 — 서브도메인과 똑같이 그 교회 사이트를 서빙한다.
+  // 서비스 도메인(서브도메인·랜딩·프리뷰·로컬)이면 matchCustomDomain 이 조회 없이 null 을 준다.
+  const custom = await matchCustomDomain(host);
+  if (custom) {
+    if (custom.isAlias) {
+      // www ↔ non-www 는 대표 호스트 한쪽으로 모은다 — 같은 내용이 두 주소로 색인되지 않도록.
+      return NextResponse.redirect(
+        new URL(`https://${custom.primaryHost}${req.nextUrl.pathname}${req.nextUrl.search}`),
+        308,
+      );
     }
-    return NextResponse.next();
+    return rewriteToTenant(req, custom.slug);
+  }
+
+  const { root, sub } = parseHost(host);
+
+  // 자체 도메인이 연결된 교회의 서브도메인 접속은 app/[tenant]/layout.tsx 에서 대표 주소로 308 한다.
+  // (여기서 처리하면 서브도메인 요청마다 매핑 조회가 생겨 Proxy 가 느려진다)
+  if (sub && !RESERVED.has(sub)) {
+    return rewriteToTenant(req, sub);
   }
 
   if (root && !sub) {

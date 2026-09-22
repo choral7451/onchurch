@@ -25,7 +25,8 @@ export async function GET(): Promise<Response> {
   if (resolved.kind === "root") {
     const churches = await fetchPublicChurchList();
     const items: FeedItem[] = churches.map((c) => {
-      const churchUrl = origin.replace("://", `://${c.slug}.`);
+      // 자체 도메인이 연결된 교회는 대표 주소를 싣는다.
+      const churchUrl = c.customDomain ? `https://${c.customDomain}` : origin.replace("://", `://${c.slug}.`);
       return {
         guid: `${churchUrl}/`,
         link: `${churchUrl}/`,

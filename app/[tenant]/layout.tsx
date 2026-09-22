@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { UtilBar } from "@/components/shell/util-bar";
 import { Nav } from "@/components/shell/nav";
@@ -12,6 +12,7 @@ import {
   fetchPublicPastor,
   buildChurchMetadata,
   buildChurchJsonLd,
+  customDomainRedirectUrl,
   getSiteOrigin,
   getTenantPathPrefix,
 } from "@/lib/seo";
@@ -36,6 +37,10 @@ export default async function TenantLayout({
   const { tenant } = await params;
   const church = await fetchPublicChurch(tenant);
   if (!church) notFound();
+
+  // 자체 도메인이 연결된 교회는 서브도메인 접속을 대표 주소로 보낸다 — 주소를 하나로 모은다.
+  const customDomainUrl = await customDomainRedirectUrl(church);
+  if (customDomainUrl) permanentRedirect(customDomainUrl);
 
   const [pastor, origin, tenantPathPrefix, customPages] = await Promise.all([
     fetchPublicPastor(tenant),

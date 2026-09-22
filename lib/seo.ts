@@ -2,14 +2,16 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
 import type { PublicChurch } from "@/lib/public-site";
+import { matchCustomDomain } from "@/lib/custom-domains";
+import { ORIGINAL_PATH_HEADER, isServiceHost, normalizeHostname } from "@/lib/host";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 export const ROOT_DOMAINS = ["everychurch.co.kr", "onchurch.kr"];
 
 // 현재 요청 host 가 어떤 모드인지 판별
-// - "subdomain": tenant.{root} 형태 → 서브도메인이 곧 한 교회 사이트
+// - "subdomain": tenant.{root} 형태이거나 교회가 연결한 자체 도메인 → 한 교회 사이트
 // - "root": ROOT_DOMAINS 자체 → 서비스 랜딩
-// - "unknown": 그 외
+// - "unknown": 그 외 (robots 전체 차단 대상)
 export type HostKind = "subdomain" | "root" | "unknown";
 
 export type ResolvedHost = {
@@ -20,7 +22,7 @@ export type ResolvedHost = {
 
 export async function resolveHost(): Promise<ResolvedHost> {
   const h = await headers();
-  const host = ((h.get("host") ?? "").split(",")[0] ?? "").split(":")[0]?.trim() ?? "";
+  const host = normalizeHostname(h.get("host"));
   for (const root of ROOT_DOMAINS) {
     if (host === root) return { kind: "root", host, tenant: null };
     if (host.endsWith(`.${root}`)) {
@@ -31,6 +33,10 @@ export async function resolveHost(): Promise<ResolvedHost> {
   if (host.endsWith(".localhost")) {
     return { kind: "subdomain", host, tenant: host.slice(0, -".localhost".length) };
   }
+  // 교회가 연결한 자체 도메인. 서브도메인과 동일하게 '한 교회 사이트'로 다룬다 —
+  // 이 분기가 없으면 robots 가 전체 차단, sitemap 이 빈 값으로 나가 검색 노출이 죽는다.
+  const custom = await matchCustomDomain(host);
+  if (custom) return { kind: "subdomain", host, tenant: custom.slug };
   return { kind: "unknown", host, tenant: null };
 }
 
@@ -83,13 +89,28 @@ export async function getSiteOrigin(): Promise<string> {
   return `${proto}://${host}`;
 }
 
-// 서브도메인 사이트면 ""(루트), path-prefix 사이트면 "/{tenant}"
+// 서브도메인·자체 도메인 사이트면 ""(루트), path-prefix 사이트면 "/{tenant}"
 export async function getTenantPathPrefix(tenant: string): Promise<string> {
   const h = await headers();
-  const host = (h.get("host") ?? "").split(":")[0];
+  const host = normalizeHostname(h.get("host"));
   const isSubdomain =
     ROOT_DOMAINS.some((r) => host.endsWith(`.${r}`)) || host.endsWith(".localhost");
-  return isSubdomain ? "" : `/${tenant}`;
+  if (isSubdomain) return "";
+  // 자체 도메인은 Proxy 가 /{slug} 로 rewrite 하지만 공개 주소에는 prefix 가 없다.
+  if (!isServiceHost(host) && (await matchCustomDomain(host))) return "";
+  return `/${tenant}`;
+}
+
+// 자체 도메인이 연결된 교회에 서브도메인으로 들어온 경우 보낼 대표 주소. 보낼 필요가 없으면 null.
+// 로컬(.localhost)·프리뷰에서는 보내지 않는다 — 개발 중에 실제 교회 도메인으로 튀면 안 된다.
+export async function customDomainRedirectUrl(church: PublicChurch): Promise<string | null> {
+  if (!church.customDomain) return null;
+  const h = await headers();
+  const host = normalizeHostname(h.get("host"));
+  if (host === church.customDomain) return null;
+  if (!ROOT_DOMAINS.some((r) => host.endsWith(`.${r}`))) return null;
+  const path = h.get(ORIGINAL_PATH_HEADER) || "/";
+  return `https://${church.customDomain}${path}`;
 }
 
 function compact(s: string | null | undefined): string {
@@ -155,7 +176,11 @@ export async function buildChurchMetadata(
   const origin = await getSiteOrigin();
   const pathPrefix = await getTenantPathPrefix(church.slug);
   const path = options.path ?? "";
-  const url = `${origin}${pathPrefix}${path}`;
+  // 자체 도메인이 연결된 교회는 서브도메인으로 들어와도 canonical 은 대표 주소를 가리킨다 —
+  // 같은 내용이 두 주소로 색인되면 검색 평가가 갈린다.
+  const canonicalOrigin = church.customDomain ? `https://${church.customDomain}` : origin;
+  const canonicalPrefix = church.customDomain ? "" : pathPrefix;
+  const url = `${canonicalOrigin}${canonicalPrefix}${path}`;
 
   const tagline = compact(church.tagline);
   // 네이버 권장: 제목 40자 이내. 초과 시 태그라인 생략하고 교회명만.

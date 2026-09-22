@@ -1,3 +1,5 @@
+import { isServiceHost } from "@/lib/host";
+
 const ROOT_DOMAINS = ["everychurch.co.kr", "onchurch.kr"];
 
 // 교회 홈페이지(서브도메인) URL을 만든다. 개발(localhost 포함)에서도 서브도메인으로 접근한다.
@@ -27,5 +29,7 @@ export function buildAdminUrl(): string {
     if (hostname.endsWith(`.${root}`)) return `${protocol}//${root}${portSuffix}/admin`;
   }
   if (hostname.endsWith(".localhost")) return `${protocol}//localhost${portSuffix}/admin`;
+  // 교회 자체 도메인에는 관리자 콘솔이 없다(Proxy 가 /{slug} 로 rewrite 해서 404). 루트 도메인으로 보낸다.
+  if (!isServiceHost(hostname ?? "")) return `https://${ROOT_DOMAINS[0]}/admin`;
   return "/admin";
 }

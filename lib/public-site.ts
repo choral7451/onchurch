@@ -31,6 +31,8 @@ export type PublicChurch = {
   // 공개 홈페이지 템플릿 ID. 지원 목록·렌더 매핑은 components/templates/registry.tsx(레지스트리)가 관리.
   // 지정은 마스터 페이지의 교회 목록에서 변경. 미등록 값은 default 홈으로 폴백.
   siteTemplate: string;
+  // 교회가 연결한 자체 도메인 대표 호스트. 미연결이면 null. 있으면 이 주소가 사이트의 대표 주소가 된다.
+  customDomain: string | null;
   isPublished: boolean;
 };
 
@@ -69,6 +71,8 @@ export type PublicChurchSummary = {
   eng: string | null;
   tagline: string | null;
   logoUrl: string | null;
+  // 자체 도메인 대표 호스트. 미연결이면 null.
+  customDomain: string | null;
 };
 
 export const fetchPublicChurchList = cache(async (): Promise<PublicChurchSummary[]> => {
