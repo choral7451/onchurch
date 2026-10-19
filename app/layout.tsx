@@ -46,7 +46,7 @@ const pretendard = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://everychurch.co.kr"),
   title: {
-    default: "온교회 — 교회 홈페이지 제작·만들기 5분 빌더",
+    default: "교회 홈페이지 무료 제작, 5분 완성 | 온교회",
     template: "%s | 온교회",
   },
   description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성되는 빌더. 월 1만원, 7일 무료 체험.",
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: "https://everychurch.co.kr",
     siteName: "온교회",
-    title: "온교회 — 교회 홈페이지 제작·만들기 5분 빌더",
+    title: "교회 홈페이지 무료 제작, 5분 완성 | 온교회",
     description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료 체험.",
     images: [
       { url: "/everychurch-logo.jpeg", width: 2048, height: 2048, alt: "온교회" },
@@ -91,7 +91,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "온교회 — 교회 홈페이지 제작 빌더",
+    title: "교회 홈페이지 무료 제작, 5분 완성 | 온교회",
     description: "교회 홈페이지 제작, 코딩 없이 5분이면 완성. 월 1만원, 7일 무료.",
     images: ["/everychurch-logo.jpeg"],
   },
