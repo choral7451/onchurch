@@ -47,6 +47,7 @@ import { SermonsEditor } from "./page-editors/sermons";
 import { HomeOrderEditor } from "./page-editors/home-order";
 import { SiteTemplateEditor } from "./page-editors/site-template";
 import { HomeDesignEditor } from "./page-editors/home-design";
+import { StartHome } from "./page-editors/start-home";
 import { CustomPageEditor } from "./page-editors/custom-page";
 import { QrCodesBlock } from "./page-editors/qr-codes";
 import { ReferralCard } from "./page-editors/referral";
@@ -100,9 +101,26 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
+type SectionKey = "start" | "home" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
 
 type NavGroup = "home" | "saints";
+
+// 테스트 교회 전용 5개 영역 사이드바(시작 화면 · 디자인 · 콘텐츠 · 성도관리 · 설정). 기존 교회는 NavGroup 사이드바 그대로.
+type AreaKey = "home" | "design" | "content" | "saints" | "settings";
+const AREA_META: { key: AreaKey; label: string; icon: keyof typeof Icon }[] = [
+  { key: "home", label: "시작 화면", icon: "home" },
+  { key: "design", label: "디자인", icon: "image" },
+  { key: "content", label: "콘텐츠", icon: "bible" },
+  { key: "saints", label: "성도관리", icon: "users" },
+  { key: "settings", label: "설정", icon: "gear" },
+];
+function sectionArea(key: SectionKey): AreaKey {
+  if (key === "home" || key === "start") return "home";
+  if (key === "home-order" || key === "logo" || key === "banners") return "design";
+  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin") return "content";
+  if (key === "saints-roster" || key === "visitations" || key === "attendance" || key === "members") return "saints";
+  return "settings";
+}
 
 function formatYMD(iso: string): string {
   const d = new Date(iso);
@@ -254,9 +272,30 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [visitationReturnSaintId, setVisitationReturnSaintId] = useState<number | null>(null);
   const [saintFocusId, setSaintFocusId] = useState<number | null>(null);
 
+  // 테스트 교회 전용 5개 영역 사이드바에서 현재 펼쳐진 영역. 섹션을 열면 그 섹션의 영역으로 따라간다.
+  const [areaV2, setAreaV2] = useState<AreaKey>("home");
+
   function openSection(key: SectionKey) {
     setActiveSection(key);
+    setAreaV2(sectionArea(key));
     setMobileDetail(true);
+  }
+
+  // 5개 영역 사이드바의 영역 탭. 시작 화면은 하위 항목이 없어 바로 열고, 나머지는 첫 항목을 연다.
+  function selectArea(area: AreaKey) {
+    if (area === "saints" && saintsLocked) {
+      setModal("payment");
+      return;
+    }
+    setAreaV2(area);
+    setMobileDetail(false);
+    if (area === "home") {
+      setActiveSection("home");
+      setMobileDetail(true);
+      return;
+    }
+    const first: Record<Exclude<AreaKey, "home">, SectionKey> = { design: "home-order", content: "page:about" as SectionKey, saints: "saints-roster", settings: "site" };
+    setActiveSection(first[area]);
   }
 
   function selectNavGroup(group: NavGroup) {
@@ -525,8 +564,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   // 온보딩을 끝낸(첫 오픈 = first_published_at not null) 교회만 '시작하기'에서 기본 정보로 이동.
   useEffect(() => {
-    if (loaded && onboardingDone && activeSection === "start") setActiveSection("site");
-  }, [loaded, onboardingDone, activeSection]);
+    if (loaded && onboardingDone && activeSection === "start") setActiveSection(isTest ? "home" : "site");
+  }, [loaded, onboardingDone, activeSection, isTest]);
 
   // 시작하기 화면: 처음 진입 시(및 저장으로 어떤 단계든 완료 상태가 바뀔 때마다)
   // 가장 빠른 미완료 단계만 펼친다. 완료된 단계는 닫히고 다음 미완료 단계가 열린다.
@@ -1265,7 +1304,211 @@ export function AdminApp({ initial }: { initial: Initial }) {
       <main className="admin-main">
         <form onSubmit={onSave} className={`admin-layout ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
-          {onboardingDone && (
+          {onboardingDone && isTest && (
+          <aside className="admin-sidebar admin-sidebar-v2">
+            <div className="admin-sidebar-group admin-sidebar-areas">
+              {AREA_META.map((a) => {
+                const AreaIcon = Icon[a.icon];
+                return (
+                  <button
+                    key={a.key}
+                    type="button"
+                    className={`admin-sidebar-item admin-sidebar-area ${areaV2 === a.key ? "active" : ""}`}
+                    aria-current={areaV2 === a.key ? "page" : undefined}
+                    onClick={() => selectArea(a.key)}
+                  >
+                    <AreaIcon style={{ width: 17, height: 17 }} />
+                    <span className="admin-sidebar-item-label">{a.label}</span>
+                    {a.key === "saints" && saintsLocked && <span className="admin-sidebar-pill optional">결제</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {areaV2 === "design" && (
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">디자인</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "home-order" ? "active" : ""}`}
+                onClick={() => openSection("home-order")}
+              >
+                <span className="admin-sidebar-item-label">색상 · 섹션</span>
+                <span className="admin-sidebar-pill optional">홈</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "logo" ? "active" : ""}`}
+                onClick={() => openSection("logo")}
+              >
+                <span className="admin-sidebar-item-label">로고</span>
+                <span className="admin-sidebar-pill optional">선택</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "banners" ? "active" : ""}`}
+                onClick={() => openSection("banners")}
+              >
+                <span className="admin-sidebar-item-label">홈 배너</span>
+                <span className="admin-sidebar-pill optional">선택</span>
+              </button>
+            </div>
+            )}
+
+            {areaV2 === "content" && (
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">콘텐츠</div>
+              {initial.nav.filter((n) => n.id !== "directions").map((n) => {
+                const on = boards[n.id] ?? true;
+                const isActive = activeSection === `page:${n.id}`;
+                const isRequired = n.id === "about" || n.id === "worship";
+                const requiredFilled =
+                  n.id === "about" ? aboutFilled : n.id === "worship" ? worshipFilled : false;
+                const completionClass = isRequired
+                  ? requiredFilled
+                    ? "is-complete"
+                    : "is-incomplete"
+                  : "";
+                return (
+                  <div
+                    key={n.id}
+                    className={`admin-sidebar-page ${isActive ? "active" : ""} ${completionClass}`}
+                  >
+                    <button
+                      type="button"
+                      className="admin-sidebar-page-label"
+                      onClick={() => openSection(`page:${n.id}` as SectionKey)}
+                    >
+                      <span>{n.label}</span>
+                    </button>
+                    {isRequired ? (
+                      <span
+                        className={`admin-sidebar-pill ${requiredFilled ? "complete" : "incomplete"}`}
+                        aria-label={requiredFilled ? "필수 항목 입력 완료" : "필수 항목 미입력"}
+                        style={{ fontSize: 10 }}
+                      >
+                        {requiredFilled ? "필수 ✓" : "필수 미입력"}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`toggle ${on ? "on" : ""}`}
+                        onClick={() => toggleBoard(n.id)}
+                        aria-label={`${n.label} 활성화`}
+                        aria-pressed={on}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+
+              <div className={`admin-sidebar-page ${activeSection === "custom-page" ? "active" : ""}`}>
+                <button
+                  type="button"
+                  className="admin-sidebar-page-label"
+                  onClick={() => openSection("custom-page")}
+                >
+                  <span>{customPage?.title?.trim() || "새 페이지"}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`toggle ${customPage?.isActive ? "on" : ""}`}
+                  onClick={() => void toggleCustomPage()}
+                  aria-label="새 페이지 활성화"
+                  aria-pressed={!!customPage?.isActive}
+                />
+              </div>
+            </div>
+            )}
+
+            {areaV2 === "saints" && (
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">성도관리</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "saints-roster" ? "active" : ""}`}
+                onClick={() => openSection("saints-roster")}
+              >
+                <span className="admin-sidebar-item-label">성도 명부</span>
+                <span className="admin-sidebar-pill optional">명부</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "visitations" ? "active" : ""}`}
+                onClick={() => openSection("visitations")}
+              >
+                <span className="admin-sidebar-item-label">심방 관리</span>
+                <span className="admin-sidebar-pill optional">심방</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "attendance" ? "active" : ""}`}
+                onClick={() => openSection("attendance")}
+              >
+                <span className="admin-sidebar-item-label">출석체크</span>
+                <span className="admin-sidebar-pill optional">출석</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "members" ? "active" : ""}`}
+                onClick={() => openSection("members")}
+              >
+                <span className="admin-sidebar-item-label">홈페이지 회원</span>
+                <span className="admin-sidebar-pill optional">계정</span>
+              </button>
+            </div>
+            )}
+
+            {areaV2 === "settings" && (
+            <div className="admin-sidebar-group">
+              <div className="admin-sidebar-eyebrow">설정</div>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "site" ? "active" : ""} ${siteRequiredFilled ? "is-complete" : "is-incomplete"}`}
+                onClick={() => openSection("site")}
+              >
+                <span className="admin-sidebar-item-label">기본 정보</span>
+                <span className={`admin-sidebar-pill ${siteRequiredFilled ? "complete" : "incomplete"}`}>{siteRequiredFilled ? "완료" : "필수"}</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "contact" ? "active" : ""} ${contactRequiredFilled ? "is-complete" : "is-incomplete"}`}
+                onClick={() => openSection("contact")}
+              >
+                <span className="admin-sidebar-item-label">연락처</span>
+                <span className={`admin-sidebar-pill ${contactRequiredFilled ? "complete" : "incomplete"}`}>{contactRequiredFilled ? "완료" : "필수"}</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "billing" ? "active" : ""}`}
+                onClick={() => openSection("billing")}
+              >
+                <span className="admin-sidebar-item-label">결제 · 입금 계좌</span>
+                <span className="admin-sidebar-pill optional">계좌</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-sidebar-item ${activeSection === "settings" ? "active" : ""}`}
+                onClick={() => openSection("settings")}
+              >
+                <span className="admin-sidebar-item-label">구독 · 사이트 운영</span>
+                <span className="admin-sidebar-pill optional">계정</span>
+              </button>
+              <a
+                href="http://pf.kakao.com/_slJXX/chat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="admin-sidebar-item"
+              >
+                <span className="admin-sidebar-item-label">문의</span>
+                <span className="admin-sidebar-pill optional">카카오톡</span>
+              </a>
+            </div>
+            )}
+          </aside>
+          )}
+
+          {onboardingDone && !isTest && (
           <aside className="admin-sidebar">
             <div className="admin-sidebar-switch">
               <button
@@ -1539,6 +1782,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </div>
                 </section>
               )}
+              {activeSection === "home" && isTest && (
+                <StartHome
+                  churchName={name}
+                  steps={requiredSteps}
+                  subscription={subscription}
+                  isPublished={isPublished}
+                  previewHref={previewHref}
+                  onOpen={(key) => openSection(key as SectionKey)}
+                  onClickGoHome={(e) => onClickGoHome(e, false)}
+                />
+              )}
+
               {activeSection === "start" && (
                 <section className="admin-section admin-onboard">
                   <div className="onboard-sticky">
@@ -2274,7 +2529,26 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </main>
 
       {/* 모바일 전용 바텀 네비게이션 (온보딩 완료 후). 데스크톱에서는 CSS로 숨김. */}
-      {onboardingDone && (
+      {onboardingDone && isTest && (
+        <nav className="admin-bottom-nav" aria-label="모바일 메뉴">
+          {AREA_META.map((a) => {
+            const AreaIcon = Icon[a.icon];
+            return (
+              <button
+                key={a.key}
+                type="button"
+                className={`admin-bottom-nav-item ${areaV2 === a.key ? "active" : ""}`}
+                onClick={() => { selectArea(a.key); scrollToTop(); }}
+              >
+                <AreaIcon />
+                <span>{a.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
+
+      {onboardingDone && !isTest && (
         <nav className="admin-bottom-nav" aria-label="모바일 메뉴">
           <button
             type="button"

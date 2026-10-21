@@ -1220,6 +1220,30 @@ main { flex: 1; }
 .admin-design-frame { border: 1px solid var(--line); border-radius: 0 0 var(--r-md) var(--r-md); background: #fff; overflow: hidden; height: calc(100vh - 140px); min-height: 480px; display: flex; justify-content: center; }
 .admin-design-frame iframe { width: 100%; height: 100%; border: 0; display: block; transition: max-width 0.25s; }
 .admin-design-frame.mobile iframe { max-width: 400px; }
+
+/* 테스트 교회 전용 5개 영역 사이드바 + 시작 화면 */
+.admin-sidebar-areas { padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.admin-sidebar-area { gap: 10px; justify-content: flex-start; }
+.admin-sidebar-area svg { flex-shrink: 0; color: var(--muted); }
+.admin-sidebar-area.active svg { color: var(--primary-deep); }
+.admin-start-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.admin-start-stat { padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.admin-start-stat-k { font-size: 12px; color: var(--muted); }
+.admin-start-stat-v { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--primary-deep); font-variant-numeric: tabular-nums; }
+.admin-start-stat-v small { font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+.admin-start-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.admin-start-check { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.admin-start-check:last-child { border-bottom: 0; }
+.admin-start-check-mark { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: 12px; flex-shrink: 0; color: #fff; }
+.admin-start-check.done .admin-start-check-mark { background: oklch(0.55 0.14 150); border-color: oklch(0.55 0.14 150); }
+.admin-start-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.admin-start-shortcut { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); cursor: pointer; font: inherit; color: var(--ink); text-decoration: none; }
+.admin-start-shortcut:hover { border-color: var(--accent); }
+.admin-start-shortcut strong { font-size: 13.5px; }
+.admin-start-shortcut > span:last-child { font-size: 12px; color: var(--muted); }
+.admin-start-shortcut-icon { width: 32px; height: 32px; border-radius: 9px; background: oklch(0.62 0.14 245 / 0.1); color: var(--primary); display: grid; place-items: center; margin-bottom: 4px; }
+@media (max-width: 1100px) { .admin-start-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .admin-start-stats { grid-template-columns: 1fr; } .admin-bottom-nav-item { font-size: 10.5px; padding: 6px 2px; } }
 .admin-template-note { font-size: 12.5px; color: var(--muted); margin: 0; }
 .admin-template-note code { font-family: inherit; padding: 1px 5px; border-radius: 4px; background: var(--surface-2); }
 
