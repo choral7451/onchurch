@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
 import { HOME_SECTION_LABELS, type HomeSectionKey } from "@/lib/home-sections";
@@ -59,6 +59,22 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
 
   const [device, setDevice] = useState<"pc" | "mobile">("pc");
   const [previewSrc, setPreviewSrc] = useState("");
+  // PC 미리보기: 미리보기 칸이 좁아도 공개 홈이 모바일 레이아웃으로 바뀌지 않도록
+  // iframe 을 데스크톱 폭(PC_WIDTH)으로 그린 뒤 칸 너비에 맞게 축소한다.
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [frameBox, setFrameBox] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const r = entry.contentRect;
+      setFrameBox({ w: Math.round(r.width), h: Math.round(r.height) });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const PC_WIDTH = 1280;
+  const pcScale = frameBox.w > 0 ? Math.min(1, frameBox.w / PC_WIDTH) : 1;
   const base = baseSectionDesign(siteTemplate);
   const activeSet = new Set(activeKeys);
   const visible = draft.order.filter((k) => activeSet.has(k));
@@ -214,9 +230,15 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
               <button type="button" aria-pressed={device === "mobile"} onClick={() => setDevice("mobile")}>모바일</button>
             </div>
           </div>
-          <div className={`admin-design-frame ${device}`}>
+          <div className={`admin-design-frame ${device}`} ref={frameRef}>
             {previewSrc ? (
-              <iframe title="홈 미리보기" src={previewSrc} />
+              <iframe
+                title="홈 미리보기"
+                src={previewSrc}
+                style={device === "pc" && frameBox.h > 0
+                  ? { width: PC_WIDTH, height: frameBox.h / pcScale, transform: `scale(${pcScale})`, transformOrigin: "top left", maxWidth: "none" }
+                  : undefined}
+              />
             ) : (
               <div style={{ padding: 32, color: "var(--muted)", fontSize: 13 }}>교회를 먼저 저장하면 미리보기가 표시됩니다.</div>
             )}

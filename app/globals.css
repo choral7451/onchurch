@@ -1218,7 +1218,8 @@ main { flex: 1; }
 .admin-design-previewbar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-bottom: 0; border-radius: var(--r-md) var(--r-md) 0 0; font-size: 12.5px; color: var(--muted); }
 .admin-design-previewnote { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); }
 .admin-design-frame { border: 1px solid var(--line); border-radius: 0 0 var(--r-md) var(--r-md); background: #fff; overflow: hidden; height: calc(100vh - 140px); min-height: 480px; display: flex; justify-content: center; }
-.admin-design-frame iframe { width: 100%; height: 100%; border: 0; display: block; transition: max-width 0.25s; }
+.admin-design-frame iframe { width: 100%; height: 100%; border: 0; display: block; transition: max-width 0.25s; flex-shrink: 0; }
+.admin-design-frame.pc { justify-content: flex-start; }
 .admin-design-frame.mobile iframe { max-width: 400px; }
 
 /* 테스트 교회 전용 5개 영역 사이드바 + 시작 화면 */
