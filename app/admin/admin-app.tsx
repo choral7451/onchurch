@@ -1735,7 +1735,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
           )}
 
           <div className="admin-content">
-            <div className={`admin-container ${activeSection === "home" && isTest ? "admin-container-wide" : ""}`}>
+            {/* 테스트 교회(5개 영역 개편)는 본문을 넓게 써서 미리보기·표가 더 크게 보이게 한다. */}
+            <div className={`admin-container ${isTest ? "admin-container-wide" : ""}`}>
               {/* 모바일 상세 화면 상단 뒤로가기 — 메뉴 목록으로 복귀. 데스크톱에서는 CSS로 숨김. */}
               <button type="button" className="admin-mobile-back" onClick={() => setMobileDetail(false)}>
                 <Icon.chevL style={{ width: 18, height: 18 }} />
