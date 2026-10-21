@@ -8,6 +8,7 @@ import { fetchPublicChurch, brandFromChurch, getPublicNav, getPublicFooterNav, f
 import { normalizeLang } from "@/lib/i18n";
 import { getPathPrefix } from "@/lib/path-prefix";
 import { resolveTemplateId } from "@/components/templates/meta";
+import { SiteColorStyle } from "@/components/site-color-style";
 import {
   fetchPublicPastor,
   buildChurchMetadata,
@@ -63,6 +64,8 @@ export default async function TenantLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd }}
       />
+      {/* 디자인 설정의 메인·포인트 색. 미설정이면 아무것도 렌더하지 않는다. */}
+      <SiteColorStyle colors={church.siteDesign?.colors} />
       <UtilBar tagline={brand.tagline} pathPrefix={pathPrefix} slug={tenant} lang={lang} />
       <Nav tenant={tenant} brand={brand} nav={nav} pathPrefix={pathPrefix} enabledPages={church.enabledPages} lang={lang} />
       <main>{children}</main>

@@ -1,5 +1,6 @@
 import type { Lang } from "@/lib/i18n";
 import type { HomeCustomLink } from "@/lib/quick-links";
+import type { SiteDesign } from "@/lib/site-design";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
@@ -36,6 +37,8 @@ export type Church = {
   // 공개 홈페이지 템플릿 ID (미지정 시 'default'). 변경은 마스터 전용이고 관리자에서는 읽기만 —
   // 템플릿마다 홈 섹션 구성이 달라서 '홈화면 순서' 편집에 필요하다.
   siteTemplate: string;
+  // 디자인 설정(섹션별 기본/모던 + 메인·포인트 색). null 이면 미설정. 관리자 '디자인' 화면에서 updateSiteDesign 으로 저장.
+  siteDesign: SiteDesign | null;
   // 교회가 연결한 자체 도메인 대표 호스트. 미연결이면 null. 변경은 마스터 전용이고 관리자에서는 읽기만.
   customDomain: string | null;
   isPublished: boolean;
@@ -1036,7 +1039,8 @@ export type MyReferral = {
 
 export const onchurchChurch = {
   getMine: () =>
-    request<{ church: Church | null; subscription: Subscription; churchRole: ChurchRole | null }>("/onchurch/churches/me", {
+    // isTest: 교회 소유자가 테스트 계정인지 — 새 관리자 화면 등 시험 기능은 이 값이 true 인 교회에만 노출한다.
+    request<{ church: Church | null; subscription: Subscription; churchRole: ChurchRole | null; isTest?: boolean }>("/onchurch/churches/me", {
       method: "GET",
       auth: true,
     }),
@@ -1081,6 +1085,13 @@ export const onchurchChurch = {
       method: "PUT",
       auth: true,
       body: JSON.stringify({ siteTemplate }),
+    }),
+  // 디자인 설정(섹션별 기본/모던 + 색) 저장. null 이면 미설정으로 되돌린다.
+  updateSiteDesign: (siteDesign: SiteDesign | null) =>
+    request<Church>("/onchurch/churches/me/site-design", {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ colors: siteDesign?.colors ?? null, sections: siteDesign?.sections ?? null }),
     }),
   publish: (isPublished: boolean) =>
     request<{ church: Church; subscription: Subscription }>("/onchurch/churches/me/publish", {

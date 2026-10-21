@@ -1198,6 +1198,28 @@ main { flex: 1; }
 .admin-template-swatches { display: flex; align-items: center; gap: 10px; margin-top: 7px; }
 .admin-template-swatch { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; color: var(--muted); }
 .admin-template-swatch i { width: 13px; height: 13px; border-radius: 4px; border: 1px solid var(--line); }
+
+/* 관리자 '디자인' 화면(테스트 교회 전용): 초안 바 + 설정/미리보기 2열 */
+.admin-design-draftbar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--r-md); background: oklch(0.62 0.16 60 / 0.12); border: 1px solid oklch(0.62 0.16 60 / 0.35); font-size: 13.5px; }
+.admin-design-draftbar.clean { background: oklch(0.55 0.14 150 / 0.1); border-color: oklch(0.55 0.14 150 / 0.3); }
+.admin-design-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .admin-design-layout { grid-template-columns: 1fr; } }
+.admin-design-presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.admin-design-swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line); display: inline-block; }
+.admin-design-custom { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.admin-design-custom label { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: var(--r-md); padding: 8px 10px; font-size: 13px; cursor: pointer; }
+.admin-design-custom input[type="color"] { width: 30px; height: 30px; border: 0; padding: 0; background: none; cursor: pointer; }
+.admin-design-custom code { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+.admin-design-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.admin-design-seg button { padding: 6px 12px; font-size: 12.5px; color: var(--muted); background: var(--surface); border: 0; cursor: pointer; font: inherit; }
+.admin-design-seg button + button { border-left: 1px solid var(--line); }
+.admin-design-seg button[aria-pressed="true"] { background: oklch(0.62 0.14 245 / 0.1); color: var(--primary); font-weight: 600; }
+.admin-design-preview { position: sticky; top: 16px; }
+.admin-design-previewbar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-bottom: 0; border-radius: var(--r-md) var(--r-md) 0 0; font-size: 12.5px; color: var(--muted); }
+.admin-design-previewnote { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); }
+.admin-design-frame { border: 1px solid var(--line); border-radius: 0 0 var(--r-md) var(--r-md); background: #fff; overflow: hidden; height: calc(100vh - 140px); min-height: 480px; display: flex; justify-content: center; }
+.admin-design-frame iframe { width: 100%; height: 100%; border: 0; display: block; transition: max-width 0.25s; }
+.admin-design-frame.mobile iframe { max-width: 400px; }
 .admin-template-note { font-size: 12.5px; color: var(--muted); margin: 0; }
 .admin-template-note code { font-family: inherit; padding: 1px 5px; border-radius: 4px; background: var(--surface-2); }
 
@@ -1834,10 +1856,11 @@ main { flex: 1; }
    색 토큰은 .chc-root 안에서만 유효하므로 헤더/푸터 등 공용 셸에는 영향 없음.
    ========================================================= */
 .chc-root {
-  --chc-primary: #1e3a5f;
-  --chc-primary-hover: #16324f;
-  --chc-primary-soft: #edf2f7;
-  --chc-navy: #14283d;
+  /* 교회가 디자인 설정에서 메인·포인트 색을 고르면 .app 에 --site-* 가 실린다(lib/site-design.ts). 없으면 기존 색 그대로. */
+  --chc-primary: var(--site-point, #1e3a5f);
+  --chc-primary-hover: var(--site-point-hover, #16324f);
+  --chc-primary-soft: var(--site-point-soft, #edf2f7);
+  --chc-navy: var(--site-main, #14283d);
   --chc-shade: 13 22 33; /* 사진 위 어둠막 rgb */
   --chc-bg: #ffffff;
   --chc-bg-2: #f7f8fa;

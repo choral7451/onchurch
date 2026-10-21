@@ -2,6 +2,7 @@ import { cache } from "react";
 import { type Brand, type NavItem, CUSTOM_NAV_PREFIX } from "@/lib/types";
 import { type Lang, pick, NAV_LABELS, FOOTER_HEADINGS } from "@/lib/i18n";
 import type { HomeCustomLink } from "@/lib/quick-links";
+import type { SiteDesign } from "@/lib/site-design";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
@@ -31,6 +32,8 @@ export type PublicChurch = {
   // 공개 홈페이지 템플릿 ID. 지원 목록·렌더 매핑은 components/templates/registry.tsx(레지스트리)가 관리.
   // 지정은 마스터 페이지의 교회 목록에서 변경. 미등록 값은 default 홈으로 폴백.
   siteTemplate: string;
+  // 디자인 설정(섹션별 기본/모던 + 메인·포인트 색). null 이면 미설정 — siteTemplate 홈을 그대로 렌더. lib/site-design.ts 참고.
+  siteDesign: SiteDesign | null;
   // 교회가 연결한 자체 도메인 대표 호스트. 미연결이면 null. 있으면 이 주소가 사이트의 대표 주소가 된다.
   customDomain: string | null;
   isPublished: boolean;

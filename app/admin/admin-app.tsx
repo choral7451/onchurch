@@ -46,6 +46,7 @@ import { BannersEditor } from "./page-editors/banners";
 import { SermonsEditor } from "./page-editors/sermons";
 import { HomeOrderEditor } from "./page-editors/home-order";
 import { SiteTemplateEditor } from "./page-editors/site-template";
+import { HomeDesignEditor } from "./page-editors/home-design";
 import { CustomPageEditor } from "./page-editors/custom-page";
 import { QrCodesBlock } from "./page-editors/qr-codes";
 import { ReferralCard } from "./page-editors/referral";
@@ -53,6 +54,7 @@ import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, isCustomLinkReady, type HomeC
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 import { DEFAULT_TEMPLATE_ID, resolveTemplateId } from "@/components/templates/meta";
+import { normalizeSiteDesign, type SiteDesign } from "@/lib/site-design";
 import { type Lang, normalizeLang } from "@/lib/i18n";
 
 type Initial = {
@@ -314,6 +316,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
   // 템플릿마다 홈 섹션 구성이 다르다(classic만 소식·갤러리 보유). 마스터도 바꿀 수 있고 여기서도 바꾼다.
   const [siteTemplate, setSiteTemplate] = useState<string>(DEFAULT_TEMPLATE_ID);
   const [templateSaving, setTemplateSaving] = useState(false);
+  // 테스트 교회(소유자 is_test)에만 새 '디자인' 화면(섹션별 기본/모던 + 색)을 노출한다. 기존 교회는 영향 없음.
+  const [isTest, setIsTest] = useState(false);
+  const [siteDesign, setSiteDesign] = useState<SiteDesign | null>(null);
+  const [designSaving, setDesignSaving] = useState(false);
   // 교회가 직접 꾸미는 자유 페이지. 한 교회에 하나이며, 없으면 아직 저장하지 않은 상태다.
   const [customPage, setCustomPage] = useState<CustomPage | null>(null);
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
@@ -471,12 +477,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
           }
           const template = resolveTemplateId(c.siteTemplate);
           setSiteTemplate(template);
-          setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? [], template));
+          // 디자인 화면은 두 템플릿 섹션의 합집합(모던 목록)으로 순서를 다루므로 테스트 교회는 그 기준으로 정규화한다.
+          setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? [], res.isTest ? "modern" : template));
+          setSiteDesign(normalizeSiteDesign(c.siteDesign));
           setIsPublished(c.isPublished);
           setOnboardingDone(!!c.firstPublishedAt);
           setChurchExistsOnServer(true);
         }
         if (res?.subscription) setSubscription(res.subscription);
+        setIsTest(!!res?.isTest);
       } catch (err) {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
@@ -732,6 +741,24 @@ export function AdminApp({ initial }: { initial: Initial }) {
       }
     } finally {
       setTemplateSaving(false);
+    }
+  }
+
+  // 디자인 화면의 '홈페이지에 적용': 섹션별 디자인·색을 저장하고, 순서가 바뀌었으면 순서도 함께 저장한다.
+  async function applySiteDesign(next: SiteDesign | null, nextOrder: HomeSectionKey[]) {
+    if (!churchExistsOnServer || designSaving) return;
+    setDesignSaving(true);
+    try {
+      const church = await onchurchChurch.updateSiteDesign(next);
+      setSiteDesign(normalizeSiteDesign(church.siteDesign));
+      if (nextOrder.join() !== homeSectionOrder.join()) await persistHomeSectionOrder(nextOrder);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        clearTokens();
+        router.push("/login");
+      }
+    } finally {
+      setDesignSaving(false);
     }
   }
 
@@ -1314,7 +1341,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 className={`admin-sidebar-item ${activeSection === "home-order" ? "active" : ""}`}
                 onClick={() => openSection("home-order")}
               >
-                <span className="admin-sidebar-item-label">홈화면 구성</span>
+                <span className="admin-sidebar-item-label">{isTest ? "디자인" : "홈화면 구성"}</span>
                 <span className="admin-sidebar-pill optional">선택</span>
               </button>
             </div>
@@ -1861,11 +1888,37 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
               {activeSection === "banners" && <BannersEditor />}
 
-              {activeSection === "home-order" && (
+              {activeSection === "home-order" && isTest && (
+                <HomeDesignEditor
+                  previewUrl={churchExistsOnServer && slug ? buildPreviewUrl(slug) : ""}
+                  siteTemplate={siteTemplate}
+                  saved={siteDesign}
+                  savedOrder={homeSectionOrder}
+                  activeKeys={(() => {
+                    const keys: HomeSectionKey[] = ["banner"];
+                    if (boards["schedule"]) keys.push("events");
+                    if (
+                      boards["worship"] || boards["sermons"] || boards["gallery"] || boards["directions"] ||
+                      boards["notices"] || boards["schedule"] || boards["community"] ||
+                      youtubeUrl?.trim() || instagramUrl?.trim()
+                    ) keys.push("quick");
+                    if (boards["worship"]) keys.push("worship");
+                    if (boards["sermons"]) keys.push("sermons");
+                    if (boards["notices"]) keys.push("news");
+                    keys.push("visit", "pastor");
+                    if (boards["gallery"]) keys.push("gallery");
+                    return keys;
+                  })()}
+                  saving={designSaving}
+                  onApply={applySiteDesign}
+                />
+              )}
+
+              {activeSection === "home-order" && !isTest && (
                 <SiteTemplateEditor value={siteTemplate} saving={templateSaving} onChange={(next) => void persistSiteTemplate(next)} />
               )}
 
-              {activeSection === "home-order" && (
+              {activeSection === "home-order" && !isTest && (
                 <HomeOrderEditor
                   order={homeSectionOrder}
                   activeKeys={(() => {

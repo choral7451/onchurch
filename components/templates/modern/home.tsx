@@ -457,7 +457,8 @@ async function GallerySection({ slug, url, lang }: { slug: string; url: (p: stri
 
 type Props = { church: PublicChurch; tenant: string; lang: Lang; pathPrefix: string };
 
-export async function ModernHome({ church, tenant, lang, pathPrefix }: Props) {
+// 홈을 구성하는 섹션 노드를 키별로 만든다. ModernHome 과, 섹션마다 기본/모던을 섞어 그리는 mixed-home 이 함께 쓴다.
+export function buildModernHomeSections({ church, tenant, lang, pathPrefix, initialLive }: Props & { initialLive: boolean }): Record<HomeSectionKey, React.ReactNode> {
   const slug = encodeURIComponent(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
   const enabled = church.enabledPages ?? [];
@@ -488,11 +489,6 @@ export async function ModernHome({ church, tenant, lang, pathPrefix }: Props) {
     .filter((x): x is GuideItem => !!x);
 
   const sermonsEnabled = isPageEnabled("sermons");
-  const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
-
-  // 관리자 '홈화면 구성'에서 정한 섹션 순서를 따른다.
-  // modern은 공통 섹션에 소식·갤러리가 더해진 목록(MODERN_HOME_SECTION_KEYS)을 쓴다.
-  const order = normalizeHomeSectionOrder(church.homeSectionOrder, "modern");
 
   const sections: Record<HomeSectionKey, React.ReactNode> = {
     banner: (
@@ -547,6 +543,21 @@ export async function ModernHome({ church, tenant, lang, pathPrefix }: Props) {
       </Suspense>
     ) : null,
   };
+
+  return sections;
+}
+
+export async function ModernHome({ church, tenant, lang, pathPrefix }: Props) {
+  const url = (path: string) => `${pathPrefix}${path}`;
+  const enabled = church.enabledPages ?? [];
+  const isPageEnabled = (id: string) => id === "directions" || enabled.length === 0 || enabled.includes(id);
+  const sermonsEnabled = isPageEnabled("sermons");
+  const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
+
+  // 관리자 '홈화면 구성'에서 정한 섹션 순서를 따른다.
+  // modern은 공통 섹션에 소식·갤러리가 더해진 목록(MODERN_HOME_SECTION_KEYS)을 쓴다.
+  const order = normalizeHomeSectionOrder(church.homeSectionOrder, "modern");
+  const sections = buildModernHomeSections({ church, tenant, lang, pathPrefix, initialLive });
 
   return (
     <div className="chc-root">
