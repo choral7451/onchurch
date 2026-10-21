@@ -1735,7 +1735,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           )}
 
           <div className="admin-content">
-            <div className="admin-container">
+            <div className={`admin-container ${activeSection === "home" && isTest ? "admin-container-wide" : ""}`}>
               {/* 모바일 상세 화면 상단 뒤로가기 — 메뉴 목록으로 복귀. 데스크톱에서는 CSS로 숨김. */}
               <button type="button" className="admin-mobile-back" onClick={() => setMobileDetail(false)}>
                 <Icon.chevL style={{ width: 18, height: 18 }} />
@@ -1785,6 +1785,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {activeSection === "home" && isTest && (
                 <StartHome
                   churchName={name}
+                  slug={slug}
+                  siteTemplate={siteTemplate}
+                  siteDesign={siteDesign}
                   steps={requiredSteps}
                   subscription={subscription}
                   isPublished={isPublished}
