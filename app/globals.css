@@ -1263,6 +1263,52 @@ main { flex: 1; }
 @media (max-width: 1200px) { .admin-start-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 900px) { .admin-start-grid { grid-template-columns: 1fr; } .admin-start-strip { grid-template-columns: 1fr 1fr; } .admin-start-cell:nth-child(2) { border-right: 0; } .admin-start-cell:nth-child(-n+2) { border-bottom: 1px solid var(--line); } }
 @media (max-width: 768px) { .admin-sidebar-v2 { height: auto; } .admin-bottom-nav-item { font-size: 10.5px; padding: 6px 2px; } }
+
+/* ── 테스트 교회 관리자 v2 셸: 넓은 상단바, 교회 블록 + 영역만 있는 사이드바, 본문 상단 탭 바, 촘촘한 카드 ── */
+.admin-topbar.admin-v2 .admin-topbar-inner { max-width: none; padding: 0 24px; }
+.admin-v2.admin-layout { grid-template-columns: 240px 1fr; }
+.admin-sidebar-v2 { padding: 18px 12px 18px; gap: 14px; }
+.admin-v2-church { display: flex; align-items: center; gap: 10px; padding: 8px 10px 14px; border-bottom: 1px solid var(--line); }
+.admin-v2-church-mark { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: grid; place-items: center; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); }
+.admin-v2-church-name { font-size: 14px; font-weight: 700; color: var(--primary-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-v2-church-slug { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-sidebar-v2 .admin-sidebar-areas { border-bottom: 0; padding-bottom: 0; gap: 2px; }
+.admin-sidebar-v2 .admin-sidebar-area { padding: 10px 12px; font-size: 14px; }
+.admin-v2-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 4px 0; border-top: 1px solid var(--line); }
+.admin-v2-side-sub { display: flex; flex-direction: column; gap: 2px; padding: 0 6px; }
+.admin-v2-side-sub strong { font-size: 13.5px; color: var(--primary-deep); }
+.admin-v2-side-sub small { font-size: 12px; color: var(--muted); font-weight: 500; }
+.admin-v2-help { justify-content: center; padding: 8px 12px; font-size: 12.5px; }
+.admin-v2 .admin-content { padding: 22px 0 80px; }
+.admin-v2 .admin-container { gap: 16px; }
+.admin-v2-bar { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 0 0 2px; border-bottom: 1px solid var(--line); }
+.admin-v2-bar-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--primary-deep); padding: 6px 0 12px; }
+.admin-v2-tabs { display: flex; gap: 2px; flex-wrap: wrap; align-items: stretch; }
+.admin-v2-tab { display: flex; align-items: center; gap: 6px; padding: 0 4px 0 0; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--muted); }
+.admin-v2-tab > button[role="tab"] { background: transparent; border: 0; font: inherit; font-size: 14px; font-weight: 500; color: inherit; padding: 10px 10px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--r-md) var(--r-md) 0 0; }
+.admin-v2-tab > button[role="tab"]:hover { background: var(--bg-tinted); color: var(--ink); }
+.admin-v2-tab.active { border-bottom-color: var(--primary); color: var(--primary-deep); }
+.admin-v2-tab.active > button[role="tab"] { font-weight: 700; }
+.admin-v2-tab.off > button[role="tab"] { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.admin-v2-tab .toggle { width: 30px; height: 17px; }
+.admin-v2-tab .toggle::after { width: 13px; height: 13px; }
+.admin-v2-tab .toggle.on::after { transform: translateX(13px); }
+.admin-v2-tab-dot { width: 7px; height: 7px; border-radius: 50%; background: oklch(0.6 0.16 50); display: inline-block; }
+.admin-v2 .admin-section { border-radius: var(--r-md); }
+.admin-v2 .admin-section-head { padding: 20px 24px 0; }
+.admin-v2 .admin-section-head h2 { font-size: 17px; margin: 6px 0 4px; }
+.admin-v2 .admin-section-head p { font-size: 13px; }
+.admin-v2 .admin-section-body { padding: 18px 24px 24px; gap: 14px; }
+.admin-v2 .admin-section-empty .admin-section-head { padding-bottom: 20px; }
+.admin-v2 .form-row input, .admin-v2 .form-row select, .admin-v2 .form-row textarea { padding: 10px 12px; }
+@media (max-width: 768px) {
+  .admin-v2-bar { padding-top: 4px; }
+  .admin-v2-bar-title { display: none; }
+  .admin-v2-tabs { flex-wrap: nowrap; overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
+  .admin-v2-tab > button[role="tab"] { white-space: nowrap; padding: 8px 10px 10px; font-size: 13.5px; }
+  .admin-v2 .admin-section-head { padding: 16px 16px 0; }
+  .admin-v2 .admin-section-body { padding: 14px 16px 18px; }
+}
 .admin-template-note { font-size: 12.5px; color: var(--muted); margin: 0; }
 .admin-template-note code { font-family: inherit; padding: 1px 5px; border-radius: 4px; background: var(--surface-2); }
 

@@ -114,6 +114,26 @@ const AREA_META: { key: AreaKey; label: string; icon: keyof typeof Icon }[] = [
   { key: "saints", label: "성도관리", icon: "users" },
   { key: "settings", label: "설정", icon: "gear" },
 ];
+// 영역별 하위 항목(본문 상단 탭 바). 콘텐츠 영역은 페이지 목록(initial.nav)으로 동적 구성한다.
+const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>> = {
+  design: [
+    { key: "home-order", label: "색상 · 섹션" },
+    { key: "logo", label: "로고" },
+    { key: "banners", label: "홈 배너" },
+  ],
+  saints: [
+    { key: "saints-roster", label: "성도 명부" },
+    { key: "visitations", label: "심방 관리" },
+    { key: "attendance", label: "출석체크" },
+    { key: "members", label: "홈페이지 회원" },
+  ],
+  settings: [
+    { key: "site", label: "기본 정보" },
+    { key: "contact", label: "연락처" },
+    { key: "billing", label: "결제 · 입금 계좌" },
+    { key: "settings", label: "구독 · 사이트 운영" },
+  ],
+};
 function sectionArea(key: SectionKey): AreaKey {
   if (key === "home" || key === "start") return "home";
   if (key === "home-order" || key === "logo" || key === "banners") return "design";
@@ -288,10 +308,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
       return;
     }
     setAreaV2(area);
-    setMobileDetail(false);
+    // 하위 항목은 본문 상단 탭 바에 있으므로 모바일도 바로 본문으로 들어간다.
+    setMobileDetail(true);
     if (area === "home") {
       setActiveSection("home");
-      setMobileDetail(true);
       return;
     }
     const first: Record<Exclude<AreaKey, "home">, SectionKey> = { design: "home-order", content: "page:about" as SectionKey, saints: "saints-roster", settings: "site" };
@@ -1222,7 +1242,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {publishHint}
         </div>
       )}
-      <header className={`admin-topbar ${onboardingDone ? "onboarded" : ""}`}>
+      <header className={`admin-topbar ${isTest ? "admin-v2" : ""} ${onboardingDone ? "onboarded" : ""}`}>
         <div className="admin-topbar-inner">
           <Link
             href="/admin"
@@ -1302,10 +1322,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} className={`admin-layout ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
+        <form onSubmit={onSave} className={`admin-layout ${isTest ? "admin-v2" : ""} ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
           {onboardingDone && isTest && (
           <aside className="admin-sidebar admin-sidebar-v2">
+            <div className="admin-v2-church">
+              <div className="admin-v2-church-mark" aria-hidden="true">{(name || "교").slice(0, 1)}</div>
+              <div style={{ minWidth: 0 }}>
+                <div className="admin-v2-church-name">{name || "교회 이름"}</div>
+                <div className="admin-v2-church-slug">{slug ? `${slug}.onchurch.kr` : "서브도메인 미설정"}</div>
+              </div>
+            </div>
+
             <div className="admin-sidebar-group admin-sidebar-areas">
               {AREA_META.map((a) => {
                 const AreaIcon = Icon[a.icon];
@@ -1317,194 +1345,29 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     aria-current={areaV2 === a.key ? "page" : undefined}
                     onClick={() => selectArea(a.key)}
                   >
-                    <AreaIcon style={{ width: 17, height: 17 }} />
+                    <AreaIcon style={{ width: 18, height: 18 }} />
                     <span className="admin-sidebar-item-label">{a.label}</span>
+                    {a.key === "home" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete">{4 - requiredDoneCount}</span>}
                     {a.key === "saints" && saintsLocked && <span className="admin-sidebar-pill optional">결제</span>}
                   </button>
                 );
               })}
             </div>
 
-            {areaV2 === "design" && (
-            <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">디자인</div>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "home-order" ? "active" : ""}`}
-                onClick={() => openSection("home-order")}
-              >
-                <span className="admin-sidebar-item-label">색상 · 섹션</span>
-                <span className="admin-sidebar-pill optional">홈</span>
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "logo" ? "active" : ""}`}
-                onClick={() => openSection("logo")}
-              >
-                <span className="admin-sidebar-item-label">로고</span>
-                <span className="admin-sidebar-pill optional">선택</span>
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "banners" ? "active" : ""}`}
-                onClick={() => openSection("banners")}
-              >
-                <span className="admin-sidebar-item-label">홈 배너</span>
-                <span className="admin-sidebar-pill optional">선택</span>
-              </button>
-            </div>
-            )}
-
-            {areaV2 === "content" && (
-            <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">콘텐츠</div>
-              {initial.nav.filter((n) => n.id !== "directions").map((n) => {
-                const on = boards[n.id] ?? true;
-                const isActive = activeSection === `page:${n.id}`;
-                const isRequired = n.id === "about" || n.id === "worship";
-                const requiredFilled =
-                  n.id === "about" ? aboutFilled : n.id === "worship" ? worshipFilled : false;
-                const completionClass = isRequired
-                  ? requiredFilled
-                    ? "is-complete"
-                    : "is-incomplete"
-                  : "";
-                return (
-                  <div
-                    key={n.id}
-                    className={`admin-sidebar-page ${isActive ? "active" : ""} ${completionClass}`}
-                  >
-                    <button
-                      type="button"
-                      className="admin-sidebar-page-label"
-                      onClick={() => openSection(`page:${n.id}` as SectionKey)}
-                    >
-                      <span>{n.label}</span>
-                    </button>
-                    {isRequired ? (
-                      <span
-                        className={`admin-sidebar-pill ${requiredFilled ? "complete" : "incomplete"}`}
-                        aria-label={requiredFilled ? "필수 항목 입력 완료" : "필수 항목 미입력"}
-                        style={{ fontSize: 10 }}
-                      >
-                        {requiredFilled ? "필수 ✓" : "필수 미입력"}
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        className={`toggle ${on ? "on" : ""}`}
-                        onClick={() => toggleBoard(n.id)}
-                        aria-label={`${n.label} 활성화`}
-                        aria-pressed={on}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-
-              <div className={`admin-sidebar-page ${activeSection === "custom-page" ? "active" : ""}`}>
-                <button
-                  type="button"
-                  className="admin-sidebar-page-label"
-                  onClick={() => openSection("custom-page")}
-                >
-                  <span>{customPage?.title?.trim() || "새 페이지"}</span>
-                </button>
-                <button
-                  type="button"
-                  className={`toggle ${customPage?.isActive ? "on" : ""}`}
-                  onClick={() => void toggleCustomPage()}
-                  aria-label="새 페이지 활성화"
-                  aria-pressed={!!customPage?.isActive}
-                />
+            <div className="admin-v2-side-foot">
+              <div className="admin-v2-side-sub">
+                <span className="admin-start-k">구독</span>
+                <strong>
+                  {subscription?.isActive ? (subscription.isFreeTrial ? "무료 체험" : "이용 중") : "만료"}
+                  {subscription?.isActive && (subscription.isFreeTrial ? subscription.freeTrialUntil : subscription.paidUntil) && (
+                    <small> · D-{daysLeft((subscription.isFreeTrial ? subscription.freeTrialUntil : subscription.paidUntil) as string)}</small>
+                  )}
+                </strong>
               </div>
-            </div>
-            )}
-
-            {areaV2 === "saints" && (
-            <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">성도관리</div>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "saints-roster" ? "active" : ""}`}
-                onClick={() => openSection("saints-roster")}
-              >
-                <span className="admin-sidebar-item-label">성도 명부</span>
-                <span className="admin-sidebar-pill optional">명부</span>
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "visitations" ? "active" : ""}`}
-                onClick={() => openSection("visitations")}
-              >
-                <span className="admin-sidebar-item-label">심방 관리</span>
-                <span className="admin-sidebar-pill optional">심방</span>
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "attendance" ? "active" : ""}`}
-                onClick={() => openSection("attendance")}
-              >
-                <span className="admin-sidebar-item-label">출석체크</span>
-                <span className="admin-sidebar-pill optional">출석</span>
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "members" ? "active" : ""}`}
-                onClick={() => openSection("members")}
-              >
-                <span className="admin-sidebar-item-label">홈페이지 회원</span>
-                <span className="admin-sidebar-pill optional">계정</span>
-              </button>
-            </div>
-            )}
-
-            {areaV2 === "settings" && (
-            <div className="admin-sidebar-group">
-              <div className="admin-sidebar-eyebrow">설정</div>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "site" ? "active" : ""} ${siteRequiredFilled ? "is-complete" : "is-incomplete"}`}
-                onClick={() => openSection("site")}
-              >
-                <span className="admin-sidebar-item-label">기본 정보</span>
-                <span className={`admin-sidebar-pill ${siteRequiredFilled ? "complete" : "incomplete"}`}>{siteRequiredFilled ? "완료" : "필수"}</span>
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "contact" ? "active" : ""} ${contactRequiredFilled ? "is-complete" : "is-incomplete"}`}
-                onClick={() => openSection("contact")}
-              >
-                <span className="admin-sidebar-item-label">연락처</span>
-                <span className={`admin-sidebar-pill ${contactRequiredFilled ? "complete" : "incomplete"}`}>{contactRequiredFilled ? "완료" : "필수"}</span>
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "billing" ? "active" : ""}`}
-                onClick={() => openSection("billing")}
-              >
-                <span className="admin-sidebar-item-label">결제 · 입금 계좌</span>
-                <span className="admin-sidebar-pill optional">계좌</span>
-              </button>
-              <button
-                type="button"
-                className={`admin-sidebar-item ${activeSection === "settings" ? "active" : ""}`}
-                onClick={() => openSection("settings")}
-              >
-                <span className="admin-sidebar-item-label">구독 · 사이트 운영</span>
-                <span className="admin-sidebar-pill optional">계정</span>
-              </button>
-              <a
-                href="http://pf.kakao.com/_slJXX/chat"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="admin-sidebar-item"
-              >
-                <span className="admin-sidebar-item-label">문의</span>
-                <span className="admin-sidebar-pill optional">카카오톡</span>
+              <a href="http://pf.kakao.com/_slJXX/chat" target="_blank" rel="noopener noreferrer" className="btn btn-secondary admin-v2-help">
+                카카오톡 문의
               </a>
             </div>
-            )}
           </aside>
           )}
 
@@ -1783,6 +1646,62 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </div>
                 </section>
               )}
+              {/* 5개 영역 개편: 현재 영역의 하위 항목을 본문 상단 탭 바로 보여준다. 콘텐츠 영역은 페이지 목록 + 공개 토글. */}
+              {isTest && onboardingDone && activeSection !== "home" && activeSection !== "start" && (
+                <div className="admin-v2-bar">
+                  <div className="admin-v2-bar-title">{AREA_META.find((a) => a.key === areaV2)?.label}</div>
+                  <div className="admin-v2-tabs" role="tablist">
+                    {areaV2 === "content"
+                      ? (
+                        <>
+                          {initial.nav.filter((n) => n.id !== "directions").map((n) => {
+                            const on = boards[n.id] ?? true;
+                            const key = `page:${n.id}` as SectionKey;
+                            const isRequired = n.id === "about" || n.id === "worship";
+                            return (
+                              <div key={n.id} className={`admin-v2-tab ${activeSection === key ? "active" : ""} ${!on ? "off" : ""}`}>
+                                <button type="button" role="tab" aria-selected={activeSection === key} onClick={() => openSection(key)}>{n.label}</button>
+                                {!isRequired && (
+                                  <button
+                                    type="button"
+                                    className={`toggle ${on ? "on" : ""}`}
+                                    onClick={() => toggleBoard(n.id)}
+                                    aria-label={`${n.label} 공개`}
+                                    aria-pressed={on}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                          <div className={`admin-v2-tab ${activeSection === "custom-page" ? "active" : ""} ${!customPage?.isActive ? "off" : ""}`}>
+                            <button type="button" role="tab" aria-selected={activeSection === "custom-page"} onClick={() => openSection("custom-page")}>
+                              {customPage?.title?.trim() || "새 페이지"}
+                            </button>
+                            <button
+                              type="button"
+                              className={`toggle ${customPage?.isActive ? "on" : ""}`}
+                              onClick={() => void toggleCustomPage()}
+                              aria-label="새 페이지 공개"
+                              aria-pressed={!!customPage?.isActive}
+                            />
+                          </div>
+                        </>
+                      )
+                      : (AREA_ITEMS[areaV2] ?? []).map((it) => {
+                        const required = it.key === "site" ? !siteRequiredFilled : it.key === "contact" ? !contactRequiredFilled : false;
+                        return (
+                          <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""}`}>
+                            <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
+                              {it.label}
+                              {required && <span className="admin-v2-tab-dot" aria-label="필수 미입력" />}
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
               {activeSection === "home" && isTest && (
                 <StartHome
                   churchName={name}
