@@ -183,26 +183,14 @@ export default async function LandingPage() {
       </section>
 
       {churches.length > 0 && (
-        <section className="trust-strip" data-section="social" data-section-index={1}>
-          <div className="trust-strip-inner">
-            <span className="trust-strip-label">
-              이미 <strong>{churches.length}개</strong> 교회가 온교회로 운영하고 있어요
-            </span>
-            <div className="trust-strip-names">
-              {churches.slice(0, 12).map((c) => (
-                <span key={c.id} className="trust-strip-name">{c.name}</span>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {churches.length > 0 && (
-        <section id="demo" className="live-sites" data-section="demo" data-section-index={2}>
+        <section id="demo" className="live-sites" data-section="demo" data-section-index={1}>
           <div className="container">
             <div className="live-sites-head">
               <span className="eyebrow">Live Sites</span>
               <h3 className="live-sites-title">지금 운영 중인 교회</h3>
+              <p className="live-sites-count">
+                현재 <strong>{churches.length}개</strong> 교회가 온교회를 사용하고 있어요
+              </p>
             </div>
             <div className="live-grid">
               {churches.slice(0, 4).map((c) => (
@@ -230,7 +218,7 @@ export default async function LandingPage() {
         </section>
       )}
 
-      <section className="section" data-section="problem" data-section-index={3}>
+      <section className="section" data-section="problem" data-section-index={2}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -260,7 +248,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="section" data-section="how" data-section-index={4}>
+      <section className="section" data-section="how" data-section-index={3}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -280,7 +268,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="section section-tinted" data-section="features" data-section-index={5}>
+      <section id="features" className="section section-tinted" data-section="features" data-section-index={4}>
         <div className="container">
           <div className="section-head" style={{ marginBottom: 56 }}>
             <div>
@@ -303,7 +291,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="section" data-section="pricing" data-section-index={6}>
+      <section id="pricing" className="section" data-section="pricing" data-section-index={5}>
         <div className="container" style={{ maxWidth: 720 }}>
           <div className="section-head" style={{ marginBottom: 40, justifyContent: "center", textAlign: "center" }}>
             <div>
@@ -347,7 +335,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="section section-tinted" data-section="faq" data-section-index={7}>
+      <section className="section section-tinted" data-section="faq" data-section-index={6}>
         <div className="container" style={{ maxWidth: 880 }}>
           <div className="section-head" style={{ marginBottom: 40 }}>
             <div>
@@ -369,7 +357,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="cta" className="cta-banner" data-section="cta" data-section-index={8}>
+      <section id="cta" className="cta-banner" data-section="cta" data-section-index={7}>
         <LightRays style={{ position: "absolute", inset: 0, width: "100%", height: "100%", color: "white", opacity: 0.5 }} />
         <div className="cta-banner-inner">
           <div className="cta-banner-eyebrow">START NOW</div>
