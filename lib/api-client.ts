@@ -651,6 +651,13 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ googleVerification }),
     }),
+  // 교회 마스터 메모 설정. 빈 문자열/null이면 삭제. 응답으로 정규화된 값 반환.
+  updateChurchMasterMemo: (churchId: number, masterMemo: string | null) =>
+    request<{ masterMemo: string | null }>(`/onchurch/master/churches/${churchId}/master-memo`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({ masterMemo }),
+    }),
   // 교회 자체 도메인 연결/해제. 저장은 매핑일 뿐이고, 실제 접속에는 Vercel Domains 등록 + 교회 DNS 변경이 함께 필요하다.
   updateChurchCustomDomain: (churchId: number, customDomain: string | null) =>
     request<{ customDomain: string | null }>(`/onchurch/master/churches/${churchId}/custom-domain`, {
@@ -755,6 +762,8 @@ export type ChurchOverview = {
   isPaidActive: boolean;
   naverVerification: string | null;
   googleVerification: string | null;
+  // 마스터 전용 메모. 없으면 null.
+  masterMemo: string | null;
   // 교회가 연결한 자체 도메인 대표 호스트. 미연결이면 null.
   customDomain: string | null;
   // 공개 홈페이지 템플릿 ID. 미지정 시 'default'.

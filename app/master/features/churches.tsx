@@ -219,6 +219,58 @@ function SiteVerificationEditor({
   );
 }
 
+// 마스터 전용 메모. 서버 검색 키워드에도 포함된다.
+function MasterMemoEditor({
+  church,
+  onUpdated,
+}: {
+  church: ChurchOverview;
+  onUpdated: (id: number, masterMemo: string | null) => void;
+}) {
+  const [draft, setDraft] = useState(church.masterMemo ?? "");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  const dirty = draft.trim() !== (church.masterMemo ?? "");
+
+  async function save() {
+    setSaving(true);
+    setErr("");
+    try {
+      const res = await onchurchMaster.updateChurchMasterMemo(church.id, draft.trim() || null);
+      onUpdated(church.id, res.masterMemo);
+      setDraft(res.masterMemo ?? "");
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "저장에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="flex min-w-[240px] flex-col gap-1.5">
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder="메모"
+        rows={2}
+        className="w-[220px] resize-y rounded border border-gray-300 px-2 py-1 text-xs focus:border-gray-900 focus:outline-none"
+      />
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving || !dirty}
+          className="rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-40"
+        >
+          저장
+        </button>
+        {err && <span className="text-[11px] text-red-600">{err}</span>}
+      </div>
+    </div>
+  );
+}
+
 // 교회가 보유한 도메인 연결. 여기 저장하는 것은 '호스트 → 교회' 매핑뿐이라,
 // 실제로 접속되려면 Vercel 프로젝트 Domains 에 대표 호스트와 www 짝을 등록하고
 // 교회 DNS 를 Vercel 로 바꾸는 작업이 함께 끝나야 한다.
@@ -490,6 +542,9 @@ export function ChurchesFeature() {
   const handleGoogleUpdated = useCallback((id: number, googleVerification: string | null) => {
     setItems((prev) => prev.map((c) => (c.id === id ? { ...c, googleVerification } : c)));
   }, []);
+  const handleMemoUpdated = useCallback((id: number, masterMemo: string | null) => {
+    setItems((prev) => prev.map((c) => (c.id === id ? { ...c, masterMemo } : c)));
+  }, []);
 
   // 운영 여부(공개/비공개) 변경 후 해당 행만 갱신
   const handlePublishedUpdated = useCallback((id: number, isPublished: boolean) => {
@@ -526,7 +581,7 @@ export function ChurchesFeature() {
           type="text"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          placeholder="교회명, 목사님 이름, 소유자명, 연락처 검색"
+          placeholder="교회명, 목사님 이름, 소유자명, 연락처, 메모 검색"
           className="w-full max-w-md flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
         />
         <label className="flex shrink-0 cursor-pointer select-none items-center gap-2 text-sm text-gray-700">
@@ -564,6 +619,7 @@ export function ChurchesFeature() {
                   <th className="px-4 py-3">자체 도메인</th>
                   <th className="px-4 py-3">네이버 인증</th>
                   <th className="px-4 py-3">구글 인증</th>
+                  <th className="px-4 py-3">메모</th>
                   <th className="px-4 py-3">템플릿</th>
                   <th className="px-4 py-3">추천</th>
                   <th className="px-4 py-3">관리</th>
@@ -634,6 +690,9 @@ export function ChurchesFeature() {
                           return res.googleVerification;
                         }}
                       />
+                    </td>
+                    <td className="px-4 py-3">
+                      <MasterMemoEditor church={c} onUpdated={handleMemoUpdated} />
                     </td>
                     <td className="px-4 py-3">
                       <SiteTemplateSelect church={c} onUpdated={handleTemplateUpdated} />
