@@ -207,10 +207,11 @@ export async function buildChurchMetadata(
   const defaultBanner = banners.find((b) => b.isDefault && b.imageUrl)?.imageUrl ?? undefined;
   const shareImage = logo ?? firstBanner ?? defaultBanner;
 
-  // <meta name="..."> 추가 항목. 교회별 네이버 사이트 인증 코드가 있으면 해당 교회 페이지에만 주입한다.
+  // <meta name="..."> 추가 항목. 교회별 네이버·구글 사이트 인증 코드가 있으면 해당 교회 페이지에만 주입한다.
   const other: Record<string, string> = {};
   if (church.address) other["geo.placename"] = church.address;
   if (compact(church.naverVerification)) other["naver-site-verification"] = church.naverVerification!.trim();
+  if (compact(church.googleVerification)) other["google-site-verification"] = church.googleVerification!.trim();
 
   return {
     metadataBase: new URL(origin),

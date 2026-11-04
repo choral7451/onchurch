@@ -159,26 +159,28 @@ function PaidUntilEditor({
   );
 }
 
-function NaverVerificationEditor({
-  church,
-  onUpdated,
+// 사이트 인증 코드(네이버·구글) 공용 편집기. 저장 결과로 정규화된 값을 돌려받아 입력칸을 맞춘다.
+function SiteVerificationEditor({
+  value,
+  placeholder,
+  onSave,
 }: {
-  church: ChurchOverview;
-  onUpdated: (id: number, naverVerification: string | null) => void;
+  value: string | null;
+  placeholder: string;
+  onSave: (value: string | null) => Promise<string | null>;
 }) {
-  const [draft, setDraft] = useState(church.naverVerification ?? "");
+  const [draft, setDraft] = useState(value ?? "");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
 
-  const dirty = draft.trim() !== (church.naverVerification ?? "");
+  const dirty = draft.trim() !== (value ?? "");
 
-  async function save(value: string | null) {
+  async function save(next: string | null) {
     setSaving(true);
     setErr("");
     try {
-      const res = await onchurchMaster.updateChurchNaverVerification(church.id, value);
-      onUpdated(church.id, res.naverVerification);
-      setDraft(res.naverVerification ?? "");
+      const saved = await onSave(next);
+      setDraft(saved ?? "");
     } catch (e) {
       setErr(e instanceof ApiError ? e.message : "변경에 실패했습니다.");
     } finally {
@@ -195,13 +197,13 @@ function NaverVerificationEditor({
           type="text"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="네이버 인증 코드"
+          placeholder={placeholder}
           className="w-[180px] rounded border border-gray-300 px-2 py-1 text-xs focus:border-gray-900 focus:outline-none"
         />
         <button type="button" onClick={() => save(draft.trim() || null)} disabled={saving || !dirty} className={btn}>
           저장
         </button>
-        {church.naverVerification && (
+        {value && (
           <button
             type="button"
             onClick={() => save(null)}
@@ -481,9 +483,12 @@ export function ChurchesFeature() {
     setItems((prev) => prev.map((c) => (c.id === id ? { ...c, paidUntil, isPaidActive } : c)));
   }, []);
 
-  // 네이버 인증 코드 변경 후 해당 행만 갱신
+  // 네이버·구글 인증 코드 변경 후 해당 행만 갱신
   const handleNaverUpdated = useCallback((id: number, naverVerification: string | null) => {
     setItems((prev) => prev.map((c) => (c.id === id ? { ...c, naverVerification } : c)));
+  }, []);
+  const handleGoogleUpdated = useCallback((id: number, googleVerification: string | null) => {
+    setItems((prev) => prev.map((c) => (c.id === id ? { ...c, googleVerification } : c)));
   }, []);
 
   // 운영 여부(공개/비공개) 변경 후 해당 행만 갱신
@@ -558,6 +563,7 @@ export function ChurchesFeature() {
                   <th className="px-4 py-3">결제기간</th>
                   <th className="px-4 py-3">자체 도메인</th>
                   <th className="px-4 py-3">네이버 인증</th>
+                  <th className="px-4 py-3">구글 인증</th>
                   <th className="px-4 py-3">템플릿</th>
                   <th className="px-4 py-3">추천</th>
                   <th className="px-4 py-3">관리</th>
@@ -608,7 +614,26 @@ export function ChurchesFeature() {
                       <CustomDomainEditor church={c} onUpdated={handleCustomDomainUpdated} />
                     </td>
                     <td className="px-4 py-3">
-                      <NaverVerificationEditor church={c} onUpdated={handleNaverUpdated} />
+                      <SiteVerificationEditor
+                        value={c.naverVerification}
+                        placeholder="네이버 인증 코드"
+                        onSave={async (v) => {
+                          const res = await onchurchMaster.updateChurchNaverVerification(c.id, v);
+                          handleNaverUpdated(c.id, res.naverVerification);
+                          return res.naverVerification;
+                        }}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <SiteVerificationEditor
+                        value={c.googleVerification}
+                        placeholder="구글 인증 코드"
+                        onSave={async (v) => {
+                          const res = await onchurchMaster.updateChurchGoogleVerification(c.id, v);
+                          handleGoogleUpdated(c.id, res.googleVerification);
+                          return res.googleVerification;
+                        }}
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <SiteTemplateSelect church={c} onUpdated={handleTemplateUpdated} />
