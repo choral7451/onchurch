@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-
-const ROOT_DOMAIN = "everychurch.co.kr";
+import { churchPublicUrl } from "@/lib/site-host";
 
 type QrTarget = {
   key: "home" | "join";
@@ -14,8 +13,9 @@ type QrTarget = {
   fileBase: string;
 };
 
-function buildTargets(slug: string): QrTarget[] {
-  const origin = `https://${slug}.${ROOT_DOMAIN}`;
+// 자체 도메인이 연결된 교회는 QR 에 그 주소를 넣는다. 서브도메인 QR 도 308 로 넘어가 계속 유효하다.
+function buildTargets(slug: string, customDomain: string | null): QrTarget[] {
+  const origin = churchPublicUrl(slug, customDomain);
   return [
     {
       key: "home",
@@ -37,8 +37,8 @@ function buildTargets(slug: string): QrTarget[] {
 }
 
 // 관리자 콘솔 — 기본 정보 섹션 하단에 들어가는 홈페이지 / 회원가입 QR 코드 미리보기·다운로드 블록
-export function QrCodesBlock({ slug }: { slug: string }) {
-  const targets = slug ? buildTargets(slug) : [];
+export function QrCodesBlock({ slug, customDomain }: { slug: string; customDomain: string | null }) {
+  const targets = slug ? buildTargets(slug, customDomain) : [];
   return (
     <div className="admin-qr-block">
       <div className="admin-qr-block-head">

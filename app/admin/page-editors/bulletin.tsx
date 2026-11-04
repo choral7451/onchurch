@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import QRCode from "qrcode";
+import { churchPublicHost, churchPublicUrl } from "@/lib/site-host";
 import {
   ApiError,
   onchurchBulletin,
@@ -47,15 +48,9 @@ const EMPTY_DRAFT: Draft = {
   volunteers: [],
 };
 
-const ROOT_DOMAIN = "everychurch.co.kr";
-
 // 표지(1면) 배경 이미지
 const COVER_BG_URL =
   "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260525/original/_AwGPQPG4Cz.1779695879547.jpeg";
-
-function homepageUrl(slug: string): string {
-  return `https://${slug}.${ROOT_DOMAIN}`;
-}
 
 export function BulletinEditor() {
   const [church, setChurch] = useState<Church | null>(null);
@@ -74,10 +69,10 @@ export function BulletinEditor() {
   // 홈페이지 QR 생성
   useEffect(() => {
     if (!church?.slug) return;
-    QRCode.toDataURL(homepageUrl(church.slug), { margin: 1, width: 320 })
+    QRCode.toDataURL(churchPublicUrl(church.slug, church.customDomain), { margin: 1, width: 320 })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(""));
-  }, [church?.slug]);
+  }, [church?.slug, church?.customDomain]);
 
   async function load() {
     setStatus("loading");
@@ -790,7 +785,7 @@ function BulletinPageWorshipStaff({ church, draft }: { church: Church; draft: Dr
 }
 
 function BulletinPageNewsVolunteers({ church, draft, qrDataUrl }: { church: Church; draft: Draft; qrDataUrl: string }) {
-  const url = `${church.slug}.${ROOT_DOMAIN}`;
+  const url = churchPublicHost(church.slug, church.customDomain);
   return (
     <div className="bf">
       <PageWatermark />

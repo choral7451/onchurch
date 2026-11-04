@@ -2,6 +2,18 @@ import { isServiceHost } from "@/lib/host";
 
 const ROOT_DOMAINS = ["everychurch.co.kr", "onchurch.kr"];
 
+// 교회 홈페이지의 운영 대표 호스트. 자체 도메인이 연결돼 있으면 그 주소, 아니면 서브도메인.
+// QR·주보처럼 인쇄물에 들어가는 주소라 현재 접속 호스트(localhost·프리뷰)와 무관하게 항상 운영 주소를 돌려준다.
+// 서브도메인 접속은 자체 도메인으로 308 되므로 둘 다 유효하지만, 인쇄물에는 교회가 산 도메인이 보이는 게 맞다.
+export function churchPublicHost(slug: string, customDomain?: string | null): string {
+  const custom = (customDomain ?? "").trim();
+  return custom || `${slug}.${ROOT_DOMAINS[0]}`;
+}
+
+export function churchPublicUrl(slug: string, customDomain?: string | null): string {
+  return `https://${churchPublicHost(slug, customDomain)}`;
+}
+
 // 교회 홈페이지(서브도메인) URL을 만든다. 개발(localhost 포함)에서도 서브도메인으로 접근한다.
 // 매칭되는 루트가 없으면 path(/slug)로 폴백.
 const SITE_ROOTS = ["everychurch.co.kr", "onchurch.kr", "localhost"];

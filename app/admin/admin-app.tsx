@@ -439,6 +439,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   // 시작하기 단계의 초록 체크는 '저장된 값' 기준으로 표시한다(입력 중에는 변하지 않음).
   const [savedRequired, setSavedRequired] = useState({ slug: "", name: "", phone: "", email: "", address: "" });
+  // 교회가 연결한 자체 도메인(마스터가 설정, 여기서는 읽기만). QR 에 넣을 주소를 정할 때 쓴다.
+  const [customDomain, setCustomDomain] = useState<string | null>(null);
 
   async function refreshRequiredStatus() {
     try {
@@ -499,6 +501,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         if (res?.church) {
           const c = res.church;
           setSlug(c.slug);
+          setCustomDomain(c.customDomain ?? null);
           // 관리자 로그인은 성도 세션(sessionChurch)을 따로 만들지 않아, 자기 교회 홈을 열면
           // 로그아웃처럼 보였다. 콘솔이 자기 교회를 로드하면 세션을 그 교회로 기록해 동일 로그인으로 인식시킨다.
           if (c.slug) saveSessionChurch(c.slug);
@@ -1914,7 +1917,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       </div>
                     </div>
                     {sectionSaveBar}
-                    <QrCodesBlock slug={savedRequired.slug} />
+                    <QrCodesBlock slug={savedRequired.slug} customDomain={customDomain} />
                   </div>
                 </section>
               )}
