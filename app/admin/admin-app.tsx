@@ -1045,9 +1045,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
   }
 
   // 공개/비공개 토글. 처리 후 최종 공개 여부를 반환한다(시작하기의 '사이트 오픈'에서 사용).
-  async function onTogglePublish(): Promise<boolean> {
+  // forceTarget 을 주면 토글이 아니라 그 상태로 맞춘다(이미 공개 중인데 첫 오픈 시각만 비어 있는 경우 재발행용).
+  async function onTogglePublish(forceTarget?: boolean): Promise<boolean> {
     if (publishLoading) return isPublished;
-    const target = !isPublished;
+    // 토글 버튼에서는 인자 없이, '사이트 오픈'에서는 true 로 호출한다. boolean 일 때만 강제값으로 본다.
+    const target = typeof forceTarget === "boolean" ? forceTarget : !isPublished;
+    const wasPublished = isPublished;
 
     if (target) {
       if (!churchExistsOnServer || !allRequiredFilled) {
@@ -1068,7 +1071,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
       setIsPublished(updated.church.isPublished);
       setOnboardingDone(!!updated.church.firstPublishedAt);
       setSubscription(updated.subscription);
-      if (target && updated.subscription.freeTrialUntil) {
+      // 체험 시작 안내는 실제로 OFF → ON 이 된 첫 오픈에서만. (이미 공개 중이던 재발행은 서버가 체험을 새로 주지 않는다)
+      if (target && !wasPublished && updated.subscription.freeTrialUntil) {
         const end = new Date(updated.subscription.freeTrialUntil);
         const yyyy = end.getFullYear();
         const mm = String(end.getMonth() + 1).padStart(2, "0");
@@ -1103,9 +1107,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
   }
 
   // 시작하기 맨 아래 '사이트 오픈' — 필수 4단계 완료 후 공개 + 홈 새 탭 + 기본 정보로 이동.
+  // 이미 공개 중이어도 온보딩(first_published_at)이 비어 있으면 publish(true) 를 호출해 서버에 첫 오픈 시각을 남긴다.
+  // 그래야 /admin 재진입 시 '시작하기'로 되돌아오지 않는다.
   async function onOpenSite() {
     if (!allRequiredFilled || publishLoading) return;
-    const ok = isPublished ? true : await onTogglePublish();
+    const ok = isPublished && onboardingDone ? true : await onTogglePublish(true);
     if (!ok) return; // 공개 실패(결제/필수 모달 등) 시 중단
     if (slug.trim()) saveSessionChurch(slug.trim());
     if (typeof window !== "undefined") window.open(previewHref, "_blank", "noopener,noreferrer");
@@ -1280,7 +1286,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   <button
                     type="button"
                     className={`toggle ${isPublished ? "on" : ""}`}
-                    onClick={onTogglePublish}
+                    onClick={() => void onTogglePublish()}
                     disabled={!loaded || publishLoading}
                     aria-label="사이트 운영 토글"
                     aria-pressed={isPublished}
@@ -1636,7 +1642,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <button
                           type="button"
                           className={`toggle ${isPublished ? "on" : ""}`}
-                          onClick={onTogglePublish}
+                          onClick={() => void onTogglePublish()}
                           disabled={!loaded || publishLoading}
                           aria-label="사이트 운영 토글"
                           aria-pressed={isPublished}
