@@ -271,6 +271,11 @@ const DENOMINATION_LOGOS: { url: string; label: string }[] = [
     url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/4637/images/20260614/original/NIb1Gb24J3P.1781432921408.png",
     label: "기독교대한성결교회",
   },
+  {
+    // public/logos 정적 파일. 교회 사이트(서브도메인·자체 도메인)에서도 그대로 쓰이므로 절대 URL 로 저장한다.
+    url: "https://everychurch.co.kr/logos/jesus-korea-holiness.png",
+    label: "예수교대한성결교회",
+  },
 ];
 
 export function AdminApp({ initial }: { initial: Initial }) {
