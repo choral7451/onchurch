@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { type Lang, pick } from "@/lib/i18n";
+import { CommunityComments } from "./comments";
 import {
   ApiError,
   getCurrentUserId,
@@ -122,7 +123,10 @@ function PostCard({ p, videoBadge, onClick }: { p: CommunityPost; videoBadge: st
       <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12.5 }}>
           <span style={{ fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.authorName}</span>
-          <span style={{ color: "var(--muted)", flexShrink: 0 }}>{formatDate(p.createdAt)}</span>
+          <span style={{ color: "var(--muted)", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+            {p.commentCount > 0 && <span aria-label={`comments ${p.commentCount}`}>💬 {p.commentCount}</span>}
+            {formatDate(p.createdAt)}
+          </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
           {p.category && <span className="notice-cat" style={{ flexShrink: 0 }}>{p.category}</span>}
@@ -441,6 +445,11 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
     } catch (err) {
       alert(err instanceof ApiError ? err.message : t.deleteFail);
     }
+  }
+
+  // 상세 모달의 댓글 수가 바뀌면 목록 카드의 💬 숫자도 함께 맞춘다.
+  function updateCommentCount(postId: number, count: number) {
+    setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, commentCount: count } : p)));
   }
 
   async function report(p: CommunityPost) {
@@ -846,6 +855,16 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
               ) : (
                 <div className="notice-modal-content empty">{t.noContent}</div>
               )}
+
+              <CommunityComments
+                slug={slug}
+                postId={active.id}
+                loggedIn={loggedIn}
+                myId={myId}
+                loginHref={loginHref}
+                lang={lang}
+                onCountChange={(count) => updateCommentCount(active.id, count)}
+              />
 
               <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
                 <button type="button" className="btn btn-ghost" onClick={() => report(active)}>{t.report}</button>

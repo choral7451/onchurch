@@ -1877,6 +1877,16 @@ export type CommunityPost = {
   photoUrls: string[];
   photoRatio: "1:1" | "4:5";
   videoUrl: string | null;
+  commentCount: number;
+  createdAt: string;
+};
+
+export type CommunityComment = {
+  id: number;
+  postId: number;
+  authorId: number;
+  authorName: string;
+  content: string;
   createdAt: string;
 };
 
@@ -1947,6 +1957,19 @@ export const onchurchCommunity = {
     }),
   remove: (id: number) =>
     request<unknown>(`/onchurch/community-posts/me/${id}`, { method: "DELETE", auth: true }),
+  // 댓글
+  listComments: (slug: string, postId: number) =>
+    request<{ comments: CommunityComment[] }>(`/onchurch/sites/${encodeURIComponent(slug)}/community-posts/${postId}/comments`, {
+      method: "GET",
+    }).then((r) => r.comments ?? []),
+  createComment: (postId: number, content: string) =>
+    request<CommunityComment>(`/onchurch/community-posts/me/${postId}/comments`, {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ content }),
+    }),
+  removeComment: (id: number) =>
+    request<unknown>(`/onchurch/community-posts/me/comments/${id}`, { method: "DELETE", auth: true }),
   // 관리자 사후 관리
   listManage: () =>
     request<{ posts: CommunityManagePost[] }>("/onchurch/community-posts/manage", { method: "GET", auth: true }).then(
