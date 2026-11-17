@@ -1124,6 +1124,9 @@ export const onchurchChurch = {
     }),
 };
 
+// 공개 범위: 전체공개 | 회원공개(이 교회 교인으로 로그인해야 본문이 보임)
+export type CustomPageVisibility = "public" | "member";
+
 export type CustomPage = {
   id: number;
   slug: string;
@@ -1132,6 +1135,9 @@ export type CustomPage = {
   blocks: unknown;
   sortOrder: number;
   isActive: boolean;
+  visibility: CustomPageVisibility;
+  // 공개 조회 전용 — 회원공개 페이지를 열람 권한 없이 열면 true (blocks 는 빈 배열)
+  locked?: boolean;
 };
 
 export type CustomPageInput = {
@@ -1140,6 +1146,7 @@ export type CustomPageInput = {
   summary: string | null;
   blocks: unknown[];
   isActive: boolean;
+  visibility: CustomPageVisibility;
 };
 
 export const onchurchCustomPage = {
@@ -1155,6 +1162,12 @@ export const onchurchCustomPage = {
     request<{ pages: CustomPage[] }>("/onchurch/custom-pages/me/reorder", { method: "PUT", auth: true, body: JSON.stringify({ orderedIds }) }),
   remove: (id: number) =>
     request<unknown>(`/onchurch/custom-pages/me/${id}`, { method: "DELETE", auth: true }),
+  // 공개 페이지 본문. auth:true 라 로그인 상태면 토큰을 붙여(만료면 갱신해) 회원공개 본문까지 받고, 비로그인은 익명 조회.
+  getPublic: (slug: string, pageSlug: string) =>
+    request<CustomPage>(`/onchurch/sites/${encodeURIComponent(slug)}/custom-pages/${encodeURIComponent(pageSlug)}`, {
+      method: "GET",
+      auth: true,
+    }),
 };
 
 export type Banner = {

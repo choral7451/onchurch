@@ -1144,6 +1144,10 @@ main { flex: 1; }
 .cp-btn:hover { background: var(--primary-deep); color: #fff; }
 .cp-divider { border: 0; border-top: 1px solid var(--line); margin: 0; }
 .cp-empty { font-size: 14.5px; color: var(--muted); text-align: center; margin: 0; padding: 40px 0; }
+.cp-locked { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 48px 20px; border: 1px dashed var(--line); border-radius: 16px; background: var(--surface); }
+.cp-locked-icon { font-size: 28px; line-height: 1; margin-bottom: 4px; }
+.cp-locked-title { font-size: 17px; letter-spacing: -0.01em; }
+.cp-locked-desc { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
 
 @media (max-width: 640px) {
   .cp-body { gap: 20px; }

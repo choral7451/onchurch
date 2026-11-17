@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { cache } from "react";
 import { type Brand, type NavItem, CUSTOM_NAV_PREFIX } from "@/lib/types";
 import { type Lang, pick, NAV_LABELS, FOOTER_HEADINGS } from "@/lib/i18n";
@@ -162,6 +163,9 @@ export type PublicCustomPage = {
   blocks: unknown;
   sortOrder: number;
   isActive: boolean;
+  visibility: "public" | "member";
+  // 회원공개 페이지를 교인이 아닌 상태로 열면 true — 서버가 blocks 를 비워서 내려준다.
+  locked: boolean;
 };
 
 // 공개 사이트의 커스텀 페이지 목록. 네비·푸터 구성에 쓰이므로 요청당 한 번만 부르도록 cache로 감싼다.
@@ -181,13 +185,17 @@ export const fetchPublicCustomPages = cache(async (slug: string): Promise<Public
 
 export const fetchPublicCustomPage = cache(async (slug: string, pageSlug: string): Promise<PublicCustomPage | null> => {
   try {
+    // 로그인한 교인이면 쿠키의 액세스 토큰을 함께 보내 회원공개 본문까지 받는다 (갤러리와 같은 방식).
+    const token = (await cookies()).get("onchurch.accessToken")?.value;
     const res = await fetch(
       `${API_BASE}/onchurch/sites/${encodeURIComponent(slug)}/custom-pages/${encodeURIComponent(pageSlug)}`,
-      { cache: "no-store" },
+      { cache: "no-store", headers: token ? { Authorization: `Bearer ${token}` } : undefined },
     );
     if (!res.ok) return null;
     const body = await res.json();
-    return (body?.item ?? null) as PublicCustomPage | null;
+    const page = (body?.item ?? null) as PublicCustomPage | null;
+    if (!page) return null;
+    return { ...page, visibility: page.visibility === "member" ? "member" : "public", locked: !!page.locked };
   } catch {
     return null;
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ApiError, onchurchCustomPage, uploadImages, type CustomPage } from "@/lib/api-client";
+import { ApiError, onchurchCustomPage, uploadImages, type CustomPage, type CustomPageVisibility } from "@/lib/api-client";
 import { DragHandle } from "@/components/admin/drag-handle";
 // 공개 페이지와 같은 렌더러를 그대로 쓴다 — 미리보기가 실제 화면과 어긋나지 않게.
 import { RichText } from "@/components/custom-page/rich-text";
@@ -29,6 +29,7 @@ export function CustomPageEditor({ page, onSaved }: Props) {
   // 영문 이름 하나로 주소(slug)와 제목 위 eyebrow를 함께 만든다.
   const [eng, setEng] = useState(page?.slug ? engFromSlug(page.slug) : "");
   const [summary, setSummary] = useState(page?.summary ?? "");
+  const [visibility, setVisibility] = useState<CustomPageVisibility>(page?.visibility ?? "public");
   const [blocks, setBlocks] = useState<CustomPageBlock[]>(() => normalizeBlocks(page?.blocks));
   const [saving, setSaving] = useState(false);
   const [errMsg, setErrMsg] = useState("");
@@ -41,10 +42,11 @@ export function CustomPageEditor({ page, onSaved }: Props) {
     setTitle(page?.title ?? "");
     setEng(page?.slug ? engFromSlug(page.slug) : "");
     setSummary(page?.summary ?? "");
+    setVisibility(page?.visibility ?? "public");
     setBlocks(normalizeBlocks(page?.blocks));
     setErrMsg("");
     setSavedMsg("");
-  }, [page?.id, page?.title, page?.slug, page?.summary, page?.blocks]);
+  }, [page?.id, page?.title, page?.slug, page?.summary, page?.blocks, page?.visibility]);
 
   const { getItemProps } = useDragSort(blocks.length, (from, to) => {
     if (from === to) return;
@@ -107,6 +109,7 @@ export function CustomPageEditor({ page, onSaved }: Props) {
       summary: nextSummary,
       blocks: blocks.filter((b) => !isBlockEmpty(b)),
       isActive: page?.isActive ?? true,
+      visibility,
     };
     try {
       const saved = page ? await onchurchCustomPage.update(page.id, input) : await onchurchCustomPage.create(input);
@@ -166,6 +169,31 @@ export function CustomPageEditor({ page, onSaved }: Props) {
               placeholder="예: 우리 교회가 바라보는 방향입니다."
               onChange={(e) => setSummary(e.target.value)}
             />
+          </div>
+          <div className="form-row full">
+            <label>공개 범위</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              {([
+                { value: "public", label: "전체공개" },
+                { value: "member", label: "회원공개" },
+              ] as const).map((opt) => (
+                <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13.5 }}>
+                  <input
+                    type="radio"
+                    name="cp-visibility"
+                    value={opt.value}
+                    checked={visibility === opt.value}
+                    onChange={() => setVisibility(opt.value)}
+                  />
+                  <span>{opt.label}</span>
+                </label>
+              ))}
+              <span className="form-hint" style={{ fontSize: 12 }}>
+                {visibility === "member"
+                  ? "메뉴에는 보이지만 본문은 로그인한 우리 교회 교인에게만 열립니다."
+                  : "누구나 볼 수 있습니다."}
+              </span>
+            </div>
           </div>
         </div>
 

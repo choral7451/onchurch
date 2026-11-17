@@ -21,16 +21,20 @@ export default async function MemberLoginPage({
   searchParams,
 }: {
   params: Promise<{ tenant: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; next?: string }>;
 }) {
   const { tenant } = await params;
-  const { tab } = await searchParams;
+  const { tab, next } = await searchParams;
   // QR·안내 링크(/login?tab=join)로 진입하면 가입 탭을 바로 연다.
   const initialTab = tab === "join" ? "join" : "login";
   const church = await fetchPublicChurch(tenant);
   if (!church) notFound();
   const prefix = await getPathPrefix(tenant);
   const lang = normalizeLang(church.siteLang);
+  // 회원공개 페이지 등에서 로그인으로 보낼 때 ?next=/p/slug 로 돌아갈 곳을 받는다.
+  // 외부 주소로 튕기지 않도록 같은 사이트의 경로("/..."로 시작, "//" 아님)만 허용한다.
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+  const redirectTo = safeNext ? `${prefix}${safeNext}` : prefix || "/";
 
   return (
     <div>
@@ -44,7 +48,7 @@ export default async function MemberLoginPage({
       />
       <section className="section">
         <div className="container" style={{ maxWidth: 480 }}>
-          <MemberAuth slug={tenant} churchName={church.name} redirectTo={prefix || "/"} lang={lang} initialTab={initialTab} />
+          <MemberAuth slug={tenant} churchName={church.name} redirectTo={redirectTo} lang={lang} initialTab={initialTab} />
         </div>
       </section>
     </div>

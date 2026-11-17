@@ -1557,6 +1557,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   onClick={() => openSection("custom-page")}
                 >
                   <span>{customPage?.title?.trim() || "새 페이지"}</span>
+                  {customPage?.visibility === "member" && (
+                    <span className="admin-sidebar-pill billing" style={{ fontSize: 10 }}>회원공개</span>
+                  )}
                 </button>
                 <button
                   type="button"
