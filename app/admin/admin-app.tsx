@@ -309,6 +309,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   // 테스트 교회 전용 5개 영역 사이드바에서 현재 펼쳐진 영역. 섹션을 열면 그 섹션의 영역으로 따라간다.
   const [areaV2, setAreaV2] = useState<AreaKey>("home");
+  // 5개 영역 사이드바 접기. 접으면 아이콘만 남고, 마우스를 올리면 본문 위로 원래 폭(240px)만큼 펼쳐진다(CSS). 선택은 브라우저에 기억.
+  const SIDE_COLLAPSED_KEY = "onchurch.admin.sideCollapsed";
+  const [sideCollapsed, setSideCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return window.localStorage.getItem(SIDE_COLLAPSED_KEY) === "1"; } catch { return false; }
+  });
+  function toggleSideCollapsed() {
+    const next = !sideCollapsed;
+    setSideCollapsed(next);
+    try { window.localStorage.setItem(SIDE_COLLAPSED_KEY, next ? "1" : "0"); } catch { /* 저장 실패는 무시 */ }
+  }
 
   function openSection(key: SectionKey) {
     setActiveSection(key);
@@ -1346,10 +1357,10 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} className={`admin-layout ${isTest ? "admin-v2" : ""} ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
+        <form onSubmit={onSave} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && onboardingDone && sideCollapsed ? "side-collapsed" : ""} ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
           {onboardingDone && isTest && (
-          <aside className="admin-sidebar admin-sidebar-v2">
+          <aside className={`admin-sidebar admin-sidebar-v2 ${sideCollapsed ? "collapsed" : ""}`}>
             <div className="admin-v2-church">
               <div className="admin-v2-church-mark" aria-hidden="true">{(name || "교").slice(0, 1)}</div>
               <div style={{ minWidth: 0 }}>
@@ -1392,6 +1403,20 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 카카오톡 문의
               </a>
             </div>
+            <button
+              type="button"
+              className="admin-v2-collapse"
+              onClick={toggleSideCollapsed}
+              aria-pressed={sideCollapsed}
+              title={sideCollapsed ? "사이드바 고정 펼치기" : "사이드바 접기"}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <path d="M9 4v16" />
+                <path d={sideCollapsed ? "M14 10l2 2-2 2" : "M17 10l-2 2 2 2"} />
+              </svg>
+              <span className="admin-sidebar-item-label">{sideCollapsed ? "사이드바 펼치기" : "사이드바 접기"}</span>
+            </button>
           </aside>
           )}
 

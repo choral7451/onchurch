@@ -1292,6 +1292,24 @@ main { flex: 1; }
 .admin-v2-church-slug { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-sidebar-v2 .admin-sidebar-areas { border-bottom: 0; padding-bottom: 0; gap: 2px; }
 .admin-sidebar-v2 .admin-sidebar-area { padding: 10px 12px; font-size: 14px; }
+/* 사이드바 접기: 그리드 칸은 64px로 줄이고, 마우스를 올리면 aside 만 240px(원래 폭)로 늘어나 본문 위에 겹친다(그리드 칸은 그대로). */
+.admin-v2-collapse { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 9px 12px; background: transparent; border: 1px solid transparent; border-radius: var(--r-md); font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; overflow: hidden; }
+.admin-v2-collapse svg { flex-shrink: 0; }
+.admin-v2-collapse:hover { background: var(--bg-tinted); color: var(--primary-deep); }
+@media (min-width: 961px) {
+  .admin-v2.admin-layout.side-collapsed { grid-template-columns: 64px 1fr; }
+  .admin-sidebar-v2.collapsed { width: 64px; padding-left: 10px; padding-right: 10px; overflow-x: hidden; z-index: 30; transition: width 0.18s ease, box-shadow 0.18s ease; }
+  .admin-sidebar-v2.collapsed .admin-v2-church { padding-left: 4px; padding-right: 4px; }
+  .admin-sidebar-v2.collapsed .admin-sidebar-area, .admin-sidebar-v2.collapsed .admin-v2-collapse { padding-left: 12px; padding-right: 12px; }
+  .admin-sidebar-v2.collapsed:not(:hover):not(:focus-within) .admin-sidebar-item-label,
+  .admin-sidebar-v2.collapsed:not(:hover):not(:focus-within) .admin-sidebar-pill,
+  .admin-sidebar-v2.collapsed:not(:hover):not(:focus-within) .admin-v2-church > div:not(.admin-v2-church-mark),
+  .admin-sidebar-v2.collapsed:not(:hover):not(:focus-within) .admin-v2-side-foot { display: none; }
+  .admin-sidebar-v2.collapsed:hover, .admin-sidebar-v2.collapsed:focus-within { width: 240px; padding-left: 12px; padding-right: 12px; box-shadow: 12px 0 32px oklch(0 0 0 / 0.12); transition-delay: 0.12s; }
+  .admin-sidebar-v2.collapsed:hover .admin-v2-church, .admin-sidebar-v2.collapsed:focus-within .admin-v2-church { padding-left: 10px; padding-right: 10px; }
+}
+@media (max-width: 960px) { .admin-v2-collapse { display: none; } }
+}
 .admin-v2-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 4px 0; border-top: 1px solid var(--line); }
 .admin-v2-side-sub { display: flex; flex-direction: column; gap: 2px; padding: 0 6px; }
 .admin-v2-side-sub strong { font-size: 13.5px; color: var(--primary-deep); }
