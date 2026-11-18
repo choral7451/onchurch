@@ -1298,15 +1298,21 @@ main { flex: 1; }
 .admin-v2-collapse:hover { background: var(--bg-tinted); color: var(--primary-deep); }
 @media (min-width: 961px) {
   .admin-v2.admin-layout.side-collapsed { grid-template-columns: 64px 1fr; }
-  .admin-sidebar-v2.collapsed { width: 64px; padding-left: 10px; padding-right: 10px; overflow-x: hidden; z-index: 30; transition: width 0.18s ease, box-shadow 0.18s ease; }
-  .admin-sidebar-v2.collapsed .admin-v2-church { padding-left: 4px; padding-right: 4px; }
-  .admin-sidebar-v2.collapsed .admin-sidebar-area, .admin-sidebar-v2.collapsed .admin-v2-collapse { padding-left: 12px; padding-right: 12px; }
-  .admin-sidebar-v2.collapsed:not(:hover):not(:has(:focus-visible)) .admin-sidebar-item-label,
-  .admin-sidebar-v2.collapsed:not(:hover):not(:has(:focus-visible)) .admin-sidebar-pill,
-  .admin-sidebar-v2.collapsed:not(:hover):not(:has(:focus-visible)) .admin-v2-church > div:not(.admin-v2-church-mark),
-  .admin-sidebar-v2.collapsed:not(:hover):not(:has(:focus-visible)) .admin-v2-side-foot { display: none; }
-  .admin-sidebar-v2.collapsed:hover, .admin-sidebar-v2.collapsed:has(:focus-visible) { width: 240px; padding-left: 12px; padding-right: 12px; box-shadow: 12px 0 32px oklch(0 0 0 / 0.12); transition-delay: 0.12s; }
-  .admin-sidebar-v2.collapsed:hover .admin-v2-church, .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-v2-church { padding-left: 10px; padding-right: 10px; }
+  /* 안쪽 여백·아이콘 위치는 접힘/펼침에서 똑같이 두고 폭만 바꾼다. 글자는 줄바꿈 없이 잘려 있다가 투명도로만 나타난다(펼치는 동안 글자가 흔들리지 않게). */
+  .admin-sidebar-v2.collapsed { width: 64px; overflow: hidden; z-index: 30; transition: width 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease; }
+  .admin-sidebar-v2.collapsed .admin-v2-church { padding-left: 2px; padding-right: 2px; }
+  .admin-sidebar-v2.collapsed .admin-sidebar-area, .admin-sidebar-v2.collapsed .admin-v2-collapse { padding-left: 10px; padding-right: 10px; }
+  .admin-sidebar-v2.collapsed .admin-sidebar-item-label,
+  .admin-sidebar-v2.collapsed .admin-sidebar-pill,
+  .admin-sidebar-v2.collapsed .admin-v2-church > div:not(.admin-v2-church-mark),
+  .admin-sidebar-v2.collapsed .admin-v2-side-foot { white-space: nowrap; opacity: 0; transition: opacity 0.12s ease; }
+  .admin-sidebar-v2.collapsed .admin-v2-side-foot { overflow: hidden; pointer-events: none; }
+  .admin-sidebar-v2.collapsed .admin-v2-side-foot .btn { white-space: nowrap; }
+  .admin-sidebar-v2.collapsed:hover, .admin-sidebar-v2.collapsed:has(:focus-visible) { width: 240px; box-shadow: 12px 0 32px oklch(0 0 0 / 0.12); transition-delay: 0.06s; }
+  .admin-sidebar-v2.collapsed:hover .admin-sidebar-item-label, .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-sidebar-item-label,
+  .admin-sidebar-v2.collapsed:hover .admin-sidebar-pill, .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-sidebar-pill,
+  .admin-sidebar-v2.collapsed:hover .admin-v2-church > div:not(.admin-v2-church-mark), .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-v2-church > div:not(.admin-v2-church-mark),
+  .admin-sidebar-v2.collapsed:hover .admin-v2-side-foot, .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-v2-side-foot { opacity: 1; pointer-events: auto; transition: opacity 0.18s ease 0.12s; }
 }
 @media (max-width: 960px) { .admin-v2-collapse { display: none; } }
 .admin-v2-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 4px 0; border-top: 1px solid var(--line); }
