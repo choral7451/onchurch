@@ -147,9 +147,6 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   }, [colorModal]);
 
   const sameColors = (a: SiteDesignColors | null, p: { main: string; point: string }) => !!a && a.main === p.main && a.point === p.point;
-  const currentColorLabel = !draft.colors
-    ? "템플릿 기본색"
-    : SITE_COLOR_PRESETS.find((p) => sameColors(draft.colors, p))?.label ?? "직접 고른 색";
 
   return (
     <>
@@ -205,7 +202,6 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
             <div className="admin-section-head">
               <div className="admin-section-eyebrow">COLORS</div>
               <h2>교회 색상</h2>
-              <p>메인은 제목·배경·버튼 전반에, 포인트는 강조 글자와 작은 버튼에 쓰입니다.</p>
             </div>
             <div className="admin-section-body">
               <div className="admin-design-colorbar">
@@ -221,7 +217,6 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                 ))}
                 <button type="button" className="btn btn-secondary" onClick={() => setColorModal(true)}>추천</button>
               </div>
-              <p className="form-hint" style={{ margin: "10px 0 0" }}>{currentColorLabel} · 색 칸을 누르면 원하는 색을 바로 고를 수 있습니다.</p>
             </div>
           </section>
 
