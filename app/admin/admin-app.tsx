@@ -2504,7 +2504,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <div className="admin-section-eyebrow">PAGE</div>
                     <h1>{activePageItem.label}</h1>
                     <p>
-                      {BOARD_DESCRIPTIONS[activePage] ?? activePageItem.href} · 좌측 토글로 이 페이지의 노출 여부를 제어할 수 있습니다.
+                      {BOARD_DESCRIPTIONS[activePage] ?? activePageItem.href} · {isTest ? "노출 여부는 디자인 › 메뉴 구성에서 바꿀 수 있습니다." : "좌측 토글로 이 페이지의 노출 여부를 제어할 수 있습니다."}
                     </p>
                   </div>
 
