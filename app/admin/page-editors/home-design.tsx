@@ -7,6 +7,8 @@ import { HOME_SECTION_LABELS, type HomeSectionKey } from "@/lib/home-sections";
 import {
   SECTION_DESIGN_IDS,
   SITE_COLOR_PRESETS,
+  SITE_COLOR_TONE_LABELS,
+  type SiteColorTone,
   baseSectionDesign,
   encodeDesignPreview,
   mixedSectionOrder,
@@ -130,7 +132,8 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   const [colorModal, setColorModal] = useState(false);
   const [pending, setPending] = useState<SiteDesignColors | null>(null);
   const [hexText, setHexText] = useState({ main: "", point: "" });
-  const DEFAULT_COLORS: SiteDesignColors = { main: SITE_COLOR_PRESETS[0].main, point: SITE_COLOR_PRESETS[0].point };
+  const NAVY = SITE_COLOR_PRESETS.find((p) => p.id === "navy") ?? SITE_COLOR_PRESETS[0];
+  const DEFAULT_COLORS: SiteDesignColors = { main: NAVY.main, point: NAVY.point };
 
   function pickPending(colors: SiteDesignColors | null) {
     setPending(colors);
@@ -188,21 +191,26 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
             </div>
 
             <div className="admin-color-modal-label">추천 색조합</div>
-            <div className="admin-design-presets">
-              <button type="button" className={`admin-template-card ${!pending ? "active" : ""}`} aria-pressed={!pending} onClick={() => pickPending(null)}>
-                <span className="admin-template-name">템플릿 기본색</span>
-                <span className="admin-template-desc">{siteTemplate === "modern" ? "모던" : "기본"} 템플릿의 원래 색</span>
-              </button>
-              {SITE_COLOR_PRESETS.map((p) => (
-                <button key={p.id} type="button" className={`admin-template-card ${sameColors(pending, p) ? "active" : ""}`} aria-pressed={sameColors(pending, p)} onClick={() => pickPending({ main: p.main, point: p.point })}>
-                  <span className="admin-template-swatches" style={{ marginTop: 0 }}>
-                    <i className="admin-design-swatch" style={{ background: p.main }} aria-hidden="true" />
-                    <i className="admin-design-swatch" style={{ background: p.point }} aria-hidden="true" />
-                  </span>
-                  <span className="admin-template-desc">{p.label}</span>
-                </button>
-              ))}
-            </div>
+            <button type="button" className={`admin-template-card admin-color-modal-default ${!pending ? "active" : ""}`} aria-pressed={!pending} onClick={() => pickPending(null)}>
+              <span className="admin-template-name">템플릿 기본색</span>
+              <span className="admin-template-desc">{siteTemplate === "modern" ? "모던" : "기본"} 템플릿의 원래 색</span>
+            </button>
+            {(Object.keys(SITE_COLOR_TONE_LABELS) as SiteColorTone[]).map((tone) => (
+              <div key={tone} className="admin-color-modal-tone">
+                <div className="admin-color-modal-tone-label">{SITE_COLOR_TONE_LABELS[tone]}</div>
+                <div className="admin-design-presets">
+                  {SITE_COLOR_PRESETS.filter((p) => p.tone === tone).map((p) => (
+                    <button key={p.id} type="button" className={`admin-template-card ${sameColors(pending, p) ? "active" : ""}`} aria-pressed={sameColors(pending, p)} onClick={() => pickPending({ main: p.main, point: p.point })}>
+                      <span className="admin-color-modal-chip" aria-hidden="true">
+                        <i style={{ background: p.main }} />
+                        <i style={{ background: p.point }} />
+                      </span>
+                      <span className="admin-template-desc">{p.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
 
             <div className="admin-color-modal-label">색 상세 선택</div>
             <div className="admin-color-modal-custom">

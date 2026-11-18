@@ -1238,6 +1238,17 @@ main { flex: 1; }
 .admin-color-modal-preview[style] { color: #fff; border-color: transparent; }
 .admin-color-modal-preview b { padding: 6px 12px; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; transition: background 0.15s ease; }
 .admin-color-modal-label { font-size: 12.5px; font-weight: 700; color: var(--primary-deep); margin: 18px 0 8px; }
+.admin-color-modal { max-width: 640px; }
+.admin-color-modal-default { width: 100%; flex-direction: row; align-items: baseline; gap: 8px; padding: 10px 14px; }
+.admin-color-modal-tone { margin-top: 12px; }
+.admin-color-modal-tone-label { font-size: 11.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.admin-color-modal .admin-design-presets { grid-template-columns: repeat(3, 1fr); }
+.admin-color-modal .admin-design-presets .admin-template-card { padding: 8px; gap: 6px; }
+.admin-color-modal-chip { display: flex; height: 34px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+.admin-color-modal-chip i { display: block; }
+.admin-color-modal-chip i:first-child { flex: 2; }
+.admin-color-modal-chip i:last-child { flex: 1; }
+@media (max-width: 520px) { .admin-color-modal .admin-design-presets { grid-template-columns: repeat(2, 1fr); } }
 .admin-color-modal-custom { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .admin-color-modal-field { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; min-width: 0; }
 .admin-color-modal-field input[type="color"] { width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: none; cursor: pointer; flex-shrink: 0; }
