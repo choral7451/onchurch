@@ -1309,7 +1309,6 @@ main { flex: 1; }
   .admin-sidebar-v2.collapsed:hover .admin-v2-church, .admin-sidebar-v2.collapsed:focus-within .admin-v2-church { padding-left: 10px; padding-right: 10px; }
 }
 @media (max-width: 960px) { .admin-v2-collapse { display: none; } }
-}
 .admin-v2-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 4px 0; border-top: 1px solid var(--line); }
 .admin-v2-side-sub { display: flex; flex-direction: column; gap: 2px; padding: 0 6px; }
 .admin-v2-side-sub strong { font-size: 13.5px; color: var(--primary-deep); }
