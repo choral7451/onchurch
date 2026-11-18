@@ -128,29 +128,16 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
     setDraft((d) => ({ ...d, colors }));
   }
 
-  // 색상 모달: 고르는 동안은 모달 안의 임시값(pending)만 바꾸고, '선택 완료'에서 초안에 반영한다.
+  // 추천 색조합 모달: 조합을 고르면 바로 초안(미리보기)에 반영하고 닫는다. 상세 색은 카드의 메인·포인트 칸에서 바로 고른다.
   const [colorModal, setColorModal] = useState(false);
-  const [pending, setPending] = useState<SiteDesignColors | null>(null);
-  const [hexText, setHexText] = useState({ main: "", point: "" });
   const NAVY = SITE_COLOR_PRESETS.find((p) => p.id === "navy") ?? SITE_COLOR_PRESETS[0];
   const DEFAULT_COLORS: SiteDesignColors = { main: NAVY.main, point: NAVY.point };
-
-  function pickPending(colors: SiteDesignColors | null) {
-    setPending(colors);
-    setHexText({ main: colors?.main ?? "", point: colors?.point ?? "" });
+  function setColorPart(part: "main" | "point", value: string) {
+    setDraft((d) => ({ ...d, colors: { ...(d.colors ?? DEFAULT_COLORS), [part]: value.toLowerCase() } }));
   }
-  function openColorModal() {
-    pickPending(draft.colors);
-    setColorModal(true);
-  }
-  function setPendingPart(part: "main" | "point", value: string) {
-    pickPending({ ...(pending ?? DEFAULT_COLORS), [part]: value.toLowerCase() });
-  }
-  // 직접 입력: 입력 중인 글자는 그대로 두고, #RRGGBB 형식이 완성되면 색에 반영한다.
-  function onHexInput(part: "main" | "point", raw: string) {
-    const v = raw.trim().startsWith("#") ? raw.trim() : `#${raw.trim()}`;
-    setHexText((t) => ({ ...t, [part]: v }));
-    if (/^#[0-9a-fA-F]{6}$/.test(v)) setPending({ ...(pending ?? DEFAULT_COLORS), [part]: v.toLowerCase() });
+  function pickPreset(colors: SiteDesignColors | null) {
+    setColors(colors);
+    setColorModal(false);
   }
   useEffect(() => {
     if (!colorModal) return;
@@ -183,15 +170,12 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
       {colorModal && (
         <div className="admin-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="design-color-title" onClick={() => setColorModal(false)}>
           <div className="admin-modal admin-color-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="admin-modal-title" id="design-color-title">교회 색상 고르기</h3>
-
-            <div className="admin-color-modal-preview" style={pending ? { background: pending.main } : undefined}>
-              <span>{pending ? "제목과 배경에 쓰이는 메인 색" : "템플릿 기본색을 사용합니다"}</span>
-              {pending && <b style={{ background: pending.point }}>포인트 버튼</b>}
+            <div className="admin-color-modal-head">
+              <h3 className="admin-modal-title" id="design-color-title">추천 색조합</h3>
+              <button type="button" className="admin-color-modal-close" aria-label="닫기" onClick={() => setColorModal(false)}>×</button>
             </div>
-
-            <div className="admin-color-modal-label">추천 색조합</div>
-            <button type="button" className={`admin-template-card admin-color-modal-default ${!pending ? "active" : ""}`} aria-pressed={!pending} onClick={() => pickPending(null)}>
+            <p className="form-hint" style={{ margin: "0 0 14px" }}>조합을 누르면 바로 미리보기에 적용됩니다. 왼쪽이 메인, 오른쪽이 포인트 색입니다.</p>
+            <button type="button" className={`admin-template-card admin-color-modal-default ${!draft.colors ? "active" : ""}`} aria-pressed={!draft.colors} onClick={() => pickPreset(null)}>
               <span className="admin-template-name">템플릿 기본색</span>
               <span className="admin-template-desc">{siteTemplate === "modern" ? "모던" : "기본"} 템플릿의 원래 색</span>
             </button>
@@ -200,7 +184,7 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                 <div className="admin-color-modal-tone-label">{SITE_COLOR_TONE_LABELS[tone]}</div>
                 <div className="admin-design-presets">
                   {SITE_COLOR_PRESETS.filter((p) => p.tone === tone).map((p) => (
-                    <button key={p.id} type="button" className={`admin-template-card ${sameColors(pending, p) ? "active" : ""}`} aria-pressed={sameColors(pending, p)} onClick={() => pickPending({ main: p.main, point: p.point })}>
+                    <button key={p.id} type="button" className={`admin-template-card ${sameColors(draft.colors, p) ? "active" : ""}`} aria-pressed={sameColors(draft.colors, p)} onClick={() => pickPreset({ main: p.main, point: p.point })}>
                       <span className="admin-color-modal-chip" aria-hidden="true">
                         <i style={{ background: p.main }} />
                         <i style={{ background: p.point }} />
@@ -211,25 +195,6 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                 </div>
               </div>
             ))}
-
-            <div className="admin-color-modal-label">색 상세 선택</div>
-            <div className="admin-color-modal-custom">
-              {(["main", "point"] as const).map((part) => (
-                <div key={part} className="admin-color-modal-field">
-                  <input type="color" aria-label={part === "main" ? "메인 색 고르기" : "포인트 색 고르기"} value={(pending ?? DEFAULT_COLORS)[part]} onChange={(e) => setPendingPart(part, e.target.value)} />
-                  <div>
-                    <label htmlFor={`design-hex-${part}`}>{part === "main" ? "메인" : "포인트"}</label>
-                    <input id={`design-hex-${part}`} type="text" inputMode="text" maxLength={7} placeholder="#1f3a5f" spellCheck={false} value={hexText[part]} onChange={(e) => onHexInput(part, e.target.value)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="form-hint" style={{ margin: "8px 0 20px" }}>메인은 제목·배경·버튼 전반에, 포인트는 강조 글자와 작은 버튼에 쓰입니다.</p>
-
-            <div className="admin-modal-actions">
-              <button type="button" className="btn btn-secondary" onClick={() => setColorModal(false)}>취소</button>
-              <button type="button" className="btn btn-primary" onClick={() => { setColors(pending); setColorModal(false); }}>선택 완료</button>
-            </div>
           </div>
         </div>
       )}
@@ -240,26 +205,23 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
             <div className="admin-section-head">
               <div className="admin-section-eyebrow">COLORS</div>
               <h2>교회 색상</h2>
-              <p>홈페이지 전체에 쓰이는 메인·포인트 색입니다. 고르지 않으면 템플릿 기본색을 씁니다.</p>
+              <p>메인은 제목·배경·버튼 전반에, 포인트는 강조 글자와 작은 버튼에 쓰입니다.</p>
             </div>
             <div className="admin-section-body">
               <div className="admin-design-colorbar">
-                <span className="admin-design-colorbar-swatches" aria-hidden="true">
-                  {draft.colors ? (
-                    <>
-                      <i className="admin-design-swatch" style={{ background: draft.colors.main }} />
-                      <i className="admin-design-swatch" style={{ background: draft.colors.point }} />
-                    </>
-                  ) : (
-                    <i className="admin-design-swatch admin-design-swatch-default" />
-                  )}
-                </span>
-                <span className="admin-design-colorbar-text">
-                  <strong>{currentColorLabel}</strong>
-                  <small>{draft.colors ? `메인 ${draft.colors.main} · 포인트 ${draft.colors.point}` : `${siteTemplate === "modern" ? "모던" : "기본"} 템플릿의 원래 색`}</small>
-                </span>
-                <button type="button" className="btn btn-secondary" onClick={openColorModal}>색상 변경</button>
+                {(["main", "point"] as const).map((part) => (
+                  <label key={part} className="admin-design-colorpick" title={`${part === "main" ? "메인" : "포인트"} 색 고르기`}>
+                    <input type="color" value={(draft.colors ?? DEFAULT_COLORS)[part]} onChange={(e) => setColorPart(part, e.target.value)} />
+                    <span className={`admin-design-colorpick-chip ${draft.colors ? "" : "admin-design-swatch-default"}`} style={draft.colors ? { background: draft.colors[part] } : undefined} aria-hidden="true" />
+                    <span className="admin-design-colorpick-text">
+                      <strong>{part === "main" ? "메인" : "포인트"}</strong>
+                      <small>{draft.colors ? draft.colors[part] : "기본색"}</small>
+                    </span>
+                  </label>
+                ))}
+                <button type="button" className="btn btn-secondary" onClick={() => setColorModal(true)}>추천</button>
               </div>
+              <p className="form-hint" style={{ margin: "10px 0 0" }}>{currentColorLabel} · 색 칸을 누르면 원하는 색을 바로 고를 수 있습니다.</p>
             </div>
           </section>
 
