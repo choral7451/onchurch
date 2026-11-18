@@ -1311,6 +1311,8 @@ main { flex: 1; }
 /* ── 테스트 교회 관리자 v2 셸: 넓은 상단바, 교회 블록 + 영역만 있는 사이드바, 본문 상단 탭 바, 촘촘한 카드 ── */
 .admin-topbar.admin-v2 .admin-topbar-inner { max-width: none; padding: 0 24px; }
 .admin-v2.admin-layout { grid-template-columns: 240px 1fr; }
+/* 사이드바 고정: main 아래 여백(80px) 때문에 페이지 끝에서 sticky 사이드바가 위로 밀려 올라가므로 v2 데스크톱에서는 그 여백을 없앤다(본문 자체 아래 여백은 .admin-content 에 있음). */
+@media (min-width: 961px) { .admin-main:has(> .admin-v2) { padding-bottom: 0; } }
 .admin-sidebar-v2 { padding: 18px 12px 18px; gap: 14px; }
 .admin-v2-church { display: flex; align-items: center; gap: 10px; padding: 8px 10px 14px; border-bottom: 1px solid var(--line); }
 .admin-v2-church-mark { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: grid; place-items: center; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); }
