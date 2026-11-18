@@ -283,7 +283,7 @@ const DENOMINATION_LOGOS: { url: string; label: string }[] = [
     label: "기독교대한성결교회",
   },
   {
-    url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/1/images/20261117/original/W50_CBh4NaR.1794890683345.png",
+    url: "https://artinfo.s3.ap-northeast-2.amazonaws.com/prod/upload/1/images/20261118/original/kOO-vRXR6X9.1795046372054.png",
     label: "예수교대한성결교회",
   },
 ];
