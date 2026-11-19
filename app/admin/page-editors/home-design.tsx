@@ -151,6 +151,12 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
     });
   }
 
+  // 모든 섹션을 한 번에 같은 디자인으로 맞춘다. 템플릿 기본값과 같으면 저장할 값이 없으므로 비운다.
+  function setAllSections(id: SectionDesignId) {
+    setDraft((d) => ({ ...d, sections: id === base ? {} : Object.fromEntries(d.order.map((k) => [k, id])) }));
+  }
+  const allSame = (id: SectionDesignId) => draft.order.every((k) => (draft.sections[k] ?? base) === id);
+
   function setColors(colors: SiteDesignColors | null) {
     setDraft((d) => ({ ...d, colors }));
   }
@@ -253,7 +259,19 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
           <section className="admin-section">
             <div className="admin-section-head">
               <div className="admin-section-eyebrow">MENU · HOME</div>
-              <h2>메뉴 · 홈 구성</h2>
+              <div className="admin-design-head-row">
+                <h2>메뉴 · 홈 구성</h2>
+                <div className="admin-design-all">
+                  <span>전체</span>
+                  <div className="admin-design-seg" role="group" aria-label="모든 섹션 디자인 한 번에 바꾸기">
+                    {SECTION_DESIGN_IDS.map((id) => (
+                      <button key={id} type="button" aria-pressed={allSame(id)} onClick={() => setAllSections(id)}>
+                        {sectionDesignLabel("banner", id)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
               <p>보여줄 항목을 켜고, 드래그해서 홈 화면 순서를 정해보세요.</p>
             </div>
             <div className="admin-section-body">
