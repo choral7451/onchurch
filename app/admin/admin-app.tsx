@@ -2136,21 +2136,24 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   siteTemplate={siteTemplate}
                   saved={siteDesign}
                   savedOrder={homeSectionOrder}
-                  activeKeys={(() => {
-                    const keys: HomeSectionKey[] = ["banner"];
-                    if (boards["schedule"]) keys.push("events");
-                    if (
-                      boards["worship"] || boards["sermons"] || boards["gallery"] || boards["directions"] ||
-                      boards["notices"] || boards["schedule"] || boards["community"] ||
-                      youtubeUrl?.trim() || instagramUrl?.trim()
-                    ) keys.push("quick");
-                    if (boards["worship"]) keys.push("worship");
-                    if (boards["sermons"]) keys.push("sermons");
-                    if (boards["notices"]) keys.push("news");
-                    keys.push("visit", "pastor");
-                    if (boards["gallery"]) keys.push("gallery");
-                    return keys;
+                  pages={(() => {
+                    // 홈 섹션 ↔ 메뉴(페이지) 1:1 짝. 배너·빠른 이동은 홈 전용, 찾아오시는 길은 항상 표시라 토글이 없다.
+                    const navLabel = (id: string) => initial.nav.find((n) => n.id === id)?.label ?? id;
+                    const pair = (id: string) => ({ label: navLabel(id), on: boards[id] ?? true, toggle: () => toggleBoard(id) });
+                    return {
+                      events: pair("schedule"),
+                      worship: pair("worship"),
+                      sermons: pair("sermons"),
+                      news: pair("notices"),
+                      gallery: pair("gallery"),
+                      pastor: pair("about"),
+                      visit: { label: navLabel("directions"), on: true },
+                    };
                   })()}
+                  menuOnly={[
+                    { key: "community", label: initial.nav.find((n) => n.id === "community")?.label ?? "교제", on: boards["community"] ?? true, toggle: () => toggleBoard("community") },
+                    { key: "custom", label: customPage?.title?.trim() || "새 페이지", on: !!customPage?.isActive, toggle: () => void toggleCustomPage() },
+                  ]}
                   saving={designSaving}
                   onApply={applySiteDesign}
                   refreshKey={previewRev}
@@ -2159,42 +2162,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   previewLogo={logoPreview || null}
                   onSectionSettings={(key) => { if (key === "quick") setQuickModal(true); }}
                   settingsKeys={["quick"]}
-                  menuSlot={
-                    <section className="admin-section">
-                      <div className="admin-section-head">
-                        <div className="admin-section-eyebrow">MENU</div>
-                        <h2>메뉴 구성</h2>
-                      </div>
-                      <div className="admin-section-body">
-                        <div className="admin-menu-chips">
-                          {initial.nav.filter((n) => n.id !== "directions").map((n) => {
-                            const on = boards[n.id] ?? true;
-                            return (
-                              <button
-                                key={n.id}
-                                type="button"
-                                className={`admin-menu-chip ${on ? "on" : ""}`}
-                                aria-pressed={on}
-                                title={on ? "누르면 메뉴에서 숨깁니다" : "누르면 메뉴에 보여줍니다"}
-                                onClick={() => toggleBoard(n.id)}
-                              >
-                                {n.label}
-                              </button>
-                            );
-                          })}
-                          <button
-                            type="button"
-                            className={`admin-menu-chip ${customPage?.isActive ? "on" : ""}`}
-                            aria-pressed={!!customPage?.isActive}
-                            title={customPage ? "자유 페이지" : "자유 페이지 만들기"}
-                            onClick={() => void toggleCustomPage()}
-                          >
-                            {customPage?.title?.trim() || "새 페이지"}
-                          </button>
-                        </div>
-                      </div>
-                    </section>
-                  }
                   afterSlot={
                     <section className="admin-section">
                       <div className="admin-section-head">

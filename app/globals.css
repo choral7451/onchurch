@@ -1274,11 +1274,19 @@ main { flex: 1; }
 .admin-design-row:hover { background: var(--bg-tinted); }
 .admin-design-row[data-dragging] { opacity: 0.4; }
 .admin-design-row[data-drag-over] { box-shadow: inset 0 2px 0 0 var(--accent); }
-.admin-design-row-num { width: 18px; text-align: center; font-size: 12px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .admin-design-row-title { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-design-row-set { background: transparent; border: 1px solid var(--line); border-radius: 999px; font: inherit; font-size: 12px; font-weight: 600; color: var(--primary-deep); padding: 4px 10px; cursor: pointer; flex-shrink: 0; }
 .admin-design-row-set:hover { border-color: var(--primary); background: var(--surface); }
 .admin-design-row .admin-design-seg button { padding: 5px 10px; font-size: 12px; }
+.admin-design-row { min-height: 44px; }
+.admin-design-row .toggle { width: 30px; height: 17px; flex-shrink: 0; border: 0; padding: 0; cursor: pointer; }
+.admin-design-row .toggle::after { width: 13px; height: 13px; }
+.admin-design-row .toggle.on::after { transform: translateX(13px); }
+.admin-design-row.off .admin-design-row-title { color: var(--muted); font-weight: 500; }
+.admin-design-row-fixed, .admin-design-row-note { font-size: 11px; font-weight: 600; color: var(--muted); flex-shrink: 0; }
+.admin-design-row-fixed { width: 30px; text-align: center; }
+.admin-design-row-spacer { width: 24px; flex-shrink: 0; }
+.admin-design-row.menu-only { background: var(--bg-tinted); }
 .admin-quick-modal { max-width: 560px; position: relative; }
 .admin-quick-modal-close { position: absolute; top: 16px; right: 16px; }
 .admin-design-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
@@ -1398,14 +1406,6 @@ main { flex: 1; }
 .admin-v2-tab-ghost > button { background: transparent; border: 1px dashed var(--line); border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 5px 11px; margin: 6px 0 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
 .admin-v2-tab-ghost > button:hover { border-color: var(--primary); color: var(--primary-deep); background: var(--bg-tinted); }
 
-/* 색상 · 섹션 화면의 작은 메뉴 구성 카드: 페이지를 칩으로 켜고 끈다 */
-.admin-menu-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.admin-menu-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
-.admin-menu-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--line); flex-shrink: 0; }
-.admin-menu-chip:hover:not(:disabled) { border-color: var(--primary); }
-.admin-menu-chip.on { background: var(--bg-tinted); border-color: var(--primary); color: var(--primary-deep); }
-.admin-menu-chip.on::before { background: var(--primary); }
-.admin-menu-chip:disabled { cursor: default; opacity: 0.75; }
 /* 색상 · 섹션 화면의 작은 로고 카드: 현재 로고 한 줄 + 교단 로고 아이콘 줄 */
 .admin-logo-mini-current { display: flex; align-items: center; gap: 12px; }
 .admin-logo-mini-thumb { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; flex-shrink: 0; overflow: hidden; }

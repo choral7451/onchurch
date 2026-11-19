@@ -36,6 +36,8 @@ export async function MixedHome({ church, tenant, lang, pathPrefix, design, orde
   const rendered: Rendered[] = [];
   for (const key of mixedSectionOrder(order)) {
     const variant = resolveSectionDesign(design, church.siteTemplate, key);
+    // 담임목사 인사는 '교회 소개' 메뉴와 짝이라, 그 메뉴를 끄면 홈에서도 함께 숨긴다.
+    if (key === "pastor" && !isPageEnabled("about")) continue;
     const node = variant === "modern" ? moderns[key] : defaults[key];
     if (node) rendered.push({ key, variant, node });
   }
