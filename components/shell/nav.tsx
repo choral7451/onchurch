@@ -21,6 +21,8 @@ type Props = {
 export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  // 관리자 디자인 미리보기에서 저장 전 로고를 미리 보여주기 위한 값(undefined 면 실제 로고).
+  const [previewLogo, setPreviewLogo] = useState<string | null | undefined>(undefined);
   const [open, setOpen] = useState(false);
   // 이 교회(tenant) 사이트에 오너/관리자로 로그인한 경우에만 관리자 페이지 이동 버튼을 노출한다.
   const [isManager, setIsManager] = useState(false);
@@ -64,8 +66,9 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
     // 쿼리만 바꿔 서버 컴포넌트를 다시 그리고, 메뉴처럼 레이아웃 데이터가 바뀐 경우에는 refresh 까지 한다.
     const onMessage = (e: MessageEvent) => {
       if (e.source !== window.parent) return;
-      const d = e.data as { type?: unknown; design?: unknown; refresh?: unknown } | null;
+      const d = e.data as { type?: unknown; design?: unknown; refresh?: unknown; logo?: unknown } | null;
       if (!d || d.type !== "onchurch:design-preview" || typeof d.design !== "string") return;
+      if ("logo" in d) setPreviewLogo(typeof d.logo === "string" && /^https?:\/\//.test(d.logo) ? d.logo : null);
       router.replace(`${window.location.pathname}?design=${d.design}`, { scroll: false });
       if (d.refresh) router.refresh();
     };
@@ -117,6 +120,8 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
     }
   }, [open]);
 
+  const logoUrl = previewLogo !== undefined ? previewLogo : brand.logoUrl;
+
   return (
     <>
     <nav className="nav">
@@ -131,9 +136,9 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
             }
           }}
         >
-          {brand.logoUrl && (
+          {logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={brand.logoUrl} alt="" className="brand-logo" />
+            <img src={logoUrl} alt="" className="brand-logo" />
           )}
           <div className="brand-text">
             <div className="brand-name">{brand.name}</div>

@@ -849,6 +849,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
       const church = await onchurchChurch.updateSiteDesign(next);
       setSiteDesign(normalizeSiteDesign(church.siteDesign));
       if (nextOrder.join() !== homeSectionOrder.join()) await persistHomeSectionOrder(nextOrder);
+      // 디자인 화면에서 고른 로고도 함께 저장한다(교회 정보 저장 경로를 그대로 쓴다).
+      if ((logoPreview || null) !== savedLogo) {
+        await persistEnabledPages(boards);
+        setSavedLogo(logoPreview || null);
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearTokens();
@@ -2240,6 +2245,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   saving={designSaving}
                   onApply={applySiteDesign}
                   refreshKey={previewRev}
+                  extraDirty={(logoPreview || null) !== savedLogo ? 1 : 0}
+                  onRevertExtra={() => { setLogoPreview(savedLogo); setLogoErr(""); }}
+                  previewLogo={logoPreview || null}
                   menuSlot={
                     <>
                     <section className="admin-section">
@@ -2280,53 +2288,66 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       </div>
                     </section>
                     <section className="admin-section">
-                      <div className="admin-section-head admin-menu-chips-head">
-                        <div>
-                          <div className="admin-section-eyebrow">LOGO</div>
-                          <h2>로고</h2>
-                        </div>
-                        {(logoPreview || null) !== savedLogo && (
-                          <button type="submit" className="btn btn-primary admin-logo-mini-save" disabled={save === "saving" || logoUploading}>
-                            {save === "saving" ? "저장 중…" : "로고 저장"}
-                          </button>
-                        )}
+                      <div className="admin-section-head">
+                        <div className="admin-section-eyebrow">LOGO</div>
+                        <h2>로고</h2>
                       </div>
                       <div className="admin-section-body">
-                        <div className="admin-logo-mini">
-                          <label className={`admin-logo-mini-item upload ${logoPreview && !DENOMINATION_LOGOS.some((p) => p.url === logoPreview) ? "selected" : ""}`} title="이미지 올리기">
-                            <input type="file" accept="image/*" onChange={(e) => { const el = e.currentTarget; void onFileChange(e).then(() => { el.value = ""; }); }} disabled={logoUploading} />
-                            {logoPreview && !DENOMINATION_LOGOS.some((p) => p.url === logoPreview) ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={logoPreview} alt="" />
-                            ) : (
-                              <Icon.image width={18} height={18} />
-                            )}
-                            <span>{logoUploading ? "올리는 중" : "직접 올리기"}</span>
-                          </label>
-                          {DENOMINATION_LOGOS.map((p) => {
-                            const selected = logoPreview === p.url;
-                            return (
-                              <button
-                                type="button"
-                                key={p.url}
-                                className={`admin-logo-mini-item ${selected ? "selected" : ""}`}
-                                onClick={() => { setLogoPreview(p.url); setLogoErr(""); }}
-                                aria-pressed={selected}
-                                title={p.label}
-                              >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={p.url} alt="" />
-                                <span>{p.label}</span>
-                              </button>
-                            );
-                          })}
-                          {logoPreview && (
-                            <button type="button" className="admin-logo-mini-item none" onClick={clearLogo} title="로고 없이 교회 이름만 표시">
-                              <span className="admin-logo-mini-x" aria-hidden="true">×</span>
-                              <span>사용 안 함</span>
-                            </button>
-                          )}
-                        </div>
+                        {(() => {
+                          const preset = DENOMINATION_LOGOS.find((p) => p.url === logoPreview);
+                          const isCustom = !!logoPreview && !preset;
+                          return (
+                            <>
+                              <div className="admin-logo-mini-current">
+                                <span className="admin-logo-mini-thumb">
+                                  {logoPreview ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={logoPreview} alt="" />
+                                  ) : (
+                                    <b>{(name || "교").slice(0, 1)}</b>
+                                  )}
+                                </span>
+                                <span className="admin-logo-mini-name">
+                                  <strong>{preset ? preset.label : isCustom ? "직접 올린 로고" : "로고 없음"}</strong>
+                                  <small>{logoUploading ? "올리는 중…" : logoPreview ? "상단 메뉴와 하단에 표시됩니다" : "교회 이름만 표시됩니다"}</small>
+                                </span>
+                                <label className="btn btn-secondary admin-logo-mini-upload">
+                                  <input type="file" accept="image/*" onChange={(e) => { const el = e.currentTarget; void onFileChange(e).then(() => { el.value = ""; }); }} disabled={logoUploading} />
+                                  올리기
+                                </label>
+                              </div>
+                              <div className="admin-logo-mini" role="group" aria-label="교단 로고에서 선택">
+                                {DENOMINATION_LOGOS.map((p) => {
+                                  const selected = logoPreview === p.url;
+                                  return (
+                                    <button
+                                      type="button"
+                                      key={p.url}
+                                      className={`admin-logo-mini-item ${selected ? "selected" : ""}`}
+                                      onClick={() => { setLogoPreview(p.url); setLogoErr(""); }}
+                                      aria-pressed={selected}
+                                      aria-label={p.label}
+                                      title={p.label}
+                                    >
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img src={p.url} alt="" />
+                                    </button>
+                                  );
+                                })}
+                                <button
+                                  type="button"
+                                  className={`admin-logo-mini-item none ${logoPreview ? "" : "selected"}`}
+                                  onClick={clearLogo}
+                                  aria-pressed={!logoPreview}
+                                  aria-label="로고 없음"
+                                  title="로고 없음"
+                                >
+                                  <span aria-hidden="true">없음</span>
+                                </button>
+                              </div>
+                            </>
+                          );
+                        })()}
                         {logoErr && <p className="form-hint" style={{ margin: "8px 0 0", color: "oklch(0.55 0.18 28)" }}>{logoErr}</p>}
                       </div>
                     </section>
