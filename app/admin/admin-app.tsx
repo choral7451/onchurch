@@ -399,6 +399,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
   const [homeQuickLinks, setHomeQuickLinks] = useState<string[]>([]);
   const [quickLimitMsg, setQuickLimitMsg] = useState("");
+  // 테스트 교회 디자인 화면: 섹션 목록의 '빠른 이동' 설정을 모달로 연다.
+  const [quickModal, setQuickModal] = useState(false);
   // 홈 바로가기 커스텀 항목(제목·설명·이동 주소). 서버 저장값과 편집 중인 초안을 분리해 둔다.
   const [homeCustomLink, setHomeCustomLink] = useState<HomeCustomLink | null>(null);
   const [customDraft, setCustomDraft] = useState<HomeCustomLink>({ title: "", desc: "", url: "" });
@@ -909,6 +911,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         homeCustomLink: nextCustom,
         homeSectionOrder,
       });
+      setPreviewRev((n) => n + 1);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearTokens();
@@ -2154,6 +2157,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   extraDirty={(logoPreview || null) !== savedLogo ? 1 : 0}
                   onRevertExtra={() => { setLogoPreview(savedLogo); setLogoErr(""); }}
                   previewLogo={logoPreview || null}
+                  onSectionSettings={(key) => { if (key === "quick") setQuickModal(true); }}
+                  settingsKeys={["quick"]}
                   menuSlot={
                     <>
                     <section className="admin-section">
@@ -2334,8 +2339,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   }
                   return def.pageId && boards[def.pageId] ? "" : "페이지를 켜야 노출";
                 };
-                return (
-                  <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
+                const inner = (
+                  <div style={isTest ? undefined : { marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
                     <h3 style={{ margin: "0 0 4px", fontSize: 16 }}>홈 바로가기 <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 400 }}>(최대 {MAX_QUICK}개 · {selected.length}/{MAX_QUICK})</span></h3>
                     <p className="form-hint" style={{ marginBottom: 14 }}>
                       홈 메인에 노출할 바로가기 항목을 최대 {MAX_QUICK}개까지 선택하세요. 선택해도 해당 페이지가 꺼져 있거나 URL이 없으면 노출되지 않습니다.
@@ -2477,6 +2482,20 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           </div>
                         );
                       })}
+                    </div>
+                  </div>
+                );
+                // 기존 교회는 화면 아래에 그대로, 테스트 교회는 섹션 목록의 '빠른 이동 설정'으로 여는 모달 안에 보여준다.
+                if (!isTest) return inner;
+                if (!quickModal) return null;
+                return (
+                  <div className="admin-modal-backdrop" role="dialog" aria-modal="true" aria-label="빠른 이동 설정" onClick={() => setQuickModal(false)}>
+                    <div className="admin-modal admin-quick-modal" onClick={(e) => e.stopPropagation()}>
+                      <button type="button" className="admin-color-modal-close admin-quick-modal-close" aria-label="닫기" onClick={() => setQuickModal(false)}>×</button>
+                      {inner}
+                      <div className="admin-modal-actions" style={{ marginTop: 18 }}>
+                        <button type="button" className="btn btn-primary" onClick={() => setQuickModal(false)}>완료</button>
+                      </div>
                     </div>
                   </div>
                 );

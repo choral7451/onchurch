@@ -1267,6 +1267,20 @@ main { flex: 1; }
 .admin-design-custom label { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: var(--r-md); padding: 8px 10px; font-size: 13px; cursor: pointer; }
 .admin-design-custom input[type="color"] { width: 30px; height: 30px; border: 0; padding: 0; background: none; cursor: pointer; }
 .admin-design-custom code { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+/* 섹션별 디자인 · 순서: 한 줄짜리 간결한 목록 */
+.admin-design-rows { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.admin-design-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 6px; background: var(--surface); transition: box-shadow 0.15s ease, opacity 0.15s ease, background 0.15s ease; }
+.admin-design-row + .admin-design-row { border-top: 1px solid var(--line); }
+.admin-design-row:hover { background: var(--bg-tinted); }
+.admin-design-row[data-dragging] { opacity: 0.4; }
+.admin-design-row[data-drag-over] { box-shadow: inset 0 2px 0 0 var(--accent); }
+.admin-design-row-num { width: 18px; text-align: center; font-size: 12px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.admin-design-row-title { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-design-row-set { background: transparent; border: 1px solid var(--line); border-radius: 999px; font: inherit; font-size: 12px; font-weight: 600; color: var(--primary-deep); padding: 4px 10px; cursor: pointer; flex-shrink: 0; }
+.admin-design-row-set:hover { border-color: var(--primary); background: var(--surface); }
+.admin-design-row .admin-design-seg button { padding: 5px 10px; font-size: 12px; }
+.admin-quick-modal { max-width: 560px; position: relative; }
+.admin-quick-modal-close { position: absolute; top: 16px; right: 16px; }
 .admin-design-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
 .admin-design-seg button { padding: 6px 12px; font-size: 12.5px; color: var(--muted); background: var(--surface); border: 0; cursor: pointer; font: inherit; }
 .admin-design-seg button + button { border-left: 1px solid var(--line); }

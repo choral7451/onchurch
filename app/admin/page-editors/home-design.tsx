@@ -47,6 +47,9 @@ type Props = {
   extraDirty?: number;
   onRevertExtra?: () => void;
   previewLogo?: string | null;
+  // 상세 설정이 있는 섹션(예: 빠른 이동). 해당 줄에 '설정' 버튼을 보여주고 누르면 알려준다.
+  settingsKeys?: HomeSectionKey[];
+  onSectionSettings?: (key: HomeSectionKey) => void;
 };
 
 function draftFrom(saved: SiteDesign | null, order: HomeSectionKey[]): Draft {
@@ -57,7 +60,7 @@ function toDesign(d: Draft): SiteDesign | null {
   return normalizeSiteDesign({ colors: d.colors, sections: d.sections });
 }
 
-export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, activeKeys, saving, onApply, menuSlot, refreshKey = 0, extraDirty = 0, onRevertExtra, previewLogo = null }: Props) {
+export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, activeKeys, saving, onApply, menuSlot, refreshKey = 0, extraDirty = 0, onRevertExtra, previewLogo = null, settingsKeys, onSectionSettings }: Props) {
   const savedKey = JSON.stringify([saved, savedOrder]);
   const [draft, setDraft] = useState<Draft>(() => draftFrom(saved, savedOrder));
   // 서버 값이 바뀌면(적용 완료·재조회) 초안을 그 값으로 다시 맞춘다(렌더 중 파생 상태 갱신 패턴).
@@ -253,35 +256,34 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
               <h2>섹션별 디자인 · 순서</h2>
               <p>드래그해서 순서를 바꿉니다.</p>
             </div>
-            <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className="admin-section-body">
               {visible.length === 0 ? (
-                <p style={{ color: "var(--muted)" }}>활성화된 섹션이 없습니다. 좌측에서 페이지를 켜면 여기에 나타납니다.</p>
+                <p style={{ color: "var(--muted)", margin: 0 }}>활성화된 섹션이 없습니다. 메뉴 구성에서 페이지를 켜면 여기에 나타납니다.</p>
               ) : (
-                visible.map((key, idx) => {
-                  const meta = HOME_SECTION_LABELS[key];
-                  const current = draft.sections[key] ?? base;
-                  return (
-                    <div key={key} className="admin-banner-card" {...getItemProps(idx)}>
-                      <DragHandle />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                          <span style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--surface-2)", color: "var(--muted)", fontSize: 12, fontWeight: 600, display: "grid", placeItems: "center" }}>
-                            {idx + 1}
-                          </span>
-                          <strong>{meta.title}</strong>
+                <ol className="admin-design-rows">
+                  {visible.map((key, idx) => {
+                    const meta = HOME_SECTION_LABELS[key];
+                    const current = draft.sections[key] ?? base;
+                    const hasSettings = !!settingsKeys?.includes(key);
+                    return (
+                      <li key={key} className="admin-design-row" {...getItemProps(idx)}>
+                        <DragHandle />
+                        <span className="admin-design-row-num">{idx + 1}</span>
+                        <span className="admin-design-row-title" title={meta.desc}>{meta.title}</span>
+                        {hasSettings && (
+                          <button type="button" className="admin-design-row-set" onClick={() => onSectionSettings?.(key)}>설정</button>
+                        )}
+                        <div className="admin-design-seg" role="group" aria-label={`${meta.title} 디자인`}>
+                          {SECTION_DESIGN_IDS.map((id) => (
+                            <button key={id} type="button" aria-pressed={current === id} onClick={() => setSection(key, id)}>
+                              {sectionDesignLabel(key, id)}
+                            </button>
+                          ))}
                         </div>
-                        <div style={{ color: "var(--muted)", fontSize: 13 }}>{meta.desc.replace(" (모던 템플릿 전용)", "")}</div>
-                      </div>
-                      <div className="admin-design-seg" role="group" aria-label={`${meta.title} 디자인`}>
-                        {SECTION_DESIGN_IDS.map((id) => (
-                          <button key={id} type="button" aria-pressed={current === id} onClick={() => setSection(key, id)}>
-                            {sectionDesignLabel(key, id)}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })
+                      </li>
+                    );
+                  })}
+                </ol>
               )}
             </div>
           </section>
