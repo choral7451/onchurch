@@ -244,7 +244,7 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
             <div className="admin-section-head">
               <div className="admin-section-eyebrow">SECTIONS</div>
               <h2>섹션별 디자인 · 순서</h2>
-              <p>섹션마다 기본·모던 중 하나를 고르고, 드래그해서 순서를 바꿉니다. 사이드바에서 OFF 로 꺼둔 페이지의 섹션은 표시되지 않습니다.</p>
+              <p>드래그해서 순서를 바꿉니다.</p>
             </div>
             <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {visible.length === 0 ? (
