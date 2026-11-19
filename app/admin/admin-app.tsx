@@ -408,6 +408,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [designSaving, setDesignSaving] = useState(false);
   // 메뉴 구성(페이지 온오프)이 서버에 저장될 때마다 올려 디자인 미리보기를 새로 불러오게 한다.
   const [previewRev, setPreviewRev] = useState(0);
+  // 서버에 저장된 로고. 디자인 화면의 작은 로고 카드가 '저장' 버튼을 바뀐 경우에만 보여주는 데 쓴다.
+  const [savedLogo, setSavedLogo] = useState<string | null>(null);
   // 교회가 직접 꾸미는 자유 페이지. 한 교회에 하나이며, 없으면 아직 저장하지 않은 상태다.
   const [customPage, setCustomPage] = useState<CustomPage | null>(null);
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
@@ -550,6 +552,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
             address: c.address ?? "",
           });
           if (c.logoUrl) setLogoPreview(c.logoUrl);
+          setSavedLogo(c.logoUrl ?? null);
           setYoutubeUrl(c.youtubeUrl ?? null);
           setInstagramUrl(c.instagramUrl ?? null);
           setHomeQuickLinks(c.homeQuickLinks ?? []);
@@ -1018,6 +1021,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
         email: email || "",
         address: address || "",
       });
+      setSavedLogo(logoPreview || null);
+      setPreviewRev((n) => n + 1);
       setSave("saved");
       setSaveToast("변경사항이 저장되었습니다.");
       setTimeout(() => setSaveToast(""), 2500);
@@ -2236,6 +2241,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   onApply={applySiteDesign}
                   refreshKey={previewRev}
                   menuSlot={
+                    <>
                     <section className="admin-section">
                       <div className="admin-section-head admin-menu-chips-head">
                         <div>
@@ -2273,6 +2279,58 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         </div>
                       </div>
                     </section>
+                    <section className="admin-section">
+                      <div className="admin-section-head admin-menu-chips-head">
+                        <div>
+                          <div className="admin-section-eyebrow">LOGO</div>
+                          <h2>로고</h2>
+                        </div>
+                        {(logoPreview || null) !== savedLogo && (
+                          <button type="submit" className="btn btn-primary admin-logo-mini-save" disabled={save === "saving" || logoUploading}>
+                            {save === "saving" ? "저장 중…" : "로고 저장"}
+                          </button>
+                        )}
+                      </div>
+                      <div className="admin-section-body">
+                        <div className="admin-logo-mini">
+                          <label className={`admin-logo-mini-item upload ${logoPreview && !DENOMINATION_LOGOS.some((p) => p.url === logoPreview) ? "selected" : ""}`} title="이미지 올리기">
+                            <input type="file" accept="image/*" onChange={(e) => { const el = e.currentTarget; void onFileChange(e).then(() => { el.value = ""; }); }} disabled={logoUploading} />
+                            {logoPreview && !DENOMINATION_LOGOS.some((p) => p.url === logoPreview) ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={logoPreview} alt="" />
+                            ) : (
+                              <Icon.image width={18} height={18} />
+                            )}
+                            <span>{logoUploading ? "올리는 중" : "직접 올리기"}</span>
+                          </label>
+                          {DENOMINATION_LOGOS.map((p) => {
+                            const selected = logoPreview === p.url;
+                            return (
+                              <button
+                                type="button"
+                                key={p.url}
+                                className={`admin-logo-mini-item ${selected ? "selected" : ""}`}
+                                onClick={() => { setLogoPreview(p.url); setLogoErr(""); }}
+                                aria-pressed={selected}
+                                title={p.label}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={p.url} alt="" />
+                                <span>{p.label}</span>
+                              </button>
+                            );
+                          })}
+                          {logoPreview && (
+                            <button type="button" className="admin-logo-mini-item none" onClick={clearLogo} title="로고 없이 교회 이름만 표시">
+                              <span className="admin-logo-mini-x" aria-hidden="true">×</span>
+                              <span>사용 안 함</span>
+                            </button>
+                          )}
+                        </div>
+                        {logoErr && <p className="form-hint" style={{ margin: "8px 0 0", color: "oklch(0.55 0.18 28)" }}>{logoErr}</p>}
+                      </div>
+                    </section>
+                    </>
                   }
                 />
               )}
