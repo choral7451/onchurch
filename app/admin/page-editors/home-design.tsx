@@ -99,12 +99,25 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   }, [draft, saved, savedOrder, base]);
 
   // 미리보기는 초안을 쿼리로 넘겨 저장 없이 렌더한다. 색 드래그 중 과도한 새로고침을 막기 위해 잠깐 기다린다.
+  // 처음 한 번만 iframe 주소로 불러오고, 그 뒤로는 불러온 미리보기에 메시지를 보내 새로고침 없이 갱신한다
+  // (components/shell/nav.tsx 가 받아 쿼리만 바꾼다). 주소를 바꾸면 화면이 깜빡이고 스크롤 위치가 초기화되기 때문.
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const loadedRef = useRef(false);
+  const sentRefreshKey = useRef(refreshKey);
   useEffect(() => {
     if (!previewUrl) return;
     const t = window.setTimeout(() => {
       const q = encodeDesignPreview({ colors: draft.colors, sections: draft.sections, order: draft.order });
-      setPreviewSrc(`${previewUrl}${previewUrl.includes("?") ? "&" : "?"}design=${q}${refreshKey ? `&_r=${refreshKey}` : ""}`);
-    }, 350);
+      const win = iframeRef.current?.contentWindow;
+      if (loadedRef.current && win) {
+        let origin = window.location.origin;
+        try { origin = new URL(previewUrl, window.location.href).origin; } catch { /* 상대 주소면 현재 출처 */ }
+        win.postMessage({ type: "onchurch:design-preview", design: q, refresh: sentRefreshKey.current !== refreshKey }, origin);
+      } else {
+        setPreviewSrc(`${previewUrl}${previewUrl.includes("?") ? "&" : "?"}design=${q}`);
+      }
+      sentRefreshKey.current = refreshKey;
+    }, loadedRef.current ? 120 : 350);
     return () => window.clearTimeout(t);
   }, [draft, previewUrl, refreshKey]);
 
@@ -279,8 +292,10 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
           <div className={`admin-design-frame ${device}`} ref={frameRef}>
             {previewSrc ? (
               <iframe
+                ref={iframeRef}
                 title="홈 미리보기"
                 src={previewSrc}
+                onLoad={() => { loadedRef.current = true; }}
                 style={device === "pc" && frameBox.h > 0
                   ? { width: PC_WIDTH, height: frameBox.h / pcScale, transform: `scale(${pcScale})`, transformOrigin: "top left", maxWidth: "none" }
                   : undefined}

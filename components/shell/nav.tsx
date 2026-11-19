@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { type Brand, type NavItem, isCustomNavId } from "@/lib/types";
 import { type Lang, pick, SHELL } from "@/lib/i18n";
@@ -20,6 +20,7 @@ type Props = {
 
 export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   // 이 교회(tenant) 사이트에 오너/관리자로 로그인한 경우에만 관리자 페이지 이동 버튼을 노출한다.
   const [isManager, setIsManager] = useState(false);
@@ -59,8 +60,21 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
       }
     };
     document.addEventListener("click", block, true);
-    return () => document.removeEventListener("click", block, true);
-  }, []);
+    // 관리자 콘솔이 보낸 초안을 페이지 새로고침 없이 반영한다(깜빡임·스크롤 초기화 방지).
+    // 쿼리만 바꿔 서버 컴포넌트를 다시 그리고, 메뉴처럼 레이아웃 데이터가 바뀐 경우에는 refresh 까지 한다.
+    const onMessage = (e: MessageEvent) => {
+      if (e.source !== window.parent) return;
+      const d = e.data as { type?: unknown; design?: unknown; refresh?: unknown } | null;
+      if (!d || d.type !== "onchurch:design-preview" || typeof d.design !== "string") return;
+      router.replace(`${window.location.pathname}?design=${d.design}`, { scroll: false });
+      if (d.refresh) router.refresh();
+    };
+    if (embedded) window.addEventListener("message", onMessage);
+    return () => {
+      document.removeEventListener("click", block, true);
+      window.removeEventListener("message", onMessage);
+    };
+  }, [router]);
 
   // 로그인/로그아웃(같은 탭) 및 다른 탭 변경 시 오너/관리자 여부를 다시 판별.
   // 이 교회(tenant)에서 로그인한 세션일 때만 판별한다 — 다른 교회 오너가 봐도 노출되면 안 됨.
