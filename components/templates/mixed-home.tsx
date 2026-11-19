@@ -10,7 +10,7 @@ import { mixedSectionOrder, resolveSectionDesign, type SectionDesignId, type Sit
 import type { HomeSectionKey } from "@/lib/home-sections";
 
 // 디자인 설정이 있는 교회의 홈. 섹션마다 기본/모던 구현 중 설정된 쪽을 골라 순서대로 그린다.
-// 설정이 없는 섹션은 site_template(기본/모던)을 따른다. 소식·갤러리는 모던 구현만 있어 '기본'이면 그리지 않는다.
+// 설정이 없는 섹션은 site_template(기본/모던)을 따른다.
 // 모던 섹션은 .chc-root 로 감싸 모던 전용 CSS 변수·스타일이 그 섹션 안에서만 적용되게 한다.
 type Props = {
   church: PublicChurch;

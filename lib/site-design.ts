@@ -22,12 +22,10 @@ export type SiteDesignPreview = SiteDesign & { order?: string[] };
 
 export const SECTION_DESIGN_IDS: readonly SectionDesignId[] = ["default", "modern"] as const;
 
-// 섹션별로 고를 수 있는 디자인. 소식·갤러리는 모던 구현만 있어서 '기본'을 고르면 숨김과 같다.
+// 섹션별로 고를 수 있는 디자인. 모든 섹션에 기본·모던 구현이 있다.
 export const SECTION_DESIGN_LABELS: Record<SectionDesignId, string> = { default: "기본", modern: "모던" };
-export const MODERN_ONLY_SECTIONS: readonly HomeSectionKey[] = ["news", "gallery"] as const;
 
-export function sectionDesignLabel(key: HomeSectionKey, id: SectionDesignId): string {
-  if (id === "default" && MODERN_ONLY_SECTIONS.includes(key)) return "표시 안 함";
+export function sectionDesignLabel(_key: HomeSectionKey, id: SectionDesignId): string {
   return SECTION_DESIGN_LABELS[id];
 }
 

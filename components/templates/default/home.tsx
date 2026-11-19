@@ -32,6 +32,9 @@ type PublicNotice = {
   createdAt: string;
 };
 
+type PublicNoticeCategory = { id: number; name: string; sortOrder: number; isActive: boolean; isAll: boolean };
+type GalleryGroup = { groupKey: string; title: string; date: string | null; coverUrl: string | null; grad: string | null; count: number };
+
 type PublicEvent = {
   id: number;
   title: string;
@@ -414,6 +417,104 @@ export type HomeSectionsInput = {
   initialLive: boolean;
 };
 
+// 교회 소식(기본 디자인): 공지 카테고리별 최신 글을 카드로 묶어 보여준다. 카테고리 규칙은 모던 섹션과 같다.
+async function HomeNewsSection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
+  const [data, catData] = await Promise.all([
+    fetchJson<{ notices: PublicNotice[] }>(`/onchurch/sites/${slug}/notices?page=1&size=40`, { notices: [] }),
+    fetchJson<{ categories: PublicNoticeCategory[] }>(`/onchurch/sites/${slug}/notice-categories`, { categories: [] }),
+  ]);
+  if (data.notices.length === 0) return null;
+  const configured = catData.categories.filter((c) => c.isActive);
+  const cards: [string, PublicNotice[]][] = configured.length
+    ? configured
+        .map((c): [string, PublicNotice[]] => [c.name, c.isAll ? data.notices : data.notices.filter((n) => n.category?.trim() === c.name)])
+        .filter(([, items]) => items.length > 0)
+        .slice(0, 3)
+    : [[pick(lang, { ko: "교회 소식", en: "Church News" }), data.notices]];
+  if (cards.length === 0) return null;
+  return (
+    <section className="section section-tinted">
+      <div className="container">
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">News</span>
+            <h2>{pick(lang, { ko: "교회 소식", en: "Church News" })}</h2>
+          </div>
+          <div className="section-head-action">
+            <Link href={url("/notices")}>{pick(lang, { ko: "소식 전체 보기", en: "All news" })} <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+          </div>
+        </div>
+        <div className="home-news-grid" style={{ "--news-cols": cards.length } as CSSProperties}>
+          {cards.map(([cat, items]) => (
+            <div key={cat} className="news-list-card home-news-card">
+              <div className="news-list-head">
+                <h3>{cat}</h3>
+                <Link href={url("/notices")}>{pick(lang, { ko: "전체보기", en: "See all" })} →</Link>
+              </div>
+              <ul className="news-list">
+                {items.slice(0, 4).map((n) => {
+                  const { day, mon } = dateParts(n.publishedAt, n.createdAt);
+                  return (
+                    <li key={n.id} className="news-item">
+                      <Link href={url("/notices")} style={{ display: "contents" }}>
+                        <div className="news-item-date">
+                          <span className="day">{day}</span>
+                          <span className="mon">{mon}</span>
+                        </div>
+                        <div className="news-item-body">
+                          <div className="news-item-title">{n.title}</div>
+                          {n.category?.trim() && <div className="news-item-cat">{n.category.trim()}</div>}
+                        </div>
+                        <div className="news-item-pin"><Icon.arrow style={{ width: 12, height: 12 }} /></div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// 갤러리(기본 디자인): 최근 앨범 3개를 둥근 카드로 보여준다.
+async function HomeGallerySection({ slug, url, lang }: { slug: string; url: (p: string) => string; lang: Lang }) {
+  const data = await fetchJson<{ groups: GalleryGroup[] }>(`/onchurch/sites/${slug}/galleries?page=1&size=8`, { groups: [] });
+  const tiles = data.groups.slice(0, 3);
+  if (tiles.length === 0) return null;
+  return (
+    <section className="section">
+      <div className="container">
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">Gallery</span>
+            <h2>{pick(lang, { ko: "갤러리", en: "Gallery" })}</h2>
+          </div>
+          <div className="section-head-action">
+            <Link href={url("/gallery")}>{pick(lang, { ko: "갤러리 전체 보기", en: "View gallery" })} <Icon.arrow style={{ width: 12, height: 12 }} /></Link>
+          </div>
+        </div>
+        <div className="home-gallery-grid">
+          {tiles.map((g, i) => (
+            <Link key={g.groupKey} href={url("/gallery")} className="home-gallery-card">
+              <div
+                className={`home-gallery-media ${g.coverUrl ? "" : GRAD_CYCLE[i % GRAD_CYCLE.length]}`}
+                style={g.coverUrl ? { backgroundImage: `url("${g.coverUrl}")` } : undefined}
+              />
+              <div className="home-gallery-body">
+                <div className="home-gallery-title">{g.title}</div>
+                {g.count > 0 && <div className="home-gallery-count">{pick(lang, { ko: `사진 ${g.count}장`, en: `${g.count} photos` })}</div>}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function buildDefaultHomeSections({ church, tenant, lang, pathPrefix }: HomeSectionsInput): Partial<Record<HomeSectionKey, ReactNode>> {
   const url = (path: string) => `${pathPrefix}${path}`;
   const slug = encodeURIComponent(tenant);
@@ -534,6 +635,18 @@ export function buildDefaultHomeSections({ church, tenant, lang, pathPrefix }: H
         <PastorSection slug={slug} url={url} lang={lang} />
       </Suspense>
     ),
+    // 소식·갤러리의 기본 디자인. 기본 템플릿 홈(DefaultHome)의 섹션 순서에는 없어서 기존 교회 홈에는 나오지 않고,
+    // 섹션별 디자인을 쓰는 홈(mixed-home)에서 '기본'을 골랐을 때만 그려진다.
+    news: isPageEnabled("notices") ? (
+      <Suspense fallback={<SectionSkeleton tinted height={260} />}>
+        <HomeNewsSection slug={slug} url={url} lang={lang} />
+      </Suspense>
+    ) : null,
+    gallery: isPageEnabled("gallery") ? (
+      <Suspense fallback={<SectionSkeleton height={260} />}>
+        <HomeGallerySection slug={slug} url={url} lang={lang} />
+      </Suspense>
+    ) : null,
   };
 
 
