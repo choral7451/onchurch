@@ -41,7 +41,7 @@ type Props = {
   menuOnly: { key: string; label: string; on: boolean; toggle: () => void }[];
   saving: boolean;
   onApply: (design: SiteDesign | null, order: HomeSectionKey[]) => Promise<void>;
-  // 섹션 카드 아래에 붙이는 카드(로고).
+  // 색상 카드와 메뉴 · 홈 구성 카드 사이에 넣는 카드(로고).
   afterSlot?: React.ReactNode;
   // 값이 바뀌면 미리보기를 다시 불러온다(메뉴 구성처럼 바로 저장되는 변경을 미리보기에 반영).
   refreshKey?: number;
@@ -248,6 +248,8 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
             </div>
           </section>
 
+          {afterSlot}
+
           <section className="admin-section">
             <div className="admin-section-head">
               <div className="admin-section-eyebrow">MENU · HOME</div>
@@ -299,7 +301,6 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
             </div>
           </section>
 
-          {afterSlot}
         </div>
 
         <div className="admin-design-preview">

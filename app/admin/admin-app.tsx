@@ -553,6 +553,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
             next["about"] = res.isTest ? c.enabledPages.includes("about") : true;
             next["worship"] = res.isTest ? c.enabledPages.includes("worship") : true;
             next["directions"] = true;
+            // 테스트 교회 디자인 화면에서 끌 수 있는 항목(기본 표시). 끈 것만 hide:* 로 저장된다.
+            for (const k of ["hide:banner", "hide:quick", "hide:directions"]) next[k] = c.enabledPages.includes(k);
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);
           }
@@ -2137,17 +2139,21 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   saved={siteDesign}
                   savedOrder={homeSectionOrder}
                   pages={(() => {
-                    // 홈 섹션 ↔ 메뉴(페이지) 1:1 짝. 배너·빠른 이동은 홈 전용, 찾아오시는 길은 항상 표시라 토글이 없다.
+                    // 홈 섹션 ↔ 메뉴(페이지) 1:1 짝. 배너·빠른 이동은 홈 전용 항목.
                     const navLabel = (id: string) => initial.nav.find((n) => n.id === id)?.label ?? id;
                     const pair = (id: string) => ({ label: navLabel(id), on: boards[id] ?? true, toggle: () => toggleBoard(id) });
+                    // 기본이 표시인 항목: boards["hide:*"] 가 켜져 있으면 숨김.
+                    const hideable = (label: string, hideKey: string) => ({ label, on: !boards[hideKey], toggle: () => toggleBoard(hideKey) });
                     return {
+                      banner: hideable("상단 배너", "hide:banner"),
+                      quick: hideable("빠른 이동", "hide:quick"),
                       events: pair("schedule"),
                       worship: pair("worship"),
                       sermons: pair("sermons"),
                       news: pair("notices"),
                       gallery: pair("gallery"),
                       pastor: pair("about"),
-                      visit: { label: navLabel("directions"), on: true },
+                      visit: hideable(navLabel("directions"), "hide:directions"),
                     };
                   })()}
                   menuOnly={[

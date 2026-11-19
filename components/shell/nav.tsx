@@ -42,7 +42,7 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
   };
 
   const visibleNav = enabledPages && enabledPages.length > 0
-    ? nav.filter((item) => item.id === "directions" || isCustomNavId(item.id) || enabledPages.includes(item.id))
+    ? nav.filter((item) => (item.id === "directions" ? !enabledPages.includes("hide:directions") : isCustomNavId(item.id) || enabledPages.includes(item.id)))
     : nav;
 
   useEffect(() => {

@@ -519,7 +519,7 @@ export function buildDefaultHomeSections({ church, tenant, lang, pathPrefix }: H
   const url = (path: string) => `${pathPrefix}${path}`;
   const slug = encodeURIComponent(tenant);
   const enabled = church.enabledPages ?? [];
-  const isPageEnabled = (id: string) => id === "directions" || enabled.length === 0 || enabled.includes(id);
+  const isPageEnabled = (id: string) => (id === "directions" ? !enabled.includes("hide:directions") : enabled.length === 0 || enabled.includes(id));
   const showHomeEvents = isPageEnabled("schedule");
   const youtubeUrl = church.youtubeUrl?.trim() || null;
   const instagramUrl = church.instagramUrl?.trim() || null;
@@ -657,7 +657,7 @@ export function buildDefaultHomeSections({ church, tenant, lang, pathPrefix }: H
 export async function DefaultHome({ church, tenant, lang, pathPrefix }: { church: PublicChurch; tenant: string; lang: Lang; pathPrefix: string }) {
   const url = (path: string) => `${pathPrefix}${path}`;
   const enabled = church.enabledPages ?? [];
-  const isPageEnabled = (id: string) => id === "directions" || enabled.length === 0 || enabled.includes(id);
+  const isPageEnabled = (id: string) => (id === "directions" ? !enabled.includes("hide:directions") : enabled.length === 0 || enabled.includes(id));
   const sermonsEnabled = isPageEnabled("sermons");
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
   const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder);

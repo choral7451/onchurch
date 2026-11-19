@@ -18,7 +18,9 @@ export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang =
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const navById = new Map(nav.map((n) => [n.id, n] as const));
   const isEnabled = (id: string) =>
-    id === "directions" || isCustomNavId(id) || !enabledPages || enabledPages.length === 0 || enabledPages.includes(id);
+    id === "directions"
+      ? !enabledPages?.includes("hide:directions")
+      : isCustomNavId(id) || !enabledPages || enabledPages.length === 0 || enabledPages.includes(id);
 
   const groups = footerNav
     .map((g) => ({

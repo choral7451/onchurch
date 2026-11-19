@@ -462,7 +462,7 @@ export function buildModernHomeSections({ church, tenant, lang, pathPrefix, init
   const slug = encodeURIComponent(tenant);
   const url = (path: string) => `${pathPrefix}${path}`;
   const enabled = church.enabledPages ?? [];
-  const isPageEnabled = (id: string) => id === "directions" || enabled.length === 0 || enabled.includes(id);
+  const isPageEnabled = (id: string) => (id === "directions" ? !enabled.includes("hide:directions") : enabled.length === 0 || enabled.includes(id));
   const youtubeUrl = church.youtubeUrl?.trim() || null;
   const instagramUrl = church.instagramUrl?.trim() || null;
 
@@ -550,7 +550,7 @@ export function buildModernHomeSections({ church, tenant, lang, pathPrefix, init
 export async function ModernHome({ church, tenant, lang, pathPrefix }: Props) {
   const url = (path: string) => `${pathPrefix}${path}`;
   const enabled = church.enabledPages ?? [];
-  const isPageEnabled = (id: string) => id === "directions" || enabled.length === 0 || enabled.includes(id);
+  const isPageEnabled = (id: string) => (id === "directions" ? !enabled.includes("hide:directions") : enabled.length === 0 || enabled.includes(id));
   const sermonsEnabled = isPageEnabled("sermons");
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
 
