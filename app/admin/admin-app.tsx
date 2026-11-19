@@ -101,7 +101,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "home" | "site" | "logo" | "contact" | "banners" | "home-order" | "pages" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
+type SectionKey = "start" | "home" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
 
 type NavGroup = "home" | "saints";
 
@@ -116,12 +116,6 @@ const AREA_META: { key: AreaKey; label: string; icon: keyof typeof Icon }[] = [
 ];
 // 영역별 하위 항목(본문 상단 탭 바). 콘텐츠 영역은 페이지 목록(initial.nav)으로 동적 구성한다.
 const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>> = {
-  design: [
-    { key: "home-order", label: "색상 · 섹션" },
-    { key: "pages", label: "메뉴 구성" },
-    { key: "logo", label: "로고" },
-    { key: "banners", label: "홈 배너" },
-  ],
   saints: [
     { key: "saints-roster", label: "성도 명부" },
     { key: "visitations", label: "심방 관리" },
@@ -135,20 +129,10 @@ const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>>
     { key: "settings", label: "구독 · 사이트 운영" },
   ],
 };
-// 메뉴 구성 화면의 페이지 설명.
-const PAGE_DESC: Record<string, string> = {
-  about: "교회 비전·연혁·담임목사·섬기는 분들을 소개합니다.",
-  worship: "주일·수요·새벽 등 예배 시간과 장소를 안내합니다.",
-  sermons: "유튜브 설교 영상을 모아 보여줍니다.",
-  notices: "공지사항과 교회 소식을 올립니다.",
-  schedule: "교회 행사와 일정을 달력으로 보여줍니다.",
-  gallery: "사진 앨범을 올려 교회 모습을 나눕니다.",
-  community: "성도들이 글과 댓글로 교제하는 게시판입니다.",
-};
 function sectionArea(key: SectionKey): AreaKey {
   if (key === "home" || key === "start") return "home";
-  if (key === "home-order" || key === "pages" || key === "logo" || key === "banners") return "design";
-  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin") return "content";
+  if (key === "home-order" || key === "logo") return "design";
+  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners") return "content";
   if (key === "saints-roster" || key === "visitations" || key === "attendance" || key === "members") return "saints";
   return "settings";
 }
@@ -1720,14 +1704,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </section>
               )}
               {/* 5개 영역 개편: 현재 영역의 하위 항목을 본문 상단 탭 바로 보여준다. 콘텐츠 영역은 페이지 목록 + 공개 토글. */}
-              {isTest && onboardingDone && activeSection !== "home" && activeSection !== "start" && (
+              {isTest && onboardingDone && activeSection !== "home" && activeSection !== "start" && areaV2 !== "design" && (
                 <div className="admin-v2-bar">
                   <div className="admin-v2-bar-title">{AREA_META.find((a) => a.key === areaV2)?.label}</div>
                   <div className="admin-v2-tabs" role="tablist">
                     {areaV2 === "content"
                       ? (
                         <>
-                          {/* 켜진 페이지만 탭으로 보여준다. 꺼진 페이지가 열려 있으면(시작 화면 바로가기 등) 그 탭만 '숨김' 표시로 남긴다. 온오프는 디자인 › 메뉴 구성. */}
+                          {/* 켜진 페이지만 탭으로 보여준다. 꺼진 페이지가 열려 있으면(시작 화면 바로가기 등) 그 탭만 '숨김' 표시로 남긴다. 온오프는 디자인 화면의 메뉴 구성 카드. */}
                           {initial.nav.filter((n) => n.id !== "directions").map((n) => {
                             const on = boards[n.id] ?? true;
                             const key = `page:${n.id}` as SectionKey;
@@ -1753,8 +1737,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
                               </button>
                             </div>
                           )}
+                          <div className={`admin-v2-tab ${activeSection === "banners" ? "active" : ""}`}>
+                            <button type="button" role="tab" aria-selected={activeSection === "banners"} onClick={() => openSection("banners")}>홈 배너</button>
+                          </div>
                           <div className="admin-v2-tab admin-v2-tab-ghost">
-                            <button type="button" onClick={() => openSection("pages")} title="디자인 › 메뉴 구성에서 페이지를 켜거나 끕니다">
+                            <button type="button" onClick={() => openSection("home-order")} title="디자인 화면에서 페이지를 켜거나 끕니다">
                               <Icon.gear style={{ width: 13, height: 13 }} />
                               메뉴 구성
                             </button>
@@ -2138,87 +2125,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </section>
               )}
 
-              {activeSection === "pages" && isTest && (() => {
-                const pages = initial.nav.filter((n) => n.id !== "directions");
-                const onCount = pages.filter((n) => boards[n.id] ?? true).length + (customPage?.isActive ? 1 : 0);
-                const total = pages.length + (customPage ? 1 : 0);
-                return (
-                  <section className="admin-section">
-                    <div className="admin-section-head">
-                      <div className="admin-section-eyebrow">MENU</div>
-                      <h2>메뉴 구성</h2>
-                      <p>홈페이지 상단 메뉴에 보여줄 페이지를 고릅니다. 끈 페이지는 메뉴에서 사라지고 콘텐츠 탭에서도 숨겨집니다. 현재 {onCount}/{total}개 노출 중.</p>
-                    </div>
-                    <div className="admin-section-body">
-                      <ul className="admin-pages">
-                        {pages.map((n) => {
-                          const on = boards[n.id] ?? true;
-                          const isRequired = n.id === "about" || n.id === "worship";
-                          const requiredFilled = n.id === "about" ? aboutFilled : n.id === "worship" ? worshipFilled : true;
-                          const desc = PAGE_DESC[n.id] ?? "";
-                          return (
-                            <li key={n.id} className={`admin-pages-row ${on ? "" : "off"}`}>
-                              <div className="admin-pages-main">
-                                <div className="admin-pages-title">
-                                  <strong>{n.label}</strong>
-                                  {isRequired && !requiredFilled && (
-                                    <span className="admin-sidebar-pill incomplete" style={{ fontSize: 10 }}>내용 미입력</span>
-                                  )}
-                                </div>
-                                {desc && <div className="admin-pages-desc">{desc}</div>}
-                              </div>
-                              <button type="button" className="admin-pages-edit" onClick={() => openSection(`page:${n.id}` as SectionKey)}>
-                                내용 편집
-                              </button>
-                              <label className="admin-pages-switch">
-                                <span className="admin-pages-state">{on ? "노출" : "숨김"}</span>
-                                <button
-                                  type="button"
-                                  className={`toggle ${on ? "on" : ""}`}
-                                  onClick={() => toggleBoard(n.id)}
-                                  aria-label={`${n.label} 메뉴 노출`}
-                                  aria-pressed={on}
-                                />
-                              </label>
-                            </li>
-                          );
-                        })}
-                        <li className={`admin-pages-row ${customPage?.isActive ? "" : "off"}`}>
-                          <div className="admin-pages-main">
-                            <div className="admin-pages-title">
-                              <strong>{customPage?.title?.trim() || "새 페이지"}</strong>
-                              <span className="admin-sidebar-pill optional" style={{ fontSize: 10 }}>자유 페이지</span>
-                              {customPage?.visibility === "member" && (
-                                <span className="admin-sidebar-pill billing" style={{ fontSize: 10 }}>회원공개</span>
-                              )}
-                            </div>
-                            <div className="admin-pages-desc">
-                              {customPage ? "교회가 직접 구성한 페이지입니다." : "아직 만들지 않았습니다. 내용 편집에서 제목과 내용을 저장하면 켤 수 있습니다."}
-                            </div>
-                          </div>
-                          <button type="button" className="admin-pages-edit" onClick={() => openSection("custom-page")}>
-                            {customPage ? "내용 편집" : "만들기"}
-                          </button>
-                          <label className="admin-pages-switch">
-                            <span className="admin-pages-state">{customPage?.isActive ? "노출" : "숨김"}</span>
-                            <button
-                              type="button"
-                              className={`toggle ${customPage?.isActive ? "on" : ""}`}
-                              onClick={() => void toggleCustomPage()}
-                              aria-label="자유 페이지 메뉴 노출"
-                              aria-pressed={!!customPage?.isActive}
-                            />
-                          </label>
-                        </li>
-                      </ul>
-                      <p className="form-hint" style={{ margin: 0 }}>
-                        찾아오시는 길은 설정 › 연락처의 주소를 바탕으로 항상 보여줍니다. 교회 소개·예배 안내를 꺼도 사이트 공개에 필요한 필수 내용 입력은 그대로 필요합니다. 교회 소개의 비전·연혁·섬김의 사람들 노출은 교회 소개 편집 화면에서 따로 켜고 끕니다.
-                      </p>
-                    </div>
-                  </section>
-                );
-              })()}
-
               {activeSection === "banners" && <BannersEditor />}
 
               {activeSection === "home-order" && isTest && (
@@ -2251,12 +2157,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   menuSlot={
                     <>
                     <section className="admin-section">
-                      <div className="admin-section-head admin-menu-chips-head">
-                        <div>
-                          <div className="admin-section-eyebrow">MENU</div>
-                          <h2>메뉴 구성</h2>
-                        </div>
-                        <button type="button" className="admin-menu-chips-more" onClick={() => openSection("pages")}>자세히</button>
+                      <div className="admin-section-head">
+                        <div className="admin-section-eyebrow">MENU</div>
+                        <h2>메뉴 구성</h2>
                       </div>
                       <div className="admin-section-body">
                         <div className="admin-menu-chips">
@@ -2653,7 +2556,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <div className="admin-section-eyebrow">PAGE</div>
                     <h1>{activePageItem.label}</h1>
                     <p>
-                      {BOARD_DESCRIPTIONS[activePage] ?? activePageItem.href} · {isTest ? "노출 여부는 디자인 › 메뉴 구성에서 바꿀 수 있습니다." : "좌측 토글로 이 페이지의 노출 여부를 제어할 수 있습니다."}
+                      {BOARD_DESCRIPTIONS[activePage] ?? activePageItem.href} · {isTest ? "노출 여부는 디자인의 메뉴 구성에서 바꿀 수 있습니다." : "좌측 토글로 이 페이지의 노출 여부를 제어할 수 있습니다."}
                     </p>
                   </div>
 

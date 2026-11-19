@@ -1385,9 +1385,6 @@ main { flex: 1; }
 .admin-v2-tab-ghost > button:hover { border-color: var(--primary); color: var(--primary-deep); background: var(--bg-tinted); }
 
 /* 색상 · 섹션 화면의 작은 메뉴 구성 카드: 페이지를 칩으로 켜고 끈다 */
-.admin-menu-chips-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.admin-menu-chips-more { background: transparent; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 4px 6px; border-radius: 6px; }
-.admin-menu-chips-more:hover { color: var(--primary-deep); background: var(--bg-tinted); }
 .admin-menu-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .admin-menu-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
 .admin-menu-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--line); flex-shrink: 0; }
@@ -1410,28 +1407,6 @@ main { flex: 1; }
 .admin-logo-mini-item:hover { border-color: var(--accent); }
 .admin-logo-mini-item.selected { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 22%, transparent); color: var(--primary-deep); }
 .admin-logo-mini-item img { width: 100%; height: 100%; object-fit: contain; }
-/* 디자인 › 메뉴 구성: 페이지 노출 온오프 */
-.admin-pages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
-.admin-pages-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); transition: background 0.15s ease; }
-.admin-pages-row + .admin-pages-row { border-top: 1px solid var(--line); }
-.admin-pages-row.off { background: var(--bg-tinted); }
-.admin-pages-row.off .admin-pages-title strong { color: var(--muted); }
-.admin-pages-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.admin-pages-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.admin-pages-title strong { font-size: 14.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
-.admin-pages-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
-.admin-pages-edit { background: transparent; border: 1px solid var(--line); border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--primary-deep); padding: 6px 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-.admin-pages-edit:hover { background: var(--bg-tinted); border-color: var(--primary); }
-.admin-pages-switch { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; min-width: 76px; justify-content: flex-end; }
-.admin-pages-state { font-size: 12px; font-weight: 600; color: var(--muted); min-width: 24px; text-align: right; }
-.admin-pages-row:not(.off) .admin-pages-state { color: var(--primary-deep); }
-.admin-pages-fixed { font-size: 12px; font-weight: 600; color: var(--muted); min-width: 76px; text-align: right; flex-shrink: 0; }
-@media (max-width: 640px) {
-  .admin-pages-row { flex-wrap: wrap; gap: 10px 12px; padding: 12px 14px; }
-  .admin-pages-main { flex-basis: 100%; }
-  .admin-pages-edit { order: 2; }
-  .admin-pages-switch, .admin-pages-fixed { order: 3; margin-left: auto; min-width: 0; }
-}
 .admin-v2 .admin-section { border-radius: var(--r-md); }
 .admin-v2 .admin-section-head { padding: 20px 24px 0; }
 .admin-v2 .admin-section-head h2 { font-size: 17px; margin: 6px 0 4px; }
