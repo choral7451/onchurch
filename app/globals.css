@@ -1288,6 +1288,14 @@ main { flex: 1; }
 .admin-design-row-spacer { width: 24px; flex-shrink: 0; }
 .admin-design-row.menu-only { background: var(--bg-tinted); }
 .admin-quick-modal { max-width: 560px; position: relative; }
+.admin-sub-toggles { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.admin-sub-toggles li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; }
+.admin-sub-toggles li + li { border-top: 1px solid var(--line); }
+.admin-sub-toggles li > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.admin-sub-toggles strong { font-size: 14px; color: var(--ink); }
+.admin-sub-toggles small { font-size: 12.5px; color: var(--muted); }
+.admin-sub-toggles li.off strong { color: var(--muted); }
+.admin-sub-toggles .toggle { border: 0; padding: 0; cursor: pointer; }
 .admin-quick-modal-close { position: absolute; top: 16px; right: 16px; }
 .admin-design-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
 .admin-design-seg button { padding: 6px 12px; font-size: 12.5px; color: var(--muted); background: var(--surface); border: 0; cursor: pointer; font: inherit; }

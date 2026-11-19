@@ -401,6 +401,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [quickLimitMsg, setQuickLimitMsg] = useState("");
   // 테스트 교회 디자인 화면: 섹션 목록의 '빠른 이동' 설정을 모달로 연다.
   const [quickModal, setQuickModal] = useState(false);
+  // 테스트 교회 디자인 화면: '교회 소개' 줄의 세부 항목(비전·연혁·섬김의 사람들) 설정 모달.
+  const [aboutModal, setAboutModal] = useState(false);
   // 홈 바로가기 커스텀 항목(제목·설명·이동 주소). 서버 저장값과 편집 중인 초안을 분리해 둔다.
   const [homeCustomLink, setHomeCustomLink] = useState<HomeCustomLink | null>(null);
   const [customDraft, setCustomDraft] = useState<HomeCustomLink>({ title: "", desc: "", url: "" });
@@ -2166,8 +2168,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   extraDirty={(logoPreview || null) !== savedLogo ? 1 : 0}
                   onRevertExtra={() => { setLogoPreview(savedLogo); setLogoErr(""); }}
                   previewLogo={logoPreview || null}
-                  onSectionSettings={(key) => { if (key === "quick") setQuickModal(true); }}
-                  settingsKeys={["quick"]}
+                  onSectionSettings={(key) => { if (key === "quick") setQuickModal(true); else if (key === "pastor") setAboutModal(true); }}
+                  settingsKeys={["quick", "pastor"]}
                   afterSlot={
                     <section className="admin-section">
                       <div className="admin-section-head">
@@ -2237,6 +2239,38 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     </section>
                   }
                 />
+              )}
+
+              {activeSection === "home-order" && isTest && aboutModal && (
+                <div className="admin-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="about-sub-title" onClick={() => setAboutModal(false)}>
+                  <div className="admin-modal admin-quick-modal" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="admin-color-modal-close admin-quick-modal-close" aria-label="닫기" onClick={() => setAboutModal(false)}>×</button>
+                    <h3 className="admin-modal-title" id="about-sub-title" style={{ marginBottom: 4 }}>교회 소개 세부 항목</h3>
+                    <p className="form-hint" style={{ margin: "0 0 14px" }}>교회 소개 페이지에 보여줄 항목을 고릅니다. 담임목사 인사는 항상 표시됩니다.</p>
+                    <ul className="admin-sub-toggles">
+                      {([
+                        { key: "vision", label: "비전", desc: "교회의 비전과 핵심 가치" },
+                        { key: "history", label: "연혁", desc: "교회가 걸어온 길" },
+                        { key: "staff", label: "섬김의 사람들", desc: "교역자와 섬기는 분들" },
+                      ] as const).map((it) => {
+                        const on = boards[`about-${it.key}`] ?? true;
+                        return (
+                          <li key={it.key} className={on ? "" : "off"}>
+                            <div>
+                              <strong>{it.label}</strong>
+                              <small>{it.desc}</small>
+                            </div>
+                            <button type="button" className={`toggle ${on ? "on" : ""}`} onClick={() => setAboutSubSection(it.key, !on)} aria-label={`${it.label} 표시`} aria-pressed={on} />
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <div className="admin-modal-actions" style={{ marginTop: 18 }}>
+                      <button type="button" className="btn btn-secondary" onClick={() => { setAboutModal(false); openSection("page:about" as SectionKey); }}>내용 편집</button>
+                      <button type="button" className="btn btn-primary" onClick={() => setAboutModal(false)}>완료</button>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {activeSection === "home-order" && !isTest && (
