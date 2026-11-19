@@ -46,6 +46,13 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
     setOpen(false);
   }, [pathname]);
 
+  // 관리자 디자인 미리보기(iframe 또는 ?design= 초안) 안에서는 관리자 페이지 이동·로그아웃을 막는다(globals.css 의 html[data-design-preview]).
+  useEffect(() => {
+    const embedded = window.self !== window.top;
+    const draft = new URLSearchParams(window.location.search).has("design");
+    if (embedded || draft) document.documentElement.dataset.designPreview = "1";
+  }, []);
+
   // 로그인/로그아웃(같은 탭) 및 다른 탭 변경 시 오너/관리자 여부를 다시 판별.
   // 이 교회(tenant)에서 로그인한 세션일 때만 판별한다 — 다른 교회 오너가 봐도 노출되면 안 됨.
   useEffect(() => {

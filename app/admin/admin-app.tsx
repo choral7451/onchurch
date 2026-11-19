@@ -1364,7 +1364,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {onboardingDone && isTest && (
           <aside className={`admin-sidebar admin-sidebar-v2 ${sideCollapsed ? "collapsed" : ""}`}>
             <div className="admin-v2-church">
-              <div className="admin-v2-church-mark" aria-hidden="true">{(name || "교").slice(0, 1)}</div>
+              {logoPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="admin-v2-church-mark admin-v2-church-logo" src={logoPreview} alt="" />
+              ) : (
+                <div className="admin-v2-church-mark" aria-hidden="true">{(name || "교").slice(0, 1)}</div>
+              )}
               <div style={{ minWidth: 0 }}>
                 <div className="admin-v2-church-name">{name || "교회 이름"}</div>
                 <div className="admin-v2-church-slug">{slug ? `${slug}.onchurch.kr` : "서브도메인 미설정"}</div>

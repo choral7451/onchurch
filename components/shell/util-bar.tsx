@@ -114,7 +114,7 @@ export function UtilBar({ tagline, pathPrefix, slug, lang = "ko" }: Props) {
                     <a href={buildAdminUrl()} className="utilbar-menu-item" role="menuitem" style={menuItemStyle}>{pick(lang, SHELL.adminPage)}</a>
                   )}
                   <Link href={mypageHref} className="utilbar-menu-item" role="menuitem" style={menuItemStyle} onClick={() => setMenuOpen(false)}>{pick(lang, SHELL.myPage)}</Link>
-                  <button type="button" className="utilbar-menu-item" role="menuitem" style={{ ...menuItemStyle, textAlign: "left", width: "100%" }} onClick={logout}>{pick(lang, SHELL.logout)}</button>
+                  <button type="button" className="utilbar-menu-item utilbar-logout" role="menuitem" style={{ ...menuItemStyle, textAlign: "left", width: "100%" }} onClick={logout}>{pick(lang, SHELL.logout)}</button>
                 </div>
               )}
             </div>
