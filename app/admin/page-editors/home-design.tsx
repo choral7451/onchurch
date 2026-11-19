@@ -130,8 +130,9 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
 
   // 추천 색조합 모달: 조합을 고르면 바로 초안(미리보기)에 반영하고 닫는다. 상세 색은 카드의 메인·포인트 칸에서 바로 고른다.
   const [colorModal, setColorModal] = useState(false);
-  const NAVY = SITE_COLOR_PRESETS.find((p) => p.id === "navy") ?? SITE_COLOR_PRESETS[0];
-  const DEFAULT_COLORS: SiteDesignColors = { main: NAVY.main, point: NAVY.point };
+  // 색을 고르지 않았을 때 보여줄 템플릿의 실제 색(기본 템플릿 = navy, 모던 템플릿 = slate 프리셋과 같다).
+  const TEMPLATE_PRESET = SITE_COLOR_PRESETS.find((p) => p.id === (siteTemplate === "modern" ? "slate" : "navy")) ?? SITE_COLOR_PRESETS[0];
+  const DEFAULT_COLORS: SiteDesignColors = { main: TEMPLATE_PRESET.main, point: TEMPLATE_PRESET.point };
   function setColorPart(part: "main" | "point", value: string) {
     setDraft((d) => ({ ...d, colors: { ...(d.colors ?? DEFAULT_COLORS), [part]: value.toLowerCase() } }));
   }
@@ -208,10 +209,10 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                 {(["main", "point"] as const).map((part) => (
                   <label key={part} className="admin-design-colorpick" title={`${part === "main" ? "메인" : "포인트"} 색 고르기`}>
                     <input type="color" value={(draft.colors ?? DEFAULT_COLORS)[part]} onChange={(e) => setColorPart(part, e.target.value)} />
-                    <span className={`admin-design-colorpick-chip ${draft.colors ? "" : "admin-design-swatch-default"}`} style={draft.colors ? { background: draft.colors[part] } : undefined} aria-hidden="true" />
+                    <span className="admin-design-colorpick-chip" style={{ background: (draft.colors ?? DEFAULT_COLORS)[part] }} aria-hidden="true" />
                     <span className="admin-design-colorpick-text">
                       <strong>{part === "main" ? "메인" : "포인트"}</strong>
-                      <small>{draft.colors ? draft.colors[part] : "기본색"}</small>
+                      <small>{(draft.colors ?? DEFAULT_COLORS)[part]}</small>
                     </span>
                   </label>
                 ))}
