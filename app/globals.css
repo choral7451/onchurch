@@ -1288,6 +1288,10 @@ main { flex: 1; }
 .admin-design-row-spacer { width: 24px; flex-shrink: 0; }
 .admin-design-row.menu-only { background: var(--bg-tinted); }
 .admin-quick-modal { max-width: 560px; position: relative; }
+.admin-quick-url { display: flex; gap: 8px; padding: 0 16px 14px 46px; }
+.admin-quick-url input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-sm); font: inherit; font-size: 13px; background: var(--surface); color: var(--ink); }
+.admin-quick-url input:focus { outline: none; border-color: var(--primary); }
+.admin-quick-url .btn { padding: 7px 14px; font-size: 13px; flex-shrink: 0; }
 .admin-sub-toggles { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
 .admin-sub-toggles li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; }
 .admin-sub-toggles li + li { border-top: 1px solid var(--line); }

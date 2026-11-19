@@ -395,6 +395,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [quickLimitMsg, setQuickLimitMsg] = useState("");
   // 테스트 교회 디자인 화면: 섹션 목록의 '빠른 이동' 설정을 모달로 연다.
   const [quickModal, setQuickModal] = useState(false);
+  // 빠른 이동 설정 모달 안에서 편집하는 유튜브·인스타그램 주소 초안(테스트 교회).
+  const [extDraft, setExtDraft] = useState<{ youtube: string; instagram: string }>({ youtube: "", instagram: "" });
   // 테스트 교회 디자인 화면: '교회 소개' 줄의 세부 항목(비전·연혁·섬김의 사람들) 설정 모달.
   const [aboutModal, setAboutModal] = useState(false);
   // 미답변 문의 수(사이드바 콘텐츠 항목에 표시). 테스트 교회 콘솔이 열릴 때 한 번 조회한다.
@@ -892,9 +894,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
     }
   }
 
-  async function persistHomeQuickLinks(nextKeys: string[], nextCustom: HomeCustomLink | null = homeCustomLink) {
+  async function persistHomeQuickLinks(
+    nextKeys: string[],
+    nextCustom: HomeCustomLink | null = homeCustomLink,
+    // 빠른 이동 설정에서 유튜브·인스타그램 주소를 함께 바꿀 때만 넘긴다.
+    urls: { youtube?: string | null; instagram?: string | null } = {},
+  ) {
+    const nextYoutube = "youtube" in urls ? urls.youtube ?? null : youtubeUrl;
+    const nextInstagram = "instagram" in urls ? urls.instagram ?? null : instagramUrl;
     setHomeQuickLinks(nextKeys);
     setHomeCustomLink(nextCustom);
+    if ("youtube" in urls) setYoutubeUrl(nextYoutube);
+    if ("instagram" in urls) setInstagramUrl(nextInstagram);
     if (!churchExistsOnServer || !slug.trim() || !name.trim()) return;
     const enabledPages = Object.entries(boards).filter(([, on]) => on).map(([id]) => id);
     try {
@@ -910,8 +921,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
         representative: null,
         businessNo: null,
         logoUrl: logoPreview || null,
-        youtubeUrl: youtubeUrl?.trim() || null,
-        instagramUrl: instagramUrl?.trim() || null,
+        youtubeUrl: nextYoutube?.trim() || null,
+        instagramUrl: nextInstagram?.trim() || null,
         liveUrl: liveUrl?.trim() || null,
         isLive,
         enabledPages,
@@ -2107,6 +2118,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           churchName={name}
                         />
                       </div>
+                      {!isTest && (
+                      <>
                       <div className="form-row full">
                         <label htmlFor="ad-youtube-channel">유튜브 채널 주소</label>
                         <input
@@ -2129,6 +2142,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         />
                         <p className="form-hint">입력하면 홈 바로가기에 &lsquo;인스타그램&rsquo;을 추가할 수 있습니다. (홈 구성 메뉴에서 노출 항목 선택)</p>
                       </div>
+                      </>
+                      )}
                     </div>
                     {sectionSaveBar}
                     <DirectionsEditor />
@@ -2172,7 +2187,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   extraDirty={(logoPreview || null) !== savedLogo ? 1 : 0}
                   onRevertExtra={() => { setLogoPreview(savedLogo); setLogoErr(""); }}
                   previewLogo={logoPreview || null}
-                  onSectionSettings={(key) => { if (key === "quick") setQuickModal(true); else if (key === "pastor") setAboutModal(true); }}
+                  onSectionSettings={(key) => { if (key === "quick") { setExtDraft({ youtube: youtubeUrl ?? "", instagram: instagramUrl ?? "" }); setQuickModal(true); } else if (key === "pastor") setAboutModal(true); }}
                   settingsKeys={["quick", "pastor"]}
                   afterSlot={
                     <section className="admin-section">
@@ -2327,7 +2342,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     if (def?.kind === "external") {
                       const hasUrl = def.external === "youtube" ? !!youtubeUrl?.trim() : !!instagramUrl?.trim();
                       if (!hasUrl) {
-                        showQuickToast(`${def.title} 주소가 없습니다. ‘연락처’ 메뉴에서 ${def.title} 주소를 먼저 입력해주세요.`);
+                        showQuickToast(isTest ? `${def.title} 주소를 아래 칸에 먼저 입력·저장해주세요.` : `${def.title} 주소가 없습니다. ‘연락처’ 메뉴에서 ${def.title} 주소를 먼저 입력해주세요.`);
                         return;
                       }
                     }
@@ -2382,6 +2397,55 @@ export function AdminApp({ initial }: { initial: Initial }) {
                             <div style={{ color: "var(--muted)", fontSize: 12 }}>{d.desc}</div>
                           </div>
                         );
+
+                        // 테스트 교회: 유튜브·인스타그램은 같은 카드 안에서 주소를 입력·저장한다(연락처 화면을 오가지 않게).
+                        if (isTest && d.kind === "external") {
+                          const which = d.external === "youtube" ? "youtube" : "instagram";
+                          const savedUrl = (which === "youtube" ? youtubeUrl : instagramUrl)?.trim() ?? "";
+                          const draftUrl = extDraft[which].trim();
+                          return (
+                            <div
+                              key={d.key}
+                              className="admin-banner-card"
+                              style={{ flexDirection: "column", alignItems: "stretch", gap: 0, padding: 0, borderColor: sel ? "var(--accent)" : undefined }}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => toggle(d.key)}
+                                style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", textAlign: "left", cursor: "pointer", background: "none", border: 0, font: "inherit", color: "inherit", width: "100%" }}
+                              >
+                                {checkbox}
+                                {labelBlock}
+                              </button>
+                              <div className="admin-quick-url">
+                                <input
+                                  type="url"
+                                  inputMode="url"
+                                  maxLength={2000}
+                                  aria-label={`${d.title} 주소`}
+                                  value={extDraft[which]}
+                                  onChange={(e) => setExtDraft((x) => ({ ...x, [which]: e.target.value }))}
+                                  placeholder={which === "youtube" ? "https://www.youtube.com/@yourchurch" : "https://www.instagram.com/yourchurch"}
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary"
+                                  disabled={draftUrl === savedUrl}
+                                  onClick={() => {
+                                    const set = new Set(selected);
+                                    // 주소를 넣으면 자리가 있을 때 바로 선택하고, 비우면 바로가기에서 뺀다.
+                                    if (draftUrl) { if (!set.has(d.key) && set.size < MAX_QUICK) set.add(d.key); }
+                                    else set.delete(d.key);
+                                    const nextKeys = QUICK_LINK_DEFS.filter((x) => set.has(x.key)).map((x) => x.key);
+                                    void persistHomeQuickLinks(nextKeys, homeCustomLink, { [which]: draftUrl || null });
+                                  }}
+                                >
+                                  저장
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        }
 
                         if (d.kind !== "custom") {
                           return (
