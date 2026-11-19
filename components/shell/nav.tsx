@@ -46,11 +46,20 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
     setOpen(false);
   }, [pathname]);
 
-  // 관리자 디자인 미리보기(iframe 또는 ?design= 초안) 안에서는 관리자 페이지 이동·로그아웃을 막는다(globals.css 의 html[data-design-preview]).
+  // 관리자 디자인 미리보기(iframe 또는 ?design= 초안) 안에서는 관리자 페이지 이동·로그아웃이 눌리지 않게 한다.
+  // 모양은 그대로 두고, data-preview-block 이 붙은 요소의 클릭만 문서 캡처 단계에서 막는다.
   useEffect(() => {
     const embedded = window.self !== window.top;
     const draft = new URLSearchParams(window.location.search).has("design");
-    if (embedded || draft) document.documentElement.dataset.designPreview = "1";
+    if (!embedded && !draft) return;
+    const block = (e: MouseEvent) => {
+      if ((e.target as Element | null)?.closest?.("[data-preview-block]")) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    document.addEventListener("click", block, true);
+    return () => document.removeEventListener("click", block, true);
   }, []);
 
   // 로그인/로그아웃(같은 탭) 및 다른 탭 변경 시 오너/관리자 여부를 다시 판별.
@@ -126,7 +135,7 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
         </div>
         {isManager && (
           <div className="nav-cta">
-            <a href={buildAdminUrl()} className="btn btn-primary">
+            <a href={buildAdminUrl()} className="btn btn-primary" data-preview-block>
               <Icon.gear style={{ width: 16, height: 16 }} />
               {pick(lang, SHELL.adminPage)}
             </a>
@@ -181,7 +190,7 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
           </div>
           {isManager && (
             <div className="nav-drawer-cta">
-              <a href={buildAdminUrl()} className="btn btn-primary">
+              <a href={buildAdminUrl()} className="btn btn-primary" data-preview-block>
                 <Icon.gear style={{ width: 16, height: 16 }} />
                 {pick(lang, SHELL.adminPage)}
               </a>

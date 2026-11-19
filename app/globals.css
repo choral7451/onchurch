@@ -1317,8 +1317,6 @@ main { flex: 1; }
 .admin-v2-church { display: flex; align-items: center; gap: 10px; padding: 8px 10px 14px; border-bottom: 1px solid var(--line); }
 .admin-v2-church-mark { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: grid; place-items: center; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); }
 .admin-v2-church-logo { background: var(--surface); object-fit: contain; border: 1px solid var(--line); }
-/* 관리자 디자인 미리보기 안에서는 관리자 페이지 이동·로그아웃 버튼을 누를 수 없게 한다 */
-html[data-design-preview] .nav-cta a, html[data-design-preview] .nav-drawer-cta a, html[data-design-preview] .utilbar-logout { pointer-events: none; opacity: 0.55; cursor: default; }
 .admin-v2-church-name { font-size: 14px; font-weight: 700; color: var(--primary-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-v2-church-slug { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-sidebar-v2 .admin-sidebar-areas { border-bottom: 0; padding-bottom: 0; gap: 2px; }
