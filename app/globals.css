@@ -1402,7 +1402,9 @@ main { flex: 1; }
 .admin-logo-mini-name small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-logo-mini-upload { position: relative; flex-shrink: 0; padding: 7px 14px; font-size: 13px; cursor: pointer; overflow: hidden; }
 .admin-logo-mini-upload input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-.admin-logo-mini { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.admin-logo-mini-upload { display: inline-flex; align-items: center; gap: 6px; }
+.admin-logo-mini-label { font-size: 11.5px; font-weight: 600; color: var(--muted); margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.admin-logo-mini { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .admin-logo-mini-item { width: 40px; height: 40px; padding: 5px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font: inherit; font-size: 11px; font-weight: 600; color: var(--muted); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
 .admin-logo-mini-item:hover { border-color: var(--accent); }
 .admin-logo-mini-item.selected { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 22%, transparent); color: var(--primary-deep); }

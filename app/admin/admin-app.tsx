@@ -2212,13 +2212,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
                                 </span>
                                 <span className="admin-logo-mini-name">
                                   <strong>{preset ? preset.label : isCustom ? "직접 올린 로고" : "로고 없음"}</strong>
-                                  <small>{logoUploading ? "올리는 중…" : logoPreview ? "상단 메뉴와 하단에 표시됩니다" : "교회 이름만 표시됩니다"}</small>
+                                  <small>{logoPreview ? "현재 로고" : "교회 이름만 표시됩니다"}</small>
                                 </span>
                                 <label className="btn btn-secondary admin-logo-mini-upload">
                                   <input type="file" accept="image/*" onChange={(e) => { const el = e.currentTarget; void onFileChange(e).then(() => { el.value = ""; }); }} disabled={logoUploading} />
-                                  올리기
+                                  <Icon.image style={{ width: 14, height: 14 }} />
+                                  {logoUploading ? "올리는 중…" : "내 로고 파일 올리기"}
                                 </label>
                               </div>
+                              <div className="admin-logo-mini-label">또는 교단 로고에서 선택</div>
                               <div className="admin-logo-mini" role="group" aria-label="교단 로고에서 선택">
                                 {DENOMINATION_LOGOS.map((p) => {
                                   const selected = logoPreview === p.url;
