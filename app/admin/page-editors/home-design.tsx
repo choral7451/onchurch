@@ -41,6 +41,8 @@ type Props = {
   onApply: (design: SiteDesign | null, order: HomeSectionKey[]) => Promise<void>;
   // 색상 카드와 섹션 카드 사이에 끼워 넣는 작은 카드(메뉴 구성 칩). 관리자 앱이 내려준다.
   menuSlot?: React.ReactNode;
+  // 값이 바뀌면 미리보기를 다시 불러온다(메뉴 구성처럼 바로 저장되는 변경을 미리보기에 반영).
+  refreshKey?: number;
 };
 
 function draftFrom(saved: SiteDesign | null, order: HomeSectionKey[]): Draft {
@@ -51,7 +53,7 @@ function toDesign(d: Draft): SiteDesign | null {
   return normalizeSiteDesign({ colors: d.colors, sections: d.sections });
 }
 
-export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, activeKeys, saving, onApply, menuSlot }: Props) {
+export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, activeKeys, saving, onApply, menuSlot, refreshKey = 0 }: Props) {
   const savedKey = JSON.stringify([saved, savedOrder]);
   const [draft, setDraft] = useState<Draft>(() => draftFrom(saved, savedOrder));
   // 서버 값이 바뀌면(적용 완료·재조회) 초안을 그 값으로 다시 맞춘다(렌더 중 파생 상태 갱신 패턴).
@@ -101,10 +103,10 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
     if (!previewUrl) return;
     const t = window.setTimeout(() => {
       const q = encodeDesignPreview({ colors: draft.colors, sections: draft.sections, order: draft.order });
-      setPreviewSrc(`${previewUrl}${previewUrl.includes("?") ? "&" : "?"}design=${q}`);
+      setPreviewSrc(`${previewUrl}${previewUrl.includes("?") ? "&" : "?"}design=${q}${refreshKey ? `&_r=${refreshKey}` : ""}`);
     }, 350);
     return () => window.clearTimeout(t);
-  }, [draft, previewUrl]);
+  }, [draft, previewUrl, refreshKey]);
 
   const { getItemProps } = useDragSort(visible.length, (from, to) => {
     if (from === to) return;

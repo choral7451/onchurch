@@ -406,6 +406,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [isTest, setIsTest] = useState(false);
   const [siteDesign, setSiteDesign] = useState<SiteDesign | null>(null);
   const [designSaving, setDesignSaving] = useState(false);
+  // 메뉴 구성(페이지 온오프)이 서버에 저장될 때마다 올려 디자인 미리보기를 새로 불러오게 한다.
+  const [previewRev, setPreviewRev] = useState(0);
   // 교회가 직접 꾸미는 자유 페이지. 한 교회에 하나이며, 없으면 아직 저장하지 않은 상태다.
   const [customPage, setCustomPage] = useState<CustomPage | null>(null);
   const [homeSectionOrder, setHomeSectionOrder] = useState<HomeSectionKey[]>(() => normalizeHomeSectionOrder([]));
@@ -726,6 +728,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         homeCustomLink,
         homeSectionOrder,
       });
+      setPreviewRev((n) => n + 1);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearTokens();
@@ -801,6 +804,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     setCustomPage({ ...customPage, isActive: next });
     try {
       await onchurchCustomPage.setActive(customPage.id, next);
+      setPreviewRev((n) => n + 1);
     } catch (err) {
       // 실패하면 화면을 되돌린다(서버 값이 진실).
       setCustomPage({ ...customPage, isActive: !next });
@@ -2230,6 +2234,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   })()}
                   saving={designSaving}
                   onApply={applySiteDesign}
+                  refreshKey={previewRev}
                   menuSlot={
                     <section className="admin-section">
                       <div className="admin-section-head admin-menu-chips-head">
