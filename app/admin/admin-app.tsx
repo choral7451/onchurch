@@ -2229,6 +2229,47 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   })()}
                   saving={designSaving}
                   onApply={applySiteDesign}
+                  menuSlot={
+                    <section className="admin-section">
+                      <div className="admin-section-head admin-menu-chips-head">
+                        <div>
+                          <div className="admin-section-eyebrow">MENU</div>
+                          <h2>메뉴 구성</h2>
+                        </div>
+                        <button type="button" className="admin-menu-chips-more" onClick={() => openSection("pages")}>자세히</button>
+                      </div>
+                      <div className="admin-section-body">
+                        <div className="admin-menu-chips">
+                          {initial.nav.filter((n) => n.id !== "directions").map((n) => {
+                            const on = boards[n.id] ?? true;
+                            const isRequired = n.id === "about" || n.id === "worship";
+                            return (
+                              <button
+                                key={n.id}
+                                type="button"
+                                className={`admin-menu-chip ${on ? "on" : ""}`}
+                                aria-pressed={on}
+                                disabled={isRequired}
+                                title={isRequired ? "필수 페이지는 항상 노출됩니다" : on ? "누르면 메뉴에서 숨깁니다" : "누르면 메뉴에 보여줍니다"}
+                                onClick={() => toggleBoard(n.id)}
+                              >
+                                {n.label}
+                              </button>
+                            );
+                          })}
+                          <button
+                            type="button"
+                            className={`admin-menu-chip ${customPage?.isActive ? "on" : ""}`}
+                            aria-pressed={!!customPage?.isActive}
+                            title={customPage ? "자유 페이지" : "자유 페이지 만들기"}
+                            onClick={() => void toggleCustomPage()}
+                          >
+                            {customPage?.title?.trim() || "새 페이지"}
+                          </button>
+                        </div>
+                      </div>
+                    </section>
+                  }
                 />
               )}
 

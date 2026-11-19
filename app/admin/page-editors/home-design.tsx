@@ -39,6 +39,8 @@ type Props = {
   activeKeys: HomeSectionKey[];
   saving: boolean;
   onApply: (design: SiteDesign | null, order: HomeSectionKey[]) => Promise<void>;
+  // 색상 카드와 섹션 카드 사이에 끼워 넣는 작은 카드(메뉴 구성 칩). 관리자 앱이 내려준다.
+  menuSlot?: React.ReactNode;
 };
 
 function draftFrom(saved: SiteDesign | null, order: HomeSectionKey[]): Draft {
@@ -49,7 +51,7 @@ function toDesign(d: Draft): SiteDesign | null {
   return normalizeSiteDesign({ colors: d.colors, sections: d.sections });
 }
 
-export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, activeKeys, saving, onApply }: Props) {
+export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, activeKeys, saving, onApply, menuSlot }: Props) {
   const savedKey = JSON.stringify([saved, savedOrder]);
   const [draft, setDraft] = useState<Draft>(() => draftFrom(saved, savedOrder));
   // 서버 값이 바뀌면(적용 완료·재조회) 초안을 그 값으로 다시 맞춘다(렌더 중 파생 상태 갱신 패턴).
@@ -220,6 +222,8 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
               </div>
             </div>
           </section>
+
+          {menuSlot}
 
           <section className="admin-section">
             <div className="admin-section-head">

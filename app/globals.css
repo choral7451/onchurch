@@ -1370,6 +1370,17 @@ main { flex: 1; }
 .admin-v2-tab-ghost > button { background: transparent; border: 1px dashed var(--line); border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 5px 11px; margin: 6px 0 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
 .admin-v2-tab-ghost > button:hover { border-color: var(--primary); color: var(--primary-deep); background: var(--bg-tinted); }
 
+/* 색상 · 섹션 화면의 작은 메뉴 구성 카드: 페이지를 칩으로 켜고 끈다 */
+.admin-menu-chips-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.admin-menu-chips-more { background: transparent; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.admin-menu-chips-more:hover { color: var(--primary-deep); background: var(--bg-tinted); }
+.admin-menu-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.admin-menu-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+.admin-menu-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--line); flex-shrink: 0; }
+.admin-menu-chip:hover:not(:disabled) { border-color: var(--primary); }
+.admin-menu-chip.on { background: var(--bg-tinted); border-color: var(--primary); color: var(--primary-deep); }
+.admin-menu-chip.on::before { background: var(--primary); }
+.admin-menu-chip:disabled { cursor: default; opacity: 0.75; }
 /* 디자인 › 메뉴 구성: 페이지 노출 온오프 */
 .admin-pages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
 .admin-pages-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); transition: background 0.15s ease; }
