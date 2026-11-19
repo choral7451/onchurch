@@ -340,7 +340,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
       setActiveSection("home");
       return;
     }
-    const first: Record<Exclude<AreaKey, "home">, SectionKey> = { design: "home-order", content: "page:about" as SectionKey, saints: "saints-roster", settings: "site" };
+    const firstOnPage = initial.nav.find((n) => n.id !== "directions" && (boards[n.id] ?? true))?.id ?? "about";
+    const first: Record<Exclude<AreaKey, "home">, SectionKey> = { design: "home-order", content: `page:${firstOnPage}` as SectionKey, saints: "saints-roster", settings: "site" };
     setActiveSection(first[area]);
   }
 
@@ -557,8 +558,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
           if (c.enabledPages?.length) {
             const next: Record<string, boolean> = {};
             for (const n of initial.nav) next[n.id] = c.enabledPages.includes(n.id);
-            next["about"] = true;
-            next["worship"] = true;
+            // 교회 소개·예배 안내는 기존 교회에선 항상 노출. 테스트 교회만 메뉴 구성에서 끌 수 있다.
+            next["about"] = res.isTest ? c.enabledPages.includes("about") : true;
+            next["worship"] = res.isTest ? c.enabledPages.includes("worship") : true;
             next["directions"] = true;
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);
@@ -943,7 +945,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   }
 
   function toggleBoard(id: string) {
-    if (id === "about") return;
+    if (id === "about" && !isTest) return;
     const willTurnOff = !!boards[id];
     setBoards((prev) => {
       const next = { ...prev, [id]: !prev[id] };
@@ -2140,10 +2142,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                               <div className="admin-pages-main">
                                 <div className="admin-pages-title">
                                   <strong>{n.label}</strong>
-                                  {isRequired && (
-                                    <span className={`admin-sidebar-pill ${requiredFilled ? "complete" : "incomplete"}`} style={{ fontSize: 10 }}>
-                                      {requiredFilled ? "필수" : "필수 미입력"}
-                                    </span>
+                                  {isRequired && !requiredFilled && (
+                                    <span className="admin-sidebar-pill incomplete" style={{ fontSize: 10 }}>내용 미입력</span>
                                   )}
                                 </div>
                                 {desc && <div className="admin-pages-desc">{desc}</div>}
@@ -2151,20 +2151,16 @@ export function AdminApp({ initial }: { initial: Initial }) {
                               <button type="button" className="admin-pages-edit" onClick={() => openSection(`page:${n.id}` as SectionKey)}>
                                 내용 편집
                               </button>
-                              {isRequired ? (
-                                <span className="admin-pages-fixed">항상 노출</span>
-                              ) : (
-                                <label className="admin-pages-switch">
-                                  <span className="admin-pages-state">{on ? "노출" : "숨김"}</span>
-                                  <button
-                                    type="button"
-                                    className={`toggle ${on ? "on" : ""}`}
-                                    onClick={() => toggleBoard(n.id)}
-                                    aria-label={`${n.label} 메뉴 노출`}
-                                    aria-pressed={on}
-                                  />
-                                </label>
-                              )}
+                              <label className="admin-pages-switch">
+                                <span className="admin-pages-state">{on ? "노출" : "숨김"}</span>
+                                <button
+                                  type="button"
+                                  className={`toggle ${on ? "on" : ""}`}
+                                  onClick={() => toggleBoard(n.id)}
+                                  aria-label={`${n.label} 메뉴 노출`}
+                                  aria-pressed={on}
+                                />
+                              </label>
                             </li>
                           );
                         })}
@@ -2197,7 +2193,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         </li>
                       </ul>
                       <p className="form-hint" style={{ margin: 0 }}>
-                        찾아오시는 길은 설정 › 연락처의 주소를 바탕으로 항상 보여줍니다. 교회 소개의 비전·연혁·섬김의 사람들 노출은 교회 소개 편집 화면에서 따로 켜고 끕니다.
+                        찾아오시는 길은 설정 › 연락처의 주소를 바탕으로 항상 보여줍니다. 교회 소개·예배 안내를 꺼도 사이트 공개에 필요한 필수 내용 입력은 그대로 필요합니다. 교회 소개의 비전·연혁·섬김의 사람들 노출은 교회 소개 편집 화면에서 따로 켜고 끕니다.
                       </p>
                     </div>
                   </section>
@@ -2242,15 +2238,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <div className="admin-menu-chips">
                           {initial.nav.filter((n) => n.id !== "directions").map((n) => {
                             const on = boards[n.id] ?? true;
-                            const isRequired = n.id === "about" || n.id === "worship";
                             return (
                               <button
                                 key={n.id}
                                 type="button"
                                 className={`admin-menu-chip ${on ? "on" : ""}`}
                                 aria-pressed={on}
-                                disabled={isRequired}
-                                title={isRequired ? "필수 페이지는 항상 노출됩니다" : on ? "누르면 메뉴에서 숨깁니다" : "누르면 메뉴에 보여줍니다"}
+                                title={on ? "누르면 메뉴에서 숨깁니다" : "누르면 메뉴에 보여줍니다"}
                                 onClick={() => toggleBoard(n.id)}
                               >
                                 {n.label}
