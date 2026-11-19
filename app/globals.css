@@ -1366,6 +1366,8 @@ main { flex: 1; }
 .admin-v2-required-links { display: inline-flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
 .admin-v2-required-links button { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--primary-deep); padding: 5px 12px; cursor: pointer; }
 .admin-v2-required-links button:hover { border-color: var(--primary); }
+/* 구독 · 사이트 운영: 상단 바에 같은 기능이 보이는 폭(641px 이상)에서는 숨기고 모바일에서만 보여준다 */
+@media (min-width: 641px) { .admin-v2-mobile-only { display: none !important; } }
 .admin-v2-bar { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 0 0 2px; border-bottom: 1px solid var(--line); }
 .admin-v2-bar-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--primary-deep); padding: 6px 0 12px; }
 .admin-v2-tabs { display: flex; gap: 2px; flex-wrap: wrap; align-items: stretch; }

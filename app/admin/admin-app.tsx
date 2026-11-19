@@ -1676,46 +1676,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 뒤로
               </button>
               {/* 모바일 바텀 '설정' 탭 화면: 구독(디데이) · 사이트 운영 · 로그아웃 */}
-              {activeSection === "settings" && (
-                <section className="admin-section">
-                  <div className="admin-section-head">
-                    <div className="admin-section-eyebrow">SETTINGS</div>
-                    <h2>설정</h2>
-                    <p>구독 상태 확인, 사이트 공개 전환, 로그아웃을 할 수 있어요.</p>
-                  </div>
-                  <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                    <div className="admin-settings-row">
-                      <div className="admin-settings-row-label">
-                        <strong>구독 상태</strong>
-                        <span>남은 기간과 결제 상태입니다.</span>
-                      </div>
-                      <SubscriptionBadge subscription={subscription} />
-                    </div>
-                    <div className="admin-settings-row">
-                      <div className="admin-settings-row-label">
-                        <strong>사이트 운영</strong>
-                        <span>{isPublished ? "방문자에게 공개 중입니다." : "현재 비공개 상태입니다."}</span>
-                      </div>
-                      <div className="admin-publish-toggle" aria-live="polite">
-                        <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
-                          {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
-                        </span>
-                        <button
-                          type="button"
-                          className={`toggle ${isPublished ? "on" : ""}`}
-                          onClick={() => void onTogglePublish()}
-                          disabled={!loaded || publishLoading}
-                          aria-label="사이트 운영 토글"
-                          aria-pressed={isPublished}
-                        />
-                      </div>
-                    </div>
-                    <button type="button" className="btn btn-secondary admin-settings-logout" onClick={onLogout}>
-                      로그아웃
-                    </button>
-                  </div>
-                </section>
-              )}
               {/* 5개 영역 개편: 현재 영역의 하위 항목을 본문 상단 탭 바로 보여준다. 콘텐츠 영역은 페이지 목록 + 공개 토글. */}
               {/* 필수 설정이 덜 끝났으면(시작 화면 대신) 어느 화면에서든 한 줄로 알려준다. */}
               {isTest && onboardingDone && !allRequiredFilled && activeSection !== "start" && (
@@ -1775,7 +1735,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       : (AREA_ITEMS[areaV2] ?? []).map((it) => {
                         const required = it.key === "site" ? !siteRequiredFilled : it.key === "contact" ? !contactRequiredFilled : false;
                         return (
-                          <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""}`}>
+                          <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""} ${it.key === "settings" ? "admin-v2-mobile-only" : ""}`}>
                             <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
                               {it.label}
                               {required && <span className="admin-v2-tab-dot" aria-label="필수 미입력" />}
@@ -1787,6 +1747,47 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </div>
               )}
 
+
+              {activeSection === "settings" && (
+                <section className={`admin-section ${isTest ? "admin-v2-mobile-only" : ""}`}>
+                  <div className="admin-section-head">
+                    <div className="admin-section-eyebrow">SETTINGS</div>
+                    <h2>설정</h2>
+                    <p>구독 상태 확인, 사이트 공개 전환, 로그아웃을 할 수 있어요.</p>
+                  </div>
+                  <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <div className="admin-settings-row">
+                      <div className="admin-settings-row-label">
+                        <strong>구독 상태</strong>
+                        <span>남은 기간과 결제 상태입니다.</span>
+                      </div>
+                      <SubscriptionBadge subscription={subscription} />
+                    </div>
+                    <div className="admin-settings-row">
+                      <div className="admin-settings-row-label">
+                        <strong>사이트 운영</strong>
+                        <span>{isPublished ? "방문자에게 공개 중입니다." : "현재 비공개 상태입니다."}</span>
+                      </div>
+                      <div className="admin-publish-toggle" aria-live="polite">
+                        <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
+                          {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
+                        </span>
+                        <button
+                          type="button"
+                          className={`toggle ${isPublished ? "on" : ""}`}
+                          onClick={() => void onTogglePublish()}
+                          disabled={!loaded || publishLoading}
+                          aria-label="사이트 운영 토글"
+                          aria-pressed={isPublished}
+                        />
+                      </div>
+                    </div>
+                    <button type="button" className="btn btn-secondary admin-settings-logout" onClick={onLogout}>
+                      로그아웃
+                    </button>
+                  </div>
+                </section>
+              )}
 
               {activeSection === "start" && (
                 <section className="admin-section admin-onboard">
