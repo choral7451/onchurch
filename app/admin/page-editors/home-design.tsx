@@ -254,7 +254,7 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
             <div className="admin-section-head">
               <div className="admin-section-eyebrow">MENU · HOME</div>
               <h2>메뉴 · 홈 구성</h2>
-              <p>켜고 끄면 메뉴와 홈 화면에 함께 반영됩니다. 드래그해서 홈 화면 순서를 바꿉니다.</p>
+              <p>보여줄 항목을 켜고, 드래그해서 홈 화면 순서를 정해보세요.</p>
             </div>
             <div className="admin-section-body">
               <ol className="admin-design-rows">
