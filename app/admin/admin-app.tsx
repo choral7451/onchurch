@@ -23,6 +23,7 @@ import {
   saveSessionChurch,
   onchurchChurch,
   onchurchCustomPage,
+  onchurchInquiry,
   type CustomPage,
   onchurchPastor,
   onchurchUser,
@@ -47,7 +48,6 @@ import { SermonsEditor } from "./page-editors/sermons";
 import { HomeOrderEditor } from "./page-editors/home-order";
 import { SiteTemplateEditor } from "./page-editors/site-template";
 import { HomeDesignEditor } from "./page-editors/home-design";
-import { StartHome } from "./page-editors/start-home";
 import { CustomPageEditor } from "./page-editors/custom-page";
 import { QrCodesBlock } from "./page-editors/qr-codes";
 import { ReferralCard } from "./page-editors/referral";
@@ -105,10 +105,9 @@ type SectionKey = "start" | "home" | "site" | "logo" | "contact" | "banners" | "
 
 type NavGroup = "home" | "saints";
 
-// 테스트 교회 전용 5개 영역 사이드바(시작 화면 · 디자인 · 콘텐츠 · 성도관리 · 설정). 기존 교회는 NavGroup 사이드바 그대로.
-type AreaKey = "home" | "design" | "content" | "saints" | "settings";
+// 테스트 교회 전용 4개 영역 사이드바(디자인 · 콘텐츠 · 성도관리 · 설정). 기존 교회는 NavGroup 사이드바 그대로.
+type AreaKey = "design" | "content" | "saints" | "settings";
 const AREA_META: { key: AreaKey; label: string; icon: keyof typeof Icon }[] = [
-  { key: "home", label: "시작 화면", icon: "home" },
   { key: "design", label: "디자인", icon: "image" },
   { key: "content", label: "콘텐츠", icon: "bible" },
   { key: "saints", label: "성도관리", icon: "users" },
@@ -130,8 +129,7 @@ const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>>
   ],
 };
 function sectionArea(key: SectionKey): AreaKey {
-  if (key === "home" || key === "start") return "home";
-  if (key === "home-order" || key === "logo") return "design";
+  if (key === "home" || key === "start" || key === "home-order" || key === "logo") return "design";
   if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners") return "content";
   if (key === "saints-roster" || key === "visitations" || key === "attendance" || key === "members") return "saints";
   return "settings";
@@ -292,7 +290,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [saintFocusId, setSaintFocusId] = useState<number | null>(null);
 
   // 테스트 교회 전용 5개 영역 사이드바에서 현재 펼쳐진 영역. 섹션을 열면 그 섹션의 영역으로 따라간다.
-  const [areaV2, setAreaV2] = useState<AreaKey>("home");
+  const [areaV2, setAreaV2] = useState<AreaKey>("design");
   // 5개 영역 사이드바 접기. 접으면 아이콘만 남고, 마우스를 올리면 본문 위로 원래 폭(240px)만큼 펼쳐진다(CSS). 선택은 브라우저에 기억.
   const SIDE_COLLAPSED_KEY = "onchurch.admin.sideCollapsed";
   const [sideCollapsed, setSideCollapsed] = useState<boolean>(() => {
@@ -320,12 +318,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
     setAreaV2(area);
     // 하위 항목은 본문 상단 탭 바에 있으므로 모바일도 바로 본문으로 들어간다.
     setMobileDetail(true);
-    if (area === "home") {
-      setActiveSection("home");
-      return;
-    }
     const firstOnPage = initial.nav.find((n) => n.id !== "directions" && (boards[n.id] ?? true))?.id ?? "about";
-    const first: Record<Exclude<AreaKey, "home">, SectionKey> = { design: "home-order", content: `page:${firstOnPage}` as SectionKey, saints: "saints-roster", settings: "site" };
+    const first: Record<AreaKey, SectionKey> = { design: "home-order", content: `page:${firstOnPage}` as SectionKey, saints: "saints-roster", settings: "site" };
     setActiveSection(first[area]);
   }
 
@@ -403,6 +397,16 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [quickModal, setQuickModal] = useState(false);
   // 테스트 교회 디자인 화면: '교회 소개' 줄의 세부 항목(비전·연혁·섬김의 사람들) 설정 모달.
   const [aboutModal, setAboutModal] = useState(false);
+  // 미답변 문의 수(사이드바 콘텐츠 항목에 표시). 테스트 교회 콘솔이 열릴 때 한 번 조회한다.
+  const [pendingInquiries, setPendingInquiries] = useState(0);
+  useEffect(() => {
+    if (!isTest) return;
+    let cancelled = false;
+    onchurchInquiry.listMine()
+      .then((list) => { if (!cancelled) setPendingInquiries(list.filter((x) => x.status === "pending").length); })
+      .catch(() => { /* 조회 실패 시 표시하지 않는다 */ });
+    return () => { cancelled = true; };
+  }, [isTest]);
   // 홈 바로가기 커스텀 항목(제목·설명·이동 주소). 서버 저장값과 편집 중인 초안을 분리해 둔다.
   const [homeCustomLink, setHomeCustomLink] = useState<HomeCustomLink | null>(null);
   const [customDraft, setCustomDraft] = useState<HomeCustomLink>({ title: "", desc: "", url: "" });
@@ -610,7 +614,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   // 온보딩을 끝낸(첫 오픈 = first_published_at not null) 교회만 '시작하기'에서 기본 정보로 이동.
   useEffect(() => {
-    if (loaded && onboardingDone && activeSection === "start") setActiveSection(isTest ? "home" : "site");
+    if (loaded && onboardingDone && activeSection === "start") setActiveSection(isTest ? "home-order" : "site");
   }, [loaded, onboardingDone, activeSection, isTest]);
 
   // 시작하기 화면: 처음 진입 시(및 저장으로 어떤 단계든 완료 상태가 바뀔 때마다)
@@ -1294,7 +1298,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
               e.preventDefault();
               setNavGroup("home");
               setMobileDetail(false);
-              setActiveSection(onboardingDone ? "site" : "start");
+              setActiveSection(onboardingDone ? (isTest ? "home-order" : "site") : "start");
+              if (isTest) setAreaV2("design");
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1394,7 +1399,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   >
                     <AreaIcon style={{ width: 18, height: 18 }} />
                     <span className="admin-sidebar-item-label">{a.label}</span>
-                    {a.key === "home" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete">{4 - requiredDoneCount}</span>}
+                    {a.key === "content" && pendingInquiries > 0 && <span className="admin-sidebar-pill incomplete" title="미답변 문의">문의 {pendingInquiries}</span>}
+                    {a.key === "settings" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete" title="필수 설정 미완료">{4 - requiredDoneCount}</span>}
                     {a.key === "saints" && saintsLocked && <span className="admin-sidebar-pill optional">결제</span>}
                   </button>
                 );
@@ -1711,7 +1717,18 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </section>
               )}
               {/* 5개 영역 개편: 현재 영역의 하위 항목을 본문 상단 탭 바로 보여준다. 콘텐츠 영역은 페이지 목록 + 공개 토글. */}
-              {isTest && onboardingDone && activeSection !== "home" && activeSection !== "start" && areaV2 !== "design" && (
+              {/* 필수 설정이 덜 끝났으면(시작 화면 대신) 어느 화면에서든 한 줄로 알려준다. */}
+              {isTest && onboardingDone && !allRequiredFilled && activeSection !== "start" && (
+                <div className="admin-v2-required" role="status">
+                  <span>사이트 공개에 필요한 필수 설정 <strong>{4 - requiredDoneCount}</strong>개가 남았습니다.</span>
+                  <span className="admin-v2-required-links">
+                    {requiredSteps.filter((st) => !st.done).map((st) => (
+                      <button key={st.target} type="button" onClick={() => openSection(st.target)}>{st.label}</button>
+                    ))}
+                  </span>
+                </div>
+              )}
+              {isTest && onboardingDone && activeSection !== "start" && areaV2 !== "design" && (
                 <div className="admin-v2-bar">
                   <div className="admin-v2-bar-title">{AREA_META.find((a) => a.key === areaV2)?.label}</div>
                   <div className="admin-v2-tabs" role="tablist">
@@ -1770,20 +1787,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </div>
               )}
 
-              {activeSection === "home" && isTest && (
-                <StartHome
-                  churchName={name}
-                  slug={slug}
-                  siteTemplate={siteTemplate}
-                  siteDesign={siteDesign}
-                  steps={requiredSteps}
-                  subscription={subscription}
-                  isPublished={isPublished}
-                  previewHref={previewHref}
-                  onOpen={(key) => openSection(key as SectionKey)}
-                  onClickGoHome={(e) => onClickGoHome(e, false)}
-                />
-              )}
 
               {activeSection === "start" && (
                 <section className="admin-section admin-onboard">
