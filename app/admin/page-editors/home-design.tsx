@@ -41,6 +41,8 @@ type Props = {
   onApply: (design: SiteDesign | null, order: HomeSectionKey[]) => Promise<void>;
   // 색상 카드와 섹션 카드 사이에 끼워 넣는 작은 카드(메뉴 구성 칩). 관리자 앱이 내려준다.
   menuSlot?: React.ReactNode;
+  // 섹션 카드 아래에 붙이는 카드(로고).
+  afterSlot?: React.ReactNode;
   // 값이 바뀌면 미리보기를 다시 불러온다(메뉴 구성처럼 바로 저장되는 변경을 미리보기에 반영).
   refreshKey?: number;
   // 이 편집기 밖에서 관리하는 초안(로고). 변경 개수에 더하고, 되돌리기·미리보기에 함께 반영한다.
@@ -60,7 +62,7 @@ function toDesign(d: Draft): SiteDesign | null {
   return normalizeSiteDesign({ colors: d.colors, sections: d.sections });
 }
 
-export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, activeKeys, saving, onApply, menuSlot, refreshKey = 0, extraDirty = 0, onRevertExtra, previewLogo = null, settingsKeys, onSectionSettings }: Props) {
+export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, activeKeys, saving, onApply, menuSlot, afterSlot, refreshKey = 0, extraDirty = 0, onRevertExtra, previewLogo = null, settingsKeys, onSectionSettings }: Props) {
   const savedKey = JSON.stringify([saved, savedOrder]);
   const [draft, setDraft] = useState<Draft>(() => draftFrom(saved, savedOrder));
   // 서버 값이 바뀌면(적용 완료·재조회) 초안을 그 값으로 다시 맞춘다(렌더 중 파생 상태 갱신 패턴).
@@ -287,6 +289,8 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
               )}
             </div>
           </section>
+
+          {afterSlot}
         </div>
 
         <div className="admin-design-preview">

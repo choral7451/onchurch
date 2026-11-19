@@ -2160,7 +2160,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   onSectionSettings={(key) => { if (key === "quick") setQuickModal(true); }}
                   settingsKeys={["quick"]}
                   menuSlot={
-                    <>
                     <section className="admin-section">
                       <div className="admin-section-head">
                         <div className="admin-section-eyebrow">MENU</div>
@@ -2195,6 +2194,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         </div>
                       </div>
                     </section>
+                  }
+                  afterSlot={
                     <section className="admin-section">
                       <div className="admin-section-head">
                         <div className="admin-section-eyebrow">LOGO</div>
@@ -2261,7 +2262,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         {logoErr && <p className="form-hint" style={{ margin: "8px 0 0", color: "oklch(0.55 0.18 28)" }}>{logoErr}</p>}
                       </div>
                     </section>
-                    </>
                   }
                 />
               )}
