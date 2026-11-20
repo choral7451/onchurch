@@ -14,6 +14,9 @@ type Props = {
   lang: Lang;
   // 댓글 수가 바뀌면 목록 카드의 숫자도 맞춘다.
   onCountChange: (count: number) => void;
+  // 내가 차단한 성도 — 그 사람의 댓글은 보여주지 않는다.
+  blockedIds: Set<number>;
+  onBlock: (userId: number, name: string) => void;
 };
 
 function formatDate(iso: string): string {
@@ -27,7 +30,7 @@ function formatDate(iso: string): string {
 }
 
 // 게시글 상세 모달 안의 댓글 영역 — 목록 + 입력(로그인 시) + 본인 댓글 삭제.
-export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lang, onCountChange }: Props) {
+export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lang, onCountChange, blockedIds, onBlock }: Props) {
   const t = pick(lang, {
     ko: {
       title: "댓글",
@@ -38,6 +41,7 @@ export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lan
       saving: "등록 중...",
       loginToComment: "로그인하고 댓글 남기기",
       del: "삭제",
+      block: "차단",
       confirmDelete: "이 댓글을 삭제할까요?",
       saveFail: "댓글 등록에 실패했습니다.",
       deleteFail: "댓글 삭제에 실패했습니다.",
@@ -51,6 +55,7 @@ export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lan
       saving: "Posting...",
       loginToComment: "Log in to comment",
       del: "Delete",
+      block: "Block",
       confirmDelete: "Delete this comment?",
       saveFail: "Failed to post the comment.",
       deleteFail: "Failed to delete the comment.",
@@ -115,26 +120,31 @@ export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lan
     }
   }
 
+  const visible = comments?.filter((c) => !blockedIds.has(c.authorId)) ?? null;
+
   return (
     <div className="cmt">
       <div className="cmt-head">
         <strong>{t.title}</strong>
-        {comments && comments.length > 0 && <span className="cmt-count">{comments.length}</span>}
+        {visible && visible.length > 0 && <span className="cmt-count">{visible.length}</span>}
       </div>
 
-      {comments === null ? (
+      {visible === null ? (
         <p className="cmt-empty">{t.loading}</p>
-      ) : comments.length === 0 ? (
+      ) : visible.length === 0 ? (
         <p className="cmt-empty">{t.empty}</p>
       ) : (
         <ul className="cmt-list">
-          {comments.map((c) => (
+          {visible.map((c) => (
             <li key={c.id} className="cmt-item">
               <div className="cmt-meta">
                 <span className="cmt-author">{c.authorName}</span>
                 <span className="cmt-date">{formatDate(c.createdAt)}</span>
                 {myId != null && myId === c.authorId && (
                   <button type="button" className="cmt-del" onClick={() => remove(c)}>{t.del}</button>
+                )}
+                {loggedIn && myId !== c.authorId && (
+                  <button type="button" className="cmt-del" onClick={() => onBlock(c.authorId, c.authorName)}>{t.block}</button>
                 )}
               </div>
               <p className="cmt-body">{c.content}</p>

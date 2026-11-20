@@ -193,6 +193,9 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       noContent: "내용이 없습니다.",
       loadingMore: "불러오는 중...",
       report: "신고",
+      block: "차단",
+      confirmBlock: (name: string) => `${name} 님을 차단할까요? 이 분의 글과 댓글이 보이지 않게 됩니다. 마이페이지에서 해제할 수 있습니다.`,
+      blockFail: "차단하지 못했습니다.",
       edit: "수정",
       del: "삭제",
       confirmDelete: "이 게시글을 삭제할까요?",
@@ -240,6 +243,9 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       noContent: "No content.",
       loadingMore: "Loading...",
       report: "Report",
+      block: "Block",
+      confirmBlock: (name: string) => `Block ${name}? Their posts and comments will be hidden. You can unblock them in My Page.`,
+      blockFail: "Failed to block.",
       edit: "Edit",
       del: "Delete",
       confirmDelete: "Delete this post?",
@@ -279,10 +285,31 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
 
   const [isMobile, setIsMobile] = useState(false);
 
+  // 내가 차단한 성도 — 그 사람의 글·댓글은 목록에서 뺀다.
+  const [blockedIds, setBlockedIds] = useState<Set<number>>(new Set());
+
   useEffect(() => {
-    setLoggedIn(isLoggedInForChurch(slug));
+    const authed = isLoggedInForChurch(slug);
+    setLoggedIn(authed);
     setMyId(getCurrentUserId());
+    if (!authed) return;
+    onchurchCommunity
+      .listBlocks()
+      .then((blocks) => setBlockedIds(new Set(blocks.map((b) => b.userId))))
+      .catch(() => {});
   }, [slug]);
+
+  async function blockUser(userId: number, name: string) {
+    if (!confirm(t.confirmBlock(name))) return;
+    try {
+      await onchurchCommunity.block(userId);
+      setBlockedIds((prev) => new Set(prev).add(userId));
+      // 보고 있던 글의 작성자를 차단했으면 상세를 닫는다.
+      setActive((current) => (current && current.authorId === userId ? null : current));
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : t.blockFail);
+    }
+  }
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 640px)");
@@ -295,6 +322,7 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
   const allCats = useMemo(() => ["전체", ...categories], [categories]);
 
   const hasMore = posts.length < total;
+  const visiblePosts = blockedIds.size > 0 ? posts.filter((p) => !blockedIds.has(p.authorId)) : posts;
 
   // 현재 카테고리 기준 1페이지부터 다시 조회 (교체). 작성/수정/삭제 후에도 사용.
   const reload = useCallback(
@@ -660,13 +688,13 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
             <span key={`skel-${i}`} className="skel" aria-hidden="true" style={{ height: 340, borderRadius: "var(--r-lg)" }} />
           ))}
         </div>
-      ) : posts.length === 0 && !loading ? (
+      ) : visiblePosts.length === 0 && !loading ? (
         <div style={{ padding: "60px 0", textAlign: "center", color: "var(--muted)" }}>
           {t.empty}<br className="mobile-only-br" /> {loggedIn ? t.emptyLoggedIn : t.emptyLoggedOut}
         </div>
       ) : (
         <div className="community-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
-          {posts.map((p) => (
+          {visiblePosts.map((p) => (
             <PostCard key={p.id} p={p} videoBadge={t.videoBadge} onClick={() => setActive(p)} />
           ))}
         </div>
@@ -864,10 +892,17 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
                 loginHref={loginHref}
                 lang={lang}
                 onCountChange={(count) => updateCommentCount(active.id, count)}
+                blockedIds={blockedIds}
+                onBlock={blockUser}
               />
 
               <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
-                <button type="button" className="btn btn-ghost" onClick={() => report(active)}>{t.report}</button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" className="btn btn-ghost" onClick={() => report(active)}>{t.report}</button>
+                  {loggedIn && myId !== active.authorId && (
+                    <button type="button" className="btn btn-ghost" onClick={() => blockUser(active.authorId, active.authorName)}>{t.block}</button>
+                  )}
+                </div>
                 {myId != null && myId === active.authorId && (
                   <div style={{ display: "flex", gap: 8 }}>
                     <button type="button" className="btn btn-secondary" onClick={() => startEdit(active)}>{t.edit}</button>

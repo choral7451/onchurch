@@ -535,6 +535,9 @@ export const onchurchUser = {
   // 임시비밀번호 계정(mustChangePassword)의 최초 비밀번호 설정 — 현재 비밀번호 불필요.
   setInitialPassword: (input: { newPassword: string }) =>
     request<unknown>("/onchurch/users/me/initial-password", { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  // 회원 탈퇴 — 비밀번호를 확인한 뒤 계정과 개인정보를 파기한다.
+  withdraw: (password: string) =>
+    request<unknown>("/onchurch/auths/withdraw", { method: "POST", auth: true, body: JSON.stringify({ password }) }),
 };
 
 export type EmailRecipientStatus = "sent" | "failed" | "excluded";
@@ -1945,6 +1948,8 @@ export type CommunityCategoryWriteInput = {
   isActive: boolean;
 };
 
+export type CommunityBlock = { userId: number; name: string; createdAt: string };
+
 export const onchurchCommunity = {
   listPublic: (slug: string, opts?: { category?: string; page?: number; size?: number }) => {
     const qs = new URLSearchParams();
@@ -1998,6 +2003,13 @@ export const onchurchCommunity = {
     }),
   removeComment: (id: number) =>
     request<unknown>(`/onchurch/community-posts/me/comments/${id}`, { method: "DELETE", auth: true }),
+  // 사용자 차단 — 차단한 성도의 글·댓글은 내 화면에서 숨긴다.
+  listBlocks: () =>
+    request<{ blocks: CommunityBlock[] }>("/onchurch/community-blocks/me", { method: "GET", auth: true }).then((r) => r.blocks ?? []),
+  block: (userId: number) =>
+    request<unknown>("/onchurch/community-blocks/me", { method: "POST", auth: true, body: JSON.stringify({ userId }) }),
+  unblock: (userId: number) =>
+    request<unknown>(`/onchurch/community-blocks/me/${userId}`, { method: "DELETE", auth: true }),
   // 관리자 사후 관리
   listManage: () =>
     request<{ posts: CommunityManagePost[] }>("/onchurch/community-posts/manage", { method: "GET", auth: true }).then(

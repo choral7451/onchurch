@@ -13,6 +13,7 @@ import {
   onchurchAuth,
   onchurchCommunity,
   onchurchUser,
+  type CommunityBlock,
   type CommunityPost,
 } from "@/lib/api-client";
 
@@ -119,10 +120,12 @@ export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { 
     const myId = getCurrentUserId();
     (async () => {
       try {
-        const [profile, postsRes] = await Promise.all([
+        const [profile, postsRes, blockList] = await Promise.all([
           onchurchUser.getMe().catch(() => null),
           onchurchCommunity.listPublic(slug, { size: 100 }).catch(() => ({ posts: [], totalCount: 0 })),
+          onchurchCommunity.listBlocks().catch(() => []),
         ]);
+        setBlocks(blockList);
         if (profile) {
           setName(profile.name);
           setLoginId(profile.loginId);
@@ -181,6 +184,40 @@ export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { 
     clearTokens();
     router.push(communityHref);
     router.refresh();
+  }
+
+  // 차단한 사용자
+  const [blocks, setBlocks] = useState<CommunityBlock[]>([]);
+  async function unblock(b: CommunityBlock) {
+    try {
+      await onchurchCommunity.unblock(b.userId);
+      setBlocks((prev) => prev.filter((x) => x.userId !== b.userId));
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : pick(lang, { ko: "차단을 해제하지 못했습니다.", en: "Failed to unblock." }));
+    }
+  }
+
+  // 회원 탈퇴
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawPw, setWithdrawPw] = useState("");
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawErr, setWithdrawErr] = useState("");
+  async function withdraw(e: React.FormEvent) {
+    e.preventDefault();
+    if (withdrawing || !withdrawPw) return;
+    if (!confirm(pick(lang, { ko: "정말 탈퇴할까요? 계정과 개인정보가 삭제되며 되돌릴 수 없습니다.", en: "Delete your account? Your account and personal data will be removed. This cannot be undone." }))) return;
+    setWithdrawing(true);
+    setWithdrawErr("");
+    try {
+      await onchurchUser.withdraw(withdrawPw);
+      alert(pick(lang, { ko: "탈퇴가 완료되었습니다.", en: "Your account has been deleted." }));
+      clearTokens();
+      router.push(loginHref);
+      router.refresh();
+    } catch (err) {
+      setWithdrawErr(err instanceof ApiError ? err.message : pick(lang, { ko: "탈퇴하지 못했습니다. 잠시 후 다시 시도해주세요.", en: "Failed to delete the account. Please try again later." }));
+      setWithdrawing(false);
+    }
   }
 
   if (!ready) return <p style={{ color: "var(--muted)" }}>{pick(lang, { ko: "불러오는 중...", en: "Loading..." })}</p>;
@@ -310,6 +347,52 @@ export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { 
             ))}
           </div>
         )}
+      </div>
+
+      {blocks.length > 0 && (
+        <div>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px" }}>{pick(lang, { ko: "차단한 사용자", en: "Blocked Users" })}</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {blocks.map((b) => (
+              <div key={b.userId} className="card" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                <strong style={{ fontSize: 14 }}>{b.name}</strong>
+                <button type="button" className="btn btn-ghost" onClick={() => unblock(b)}>{pick(lang, { ko: "차단 해제", en: "Unblock" })}</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 회원 탈퇴 */}
+      <div>
+        <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px" }}>{pick(lang, { ko: "회원 탈퇴", en: "Delete Account" })}</h3>
+        <div className="card" style={{ padding: 24 }}>
+          <p style={{ color: "var(--muted)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+            {pick(lang, {
+              ko: "탈퇴하면 계정과 개인정보(아이디·이름·연락처)가 삭제되며 되돌릴 수 없습니다. 작성한 글과 댓글은 '탈퇴한 회원' 이름으로 남으니, 지우려면 탈퇴 전에 직접 삭제해주세요.",
+              en: "Deleting your account removes your account and personal data (ID, name, phone) and cannot be undone. Your posts and comments remain under the name 'Former member'; delete them yourself first if you want them removed.",
+            })}
+          </p>
+          {!withdrawOpen ? (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+              <button type="button" className="btn btn-ghost" onClick={() => setWithdrawOpen(true)}>{pick(lang, { ko: "회원 탈퇴", en: "Delete Account" })}</button>
+            </div>
+          ) : (
+            <form onSubmit={withdraw} style={{ marginTop: 16 }}>
+              {withdrawErr && <div className="phone-msg phone-msg-error" style={{ marginBottom: 12 }}>{withdrawErr}</div>}
+              <div className="form-row full">
+                <label>{pick(lang, { ko: "비밀번호 확인", en: "Confirm password" })} <span className="req">*</span></label>
+                <input type="password" autoComplete="current-password" value={withdrawPw} onChange={(e) => setWithdrawPw(e.target.value)} placeholder={pick(lang, { ko: "현재 비밀번호", en: "Current password" })} required />
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                <button type="button" className="btn btn-ghost" onClick={() => { setWithdrawOpen(false); setWithdrawPw(""); setWithdrawErr(""); }}>{pick(lang, { ko: "취소", en: "Cancel" })}</button>
+                <button type="submit" className="btn btn-secondary" disabled={withdrawing || !withdrawPw} style={{ color: "oklch(0.55 0.15 28)" }}>
+                  {withdrawing ? pick(lang, { ko: "탈퇴 중...", en: "Deleting..." }) : pick(lang, { ko: "탈퇴하기", en: "Delete my account" })}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
