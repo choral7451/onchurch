@@ -897,12 +897,17 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
               />
 
               <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button type="button" className="btn btn-ghost" onClick={() => report(active)}>{t.report}</button>
-                  {loggedIn && myId !== active.authorId && (
-                    <button type="button" className="btn btn-ghost" onClick={() => blockUser(active.authorId, active.authorName)}>{t.block}</button>
-                  )}
-                </div>
+                {/* 내 글에는 신고·차단 대신 수정·삭제만 보여준다 */}
+                {myId != null && myId === active.authorId ? (
+                  <span />
+                ) : (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="button" className="btn btn-ghost" onClick={() => report(active)}>{t.report}</button>
+                    {loggedIn && (
+                      <button type="button" className="btn btn-ghost" onClick={() => blockUser(active.authorId, active.authorName)}>{t.block}</button>
+                    )}
+                  </div>
+                )}
                 {myId != null && myId === active.authorId && (
                   <div style={{ display: "flex", gap: 8 }}>
                     <button type="button" className="btn btn-secondary" onClick={() => startEdit(active)}>{t.edit}</button>
