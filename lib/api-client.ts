@@ -714,6 +714,34 @@ export const onchurchMaster = {
     const query = new URLSearchParams({ month });
     return request<MasterDashboard>(`/onchurch/master/dashboard?${query.toString()}`, { method: "GET", auth: true });
   },
+
+  // 온교회 앱(iOS·Android) 버전 관리 — 최소 버전보다 낮은 앱은 강제 업데이트, 최신 버전보다 낮으면 선택 안내.
+  listAppVersions: () =>
+    request<{ versions: MasterAppVersion[] }>("/onchurch/master/app-versions", { method: "GET", auth: true }),
+  // 저장 후 전체 목록을 돌려준다. 빈 값(null)은 미설정.
+  saveAppVersion: (
+    platform: AppPlatform,
+    input: { minVersion: string; latestVersion: string | null; message: string | null; storeUrl: string | null },
+  ) =>
+    request<{ versions: MasterAppVersion[] }>(`/onchurch/master/app-versions/${platform}`, {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify(input),
+    }),
+};
+
+export type AppPlatform = "ios" | "android";
+
+export type MasterAppVersion = {
+  platform: AppPlatform;
+  minVersion: string;
+  latestVersion: string | null;
+  message: string | null;
+  // 마스터가 등록한 스토어 주소 (미등록이면 null)
+  storeUrl: string | null;
+  // 앱에 실제로 내려가는 스토어 주소 (미등록 시 Android 는 기본 Play 주소, iOS 는 null)
+  effectiveStoreUrl: string | null;
+  updatedAt: string;
 };
 
 export type MasterDashboard = {
