@@ -1,5 +1,6 @@
 import { fetchPublicChurch, fetchPublicChurchList } from "@/lib/public-site";
 import { getSiteOrigin, getTenantPathPrefix, resolveHost } from "@/lib/seo";
+import { isSearchExcluded } from "@/lib/host";
 import { buildTenantFeedItems, renderRss, type FeedItem } from "@/lib/feed";
 
 // 멀티테넌트 · host 기반이라 요청마다 새로 생성. (백엔드 fetch도 no-store)
@@ -24,7 +25,7 @@ export async function GET(): Promise<Response> {
   // 서비스 랜딩 도메인: 공개된 교회 사이트 목록을 하나의 피드로 제공
   if (resolved.kind === "root") {
     const churches = await fetchPublicChurchList();
-    const items: FeedItem[] = churches.map((c) => {
+    const items: FeedItem[] = churches.filter((c) => !isSearchExcluded(c.slug)).map((c) => {
       // 자체 도메인이 연결된 교회는 대표 주소를 싣는다.
       const churchUrl = c.customDomain ? `https://${c.customDomain}` : origin.replace("://", `://${c.slug}.`);
       return {
@@ -60,7 +61,7 @@ export async function GET(): Promise<Response> {
   }
 
   const church = await fetchPublicChurch(resolved.tenant);
-  if (!church || !church.isPublished) {
+  if (!church || !church.isPublished || isSearchExcluded(church.slug)) {
     return xml(
       renderRss({ title: "온교회", link: `${origin}/`, description: "온교회", feedUrl }, []),
       404,

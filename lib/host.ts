@@ -25,3 +25,12 @@ export function isServiceHost(hostname: string): boolean {
 export function counterpartHost(host: string): string {
   return host.startsWith("www.") ? host.slice(4) : `www.${host}`;
 }
+
+// 검색엔진(네이버·구글 등)에 노출하지 않는 교회 slug. 사이트는 그대로 공개·접속되지만
+// noindex 메타를 내보내고 sitemap·피드 목록에서 뺀다.
+// robots.txt 로는 막지 않는다 — 크롤러가 페이지를 읽어야 noindex 를 보고 색인에서 지운다.
+export const SEARCH_EXCLUDED_SLUGS = ["themahanaim"];
+
+export function isSearchExcluded(slug: string | null | undefined): boolean {
+  return !!slug && SEARCH_EXCLUDED_SLUGS.includes(slug);
+}

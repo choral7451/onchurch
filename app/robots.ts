@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { fetchPublicChurch } from "@/lib/public-site";
 import { getSiteOrigin, resolveHost } from "@/lib/seo";
+import { isSearchExcluded } from "@/lib/host";
 
 const DISALLOWED_PATHS = ["/admin", "/login", "/signup", "/api/"];
 
@@ -26,6 +27,11 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   const church = await fetchPublicChurch(resolved.tenant);
   if (!church || !church.isPublished) {
     return { rules: [{ userAgent: "*", disallow: "/" }] };
+  }
+
+  // 검색 제외 교회: 크롤링은 허용해야 noindex 를 읽고 색인에서 빠진다. sitemap 만 알리지 않는다.
+  if (isSearchExcluded(resolved.tenant)) {
+    return { rules: [{ userAgent: "*", allow: "/", disallow: DISALLOWED_PATHS }] };
   }
 
   return {

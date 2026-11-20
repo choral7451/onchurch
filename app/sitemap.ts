@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { fetchPublicChurch, fetchPublicChurchList } from "@/lib/public-site";
 import { getSiteOrigin, getTenantPathPrefix, resolveHost } from "@/lib/seo";
+import { isSearchExcluded } from "@/lib/host";
 
 type PageSpec = {
   id: string;
@@ -34,6 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
     const churches = await fetchPublicChurchList();
     for (const c of churches) {
+      if (isSearchExcluded(c.slug)) continue;
       // 자체 도메인이 연결된 교회는 서브도메인이 아니라 대표 주소를 싣는다(서브도메인은 canonical 로 대표 주소를 가리킨다).
       const churchUrl = c.customDomain
         ? `https://${c.customDomain}/`
@@ -50,6 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 알 수 없는 호스트: 빈 sitemap
   if (resolved.kind !== "subdomain" || !resolved.tenant) return [];
+  if (isSearchExcluded(resolved.tenant)) return [];
 
   const church = await fetchPublicChurch(resolved.tenant);
   // 미공개 사이트는 색인 대상이 아님

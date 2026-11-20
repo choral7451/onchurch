@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import type { Metadata } from "next";
 import type { PublicChurch } from "@/lib/public-site";
 import { matchCustomDomain } from "@/lib/custom-domains";
-import { ORIGINAL_PATH_HEADER, isServiceHost, normalizeHostname } from "@/lib/host";
+import { ORIGINAL_PATH_HEADER, isSearchExcluded, isServiceHost, normalizeHostname } from "@/lib/host";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 export const ROOT_DOMAINS = ["everychurch.co.kr", "onchurch.kr"];
@@ -228,7 +228,7 @@ export async function buildChurchMetadata(
       canonical: url,
       types: { "application/rss+xml": `${origin}/feed.xml` },
     },
-    robots: church.isPublished
+    robots: church.isPublished && !isSearchExcluded(church.slug)
       ? { index: true, follow: true, googleBot: { index: true, follow: true } }
       : { index: false, follow: false },
     icons: logo ? { icon: logo, apple: logo, shortcut: logo } : undefined,
