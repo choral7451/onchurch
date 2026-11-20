@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { type Brand, type NavItem, isCustomNavId } from "@/lib/types";
 import { type Lang, pick, SHELL } from "@/lib/i18n";
-import { AUTH_CHANGE_EVENT, isLoggedInForChurch, onchurchChurch } from "@/lib/api-client";
+import { AUTH_CHANGE_EVENT, clearTokens, isLoggedInForChurch, onchurchChurch } from "@/lib/api-client";
 import { buildAdminUrl } from "@/lib/site-host";
 
 type Props = {
@@ -26,6 +26,8 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
   const [open, setOpen] = useState(false);
   // 이 교회(tenant) 사이트에 오너/관리자로 로그인한 경우에만 관리자 페이지 이동 버튼을 노출한다.
   const [isManager, setIsManager] = useState(false);
+  // 이 교회에 로그인한 상태면 모바일 메뉴에 마이페이지·로그아웃을 보여준다.
+  const [authed, setAuthed] = useState(false);
 
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const base = `/${tenant}`;
@@ -84,7 +86,9 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
   useEffect(() => {
     let cancelled = false;
     const sync = () => {
-      if (!isLoggedInForChurch(tenant)) {
+      const loggedIn = isLoggedInForChurch(tenant);
+      setAuthed(loggedIn);
+      if (!loggedIn) {
         setIsManager(false);
         return;
       }
@@ -119,6 +123,13 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
       return () => { document.body.style.overflow = prev; };
     }
   }, [open]);
+
+  function logout() {
+    clearTokens();
+    setOpen(false);
+    router.push(link("/login"));
+    router.refresh();
+  }
 
   const logoUrl = previewLogo !== undefined ? previewLogo : brand.logoUrl;
 
@@ -207,6 +218,16 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
               </Link>
             ))}
           </div>
+          {authed && (
+            <div className="nav-drawer-account">
+              <Link href={link("/mypage")} className={`nav-drawer-link ${isActive("/mypage") ? "active" : ""}`}>
+                {pick(lang, SHELL.myPage)}
+              </Link>
+              <button type="button" className="nav-drawer-link" data-preview-block onClick={logout}>
+                {pick(lang, SHELL.logout)}
+              </button>
+            </div>
+          )}
           {isManager && (
             <div className="nav-drawer-cta">
               <a href={buildAdminUrl()} className="btn btn-primary" data-preview-block>

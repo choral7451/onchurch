@@ -105,6 +105,9 @@
 .nav-drawer-link { padding: 13px 14px; font-size: 15px; font-weight: 600; color: var(--ink); border-radius: 10px; text-decoration: none; }
 .nav-drawer-link:hover { background: var(--surface-2); }
 .nav-drawer-link.active { background: oklch(0.62 0.14 245 / 0.08); color: var(--primary); }
+.nav-drawer-account { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-top: 1px solid var(--line); }
+.nav-drawer-account button.nav-drawer-link { background: transparent; border: 0; font-family: inherit; text-align: left; cursor: pointer; color: var(--muted); }
+.nav-drawer-account button.nav-drawer-link:hover { background: var(--surface-2); }
 .nav-drawer-cta { padding: 16px 20px; border-top: 1px solid var(--line); }
 .nav-drawer-cta .btn { width: 100%; justify-content: center; }
 @keyframes nav-fade-in { from { opacity: 0; } to { opacity: 1; } }
