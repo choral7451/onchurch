@@ -35,12 +35,24 @@ export default async function TenantHome({ params, searchParams }: { params: Pro
   const preview = decodeDesignPreview((await searchParams).design);
   const siteDesign = preview ? preview.design : normalizeSiteDesign(church.siteDesign);
 
+  // 초안의 메뉴 켜기/끄기·빠른 이동 설정을 저장 없이 홈에 반영한다.
+  const previewChurch = preview?.site
+    ? {
+        ...church,
+        enabledPages: preview.site.pages,
+        homeQuickLinks: preview.site.quick.keys,
+        homeCustomLink: preview.site.quick.custom,
+        youtubeUrl: preview.site.quick.youtube,
+        instagramUrl: preview.site.quick.instagram,
+      }
+    : church;
+
   // 디자인 설정(섹션별 기본/모던·색)이 있는 교회만 섞어 그린다. 미설정 교회는 아래 기존 경로 그대로(영향 없음).
   if (siteDesign || preview) {
     return (
       <>
         {preview && <SiteColorStyle colors={siteDesign?.colors} />}
-        <MixedHome church={church} tenant={tenant} lang={lang} pathPrefix={pathPrefix} design={siteDesign} order={preview?.order ?? church.homeSectionOrder} />
+        <MixedHome church={previewChurch} tenant={tenant} lang={lang} pathPrefix={pathPrefix} design={siteDesign} order={preview?.order ?? church.homeSectionOrder} />
       </>
     );
   }

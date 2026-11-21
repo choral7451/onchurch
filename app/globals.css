@@ -1233,8 +1233,6 @@ main { flex: 1; }
 .admin-template-swatch i { width: 13px; height: 13px; border-radius: 4px; border: 1px solid var(--line); }
 
 /* 관리자 '디자인' 화면(테스트 교회 전용): 초안 바 + 설정/미리보기 2열 */
-.admin-design-draftbar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--r-md); background: oklch(0.62 0.16 60 / 0.12); border: 1px solid oklch(0.62 0.16 60 / 0.35); font-size: 13.5px; }
-.admin-design-draftbar.clean { background: oklch(0.55 0.14 150 / 0.1); border-color: oklch(0.55 0.14 150 / 0.3); }
 .admin-design-fab {
   position: fixed; right: 28px; bottom: 28px; z-index: 1500;
   display: flex; align-items: center; gap: 8px; padding: 8px;

@@ -1,3 +1,4 @@
+import type { HomeCustomLink } from "@/lib/quick-links";
 import type { CSSProperties } from "react";
 import { resolveTemplateId } from "@/components/templates/meta";
 import { HOME_SECTION_LABELS, normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
@@ -18,7 +19,13 @@ export type SiteDesign = {
 };
 
 // 관리자 미리보기용: 저장 전 초안을 쿼리로 넘길 때 섹션 순서까지 함께 싣는다.
-export type SiteDesignPreview = SiteDesign & { order?: string[] };
+// 관리자 디자인 화면 초안. 디자인·순서 외에 메뉴 켜기/끄기(pages)·빠른 이동(quick)·자유 페이지 공개(custom)도 저장 전 미리보기에 반영한다.
+export type DesignPreviewSite = {
+  pages: string[];
+  quick: { keys: string[]; custom: HomeCustomLink | null; youtube: string | null; instagram: string | null };
+  custom: boolean;
+};
+export type SiteDesignPreview = SiteDesign & { order?: string[]; site?: DesignPreviewSite };
 
 export const SECTION_DESIGN_IDS: readonly SectionDesignId[] = ["default", "modern"] as const;
 
@@ -120,15 +127,34 @@ export function encodeDesignPreview(preview: SiteDesignPreview): string {
   return encodeURIComponent(JSON.stringify(preview));
 }
 
-export function decodeDesignPreview(raw: string | string[] | undefined): { design: SiteDesign | null; order: string[] | null } | null {
+export function decodeDesignPreview(raw: string | string[] | undefined): { design: SiteDesign | null; order: string[] | null; site: DesignPreviewSite | null } | null {
   const s = Array.isArray(raw) ? raw[0] : raw;
   if (!s) return null;
   try {
-    const parsed = JSON.parse(s) as { order?: unknown };
+    const parsed = JSON.parse(s) as { order?: unknown; site?: unknown };
     const design = normalizeSiteDesign(parsed);
     const order = Array.isArray(parsed.order) ? parsed.order.filter((k): k is string => typeof k === "string") : null;
-    return { design, order };
+    return { design, order, site: parseDesignPreviewSite(parsed.site) };
   } catch {
     return null;
   }
+}
+
+export function parseDesignPreviewSite(raw: unknown): DesignPreviewSite | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as { pages?: unknown; quick?: unknown; custom?: unknown };
+  if (!Array.isArray(r.pages)) return null;
+  const q = (r.quick && typeof r.quick === "object" ? r.quick : {}) as { keys?: unknown; custom?: unknown; youtube?: unknown; instagram?: unknown };
+  const str = (v: unknown) => (typeof v === "string" ? v : null);
+  const c = q.custom && typeof q.custom === "object" ? (q.custom as Record<string, unknown>) : null;
+  return {
+    pages: r.pages.filter((k): k is string => typeof k === "string"),
+    quick: {
+      keys: Array.isArray(q.keys) ? q.keys.filter((k): k is string => typeof k === "string") : [],
+      custom: c && typeof c.title === "string" && typeof c.url === "string" ? { title: c.title, desc: typeof c.desc === "string" ? c.desc : "", url: c.url } : null,
+      youtube: str(q.youtube),
+      instagram: str(q.instagram),
+    },
+    custom: r.custom !== false,
+  };
 }

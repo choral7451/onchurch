@@ -17,6 +17,7 @@ import {
   type SectionDesignId,
   type SiteDesign,
   type SiteDesignColors,
+  type DesignPreviewSite,
 } from "@/lib/site-design";
 
 // 홈 '디자인' 편집기 — 섹션별 디자인(기본/모던) + 순서 + 메인·포인트 색을 초안으로 모았다가 한 번에 적용한다.
@@ -52,6 +53,8 @@ type Props = {
   // 상세 설정이 있는 섹션(예: 빠른 이동). 해당 줄에 '설정' 버튼을 보여주고 누르면 알려준다.
   settingsKeys?: HomeSectionKey[];
   onSectionSettings?: (key: HomeSectionKey) => void;
+  // 이 편집기 밖에서 모으는 메뉴 초안(켜진 페이지·빠른 이동·자유 페이지 공개). 미리보기에 함께 넘긴다.
+  previewSite?: DesignPreviewSite;
 };
 
 function draftFrom(saved: SiteDesign | null, order: HomeSectionKey[]): Draft {
@@ -62,7 +65,7 @@ function toDesign(d: Draft): SiteDesign | null {
   return normalizeSiteDesign({ colors: d.colors, sections: d.sections });
 }
 
-export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, pages, menuOnly, saving, onApply, afterSlot, refreshKey = 0, extraDirty = 0, onRevertExtra, previewLogo = null, settingsKeys, onSectionSettings }: Props) {
+export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, pages, menuOnly, saving, onApply, afterSlot, refreshKey = 0, extraDirty = 0, onRevertExtra, previewLogo = null, settingsKeys, onSectionSettings, previewSite }: Props) {
   const savedKey = JSON.stringify([saved, savedOrder]);
   const [draft, setDraft] = useState<Draft>(() => draftFrom(saved, savedOrder));
   // 서버 값이 바뀌면(적용 완료·재조회) 초안을 그 값으로 다시 맞춘다(렌더 중 파생 상태 갱신 패턴).
@@ -116,10 +119,12 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   // iframe 이 다 불러와지면 한 번 더 보내 로고 초안까지 맞춘다.
   const [loadedTick, setLoadedTick] = useState(0);
   const sentRefreshKey = useRef(refreshKey);
+  const previewSiteKey = JSON.stringify(previewSite ?? null);
   useEffect(() => {
     if (!previewUrl) return;
     const t = window.setTimeout(() => {
-      const q = encodeDesignPreview({ colors: draft.colors, sections: draft.sections, order: draft.order });
+      const site = JSON.parse(previewSiteKey) as DesignPreviewSite | null;
+      const q = encodeDesignPreview({ colors: draft.colors, sections: draft.sections, order: draft.order, ...(site ? { site } : {}) });
       const win = iframeRef.current?.contentWindow;
       if (loadedRef.current && win) {
         let origin = window.location.origin;
@@ -131,7 +136,7 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
       sentRefreshKey.current = refreshKey;
     }, loadedRef.current ? 120 : 350);
     return () => window.clearTimeout(t);
-  }, [draft, previewUrl, refreshKey, previewLogo, loadedTick]);
+  }, [draft, previewUrl, refreshKey, previewLogo, loadedTick, previewSiteKey]);
 
   const { getItemProps } = useDragSort(visible.length, (from, to) => {
     if (from === to) return;
@@ -184,14 +189,6 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
 
   return (
     <>
-      <div className={`admin-design-draftbar ${dirty === 0 ? "clean" : ""}`} role="status">
-        <span style={{ flex: 1, minWidth: 0 }}>
-          {dirty === 0
-            ? "홈페이지와 같습니다. 바꾸면 여기에 초안으로 모였다가 한 번에 적용됩니다."
-            : <>저장되지 않은 변경 <strong>{dirty}</strong>개. 적용하기 전까지는 교인들에게 보이지 않습니다.</>}
-        </span>
-      </div>
-
       {/* 스크롤해도 항상 보이도록 '되돌리기 · 홈페이지에 적용'은 화면 오른쪽 아래에 고정한다. */}
       <div className={`admin-design-fab ${dirty === 0 ? "clean" : ""}`}>
         {dirty > 0 && (

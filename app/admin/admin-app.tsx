@@ -54,7 +54,7 @@ import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, isCustomLinkReady, type HomeC
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
 import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 import { DEFAULT_TEMPLATE_ID, resolveTemplateId } from "@/components/templates/meta";
-import { normalizeSiteDesign, type SiteDesign } from "@/lib/site-design";
+import { normalizeSiteDesign, type DesignPreviewSite, type SiteDesign } from "@/lib/site-design";
 import { type Lang, normalizeLang } from "@/lib/i18n";
 
 type Initial = {
@@ -412,6 +412,11 @@ export function AdminApp({ initial }: { initial: Initial }) {
   }, [isTest]);
   // 홈 바로가기 커스텀 항목(제목·설명·이동 주소). 서버 저장값과 편집 중인 초안을 분리해 둔다.
   const [homeCustomLink, setHomeCustomLink] = useState<HomeCustomLink | null>(null);
+  // 테스트 교회 디자인 화면의 초안: 메뉴 켜기/끄기·빠른 이동·자유 페이지 공개를 바로 저장하지 않고 모았다가
+  // '홈페이지에 적용'에서 디자인과 함께 저장한다. null 이면 저장된 값과 같다(초안 없음).
+  const [boardsDraft, setBoardsDraft] = useState<Record<string, boolean> | null>(null);
+  const [quickDraft, setQuickDraft] = useState<DesignPreviewSite["quick"] | null>(null);
+  const [customActiveDraft, setCustomActiveDraft] = useState<boolean | null>(null);
   const [customDraft, setCustomDraft] = useState<HomeCustomLink>({ title: "", desc: "", url: "" });
   const [customSaveMsg, setCustomSaveMsg] = useState("");
 
@@ -823,12 +828,46 @@ export function AdminApp({ initial }: { initial: Initial }) {
     try {
       const church = await onchurchChurch.updateSiteDesign(next);
       setSiteDesign(normalizeSiteDesign(church.siteDesign));
-      if (nextOrder.join() !== homeSectionOrder.join()) await persistHomeSectionOrder(nextOrder);
-      // 디자인 화면에서 고른 로고도 함께 저장한다(교회 정보 저장 경로를 그대로 쓴다).
-      if ((logoPreview || null) !== savedLogo) {
-        await persistEnabledPages(boards);
+      // 순서·로고·메뉴 켜기/끄기·빠른 이동 초안은 교회 정보 저장 한 번으로 함께 저장한다.
+      const orderChanged = nextOrder.join() !== homeSectionOrder.join();
+      if (orderChanged || logoDirty || menuDirty || quickDirty) {
+        await onchurchChurch.upsertMine({
+          slug,
+          name,
+          siteLang,
+          eng: eng || null,
+          tagline: tagline || null,
+          phone: phone || null,
+          email: email || null,
+          address: address || null,
+          representative: null,
+          businessNo: null,
+          logoUrl: logoPreview || null,
+          youtubeUrl: dQuick.youtube?.trim() || null,
+          instagramUrl: dQuick.instagram?.trim() || null,
+          liveUrl: liveUrl?.trim() || null,
+          isLive,
+          enabledPages: Object.entries(dBoards).filter(([, on]) => on).map(([id]) => id),
+          homeQuickLinks: dQuick.keys,
+          homeCustomLink: dQuick.custom,
+          homeSectionOrder: nextOrder,
+        });
+        setHomeSectionOrder(nextOrder);
         setSavedLogo(logoPreview || null);
+        setBoards(dBoards);
+        setHomeQuickLinks(dQuick.keys);
+        setHomeCustomLink(dQuick.custom);
+        setYoutubeUrl(dQuick.youtube);
+        setInstagramUrl(dQuick.instagram);
+        setBoardsDraft(null);
+        setQuickDraft(null);
       }
+      if (customDirty && customPage) {
+        const updated = await onchurchCustomPage.setActive(customPage.id, dCustomActive);
+        setCustomPage(updated ?? { ...customPage, isActive: dCustomActive });
+        setCustomActiveDraft(null);
+      }
+      setPreviewRev((n) => n + 1);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearTokens();
@@ -923,7 +962,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   function syncQuickLinksAfterPageOff(pageId: string, nextBoards: Record<string, boolean>) {
     const removed = QUICK_LINK_DEFS.find((d) => d.kind === "page" && d.pageId === pageId);
     if (!removed) return;
-    const effective = homeQuickLinks.length ? homeQuickLinks : [...DEFAULT_QUICK_LINK_KEYS];
+    const currentKeys = isTest ? dQuick.keys : homeQuickLinks;
+    const effective = currentKeys.length ? currentKeys : [...DEFAULT_QUICK_LINK_KEYS];
     if (!effective.includes(removed.key)) return;
 
     const remaining = effective.filter((k) => k !== removed.key);
@@ -932,13 +972,71 @@ export function AdminApp({ initial }: { initial: Initial }) {
     );
     const set = new Set(replacement ? [...remaining, replacement.key] : remaining);
     const nextKeys = QUICK_LINK_DEFS.filter((d) => set.has(d.key)).map((d) => d.key);
-    void persistHomeQuickLinks(nextKeys);
+    setQuick(nextKeys);
 
     const msg = replacement
       ? `‘${removed.title}’ 페이지를 꺼서 홈 바로가기에서 빼고 ‘${replacement.title}’를 추가했어요.`
       : `‘${removed.title}’ 페이지를 꺼서 홈 바로가기에서 제외했어요.`;
     setQuickLimitMsg(msg);
     window.setTimeout(() => setQuickLimitMsg(""), 3600);
+  }
+
+  // 디자인 화면에서 보여줄 값(초안이 있으면 초안, 없으면 저장된 값).
+  const dBoards = boardsDraft ?? boards;
+  const savedQuick: DesignPreviewSite["quick"] = { keys: homeQuickLinks, custom: homeCustomLink, youtube: youtubeUrl, instagram: instagramUrl };
+  const dQuick = quickDraft ?? savedQuick;
+  const dCustomActive = customActiveDraft ?? !!customPage?.isActive;
+  const menuDirty = boardsDraft
+    ? Object.keys({ ...boards, ...boardsDraft }).filter((k) => !!boardsDraft[k] !== !!boards[k]).length
+    : 0;
+  const quickDirty = quickDraft && JSON.stringify(quickDraft) !== JSON.stringify(savedQuick) ? 1 : 0;
+  const customDirty = customActiveDraft !== null && customActiveDraft !== !!customPage?.isActive ? 1 : 0;
+  const logoDirty = (logoPreview || null) !== savedLogo ? 1 : 0;
+
+  // 빠른 이동 변경. 테스트 교회(디자인 화면 모달)는 초안에 모으고, 기존 교회는 바로 저장한다.
+  function setQuick(
+    nextKeys: string[],
+    nextCustom: HomeCustomLink | null = dQuick.custom,
+    urls: { youtube?: string | null; instagram?: string | null } = {},
+  ) {
+    if (!isTest) {
+      void persistHomeQuickLinks(nextKeys, nextCustom, urls);
+      return;
+    }
+    setQuickDraft({
+      keys: nextKeys,
+      custom: nextCustom,
+      youtube: "youtube" in urls ? urls.youtube ?? null : dQuick.youtube,
+      instagram: "instagram" in urls ? urls.instagram ?? null : dQuick.instagram,
+    });
+  }
+
+  // 디자인 화면의 메뉴 켜기/끄기(초안). 페이지를 끄면 그 페이지를 가리키던 빠른 이동도 초안에서 정리한다.
+  function toggleBoardDraft(id: string) {
+    const willTurnOff = !!dBoards[id];
+    const next = { ...dBoards, [id]: !dBoards[id] };
+    setBoardsDraft(next);
+    if (willTurnOff) syncQuickLinksAfterPageOff(id, next);
+  }
+
+  function setAboutSubDraft(key: "vision" | "history" | "staff", on: boolean) {
+    setBoardsDraft({ ...dBoards, [`about-${key}`]: on });
+  }
+
+  function toggleCustomPageDraft() {
+    if (!customPage) {
+      openSection("custom-page");
+      return;
+    }
+    setCustomActiveDraft(!dCustomActive);
+  }
+
+  function revertDesignExtras() {
+    setLogoPreview(savedLogo);
+    setLogoErr("");
+    setBoardsDraft(null);
+    setQuickDraft(null);
+    setCustomActiveDraft(null);
   }
 
   function toggleBoard(id: string) {
@@ -2020,9 +2118,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   pages={(() => {
                     // 홈 섹션 ↔ 메뉴(페이지) 1:1 짝. 배너·빠른 이동은 홈 전용 항목.
                     const navLabel = (id: string) => initial.nav.find((n) => n.id === id)?.label ?? id;
-                    const pair = (id: string) => ({ label: navLabel(id), on: boards[id] ?? true, toggle: () => toggleBoard(id) });
+                    const pair = (id: string) => ({ label: navLabel(id), on: dBoards[id] ?? true, toggle: () => toggleBoardDraft(id) });
                     // 기본이 표시인 항목: boards["hide:*"] 가 켜져 있으면 숨김.
-                    const hideable = (label: string, hideKey: string) => ({ label, on: !boards[hideKey], toggle: () => toggleBoard(hideKey) });
+                    const hideable = (label: string, hideKey: string) => ({ label, on: !dBoards[hideKey], toggle: () => toggleBoardDraft(hideKey) });
                     return {
                       banner: hideable("상단 배너", "hide:banner"),
                       quick: hideable("빠른 이동", "hide:quick"),
@@ -2036,16 +2134,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     };
                   })()}
                   menuOnly={[
-                    { key: "community", label: initial.nav.find((n) => n.id === "community")?.label ?? "교제", on: boards["community"] ?? true, toggle: () => toggleBoard("community") },
-                    { key: "custom", label: customPage?.title?.trim() || "새 페이지", on: !!customPage?.isActive, toggle: () => void toggleCustomPage() },
+                    { key: "community", label: initial.nav.find((n) => n.id === "community")?.label ?? "교제", on: dBoards["community"] ?? true, toggle: () => toggleBoardDraft("community") },
+                    { key: "custom", label: customPage?.title?.trim() || "새 페이지", on: dCustomActive, toggle: toggleCustomPageDraft },
                   ]}
                   saving={designSaving}
                   onApply={applySiteDesign}
                   refreshKey={previewRev}
-                  extraDirty={(logoPreview || null) !== savedLogo ? 1 : 0}
-                  onRevertExtra={() => { setLogoPreview(savedLogo); setLogoErr(""); }}
+                  extraDirty={logoDirty + menuDirty + quickDirty + customDirty}
+                  onRevertExtra={revertDesignExtras}
+                  previewSite={{ pages: Object.entries(dBoards).filter(([, on]) => on).map(([id]) => id), quick: dQuick, custom: dCustomActive }}
                   previewLogo={logoPreview || null}
-                  onSectionSettings={(key) => { if (key === "quick") { setExtDraft({ youtube: youtubeUrl ?? "", instagram: instagramUrl ?? "" }); setQuickModal(true); } else if (key === "pastor") setAboutModal(true); }}
+                  onSectionSettings={(key) => { if (key === "quick") { setExtDraft({ youtube: dQuick.youtube ?? "", instagram: dQuick.instagram ?? "" }); setQuickModal(true); } else if (key === "pastor") setAboutModal(true); }}
                   settingsKeys={["quick", "pastor"]}
                   afterSlot={
                     <section className="admin-section">
@@ -2130,14 +2229,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         { key: "history", label: "연혁", desc: "교회가 걸어온 길" },
                         { key: "staff", label: "섬김의 사람들", desc: "교역자와 섬기는 분들" },
                       ] as const).map((it) => {
-                        const on = boards[`about-${it.key}`] ?? true;
+                        const on = dBoards[`about-${it.key}`] ?? true;
                         return (
                           <li key={it.key} className={on ? "" : "off"}>
                             <div>
                               <strong>{it.label}</strong>
                               <small>{it.desc}</small>
                             </div>
-                            <button type="button" className={`toggle ${on ? "on" : ""}`} onClick={() => setAboutSubSection(it.key, !on)} aria-label={`${it.label} 표시`} aria-pressed={on} />
+                            <button type="button" className={`toggle ${on ? "on" : ""}`} onClick={() => setAboutSubDraft(it.key, !on)} aria-label={`${it.label} 표시`} aria-pressed={on} />
                           </li>
                         );
                       })}
@@ -2179,7 +2278,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
               {activeSection === "home-order" && (() => {
                 const MAX_QUICK = 4;
-                const selected = homeQuickLinks.length ? homeQuickLinks : DEFAULT_QUICK_LINK_KEYS;
+                // 테스트 교회(디자인 화면 모달)는 초안 값을 보여주고 초안에 모은다.
+                const qKeys = isTest ? dQuick.keys : homeQuickLinks;
+                const qCustom = isTest ? dQuick.custom : homeCustomLink;
+                const qYoutube = isTest ? dQuick.youtube : youtubeUrl;
+                const qInstagram = isTest ? dQuick.instagram : instagramUrl;
+                const qBoards = isTest ? dBoards : boards;
+                const selected = qKeys.length ? qKeys : DEFAULT_QUICK_LINK_KEYS;
                 const isSel = (k: string) => selected.includes(k);
                 const showQuickToast = (m: string) => {
                   setQuickLimitMsg(m);
@@ -2192,13 +2297,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   } else {
                     const def = QUICK_LINK_DEFS.find((d) => d.key === k);
                     // 커스텀 링크는 제목과 이동 주소를 먼저 저장해야 선택 가능
-                    if (def?.kind === "custom" && !isCustomLinkReady(homeCustomLink)) {
+                    if (def?.kind === "custom" && !isCustomLinkReady(qCustom)) {
                       showQuickToast("커스텀 링크의 제목과 이동 주소를 아래에서 먼저 입력·저장해주세요.");
                       return;
                     }
                     // 유튜브/인스타는 주소가 없으면 선택 불가 — 연락처 메뉴에서 먼저 입력하도록 안내
                     if (def?.kind === "external") {
-                      const hasUrl = def.external === "youtube" ? !!youtubeUrl?.trim() : !!instagramUrl?.trim();
+                      const hasUrl = def.external === "youtube" ? !!qYoutube?.trim() : !!qInstagram?.trim();
                       if (!hasUrl) {
                         showQuickToast(isTest ? `${def.title} 주소를 아래 칸에 먼저 입력·저장해주세요.` : `${def.title} 주소가 없습니다. ‘연락처’ 메뉴에서 ${def.title} 주소를 먼저 입력해주세요.`);
                         return;
@@ -2211,17 +2316,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     set.add(k);
                   }
                   const next = QUICK_LINK_DEFS.filter((d) => set.has(d.key)).map((d) => d.key);
-                  void persistHomeQuickLinks(next);
+                  setQuick(next);
                 };
                 const availability = (key: string): string => {
                   const def = QUICK_LINK_DEFS.find((d) => d.key === key);
                   if (!def) return "";
-                  if (def.kind === "custom") return isCustomLinkReady(homeCustomLink) ? "" : "제목·이동 주소 입력 필요";
+                  if (def.kind === "custom") return isCustomLinkReady(qCustom) ? "" : "제목·이동 주소 입력 필요";
                   if (def.kind === "external") {
-                    const has = def.external === "youtube" ? !!youtubeUrl?.trim() : !!instagramUrl?.trim();
+                    const has = def.external === "youtube" ? !!qYoutube?.trim() : !!qInstagram?.trim();
                     return has ? "" : (def.external === "youtube" ? "유튜브 주소 입력 필요" : "인스타그램 주소 입력 필요");
                   }
-                  return def.pageId && boards[def.pageId] ? "" : "페이지를 켜야 노출";
+                  return def.pageId && qBoards[def.pageId] ? "" : "페이지를 켜야 노출";
                 };
                 const inner = (
                   <div style={isTest ? undefined : { marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
@@ -2249,7 +2354,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         const labelBlock = (
                           <div style={{ flex: 1 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                              <strong>{d.kind === "custom" && homeCustomLink?.title ? `${d.title} · ${homeCustomLink.title}` : d.title}</strong>
+                              <strong>{d.kind === "custom" && qCustom?.title ? `${d.title} · ${qCustom.title}` : d.title}</strong>
                               {note && <span style={{ color: "var(--muted)", fontSize: 11.5 }}>· {note}</span>}
                             </div>
                             <div style={{ color: "var(--muted)", fontSize: 12 }}>{d.desc}</div>
@@ -2259,7 +2364,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         // 테스트 교회: 유튜브·인스타그램은 같은 카드 안에서 주소를 입력·저장한다(연락처 화면을 오가지 않게).
                         if (isTest && d.kind === "external") {
                           const which = d.external === "youtube" ? "youtube" : "instagram";
-                          const savedUrl = (which === "youtube" ? youtubeUrl : instagramUrl)?.trim() ?? "";
+                          const savedUrl = (which === "youtube" ? qYoutube : qInstagram)?.trim() ?? "";
                           const draftUrl = extDraft[which].trim();
                           return (
                             <div
@@ -2295,7 +2400,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                                     if (draftUrl) { if (!set.has(d.key) && set.size < MAX_QUICK) set.add(d.key); }
                                     else set.delete(d.key);
                                     const nextKeys = QUICK_LINK_DEFS.filter((x) => set.has(x.key)).map((x) => x.key);
-                                    void persistHomeQuickLinks(nextKeys, homeCustomLink, { [which]: draftUrl || null });
+                                    setQuick(nextKeys, qCustom, { [which]: draftUrl || null });
                                   }}
                                 >
                                   저장
@@ -2386,14 +2491,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
                                     const set = new Set(selected);
                                     if (!set.has("custom") && set.size < MAX_QUICK) set.add("custom");
                                     const nextKeys = QUICK_LINK_DEFS.filter((x) => set.has(x.key)).map((x) => x.key);
-                                    void persistHomeQuickLinks(nextKeys, next);
-                                    setCustomSaveMsg(set.has("custom") ? "저장했습니다. 홈 바로가기에 노출됩니다." : "저장했습니다.");
+                                    setQuick(nextKeys, next);
+                                    setCustomSaveMsg(isTest ? "반영했습니다. ‘홈페이지에 적용’을 누르면 공개됩니다." : set.has("custom") ? "저장했습니다. 홈 바로가기에 노출됩니다." : "저장했습니다.");
                                     window.setTimeout(() => setCustomSaveMsg(""), 2800);
                                   }}
                                 >
                                   저장
                                 </button>
-                                {homeCustomLink && (
+                                {qCustom && (
                                   <button
                                     type="button"
                                     className="btn btn-ghost"
@@ -2401,7 +2506,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                                       if (!confirm("커스텀 링크를 삭제할까요? 홈 바로가기에서도 제외됩니다.")) return;
                                       setCustomDraft({ title: "", desc: "", url: "" });
                                       const nextKeys = selected.filter((k) => k !== "custom");
-                                      void persistHomeQuickLinks(nextKeys, null);
+                                      setQuick(nextKeys, null);
                                       setCustomSaveMsg("삭제했습니다.");
                                       window.setTimeout(() => setCustomSaveMsg(""), 2800);
                                     }}
