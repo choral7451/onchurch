@@ -1425,6 +1425,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         <form onSubmit={onSave} noValidate={isTest} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && sideCollapsed ? "side-collapsed" : ""} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {isTest && (
           <aside className={`admin-sidebar admin-sidebar-v2 ${sideCollapsed ? "collapsed" : ""}`}>
+            {/* 교회: 이름과 홈페이지 주소. 주소를 누르면 홈페이지가 새 탭으로 열린다(운영 OFF면 안내). */}
             <div className="admin-v2-church">
               {logoPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -1432,26 +1433,34 @@ export function AdminApp({ initial }: { initial: Initial }) {
               ) : (
                 <div className="admin-v2-church-mark" aria-hidden="true">{(name || "교").slice(0, 1)}</div>
               )}
-              <div style={{ minWidth: 0 }}>
+              <div className="admin-v2-church-text">
                 <div className="admin-v2-church-name">{name || "교회 이름"}</div>
-                <div className="admin-v2-church-slug">{slug ? `${slug}.onchurch.kr` : "서브도메인 미설정"}</div>
+                {slug ? (
+                  <Link href={previewHref} target="_blank" className="admin-v2-church-link" title="홈페이지 바로가기" onClick={(e) => onClickGoHome(e, false)}>
+                    <span>{slug}.everychurch.co.kr</span>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M7 17 17 7M9 7h8v8" />
+                    </svg>
+                  </Link>
+                ) : (
+                  <div className="admin-v2-church-slug">서브도메인 미설정</div>
+                )}
               </div>
             </div>
 
-            <div className="admin-v2-site">
-              <div className="admin-v2-site-row">
-                <span className="admin-v2-site-label">
-                  사이트 운영
-                  <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
-                    {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
-                  </span>
+            {/* 사이트 운영 상태와 이용 기간 */}
+            <div className={`admin-v2-status ${isPublished ? "on" : "off"}`}>
+              <div className="admin-v2-status-row">
+                <span className="admin-v2-status-label">
+                  <span className="admin-v2-status-dot" aria-hidden="true" />
+                  {isPublished ? "운영 중" : !allRequiredFilled ? "비공개 · 필수 입력 필요" : "비공개"}
                 </span>
                 <button
                   type="button"
                   className={`toggle ${isPublished ? "on" : ""}`}
                   onClick={() => void onTogglePublish()}
                   disabled={!loaded || publishLoading}
-                  aria-label="사이트 운영 토글"
+                  aria-label="사이트 운영"
                   aria-pressed={isPublished}
                   title={
                     isPublished
@@ -1463,19 +1472,15 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 />
               </div>
               {subscription && (() => {
-                // 사이트 운영 상태 아래에 언제까지 이용할 수 있는지 날짜로 보여준다.
                 const until = subscription.isActive ? (subscription.isFreeTrial ? subscription.freeTrialUntil : subscription.paidUntil) : null;
                 return (
-                  <div className={`admin-v2-site-period ${subscription.isActive ? "" : "expired"}`}>
-                    <span>{subscription.isActive ? (subscription.isFreeTrial ? "무료 체험" : "이용 중") : "이용 기간 만료"}</span>
-                    <strong>{until ? `${formatYMD(until)}까지 이용 가능` : "결제 후 이용 가능"}</strong>
+                  <div className={`admin-v2-status-period ${subscription.isActive ? "" : "expired"}`}>
+                    {until
+                      ? `${formatYMD(until)}까지 ${subscription.isFreeTrial ? "무료 체험" : "이용 가능"}`
+                      : "이용 기간 만료 · 결제가 필요해요"}
                   </div>
                 );
               })()}
-              <Link href={previewHref} className="btn btn-secondary admin-v2-site-home" target="_blank" onClick={(e) => onClickGoHome(e, false)}>
-                <Icon.arrow style={{ width: 14, height: 14 }} />
-                홈페이지 바로가기
-              </Link>
             </div>
 
             <div className="admin-sidebar-group admin-sidebar-areas">
@@ -1500,27 +1505,33 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
 
             <div className="admin-v2-side-foot">
-              <a href="http://pf.kakao.com/_slJXX/chat" target="_blank" rel="noopener noreferrer" className="btn btn-secondary admin-v2-help">
-                카카오톡 문의
+              <a href="http://pf.kakao.com/_slJXX/chat" target="_blank" rel="noopener noreferrer" className="admin-v2-foot-item">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+                </svg>
+                <span className="admin-sidebar-item-label">카카오톡 문의</span>
               </a>
-              <button type="button" className="btn btn-ghost admin-v2-logout" onClick={onLogout}>
-                로그아웃
+              <button type="button" className="admin-v2-foot-item" onClick={onLogout}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
+                </svg>
+                <span className="admin-sidebar-item-label">로그아웃</span>
+              </button>
+              <button
+                type="button"
+                className="admin-v2-foot-item admin-v2-collapse"
+                onClick={toggleSideCollapsed}
+                aria-pressed={sideCollapsed}
+                title={sideCollapsed ? "사이드바 고정 펼치기" : "사이드바 접기"}
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <path d="M9 4v16" />
+                  <path d={sideCollapsed ? "M14 10l2 2-2 2" : "M17 10l-2 2 2 2"} />
+                </svg>
+                <span className="admin-sidebar-item-label">{sideCollapsed ? "사이드바 펼치기" : "사이드바 접기"}</span>
               </button>
             </div>
-            <button
-              type="button"
-              className="admin-v2-collapse"
-              onClick={toggleSideCollapsed}
-              aria-pressed={sideCollapsed}
-              title={sideCollapsed ? "사이드바 고정 펼치기" : "사이드바 접기"}
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="4" width="18" height="16" rx="2" />
-                <path d="M9 4v16" />
-                <path d={sideCollapsed ? "M14 10l2 2-2 2" : "M17 10l-2 2 2 2"} />
-              </svg>
-              <span className="admin-sidebar-item-label">{sideCollapsed ? "사이드바 펼치기" : "사이드바 접기"}</span>
-            </button>
           </aside>
           )}
 

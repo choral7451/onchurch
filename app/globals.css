@@ -1258,7 +1258,8 @@ main { flex: 1; }
   .admin-design-fit .admin-main { min-height: 0; padding-bottom: 0; overflow: hidden; display: flex; flex-direction: column; }
   .admin-design-fit .admin-layout { flex: 1; min-height: 0; height: auto; }
   .admin-design-fit .admin-sidebar-v2 { height: auto; max-height: none; position: static; align-self: stretch; overflow-y: auto; }
-  .admin-design-fit .admin-content { min-height: 0; padding: 16px 0; display: flex; flex-direction: column; overflow: hidden; }
+  /* .admin-v2 .admin-content(아래 80px 여백)보다 뒤에 정의돼 있지 않으므로 선택자를 더 구체적으로 둔다. 위아래 여백을 같게. */
+  .admin-shell.admin-design-fit .admin-content { min-height: 0; padding: 22px 0; display: flex; flex-direction: column; overflow: hidden; }
   .admin-design-fit .admin-container { flex: 1; min-height: 0; width: 100%; }
   .admin-design-fit .admin-design-layout { flex: 1; min-height: 0; align-items: stretch; }
   .admin-design-fit .admin-design-side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
@@ -1413,48 +1414,59 @@ main { flex: 1; }
 /* 테스트 교회: 상단바가 없으므로 사이드바가 화면 맨 위부터 끝까지 차지하고, 로고·사이트 운영·홈페이지 바로가기를 담는다. */
 .admin-v2.admin-layout { min-height: 100vh; }
 .admin-v2 .admin-sidebar-v2 { top: 0; height: 100vh; }
-.admin-v2-site { display: flex; flex-direction: column; gap: 8px; padding: 0 4px 14px; border-bottom: 1px solid var(--line); }
-.admin-v2-site-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-md); }
-.admin-v2-site-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; }
-.admin-v2-site-period { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 10px; font-size: 12px; color: var(--muted); }
-.admin-v2-site-period strong { font-size: 12.5px; font-weight: 600; color: var(--primary-deep); white-space: nowrap; }
-.admin-v2-site-period.expired strong { color: oklch(0.55 0.18 28); }
-.admin-v2-site-home { justify-content: center; padding: 8px 12px; font-size: 12.5px; }
-.admin-v2-logout { justify-content: center; padding: 6px 12px; font-size: 12.5px; color: var(--muted); }
-.admin-v2-church { display: flex; align-items: center; gap: 10px; padding: 8px 10px 14px; border-bottom: 1px solid var(--line); }
-.admin-v2-church-mark { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: grid; place-items: center; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); }
+/* 교회: 이름 + 홈페이지 주소 링크(홈페이지 바로가기 역할) */
+.admin-v2-church { display: flex; align-items: center; gap: 10px; padding: 6px 8px 4px; }
+.admin-v2-church-mark { width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0; display: grid; place-items: center; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); }
 .admin-v2-church-logo { background: var(--surface); object-fit: contain; border: 1px solid var(--line); }
-.admin-v2-church-name { font-size: 14px; font-weight: 700; color: var(--primary-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.admin-v2-church-slug { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.admin-sidebar-v2 .admin-sidebar-areas { border-bottom: 0; padding-bottom: 0; gap: 2px; }
-.admin-sidebar-v2 .admin-sidebar-area { padding: 10px 12px; font-size: 14px; }
-/* 사이드바 접기: 그리드 칸은 64px로 줄이고, 마우스를 올리면 aside 만 240px(원래 폭)로 늘어나 본문 위에 겹친다(그리드 칸은 그대로). */
-.admin-v2-collapse { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 9px 12px; background: transparent; border: 1px solid transparent; border-radius: var(--r-md); font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; overflow: hidden; }
-.admin-v2-collapse svg { flex-shrink: 0; }
-.admin-v2-collapse:hover { background: var(--bg-tinted); color: var(--primary-deep); }
+.admin-v2-church-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.admin-v2-church-name { font-size: 14.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-v2-church-slug { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-v2-church-link { display: inline-flex; align-items: center; gap: 3px; min-width: 0; font-size: 12px; color: var(--muted); text-decoration: none; border-radius: 4px; }
+.admin-v2-church-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-v2-church-link svg { flex-shrink: 0; opacity: 0.7; }
+.admin-v2-church-link:hover { color: var(--accent); }
+.admin-v2-church-link:hover span { text-decoration: underline; text-underline-offset: 2px; }
+
+/* 사이트 운영 상태: 테두리 없는 옅은 판. 운영 중이면 초록, 비공개면 회색. */
+.admin-v2-status { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--r-md); background: var(--surface-2); }
+.admin-v2-status.on { background: oklch(0.6 0.14 145 / 0.09); }
+.admin-v2-status-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.admin-v2-status-label { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-v2-status.on .admin-v2-status-label { color: oklch(0.38 0.14 145); }
+.admin-v2-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted-2); flex-shrink: 0; }
+.admin-v2-status.on .admin-v2-status-dot { background: oklch(0.6 0.16 145); box-shadow: 0 0 0 3px oklch(0.6 0.16 145 / 0.18); }
+.admin-v2-status-period { font-size: 12px; color: var(--muted); }
+.admin-v2-status-period.expired { color: oklch(0.52 0.18 28); font-weight: 600; }
+
+.admin-sidebar-v2 .admin-sidebar-areas { border-bottom: 0; padding-bottom: 0; gap: 2px; margin-top: 4px; }
+.admin-sidebar-v2 .admin-sidebar-area { padding: 10px 12px; font-size: 14px; color: var(--ink-2); border-color: transparent; }
+.admin-sidebar-v2 .admin-sidebar-area svg { color: var(--muted); flex-shrink: 0; }
+.admin-sidebar-v2 .admin-sidebar-area.active { background: oklch(0.62 0.14 245 / 0.1); border-color: transparent; color: var(--primary-deep); }
+.admin-sidebar-v2 .admin-sidebar-area.active svg { color: var(--primary); }
+
+/* 하단: 카카오톡 문의 · 로그아웃 · 접기 — 메뉴와 같은 줄 모양으로 조용하게 */
+.admin-v2-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 1px; padding-top: 10px; }
+.admin-v2-foot-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 8px 12px; background: transparent; border: 0; border-radius: var(--r-md); font: inherit; font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; cursor: pointer; white-space: nowrap; overflow: hidden; }
+.admin-v2-foot-item svg { flex-shrink: 0; }
+.admin-v2-foot-item:hover { background: var(--bg-tinted); color: var(--ink); }
+.admin-sidebar-v2 :is(.admin-sidebar-area, .admin-v2-foot-item, .admin-v2-church-link):focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 @media (min-width: 961px) {
   .admin-v2.admin-layout.side-collapsed { grid-template-columns: 64px 1fr; }
-  /* 안쪽 여백·아이콘 위치는 접힘/펼침에서 똑같이 두고 폭만 바꾼다. 글자는 줄바꿈 없이 잘려 있다가 투명도로만 나타난다(펼치는 동안 글자가 흔들리지 않게). */
+  /* 사이드바 접기: 그리드 칸은 64px로 줄이고, 마우스를 올리면 aside 만 240px(원래 폭)로 늘어나 본문 위에 겹친다. 글자는 투명도로만 나타난다. */
   .admin-sidebar-v2.collapsed { width: 64px; overflow: hidden; z-index: 30; transition: width 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease; }
-  .admin-sidebar-v2.collapsed .admin-v2-church { padding-left: 2px; padding-right: 2px; }
-  .admin-sidebar-v2.collapsed .admin-sidebar-area, .admin-sidebar-v2.collapsed .admin-v2-collapse { padding-left: 10px; padding-right: 10px; }
+  .admin-sidebar-v2.collapsed .admin-v2-church { padding-left: 1px; padding-right: 1px; }
+  .admin-sidebar-v2.collapsed .admin-sidebar-area, .admin-sidebar-v2.collapsed .admin-v2-foot-item { padding-left: 10px; padding-right: 10px; }
   .admin-sidebar-v2.collapsed .admin-sidebar-item-label,
   .admin-sidebar-v2.collapsed .admin-sidebar-pill,
-  .admin-sidebar-v2.collapsed .admin-v2-church > div:not(.admin-v2-church-mark),
-  .admin-sidebar-v2.collapsed .admin-v2-side-foot,
-  .admin-sidebar-v2.collapsed .admin-v2-site { white-space: nowrap; opacity: 0; transition: opacity 0.12s ease; }
-  .admin-sidebar-v2.collapsed .admin-v2-side-foot, .admin-sidebar-v2.collapsed .admin-v2-site { overflow: hidden; pointer-events: none; }
-  .admin-sidebar-v2.collapsed .admin-v2-side-foot .btn { white-space: nowrap; }
+  .admin-sidebar-v2.collapsed .admin-v2-church-text,
+  .admin-sidebar-v2.collapsed .admin-v2-status { white-space: nowrap; opacity: 0; transition: opacity 0.12s ease; }
+  .admin-sidebar-v2.collapsed .admin-v2-status { overflow: hidden; pointer-events: none; }
   .admin-sidebar-v2.collapsed:hover, .admin-sidebar-v2.collapsed:has(:focus-visible) { width: 240px; box-shadow: 12px 0 32px oklch(0 0 0 / 0.12); transition-delay: 0.06s; }
-  .admin-sidebar-v2.collapsed:hover .admin-sidebar-item-label, .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-sidebar-item-label,
-  .admin-sidebar-v2.collapsed:hover .admin-sidebar-pill, .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-sidebar-pill,
-  .admin-sidebar-v2.collapsed:hover .admin-v2-church > div:not(.admin-v2-church-mark), .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-v2-church > div:not(.admin-v2-church-mark),
-  .admin-sidebar-v2.collapsed:hover .admin-v2-site, .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-v2-site,
-  .admin-sidebar-v2.collapsed:hover .admin-v2-side-foot, .admin-sidebar-v2.collapsed:has(:focus-visible) .admin-v2-side-foot { opacity: 1; pointer-events: auto; transition: opacity 0.18s ease 0.12s; }
+  .admin-sidebar-v2.collapsed:hover :is(.admin-sidebar-item-label, .admin-sidebar-pill, .admin-v2-church-text, .admin-v2-status),
+  .admin-sidebar-v2.collapsed:has(:focus-visible) :is(.admin-sidebar-item-label, .admin-sidebar-pill, .admin-v2-church-text, .admin-v2-status) { opacity: 1; pointer-events: auto; transition: opacity 0.18s ease 0.12s; }
 }
 @media (max-width: 960px) { .admin-v2-collapse { display: none; } }
-.admin-v2-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 4px 0; border-top: 1px solid var(--line); }
-.admin-v2-help { justify-content: center; padding: 8px 12px; font-size: 12.5px; }
+@media (prefers-reduced-motion: reduce) { .admin-sidebar-v2.collapsed, .admin-sidebar-v2.collapsed * { transition: none !important; } }
 .admin-v2 .admin-content { padding: 22px 0 80px; }
 .admin-v2 .admin-container { gap: 16px; }
 .admin-v2-required { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid oklch(0.65 0.16 50 / 0.35); background: oklch(0.65 0.16 50 / 0.08); border-radius: var(--r-md); font-size: 13.5px; color: var(--ink); }
