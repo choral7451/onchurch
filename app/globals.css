@@ -1257,7 +1257,7 @@ main { flex: 1; }
   .admin-design-fit .admin-content { min-height: 0; padding: 16px 0; display: flex; flex-direction: column; overflow: hidden; }
   .admin-design-fit .admin-container { flex: 1; min-height: 0; width: 100%; }
   .admin-design-fit .admin-design-layout { flex: 1; min-height: 0; align-items: stretch; }
-  .admin-design-fit .admin-design-side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; padding-bottom: 88px; }
+  .admin-design-fit .admin-design-side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
   .admin-design-fit .admin-design-side > * { flex-shrink: 0; }
   .admin-design-fit .admin-design-preview { position: static; min-height: 0; display: flex; flex-direction: column; }
   .admin-design-fit .admin-design-frame { flex: 1; height: auto; min-height: 0; }
