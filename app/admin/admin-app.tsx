@@ -105,13 +105,13 @@ type SectionKey = "start" | "home" | "site" | "logo" | "contact" | "banners" | "
 
 type NavGroup = "home" | "saints";
 
-// 테스트 교회 전용 4개 영역 사이드바(디자인 · 콘텐츠 · 성도관리 · 설정). 기존 교회는 NavGroup 사이드바 그대로.
+// 테스트 교회 전용 4개 영역 사이드바(디자인 · 콘텐츠 · 성도관리 · 결제). 기존 교회는 NavGroup 사이드바 그대로.
 type AreaKey = "design" | "content" | "saints" | "settings";
 const AREA_META: { key: AreaKey; label: string; icon: keyof typeof Icon }[] = [
   { key: "design", label: "디자인", icon: "image" },
   { key: "content", label: "콘텐츠", icon: "bible" },
   { key: "saints", label: "성도관리", icon: "users" },
-  { key: "settings", label: "설정", icon: "gear" },
+  { key: "settings", label: "결제", icon: "wallet" },
 ];
 // 영역별 하위 항목(본문 상단 탭 바). 콘텐츠 영역은 페이지 목록(initial.nav)으로 동적 구성한다.
 const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>> = {
