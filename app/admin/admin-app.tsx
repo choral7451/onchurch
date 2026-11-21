@@ -441,8 +441,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [slugLocked, setSlugLocked] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [publishLoading, setPublishLoading] = useState(false);
-  const [modal, setModal] = useState<null | "required" | "payment" | "trial-started">(null);
-  const [trialEndDateLabel, setTrialEndDateLabel] = useState<string>("");
+  const [modal, setModal] = useState<null | "required" | "payment">(null);
 
   // 모달이 열려 있는 동안 배경 페이지 스크롤을 잠근다(스크롤은 모달 내부에서만).
   useEffect(() => {
@@ -1175,7 +1174,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
     if (publishLoading) return isPublished;
     // 토글 버튼에서는 인자 없이, '사이트 오픈'에서는 true 로 호출한다. boolean 일 때만 강제값으로 본다.
     const target = typeof forceTarget === "boolean" ? forceTarget : !isPublished;
-    const wasPublished = isPublished;
 
     if (target) {
       if (!churchExistsOnServer || !allRequiredFilled) {
@@ -1195,15 +1193,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
       const updated = await onchurchChurch.publish(target);
       setIsPublished(updated.church.isPublished);
       setSubscription(updated.subscription);
-      // 체험 시작 안내는 실제로 OFF → ON 이 된 첫 오픈에서만. (이미 공개 중이던 재발행은 서버가 체험을 새로 주지 않는다)
-      if (target && !wasPublished && updated.subscription.freeTrialUntil) {
-        const end = new Date(updated.subscription.freeTrialUntil);
-        const yyyy = end.getFullYear();
-        const mm = String(end.getMonth() + 1).padStart(2, "0");
-        const dd = String(end.getDate()).padStart(2, "0");
-        setTrialEndDateLabel(`${yyyy}년 ${mm}월 ${dd}일`);
-        setModal("trial-started");
-      }
       return updated.church.isPublished;
     } catch (err) {
       if (err instanceof ApiError) {
@@ -2796,29 +2785,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </button>
                 </div>
               </>
-            ) : modal === "payment" ? (
+            ) : (
               <>
                 <h3 className="admin-modal-title">결제가 필요합니다</h3>
                 <p className="admin-modal-body">
                   무료 체험이 종료되었거나 결제 정보가 없습니다. 아래 계좌로 입금해주시면 사이트 운영이 연장됩니다.
                 </p>
                 <PaymentAccountCard />
-                <div className="admin-modal-actions">
-                  <button type="button" className="btn btn-primary" onClick={() => setModal(null)}>
-                    확인
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h3 className="admin-modal-title">🎉 사이트 운영이 시작되었습니다</h3>
-                <p className="admin-modal-body">
-                  <strong>7일 무료 체험</strong>이 시작되었습니다.<br />
-                  종료일: <strong>{trialEndDateLabel}</strong><br />
-                  <span style={{ color: "var(--muted)", fontSize: 13 }}>
-                    체험 기간 동안 모든 기능을 자유롭게 사용해보세요. 종료 전에 결제하시면 끊김 없이 이어집니다.
-                  </span>
-                </p>
                 <div className="admin-modal-actions">
                   <button type="button" className="btn btn-primary" onClick={() => setModal(null)}>
                     확인
