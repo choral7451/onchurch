@@ -121,16 +121,14 @@ const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>>
     { key: "attendance", label: "출석체크" },
     { key: "members", label: "홈페이지 회원" },
   ],
+  // 설정 영역은 결제 정보 보기 전용. 기본 정보·연락처는 콘텐츠 영역 탭으로 옮겼다.
   settings: [
-    { key: "site", label: "기본 정보" },
-    { key: "contact", label: "연락처" },
     { key: "billing", label: "결제 · 입금 계좌" },
-    { key: "settings", label: "구독 · 사이트 운영" },
   ],
 };
 function sectionArea(key: SectionKey): AreaKey {
   if (key === "home" || key === "start" || key === "home-order" || key === "logo") return "design";
-  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners") return "content";
+  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners" || key === "site" || key === "contact") return "content";
   if (key === "saints-roster" || key === "visitations" || key === "attendance" || key === "members") return "saints";
   return "settings";
 }
@@ -318,8 +316,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     setAreaV2(area);
     // 하위 항목은 본문 상단 탭 바에 있으므로 모바일도 바로 본문으로 들어간다.
     setMobileDetail(true);
-    const firstOnPage = initial.nav.find((n) => n.id !== "directions" && (boards[n.id] ?? true))?.id ?? "about";
-    const first: Record<AreaKey, SectionKey> = { design: "home-order", content: `page:${firstOnPage}` as SectionKey, saints: "saints-roster", settings: "site" };
+    const first: Record<AreaKey, SectionKey> = { design: "home-order", content: "site", saints: "saints-roster", settings: "billing" };
     setActiveSection(first[area]);
   }
 
@@ -990,10 +987,25 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!trimmedSlug || !name.trim()) {
+    // 기본 정보·연락처 화면(또는 시작하기의 해당 단계)에서 필수값이 비어 있으면 저장하지 않고 토스트로 알린다.
+    const target = activeSection === "start" ? openStep : activeSection;
+    const missing: string[] = [];
+    if (target === "contact") {
+      if (!phone.trim()) missing.push("전화번호");
+      if (!email.trim()) missing.push("이메일");
+      if (!address.trim()) missing.push("주소");
+    } else {
+      if (!trimmedSlug) missing.push("서브도메인");
+      if (!name.trim()) missing.push("교회 이름");
+    }
+    const invalidEmail = target === "contact" && !!email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    if (missing.length > 0 || invalidEmail) {
+      const msg = missing.length > 0 ? `필수 항목을 입력해주세요: ${missing.join(", ")}` : "이메일 형식이 올바르지 않습니다.";
       setSave("error");
-      setSaveMsg("서브도메인과 교회 이름은 필수로 입력해야 합니다.");
-      setActiveSection("site");
+      setSaveMsg(msg);
+      setPublishHint(msg);
+      setTimeout(() => setPublishHint(""), 3200);
+      if (target !== "contact" && target !== "site") setActiveSection("site");
       return;
     }
     if (slugCheck === "taken") {
@@ -1186,7 +1198,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         <button
           type="submit"
           className="btn btn-primary btn-lg"
-          disabled={save === "saving" || !loaded || !trimmedSlug || !name.trim() || slugCheck === "taken" || slugCheck === "checking"}
+          disabled={save === "saving" || !loaded || (!isTest && (!trimmedSlug || !name.trim())) || slugCheck === "taken" || slugCheck === "checking"}
         >
           {save === "saving" ? "저장 중..." : "변경사항 저장"}
         </button>
@@ -1437,7 +1449,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && onboardingDone && sideCollapsed ? "side-collapsed" : ""} ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
+        <form onSubmit={onSave} noValidate={isTest} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && onboardingDone && sideCollapsed ? "side-collapsed" : ""} ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
           {onboardingDone && isTest && (
           <aside className={`admin-sidebar admin-sidebar-v2 ${sideCollapsed ? "collapsed" : ""}`}>
@@ -1468,7 +1480,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <AreaIcon style={{ width: 18, height: 18 }} />
                     <span className="admin-sidebar-item-label">{a.label}</span>
                     {a.key === "content" && pendingInquiries > 0 && <span className="admin-sidebar-pill incomplete" title="미답변 문의">문의 {pendingInquiries}</span>}
-                    {a.key === "settings" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete" title="필수 설정 미완료">{4 - requiredDoneCount}</span>}
+                    {a.key === "content" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete" title="필수 설정 미완료">{4 - requiredDoneCount}</span>}
                     {a.key === "saints" && saintsLocked && <span className="admin-sidebar-pill optional">결제</span>}
                   </button>
                 );
@@ -1763,6 +1775,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     {areaV2 === "content"
                       ? (
                         <>
+                          {([
+                            { key: "site", label: "기본 정보", missing: !siteRequiredFilled },
+                            { key: "contact", label: "연락처", missing: !contactRequiredFilled },
+                          ] as const).map((it) => (
+                            <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""}`}>
+                              <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
+                                {it.label}
+                                {it.missing && <span className="admin-v2-tab-dot" aria-label="필수 미입력" />}
+                              </button>
+                            </div>
+                          ))}
                           {/* 켜진 페이지만 탭으로 보여준다. 꺼진 페이지가 열려 있으면(시작 화면 바로가기 등) 그 탭만 '숨김' 표시로 남긴다. 온오프는 디자인 화면의 메뉴 구성 카드. */}
                           {initial.nav.filter((n) => n.id !== "directions").map((n) => {
                             const on = boards[n.id] ?? true;
@@ -1800,17 +1823,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           </div>
                         </>
                       )
-                      : (AREA_ITEMS[areaV2] ?? []).map((it) => {
-                        const required = it.key === "site" ? !siteRequiredFilled : it.key === "contact" ? !contactRequiredFilled : false;
-                        return (
-                          <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""} ${it.key === "settings" ? "admin-v2-mobile-only" : ""}`}>
-                            <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
-                              {it.label}
-                              {required && <span className="admin-v2-tab-dot" aria-label="필수 미입력" />}
-                            </button>
-                          </div>
-                        );
-                      })}
+                      : (AREA_ITEMS[areaV2] ?? []).map((it) => (
+                        <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""}`}>
+                          <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
+                            {it.label}
+                          </button>
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}
