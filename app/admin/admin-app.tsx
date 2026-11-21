@@ -1782,6 +1782,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                             <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""}`}>
                               <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
                                 {it.label}
+                                <span className="required-mark" aria-label="필수">*</span>
                                 {it.missing && <span className="admin-v2-tab-dot" aria-label="필수 미입력" />}
                               </button>
                             </div>
