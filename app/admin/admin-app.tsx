@@ -1425,20 +1425,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
         <form onSubmit={onSave} noValidate={isTest} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && sideCollapsed ? "side-collapsed" : ""} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {isTest && (
           <aside className={`admin-sidebar admin-sidebar-v2 ${sideCollapsed ? "collapsed" : ""}`}>
-            <Link
-              href="/admin"
-              className="admin-v2-brand"
-              onClick={(e) => {
-                e.preventDefault();
-                setMobileDetail(false);
-                setActiveSection("home-order");
-                setAreaV2("design");
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/everychurch-logo.jpeg" alt="온교회" className="admin-v2-brand-logo" />
-              <span className="admin-sidebar-item-label">관리자 콘솔</span>
-            </Link>
             <div className="admin-v2-church">
               {logoPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -1476,6 +1462,16 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   }
                 />
               </div>
+              {subscription && (() => {
+                // 사이트 운영 상태 아래에 언제까지 이용할 수 있는지 날짜로 보여준다.
+                const until = subscription.isActive ? (subscription.isFreeTrial ? subscription.freeTrialUntil : subscription.paidUntil) : null;
+                return (
+                  <div className={`admin-v2-site-period ${subscription.isActive ? "" : "expired"}`}>
+                    <span>{subscription.isActive ? (subscription.isFreeTrial ? "무료 체험" : "이용 중") : "이용 기간 만료"}</span>
+                    <strong>{until ? `${formatYMD(until)}까지 이용 가능` : "결제 후 이용 가능"}</strong>
+                  </div>
+                );
+              })()}
               <Link href={previewHref} className="btn btn-secondary admin-v2-site-home" target="_blank" onClick={(e) => onClickGoHome(e, false)}>
                 <Icon.arrow style={{ width: 14, height: 14 }} />
                 홈페이지 바로가기
@@ -1504,15 +1500,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
             </div>
 
             <div className="admin-v2-side-foot">
-              <div className="admin-v2-side-sub">
-                <span className="admin-start-k">구독</span>
-                <strong>
-                  {subscription?.isActive ? (subscription.isFreeTrial ? "무료 체험" : "이용 중") : "만료"}
-                  {subscription?.isActive && (subscription.isFreeTrial ? subscription.freeTrialUntil : subscription.paidUntil) && (
-                    <small> · D-{daysLeft((subscription.isFreeTrial ? subscription.freeTrialUntil : subscription.paidUntil) as string)}</small>
-                  )}
-                </strong>
-              </div>
               <a href="http://pf.kakao.com/_slJXX/chat" target="_blank" rel="noopener noreferrer" className="btn btn-secondary admin-v2-help">
                 카카오톡 문의
               </a>

@@ -1409,11 +1409,12 @@ main { flex: 1; }
 /* 테스트 교회: 상단바가 없으므로 사이드바가 화면 맨 위부터 끝까지 차지하고, 로고·사이트 운영·홈페이지 바로가기를 담는다. */
 .admin-v2.admin-layout { min-height: 100vh; }
 .admin-v2 .admin-sidebar-v2 { top: 0; height: 100vh; }
-.admin-v2-brand { display: flex; align-items: center; gap: 10px; padding: 2px 10px 4px; text-decoration: none; font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: -0.01em; }
-.admin-v2-brand-logo { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
 .admin-v2-site { display: flex; flex-direction: column; gap: 8px; padding: 0 4px 14px; border-bottom: 1px solid var(--line); }
 .admin-v2-site-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-md); }
 .admin-v2-site-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.admin-v2-site-period { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 10px; font-size: 12px; color: var(--muted); }
+.admin-v2-site-period strong { font-size: 12.5px; font-weight: 600; color: var(--primary-deep); white-space: nowrap; }
+.admin-v2-site-period.expired strong { color: oklch(0.55 0.18 28); }
 .admin-v2-site-home { justify-content: center; padding: 8px 12px; font-size: 12.5px; }
 .admin-v2-logout { justify-content: center; padding: 6px 12px; font-size: 12.5px; color: var(--muted); }
 .admin-v2-church { display: flex; align-items: center; gap: 10px; padding: 8px 10px 14px; border-bottom: 1px solid var(--line); }
@@ -1449,9 +1450,6 @@ main { flex: 1; }
 }
 @media (max-width: 960px) { .admin-v2-collapse { display: none; } }
 .admin-v2-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 4px 0; border-top: 1px solid var(--line); }
-.admin-v2-side-sub { display: flex; flex-direction: column; gap: 2px; padding: 0 6px; }
-.admin-v2-side-sub strong { font-size: 13.5px; color: var(--primary-deep); }
-.admin-v2-side-sub small { font-size: 12px; color: var(--muted); font-weight: 500; }
 .admin-v2-help { justify-content: center; padding: 8px 12px; font-size: 12.5px; }
 .admin-v2 .admin-content { padding: 22px 0 80px; }
 .admin-v2 .admin-container { gap: 16px; }
