@@ -190,11 +190,18 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
             ? "홈페이지와 같습니다. 바꾸면 여기에 초안으로 모였다가 한 번에 적용됩니다."
             : <>저장되지 않은 변경 <strong>{dirty}</strong>개. 적용하기 전까지는 교인들에게 보이지 않습니다.</>}
         </span>
-        <button type="button" className="btn btn-secondary" disabled={dirty === 0 || saving} onClick={() => { setDraft(draftFrom(saved, savedOrder)); onRevertExtra?.(); }}>
-          되돌리기
-        </button>
-        <button type="button" className="btn btn-primary" disabled={dirty === 0 || saving} onClick={() => void onApply(toDesign(draft), draft.order)}>
-          {saving ? "적용 중…" : "홈페이지에 적용"}
+      </div>
+
+      {/* 스크롤해도 항상 보이도록 '되돌리기 · 홈페이지에 적용'은 화면 오른쪽 아래에 고정한다. */}
+      <div className={`admin-design-fab ${dirty === 0 ? "clean" : ""}`}>
+        {dirty > 0 && (
+          <button type="button" className="btn btn-secondary" disabled={saving} onClick={() => { setDraft(draftFrom(saved, savedOrder)); onRevertExtra?.(); }}>
+            되돌리기
+          </button>
+        )}
+        <button type="button" className="btn btn-primary admin-design-fab-apply" disabled={dirty === 0 || saving} onClick={() => void onApply(toDesign(draft), draft.order)}>
+          {saving ? "적용 중…" : dirty === 0 ? "✓ 적용 완료" : "홈페이지에 적용"}
+          {dirty > 0 && !saving && <span className="admin-design-fab-count">{dirty}</span>}
         </button>
       </div>
 
