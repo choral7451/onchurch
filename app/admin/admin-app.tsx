@@ -35,7 +35,6 @@ import { WorshipEditor } from "./page-editors/worship";
 import { NoticesEditor } from "./page-editors/notices";
 import { ScheduleEditor } from "./page-editors/schedule";
 import { AboutEditor } from "./page-editors/about";
-import { OnboardPastorName, OnboardFirstWorship } from "./page-editors/onboard-mini";
 import { DirectionsEditor } from "./page-editors/directions";
 import { GalleryEditor } from "./page-editors/gallery";
 import { CommunityEditor } from "./page-editors/community";
@@ -101,7 +100,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "start" | "home" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
+type SectionKey = "home" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
 
 type NavGroup = "home" | "saints";
 
@@ -127,7 +126,7 @@ const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>>
   ],
 };
 function sectionArea(key: SectionKey): AreaKey {
-  if (key === "home" || key === "start" || key === "home-order" || key === "logo") return "design";
+  if (key === "home" || key === "home-order" || key === "logo") return "design";
   if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners" || key === "site" || key === "contact") return "content";
   if (key === "saints-roster" || key === "visitations" || key === "attendance" || key === "members") return "saints";
   return "settings";
@@ -274,7 +273,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   // 위저드(임시비밀번호)로 생성된 계정 → 최초 진입 시 비밀번호 변경 강제.
   const [forcePwChange, setForcePwChange] = useState(false);
 
-  const [activeSection, setActiveSection] = useState<SectionKey>("start");
+  const [activeSection, setActiveSection] = useState<SectionKey>("site");
   // 사이드바 최상위 구분: 홈페이지 / 성도관리
   const [navGroup, setNavGroup] = useState<NavGroup>("home");
   // 모바일: 메뉴 목록(false) ↔ 상세 화면(true) 전환. 데스크톱은 무시되고 항상 둘 다 노출.
@@ -336,8 +335,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   function scrollToTop() {
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  // 시작하기 화면에서 현재 펼쳐진 단계(아코디언). 기본은 첫 단계.
-  const [openStep, setOpenStep] = useState<SectionKey | null>("site");
 
   const [slug, setSlug] = useState(initial.slug);
   const [name, setName] = useState(initial.brand.name);
@@ -435,9 +432,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [loaded, setLoaded] = useState(false);
 
   const [isPublished, setIsPublished] = useState(false);
-  // 온보딩(시작 가이드) 완료 = first_published_at not null (한 번이라도 사이트 오픈).
-  // true가 되면 시작하기를 숨기고 사이드바를 노출한다. 이후 OFF해도 유지.
-  const [onboardingDone, setOnboardingDone] = useState(false);
   const [churchExistsOnServer, setChurchExistsOnServer] = useState(false);
   const [slugLocked, setSlugLocked] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -466,7 +460,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [aboutFilled, setAboutFilled] = useState(false);
   const [worshipFilled, setWorshipFilled] = useState(false);
 
-  // 시작하기 단계의 초록 체크는 '저장된 값' 기준으로 표시한다(입력 중에는 변하지 않음).
+  // 필수 완료 표시는 '저장된 값' 기준으로 한다(입력 중에는 변하지 않음).
   const [savedRequired, setSavedRequired] = useState({ slug: "", name: "", phone: "", email: "", address: "" });
   // 교회가 연결한 자체 도메인(마스터가 설정, 여기서는 읽기만). QR 에 넣을 주소를 정할 때 쓴다.
   const [customDomain, setCustomDomain] = useState<string | null>(null);
@@ -576,11 +570,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
           setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? [], res.isTest ? "modern" : template));
           setSiteDesign(normalizeSiteDesign(c.siteDesign));
           setIsPublished(c.isPublished);
-          setOnboardingDone(!!c.firstPublishedAt);
           setChurchExistsOnServer(true);
         }
         if (res?.subscription) setSubscription(res.subscription);
         setIsTest(!!res?.isTest);
+        // 테스트 교회는 디자인 화면, 기존 교회는 기본 정보로 시작한다.
+        if (res?.isTest) setActiveSection("home-order");
       } catch (err) {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
@@ -612,7 +607,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const worshipOk = isTest || worshipFilled;
   const allRequiredFilled = siteRequiredFilled && contactRequiredFilled && aboutOk && worshipOk;
 
-  // 사이트 공개에 꼭 필요한 단계(기존 교회 4단계, 테스트 교회 2단계) — '시작하기' 화면과 사이드바 진척 표시에 함께 사용.
+  // 사이트 공개에 꼭 필요한 단계(기존 교회 4단계, 테스트 교회 2단계) — 필수 미완료 안내·배지에 사용.
   const requiredSteps: { label: string; desc: string; done: boolean; target: SectionKey }[] = [
     { label: "기본 정보", desc: "서브도메인 · 교회 이름", done: siteRequiredFilled, target: "site" },
     { label: "연락처", desc: "전화 · 이메일 · 주소", done: contactRequiredFilled, target: "contact" },
@@ -625,34 +620,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
   const requiredTotal = requiredSteps.length;
-
-  // 온보딩을 끝낸(첫 오픈 = first_published_at not null) 교회만 '시작하기'에서 기본 정보로 이동.
-  useEffect(() => {
-    if (loaded && onboardingDone && activeSection === "start") setActiveSection(isTest ? "home-order" : "site");
-  }, [loaded, onboardingDone, activeSection, isTest]);
-
-  // 시작하기 화면: 처음 진입 시(및 저장으로 어떤 단계든 완료 상태가 바뀔 때마다)
-  // 가장 빠른 미완료 단계만 펼친다. 완료된 단계는 닫히고 다음 미완료 단계가 열린다.
-  // 완료 플래그가 바뀔 때만 동작하므로, 사용자가 수동으로 펼친 단계는 영향받지 않는다.
-  useEffect(() => {
-    if (!loaded) return;
-    const next: SectionKey | null = !siteRequiredFilled
-      ? "site"
-      : !contactRequiredFilled
-        ? "contact"
-        : !aboutOk
-          ? ("page:about" as SectionKey)
-          : !worshipOk
-            ? ("page:worship" as SectionKey)
-            : null;
-    setOpenStep(next);
-  }, [loaded, siteRequiredFilled, contactRequiredFilled, aboutOk, worshipOk]);
-
-  // 온보딩: 단계가 바뀌면(다음 단계로 넘어가면) 상단으로 스크롤해 현재 단계가 바로 보이게 한다.
-  useEffect(() => {
-    if (activeSection !== "start") return;
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [openStep, activeSection]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -995,8 +962,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // 기본 정보·연락처 화면(또는 시작하기의 해당 단계)에서 필수값이 비어 있으면 저장하지 않고 토스트로 알린다.
-    const target = activeSection === "start" ? openStep : activeSection;
+    // 기본 정보·연락처 화면에서 필수값이 비어 있으면 저장하지 않고 토스트로 알린다.
+    const target = activeSection;
     const missing: string[] = [];
     if (target === "contact") {
       if (!phone.trim()) missing.push("전화번호");
@@ -1065,21 +1032,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
       setSaveToast("변경사항이 저장되었습니다.");
       setTimeout(() => setSaveToast(""), 2500);
       setTimeout(() => setSave("idle"), 2000);
-      // 온보딩(시작하기) 화면에서 저장하면, 방금 완료한 단계는 닫고 다음 미완료 단계를 펼친다.
-      if (activeSection === "start") {
-        const nowSite = !!slug.trim() && !!name.trim();
-        const nowContact = !!phone.trim() && !!email.trim() && !!address.trim();
-        const nextStep: SectionKey | null = !nowSite
-          ? "site"
-          : !nowContact
-            ? "contact"
-            : !aboutOk
-              ? ("page:about" as SectionKey)
-              : !worshipOk
-                ? ("page:worship" as SectionKey)
-                : null;
-        setOpenStep(nextStep);
-      }
     } catch (err) {
       setSave("error");
       if (err instanceof ApiError) {
@@ -1119,7 +1071,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     if (slug.trim()) saveSessionChurch(slug.trim());
   }
 
-  // 공개/비공개 토글. 처리 후 최종 공개 여부를 반환한다(시작하기의 '사이트 오픈'에서 사용).
+  // 공개/비공개 토글. 처리 후 최종 공개 여부를 반환한다.
   // forceTarget 을 주면 토글이 아니라 그 상태로 맞춘다(이미 공개 중인데 첫 오픈 시각만 비어 있는 경우 재발행용).
   async function onTogglePublish(forceTarget?: boolean): Promise<boolean> {
     if (publishLoading) return isPublished;
@@ -1144,7 +1096,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
     try {
       const updated = await onchurchChurch.publish(target);
       setIsPublished(updated.church.isPublished);
-      setOnboardingDone(!!updated.church.firstPublishedAt);
       setSubscription(updated.subscription);
       // 체험 시작 안내는 실제로 OFF → ON 이 된 첫 오픈에서만. (이미 공개 중이던 재발행은 서버가 체험을 새로 주지 않는다)
       if (target && !wasPublished && updated.subscription.freeTrialUntil) {
@@ -1181,18 +1132,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
     }
   }
 
-  // 시작하기 맨 아래 '사이트 오픈' — 필수 4단계 완료 후 공개 + 홈 새 탭 + 기본 정보로 이동.
-  // 이미 공개 중이어도 온보딩(first_published_at)이 비어 있으면 publish(true) 를 호출해 서버에 첫 오픈 시각을 남긴다.
-  // 그래야 /admin 재진입 시 '시작하기'로 되돌아오지 않는다.
-  async function onOpenSite() {
-    if (!allRequiredFilled || publishLoading) return;
-    const ok = isPublished && onboardingDone ? true : await onTogglePublish(true);
-    if (!ok) return; // 공개 실패(결제/필수 모달 등) 시 중단
-    if (slug.trim()) saveSessionChurch(slug.trim());
-    if (typeof window !== "undefined") window.open(previewHref, "_blank", "noopener,noreferrer");
-    setActiveSection("site");
-  }
-
   const activePage = activeSection.startsWith("page:") ? activeSection.slice(5) : null;
   const activePageItem = activePage ? initial.nav.find((n) => n.id === activePage) : null;
 
@@ -1213,75 +1152,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </div>
     </div>
   );
-
-  // 시작하기 아코디언의 각 단계 패널 — '딱 기본 필수값'만 입력.
-  const stepPanelContent = (target: SectionKey) => {
-    if (target === "site") {
-      return (
-        <>
-          <div className="form-row full">
-            <label htmlFor="ob-slug">
-              서브도메인 <span className="required-mark" aria-hidden="true">*</span>
-            </label>
-            <div className={`slug-input${slugLocked ? " slug-input-locked" : ""}`}>
-              <span className="slug-prefix">https://</span>
-              <input
-                id="ob-slug"
-                type="text"
-                value={slug}
-                onChange={(e) => {
-                  if (slugLocked) return;
-                  setSlug(e.target.value.replace(/[^a-z0-9-]/g, "").slice(0, 30));
-                }}
-                required
-                readOnly={slugLocked}
-                aria-readonly={slugLocked}
-              />
-              <span className="slug-suffix">.everychurch.co.kr</span>
-            </div>
-            {!slugLocked && trimmedSlug && (
-              <span className={`form-hint slug-check slug-check-${slugCheck}`} aria-live="polite" style={{ marginTop: 2 }}>
-                {slugCheck === "checking" && "확인 중..."}
-                {slugCheck === "available" && "✓ 사용 가능한 서브도메인입니다."}
-                {slugCheck === "taken" && "✕ 이미 사용 중인 서브도메인입니다."}
-              </span>
-            )}
-          </div>
-          <div className="form-row full">
-            <label htmlFor="ob-name">
-              교회 이름 (한글) <span className="required-mark" aria-hidden="true">*</span>
-            </label>
-            <input id="ob-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="온교회" required />
-          </div>
-          {sectionSaveBar}
-        </>
-      );
-    }
-    if (target === "contact") {
-      return (
-        <>
-          <div className="form-grid">
-            <div className="form-row">
-              <label htmlFor="ob-phone">전화번호 <span className="required-mark" aria-hidden="true">*</span></label>
-              <input id="ob-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="02-1234-5678" required />
-            </div>
-            <div className="form-row">
-              <label htmlFor="ob-email">이메일 <span className="required-mark" aria-hidden="true">*</span></label>
-              <input id="ob-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@onchurch.kr" required />
-            </div>
-            <div className="form-row full">
-              <label htmlFor="ob-address">주소 <span className="required-mark" aria-hidden="true">*</span></label>
-              <AddressPicker id="ob-address" value={address} onChange={setAddress} placeholder="서울특별시 강남구 테헤란로 ..." required churchName={name} />
-            </div>
-          </div>
-          {sectionSaveBar}
-        </>
-      );
-    }
-    if (target === "page:about") return <OnboardPastorName onChanged={refreshRequiredStatus} />;
-    if (target === "page:worship") return <OnboardFirstWorship onChanged={refreshRequiredStatus} />;
-    return null;
-  };
 
   if (isTest && isPhone) {
     const adminUrl = "everychurch.co.kr/admin";
@@ -1376,7 +1246,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {publishHint}
         </div>
       )}
-      <header className={`admin-topbar ${isTest ? "admin-v2" : ""} ${onboardingDone ? "onboarded" : ""}`}>
+      <header className={`admin-topbar ${isTest ? "admin-v2" : ""} onboarded`}>
         <div className="admin-topbar-inner">
           <Link
             href="/admin"
@@ -1386,7 +1256,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               e.preventDefault();
               setNavGroup("home");
               setMobileDetail(false);
-              setActiveSection(onboardingDone ? (isTest ? "home-order" : "site") : "start");
+              setActiveSection(isTest ? "home-order" : "site");
               if (isTest) setAreaV2("design");
             }}
           >
@@ -1399,57 +1269,50 @@ export function AdminApp({ initial }: { initial: Initial }) {
           </Link>
           <div className="admin-topbar-actions">
             <SubscriptionBadge subscription={subscription} />
-            {/* 시작하기(온보딩) 화면에서는 사이트 운영 토글·홈페이지 바로가기를 숨긴다. */}
-            {activeSection !== "start" && (
-              <>
-                <div className="admin-publish-toggle" aria-live="polite">
-                  <span className="admin-publish-toggle-label">
-                    <span className="admin-action-label">사이트 운영</span>
-                    <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
-                      {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
-                    </span>
+              <div className="admin-publish-toggle" aria-live="polite">
+                <span className="admin-publish-toggle-label">
+                  <span className="admin-action-label">사이트 운영</span>
+                  <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
+                    {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
                   </span>
-                  <button
-                    type="button"
-                    className={`toggle ${isPublished ? "on" : ""}`}
-                    onClick={() => void onTogglePublish()}
-                    disabled={!loaded || publishLoading}
-                    aria-label="사이트 운영 토글"
-                    aria-pressed={isPublished}
-                    title={
-                      isPublished
-                        ? "클릭하면 사이트를 비공개로 전환합니다"
-                        : allRequiredFilled
-                          ? "클릭하면 사이트를 공개합니다"
-                          : `필수 ${requiredTotal - requiredDoneCount}단계를 완료하면 공개할 수 있어요`
-                    }
-                  />
-                </div>
-                <Link
-                  href={previewHref}
-                  className="btn btn-secondary"
-                  target="_blank"
-                  onClick={(e) => onClickGoHome(e, false)}
-                >
-                  <Icon.arrow style={{ width: 14, height: 14 }} />
-                  <span className="admin-action-label">홈페이지 바로가기</span>
-                  <span className="admin-action-label-mobile">홈페이지</span>
-                </Link>
-              </>
-            )}
+                </span>
+                <button
+                  type="button"
+                  className={`toggle ${isPublished ? "on" : ""}`}
+                  onClick={() => void onTogglePublish()}
+                  disabled={!loaded || publishLoading}
+                  aria-label="사이트 운영 토글"
+                  aria-pressed={isPublished}
+                  title={
+                    isPublished
+                      ? "클릭하면 사이트를 비공개로 전환합니다"
+                      : allRequiredFilled
+                        ? "클릭하면 사이트를 공개합니다"
+                        : `필수 ${requiredTotal - requiredDoneCount}단계를 완료하면 공개할 수 있어요`
+                  }
+                />
+              </div>
+              <Link
+                href={previewHref}
+                className="btn btn-secondary"
+                target="_blank"
+                onClick={(e) => onClickGoHome(e, false)}
+              >
+                <Icon.arrow style={{ width: 14, height: 14 }} />
+                <span className="admin-action-label">홈페이지 바로가기</span>
+                <span className="admin-action-label-mobile">홈페이지</span>
+              </Link>
           </div>
-          {/* 모바일: 로그아웃 자리에 홈페이지 이동 버튼(온보딩 완료 후). 로그아웃은 바텀 '설정' 탭으로 이동. */}
-          {onboardingDone && (
-            <Link
-              href={previewHref}
-              className="btn btn-secondary admin-topbar-home-mobile"
-              target="_blank"
-              onClick={(e) => onClickGoHome(e, true)}
-            >
-              <Icon.arrow style={{ width: 14, height: 14 }} />
-              홈페이지
-            </Link>
-          )}
+          {/* 모바일: 로그아웃 자리에 홈페이지 이동 버튼. 로그아웃은 바텀 '설정' 탭으로 이동. */}
+          <Link
+            href={previewHref}
+            className="btn btn-secondary admin-topbar-home-mobile"
+            target="_blank"
+            onClick={(e) => onClickGoHome(e, true)}
+          >
+            <Icon.arrow style={{ width: 14, height: 14 }} />
+            홈페이지
+          </Link>
           <button type="button" className="btn btn-ghost admin-logout" onClick={onLogout}>
             로그아웃
           </button>
@@ -1457,9 +1320,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
       </header>
 
       <main className="admin-main">
-        <form onSubmit={onSave} noValidate={isTest} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && onboardingDone && sideCollapsed ? "side-collapsed" : ""} ${onboardingDone ? "" : "admin-layout-solo"} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
-          {/* 첫 사이트 오픈 전(온보딩 미완료)에는 사이드바를 숨기고 시작하기 화면만 전체 폭으로 노출. */}
-          {onboardingDone && isTest && (
+        <form onSubmit={onSave} noValidate={isTest} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && sideCollapsed ? "side-collapsed" : ""} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
+          {isTest && (
           <aside className={`admin-sidebar admin-sidebar-v2 ${sideCollapsed ? "collapsed" : ""}`}>
             <div className="admin-v2-church">
               {logoPreview ? (
@@ -1526,7 +1388,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
           </aside>
           )}
 
-          {onboardingDone && !isTest && (
+          {!isTest && (
           <aside className="admin-sidebar">
             <div className="admin-sidebar-switch">
               <button
@@ -1765,8 +1627,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
               </button>
               {/* 모바일 바텀 '설정' 탭 화면: 구독(디데이) · 사이트 운영 · 로그아웃 */}
               {/* 5개 영역 개편: 현재 영역의 하위 항목을 본문 상단 탭 바로 보여준다. 콘텐츠 영역은 페이지 목록 + 공개 토글. */}
-              {/* 필수 설정이 덜 끝났으면(시작 화면 대신) 어느 화면에서든 한 줄로 알려준다. */}
-              {isTest && onboardingDone && !allRequiredFilled && activeSection !== "start" && (
+              {/* 필수 설정이 덜 끝났으면 어느 화면에서든 한 줄로 알려준다. */}
+              {isTest && !allRequiredFilled && (
                 <div className="admin-v2-required" role="status">
                   <span>사이트 공개에 필요한 필수 설정 <strong>{requiredTotal - requiredDoneCount}</strong>개가 남았습니다.</span>
                   <span className="admin-v2-required-links">
@@ -1776,7 +1638,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </span>
                 </div>
               )}
-              {isTest && onboardingDone && activeSection !== "start" && areaV2 !== "design" && (
+              {isTest && areaV2 !== "design" && (
                 <div className="admin-v2-bar">
                   <div className="admin-v2-bar-title">{AREA_META.find((a) => a.key === areaV2)?.label}</div>
                   <div className="admin-v2-tabs" role="tablist">
@@ -1881,95 +1743,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <button type="button" className="btn btn-secondary admin-settings-logout" onClick={onLogout}>
                       로그아웃
                     </button>
-                  </div>
-                </section>
-              )}
-
-              {activeSection === "start" && (
-                <section className="admin-section admin-onboard">
-                  <div className="onboard-sticky">
-                    <div className="onboard-sticky-inner">
-                      <div className="admin-section-eyebrow">START</div>
-                      <div className="onboard-progress">
-                        <div className="onboard-progress-top">
-                          <strong>사이트 공개까지 {requiredDoneCount}/{requiredTotal} 단계</strong>
-                          <span className={`onboard-progress-pill ${allRequiredFilled ? "done" : ""}`}>
-                            {allRequiredFilled ? "준비 완료" : `${requiredTotal - requiredDoneCount}개 남음`}
-                          </span>
-                        </div>
-                        <div className="onboard-progress-bar">
-                          <div className="onboard-progress-fill" style={{ width: `${(requiredDoneCount / requiredTotal) * 100}%` }} />
-                        </div>
-                        <ol className="onboard-stepper">
-                          {requiredSteps.map((s, i) => {
-                            const current = openStep === s.target;
-                            return (
-                              <li key={s.target} className={`onboard-stepper-item ${s.done ? "done" : ""} ${current ? "current" : ""}`}>
-                                <button
-                                  type="button"
-                                  onClick={() => setOpenStep(s.target)}
-                                  aria-current={current ? "step" : undefined}
-                                >
-                                  <span className="onboard-stepper-num">{s.done ? "✓" : i + 1}</span>
-                                  <span className="onboard-stepper-label">{s.label}</span>
-                                </button>
-                              </li>
-                            );
-                          })}
-                        </ol>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="admin-section-body">
-                    {(() => {
-                      const stepIndex = requiredSteps.findIndex((s) => s.target === openStep);
-                      const step = stepIndex >= 0 ? requiredSteps[stepIndex] : null;
-                      if (!step) {
-                        return (
-                          <div className="onboard-alldone">
-                            <div className="onboard-alldone-emoji" aria-hidden="true">🎉</div>
-                            <h2>필수 단계를 모두 완료했어요</h2>
-                            <p>이제 아래 버튼으로 사이트를 오픈할 수 있습니다.</p>
-                          </div>
-                        );
-                      }
-                      return (
-                        <div className="onboard-step-view">
-                          <div className="onboard-step-view-head">
-                            <span className="onboard-step-view-num">{stepIndex + 1}</span>
-                            <div className="onboard-step-view-title">
-                              <h2>{step.label}</h2>
-                              {step.desc && <p>{step.desc}</p>}
-                            </div>
-                          </div>
-                          <div className="onboard-step-panel">{stepPanelContent(step.target)}</div>
-                        </div>
-                      );
-                    })()}
-
-                    <div className={`onboard-cta ${allRequiredFilled ? "ready" : "locked"}`}>
-                      <div className="onboard-cta-text">
-                        {allRequiredFilled ? (
-                          <>
-                            <strong>이제 사이트를 오픈할 수 있어요! 🎉</strong>
-                            <span>오픈하면 첫 7일 무료 체험이 시작되고 홈페이지가 새 탭으로 열립니다.</span>
-                          </>
-                        ) : (
-                          <>
-                            <strong>🔒 필수 {requiredTotal - requiredDoneCount}단계를 완료하면 오픈할 수 있어요.</strong>
-                            <span>위 단계를 모두 끝내면 ‘사이트 오픈’ 버튼이 켜집니다.</span>
-                          </>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        className="btn btn-primary btn-lg"
-                        onClick={onOpenSite}
-                        disabled={!allRequiredFilled || publishLoading}
-                      >
-                        {publishLoading ? "오픈 중..." : "사이트 오픈"}
-                      </button>
-                    </div>
                   </div>
                 </section>
               )}
@@ -2800,8 +2573,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
         </form>
       </main>
 
-      {/* 모바일 전용 바텀 네비게이션 (온보딩 완료 후). 데스크톱에서는 CSS로 숨김. */}
-      {onboardingDone && isTest && (
+      {/* 모바일 전용 바텀 네비게이션. 데스크톱에서는 CSS로 숨김. */}
+      {isTest && (
         <nav className="admin-bottom-nav" aria-label="모바일 메뉴">
           {AREA_META.map((a) => {
             const AreaIcon = Icon[a.icon];
@@ -2820,7 +2593,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         </nav>
       )}
 
-      {onboardingDone && !isTest && (
+      {!isTest && (
         <nav className="admin-bottom-nav" aria-label="모바일 메뉴">
           <button
             type="button"
