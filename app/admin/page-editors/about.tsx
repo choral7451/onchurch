@@ -28,6 +28,8 @@ type AboutEditorProps = {
   visibility: AboutVisibility;
   onToggleVisibility: (key: keyof AboutVisibility, on: boolean) => void;
   onChanged?: () => void;
+  // 테스트 교회: 교회 소개를 메뉴에서 끌 수 있어 '필수' 표시를 하지 않는다.
+  optional?: boolean;
 };
 
 const EMPTY_PASTOR: PastorWriteInput = {
@@ -45,7 +47,7 @@ const EMPTY_STAFF: StaffWriteInput = { name: "", role: "", area: "", photoUrl: "
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
-export function AboutEditor({ visibility, onToggleVisibility, onChanged }: AboutEditorProps) {
+export function AboutEditor({ visibility, onToggleVisibility, onChanged, optional = false }: AboutEditorProps) {
   const [section, setSection] = useState<SectionKey>("pastor");
 
   const subLabel: Record<SectionKey, string> = {
@@ -59,8 +61,8 @@ export function AboutEditor({ visibility, onToggleVisibility, onChanged }: About
     <section className="admin-section">
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">ABOUT</div>
-        <h2>교회 소개 <span className="admin-sidebar-pill complete" style={{ fontSize: 10, marginLeft: 8, verticalAlign: "middle" }}>필수</span></h2>
-        <p>담임목사 인사말은 필수입니다. 비전 · 연혁 · 섬김의 사람들은 공개 여부를 선택할 수 있습니다.</p>
+        <h2>교회 소개 {!optional && <span className="admin-sidebar-pill complete" style={{ fontSize: 10, marginLeft: 8, verticalAlign: "middle" }}>필수</span>}</h2>
+        <p>{optional ? "담임목사 · 비전 · 연혁 · 섬김의 사람들을 입력하세요. 비전 · 연혁 · 섬김의 사람들은 공개 여부를 선택할 수 있습니다." : "담임목사 인사말은 필수입니다. 비전 · 연혁 · 섬김의 사람들은 공개 여부를 선택할 수 있습니다."}</p>
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -77,7 +79,7 @@ export function AboutEditor({ visibility, onToggleVisibility, onChanged }: About
               >
                 <span>{subLabel[s]}</span>
                 {isPastor ? (
-                  <span className="required-mark" aria-hidden="true">*</span>
+                  !optional && <span className="required-mark" aria-hidden="true">*</span>
                 ) : (
                   <span className={`admin-sidebar-pill ${isOn ? "complete" : "optional"}`} style={{ fontSize: 10 }}>
                     {isOn ? "공개" : "비공개"}

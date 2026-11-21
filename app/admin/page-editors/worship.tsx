@@ -28,14 +28,16 @@ const EMPTY_SERVICE: WorshipServiceWriteInput = {
 
 type WorshipEditorProps = {
   onChanged?: () => void;
+  // 테스트 교회: 예배 안내를 메뉴에서 끌 수 있어 '필수' 표시를 하지 않는다.
+  optional?: boolean;
 };
 
-export function WorshipEditor({ onChanged }: WorshipEditorProps) {
+export function WorshipEditor({ onChanged, optional = false }: WorshipEditorProps) {
   return (
     <section className="admin-section">
       <div className="admin-section-head">
         <div className="admin-section-eyebrow">WORSHIP</div>
-        <h2>예배 안내 <span className="admin-sidebar-pill complete" style={{ fontSize: 10, marginLeft: 8, verticalAlign: "middle" }}>필수</span></h2>
+        <h2>예배 안내 {!optional && <span className="admin-sidebar-pill complete" style={{ fontSize: 10, marginLeft: 8, verticalAlign: "middle" }}>필수</span>}</h2>
         <p>예배 시간표를 등록하세요. 등록한 항목은 모두 사이트에 노출되며, 숨기려면 삭제하세요.</p>
       </div>
 

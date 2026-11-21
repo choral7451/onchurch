@@ -607,16 +607,24 @@ export function AdminApp({ initial }: { initial: Initial }) {
   // 저장된 값 기준 — 입력만 하고 저장하지 않으면 체크가 켜지지 않는다.
   const siteRequiredFilled = !!savedRequired.slug.trim() && !!savedRequired.name.trim();
   const contactRequiredFilled = !!savedRequired.phone.trim() && !!savedRequired.email.trim() && !!savedRequired.address.trim();
-  const allRequiredFilled = siteRequiredFilled && contactRequiredFilled && aboutFilled && worshipFilled;
+  // 테스트 교회는 교회 소개·예배 안내를 메뉴에서 끌 수 있어 필수가 아니다(서버도 같은 규칙).
+  const aboutOk = isTest || aboutFilled;
+  const worshipOk = isTest || worshipFilled;
+  const allRequiredFilled = siteRequiredFilled && contactRequiredFilled && aboutOk && worshipOk;
 
-  // 사이트 공개에 꼭 필요한 4단계 — '시작하기' 화면과 사이드바 진척 표시에 함께 사용.
+  // 사이트 공개에 꼭 필요한 단계(기존 교회 4단계, 테스트 교회 2단계) — '시작하기' 화면과 사이드바 진척 표시에 함께 사용.
   const requiredSteps: { label: string; desc: string; done: boolean; target: SectionKey }[] = [
     { label: "기본 정보", desc: "서브도메인 · 교회 이름", done: siteRequiredFilled, target: "site" },
     { label: "연락처", desc: "전화 · 이메일 · 주소", done: contactRequiredFilled, target: "contact" },
-    { label: "담임목사", desc: "담임목사 성함을 입력해주세요", done: aboutFilled, target: "page:about" },
-    { label: "예배 안내", desc: "교회 예배시간을 등록해주세요", done: worshipFilled, target: "page:worship" },
+    ...(isTest
+      ? []
+      : [
+          { label: "담임목사", desc: "담임목사 성함을 입력해주세요", done: aboutFilled, target: "page:about" as SectionKey },
+          { label: "예배 안내", desc: "교회 예배시간을 등록해주세요", done: worshipFilled, target: "page:worship" as SectionKey },
+        ]),
   ];
   const requiredDoneCount = requiredSteps.filter((s) => s.done).length;
+  const requiredTotal = requiredSteps.length;
 
   // 온보딩을 끝낸(첫 오픈 = first_published_at not null) 교회만 '시작하기'에서 기본 정보로 이동.
   useEffect(() => {
@@ -632,13 +640,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
       ? "site"
       : !contactRequiredFilled
         ? "contact"
-        : !aboutFilled
+        : !aboutOk
           ? ("page:about" as SectionKey)
-          : !worshipFilled
+          : !worshipOk
             ? ("page:worship" as SectionKey)
             : null;
     setOpenStep(next);
-  }, [loaded, siteRequiredFilled, contactRequiredFilled, aboutFilled, worshipFilled]);
+  }, [loaded, siteRequiredFilled, contactRequiredFilled, aboutOk, worshipOk]);
 
   // 온보딩: 단계가 바뀌면(다음 단계로 넘어가면) 상단으로 스크롤해 현재 단계가 바로 보이게 한다.
   useEffect(() => {
@@ -1065,9 +1073,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
           ? "site"
           : !nowContact
             ? "contact"
-            : !aboutFilled
+            : !aboutOk
               ? ("page:about" as SectionKey)
-              : !worshipFilled
+              : !worshipOk
                 ? ("page:worship" as SectionKey)
                 : null;
         setOpenStep(nextStep);
@@ -1413,7 +1421,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         ? "클릭하면 사이트를 비공개로 전환합니다"
                         : allRequiredFilled
                           ? "클릭하면 사이트를 공개합니다"
-                          : `필수 ${4 - requiredDoneCount}단계를 완료하면 공개할 수 있어요`
+                          : `필수 ${requiredTotal - requiredDoneCount}단계를 완료하면 공개할 수 있어요`
                     }
                   />
                 </div>
@@ -1480,7 +1488,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     <AreaIcon style={{ width: 18, height: 18 }} />
                     <span className="admin-sidebar-item-label">{a.label}</span>
                     {a.key === "content" && pendingInquiries > 0 && <span className="admin-sidebar-pill incomplete" title="미답변 문의">문의 {pendingInquiries}</span>}
-                    {a.key === "content" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete" title="필수 설정 미완료">{4 - requiredDoneCount}</span>}
+                    {a.key === "content" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete" title="필수 설정 미완료">{requiredTotal - requiredDoneCount}</span>}
                     {a.key === "saints" && saintsLocked && <span className="admin-sidebar-pill optional">결제</span>}
                   </button>
                 );
@@ -1760,7 +1768,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {/* 필수 설정이 덜 끝났으면(시작 화면 대신) 어느 화면에서든 한 줄로 알려준다. */}
               {isTest && onboardingDone && !allRequiredFilled && activeSection !== "start" && (
                 <div className="admin-v2-required" role="status">
-                  <span>사이트 공개에 필요한 필수 설정 <strong>{4 - requiredDoneCount}</strong>개가 남았습니다.</span>
+                  <span>사이트 공개에 필요한 필수 설정 <strong>{requiredTotal - requiredDoneCount}</strong>개가 남았습니다.</span>
                   <span className="admin-v2-required-links">
                     {requiredSteps.filter((st) => !st.done).map((st) => (
                       <button key={st.target} type="button" onClick={() => openSection(st.target)}>{st.label}</button>
@@ -1793,7 +1801,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                             const key = `page:${n.id}` as SectionKey;
                             const isActive = activeSection === key;
                             if (!on && !isActive) return null;
-                            const requiredMissing = n.id === "about" ? !aboutFilled : n.id === "worship" ? !worshipFilled : false;
+                            const requiredMissing = n.id === "about" ? !aboutOk : n.id === "worship" ? !worshipOk : false;
                             return (
                               <div key={n.id} className={`admin-v2-tab ${isActive ? "active" : ""} ${!on ? "off" : ""}`}>
                                 <button type="button" role="tab" aria-selected={isActive} onClick={() => openSection(key)}>
@@ -1884,13 +1892,13 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       <div className="admin-section-eyebrow">START</div>
                       <div className="onboard-progress">
                         <div className="onboard-progress-top">
-                          <strong>사이트 공개까지 {requiredDoneCount}/4 단계</strong>
+                          <strong>사이트 공개까지 {requiredDoneCount}/{requiredTotal} 단계</strong>
                           <span className={`onboard-progress-pill ${allRequiredFilled ? "done" : ""}`}>
-                            {allRequiredFilled ? "준비 완료" : `${4 - requiredDoneCount}개 남음`}
+                            {allRequiredFilled ? "준비 완료" : `${requiredTotal - requiredDoneCount}개 남음`}
                           </span>
                         </div>
                         <div className="onboard-progress-bar">
-                          <div className="onboard-progress-fill" style={{ width: `${(requiredDoneCount / 4) * 100}%` }} />
+                          <div className="onboard-progress-fill" style={{ width: `${(requiredDoneCount / requiredTotal) * 100}%` }} />
                         </div>
                         <ol className="onboard-stepper">
                           {requiredSteps.map((s, i) => {
@@ -1948,7 +1956,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                           </>
                         ) : (
                           <>
-                            <strong>🔒 필수 {4 - requiredDoneCount}단계를 완료하면 오픈할 수 있어요.</strong>
+                            <strong>🔒 필수 {requiredTotal - requiredDoneCount}단계를 완료하면 오픈할 수 있어요.</strong>
                             <span>위 단계를 모두 끝내면 ‘사이트 오픈’ 버튼이 켜집니다.</span>
                           </>
                         )}
@@ -2734,7 +2742,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   </div>
 
                   {activePage === "worship" && (
-                    <WorshipEditor onChanged={refreshRequiredStatus} />
+                    <WorshipEditor onChanged={refreshRequiredStatus} optional={isTest} />
                   )}
 
                   {activePage === "notices" && <NoticesEditor />}
@@ -2750,6 +2758,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       }}
                       onToggleVisibility={setAboutSubSection}
                       onChanged={refreshRequiredStatus}
+                      optional={isTest}
                     />
                   )}
 
@@ -2852,7 +2861,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <>
                 <h3 className="admin-modal-title">필수 정보가 부족합니다</h3>
                 <p className="admin-modal-body">
-                  필수 항목(<strong>기본정보</strong>·<strong>연락처</strong>·<strong>교회 소개</strong>·<strong>예배 안내</strong>)이 모두 입력되어야 사이트를 운영할 수 있습니다.
+                  필수 항목(<strong>기본정보</strong>·<strong>연락처</strong>{!isTest && <>·<strong>교회 소개</strong>·<strong>예배 안내</strong></>})이 모두 입력되어야 사이트를 운영할 수 있습니다.
                 </p>
                 <div className="admin-modal-actions">
                   <button type="button" className="btn btn-primary" onClick={() => setModal(null)}>
