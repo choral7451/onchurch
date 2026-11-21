@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
-import { Inter_Tight, JetBrains_Mono, Noto_Serif_KR } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { AuthBootstrap } from "@/components/shell/auth-bootstrap";
 import { resolveHost } from "@/lib/seo";
+// 보조 폰트도 자체 호스팅(fontsource). 빌드 때 Google Fonts 를 받아오다 실패해 배포가 깨지던 문제 해결.
+// @font-face 만 선언하므로 실제로 쓰는 화면에서만 파일을 받는다(명조는 classic 템플릿 전용).
+import "@fontsource/inter-tight/400.css";
+import "@fontsource/inter-tight/700.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+import "@fontsource/noto-serif-kr/600.css";
+import "@fontsource/noto-serif-kr/700.css";
 import "./globals.css";
 
 // Google Analytics — 서비스 랜딩 도메인(everychurch.co.kr)에서만 로드. 교회 서브도메인 제외.
@@ -12,28 +19,6 @@ const GA_MEASUREMENT_ID = "G-4VY1Z87L9H";
 // Microsoft Clarity — 히트맵·세션 리플레이. GA와 동일하게 랜딩 도메인에서만 로드.
 // 프로젝트 ID는 클라이언트에 그대로 노출되는 공개 값이라 상수로 둔다(GA_MEASUREMENT_ID와 동일).
 const CLARITY_PROJECT_ID = "xhysr63erg";
-
-// Pretendard 뒤의 폴백 전용(거의 렌더되지 않음). 미리 로드하는 파일 수를 줄이려 굵기 최소화.
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
-
-// 'classic' 템플릿 제목용 명조. CSS에서 .chc-root 하위에서만 참조하므로 다른 페이지는 폰트 파일을 받지 않는다.
-const notoSerifKr = Noto_Serif_KR({
-  variable: "--font-serif-kr",
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  display: "swap",
-  preload: false,
-});
 
 // Pretendard 자체 호스팅(variable woff2). 외부 CDN(jsdelivr) 장애로 전 페이지가 멈추던 문제 해결.
 const pretendard = localFont({
@@ -123,7 +108,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { kind } = await resolveHost();
   const isLanding = kind === "root";
   return (
-    <html lang="ko" className={`${pretendard.variable} ${interTight.variable} ${jetbrainsMono.variable} ${notoSerifKr.variable}`}>
+    <html lang="ko" className={pretendard.variable}>
       <body>
         <AuthBootstrap />
         {children}

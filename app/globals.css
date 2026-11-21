@@ -25,6 +25,10 @@
   --line: oklch(0.91 0.008 250);
   --line-2: oklch(0.95 0.006 250);
 
+  /* 보조 폰트 이름(fontsource 로 자체 호스팅, app/layout.tsx 에서 불러온다). */
+  --font-inter-tight: "Inter Tight";
+  --font-jetbrains-mono: "JetBrains Mono";
+  --font-serif-kr: "Noto Serif KR";
   --font-display: var(--font-pretendard), var(--font-inter-tight), system-ui, sans-serif;
   --font-body: var(--font-pretendard), var(--font-inter-tight), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
