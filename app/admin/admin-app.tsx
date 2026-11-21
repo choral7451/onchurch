@@ -388,6 +388,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     () => /Mobi|iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent),
     () => false,
   );
+  const [adminUrlCopied, setAdminUrlCopied] = useState(false);
   const [siteDesign, setSiteDesign] = useState<SiteDesign | null>(null);
   const [designSaving, setDesignSaving] = useState(false);
   // 메뉴 구성(페이지 온오프)이 서버에 저장될 때마다 올려 디자인 미리보기를 새로 불러오게 한다.
@@ -1263,20 +1264,52 @@ export function AdminApp({ initial }: { initial: Initial }) {
   };
 
   if (isTest && isPhone) {
+    const adminUrl = "everychurch.co.kr/admin";
     return (
-      <div
-        role="alert"
-        style={{
-          minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-          gap: 12, padding: 24, textAlign: "center",
-        }}
-      >
-        <span aria-hidden="true" style={{ fontSize: 40 }}>💻</span>
-        <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>관리자 페이지는 컴퓨터에서 접속할 수 있습니다</h1>
-        <p style={{ fontSize: 14.5, color: "oklch(0.5 0 0)", margin: 0, lineHeight: 1.6 }}>
-          휴대폰에서는 관리자 페이지를 이용할 수 없습니다.<br />PC 브라우저에서 다시 접속해 주세요.
-        </p>
-      </div>
+      <main className="admin-pc-only">
+        <div className="admin-pc-only-card" role="alert">
+          <div className="admin-pc-only-art" aria-hidden="true">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="12" rx="2" />
+              <path d="M8 20h8M12 16v4" />
+            </svg>
+          </div>
+          <h1 className="admin-pc-only-title">
+            관리자 페이지는
+            <br />
+            컴퓨터에서 이용할 수 있어요
+          </h1>
+          <p className="admin-pc-only-desc">
+            홈페이지 꾸미기와 성도 관리는
+            <br />
+            넓은 화면의 PC에서 편하게 이용해 주세요.
+          </p>
+          <div className="admin-pc-only-url">
+            <span className="admin-pc-only-url-label">PC 브라우저에서 접속</span>
+            <div className="admin-pc-only-url-row">
+              <span className="admin-pc-only-url-text">{adminUrl}</span>
+              <button
+                type="button"
+                className="admin-pc-only-copy"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(`https://${adminUrl}`).then(() => {
+                    setAdminUrlCopied(true);
+                    setTimeout(() => setAdminUrlCopied(false), 2000);
+                  });
+                }}
+              >
+                {adminUrlCopied ? "복사됨" : "주소 복사"}
+              </button>
+            </div>
+          </div>
+          {churchExistsOnServer && slug && (
+            <a className="admin-pc-only-home" href={previewHref}>
+              <Icon.home style={{ width: 16, height: 16 }} />
+              우리 교회 홈페이지 보기
+            </a>
+          )}
+        </div>
+      </main>
     );
   }
 

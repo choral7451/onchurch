@@ -1320,6 +1320,51 @@ main { flex: 1; }
 .admin-design-frame.pc { justify-content: flex-start; }
 .admin-design-frame.mobile iframe { max-width: 400px; }
 
+/* 테스트 교회 관리자 — 휴대폰 접속 시 PC 이용 안내 화면 */
+.admin-pc-only {
+  min-height: 100dvh; display: grid; place-items: center; padding: 24px 20px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, oklch(0.93 0.04 245 / 0.7), transparent 70%),
+    var(--bg);
+}
+.admin-pc-only-card {
+  width: 100%; max-width: 380px; padding: 36px 24px 28px; text-align: center;
+  background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r-xl);
+  box-shadow: var(--shadow-md);
+  word-break: keep-all; overflow-wrap: break-word;
+}
+.admin-pc-only-art {
+  width: 84px; height: 84px; margin: 0 auto 22px; display: grid; place-items: center;
+  color: var(--primary); border-radius: 26px;
+  background: linear-gradient(160deg, oklch(0.95 0.03 245), oklch(0.9 0.05 245));
+}
+.admin-pc-only-title {
+  margin: 0; font-family: var(--font-display); font-size: 21px; font-weight: 700;
+  line-height: 1.4; letter-spacing: -0.02em; color: var(--ink);
+}
+.admin-pc-only-desc {
+  margin: 12px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--muted);
+}
+.admin-pc-only-url {
+  margin-top: 26px; padding: 14px; text-align: left;
+  background: var(--surface-2); border-radius: var(--r-md);
+}
+.admin-pc-only-url-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
+.admin-pc-only-url-row { margin-top: 6px; display: flex; align-items: center; gap: 10px; }
+.admin-pc-only-url-text {
+  flex: 1; min-width: 0; font-size: 15px; font-weight: 600; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.admin-pc-only-copy {
+  flex: none; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: #fff; background: var(--primary);
+}
+.admin-pc-only-copy:active { background: var(--primary-deep); }
+.admin-pc-only-home {
+  margin-top: 18px; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 600; color: var(--primary-soft); text-decoration: none;
+}
+
 /* 테스트 교회 전용 5개 영역 사이드바 + 시작 화면 */
 .admin-sidebar-v2 { height: calc(100vh - 68px); max-height: none; } /* 흰 배경이 화면 아래 끝까지 */
 .admin-sidebar-areas { padding-bottom: 14px; border-bottom: 1px solid var(--line); }
