@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   ApiError,
   onchurchWorshipService,
@@ -26,6 +26,13 @@ const EMPTY_SERVICE: WorshipServiceWriteInput = {
   isActive: true,
 };
 
+// 테스트 교회(optional)는 교회 소개·예배 안내를 끌 수 있어 입력 칸의 '*' 필수 표시도 숨긴다.
+// 항목 저장에 필요한 값 검사는 그대로 두고, 빠뜨리면 저장 시 오류 문구로 알린다.
+const OptionalContext = createContext(false);
+function RequiredMark() {
+  return useContext(OptionalContext) ? null : <span className="required-mark" aria-hidden="true">*</span>;
+}
+
 type WorshipEditorProps = {
   onChanged?: () => void;
   // 테스트 교회: 예배 안내를 메뉴에서 끌 수 있어 '필수' 표시를 하지 않는다.
@@ -42,7 +49,9 @@ export function WorshipEditor({ onChanged, optional = false }: WorshipEditorProp
       </div>
 
       <div className="admin-section-body" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <WorshipServicesEditor onChanged={onChanged} />
+        <OptionalContext.Provider value={optional}>
+          <WorshipServicesEditor onChanged={onChanged} />
+        </OptionalContext.Provider>
       </div>
     </section>
   );
@@ -146,7 +155,7 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
         <div className="admin-banner-card editing">
           <div className="form-grid">
             <div className="form-row">
-              <label>구분 <span className="required-mark" aria-hidden="true">*</span></label>
+              <label>구분 <RequiredMark /></label>
               <select
                 value={draft.tag}
                 onChange={(e) => setDraft({ ...draft, tag: e.target.value as WorshipServiceTag })}
@@ -155,11 +164,11 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
               </select>
             </div>
             <div className="form-row">
-              <label>이름 <span className="required-mark" aria-hidden="true">*</span></label>
+              <label>이름 <RequiredMark /></label>
               <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="주일 1부 예배" required />
             </div>
             <div className="form-row">
-              <label>시간 <span className="required-mark" aria-hidden="true">*</span></label>
+              <label>시간 <RequiredMark /></label>
               <input value={draft.time} onChange={(e) => setDraft({ ...draft, time: e.target.value })} placeholder="오전 09:00" required />
             </div>
             <div className="form-row">

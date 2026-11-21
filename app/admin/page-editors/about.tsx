@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
   ApiError,
   onchurchPastor,
@@ -24,6 +24,13 @@ import { applyReorder } from "@/lib/admin-reorder";
 type SectionKey = "pastor" | "vision" | "history" | "staff";
 
 type AboutVisibility = { vision: boolean; history: boolean; staff: boolean };
+// 테스트 교회(optional)는 교회 소개·예배 안내를 끌 수 있어 입력 칸의 '*' 필수 표시도 숨긴다.
+// 항목 저장에 필요한 값 검사는 그대로 두고, 빠뜨리면 저장 시 오류 문구로 알린다.
+const OptionalContext = createContext(false);
+function RequiredMark() {
+  return useContext(OptionalContext) ? null : <span className="required-mark" aria-hidden="true">*</span>;
+}
+
 type AboutEditorProps = {
   visibility: AboutVisibility;
   onToggleVisibility: (key: keyof AboutVisibility, on: boolean) => void;
@@ -90,16 +97,18 @@ export function AboutEditor({ visibility, onToggleVisibility, onChanged, optiona
           })}
         </div>
 
-        {section === "pastor" && <PastorEditor onChanged={onChanged} />}
-        {section === "vision" && (
-          <VisionEditor visible={visibility.vision} onToggleVisible={(on) => onToggleVisibility("vision", on)} />
-        )}
-        {section === "history" && (
-          <HistoryEditor visible={visibility.history} onToggleVisible={(on) => onToggleVisibility("history", on)} />
-        )}
-        {section === "staff" && (
-          <StaffEditor visible={visibility.staff} onToggleVisible={(on) => onToggleVisibility("staff", on)} />
-        )}
+        <OptionalContext.Provider value={optional}>
+          {section === "pastor" && <PastorEditor onChanged={onChanged} />}
+          {section === "vision" && (
+            <VisionEditor visible={visibility.vision} onToggleVisible={(on) => onToggleVisibility("vision", on)} />
+          )}
+          {section === "history" && (
+            <HistoryEditor visible={visibility.history} onToggleVisible={(on) => onToggleVisibility("history", on)} />
+          )}
+          {section === "staff" && (
+            <StaffEditor visible={visibility.staff} onToggleVisible={(on) => onToggleVisibility("staff", on)} />
+          )}
+        </OptionalContext.Provider>
       </div>
     </section>
   );
@@ -281,7 +290,7 @@ function PastorEditor({ onChanged }: { onChanged?: () => void }) {
       {savedMsg && <div className="phone-msg phone-msg-success">{savedMsg}</div>}
       <div className="form-grid">
         <div className="form-row">
-          <label>이름 <span className="required-mark" aria-hidden="true">*</span></label>
+          <label>이름 <RequiredMark /></label>
           <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="홍길동" required />
         </div>
         <div className="form-row">
@@ -388,7 +397,7 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
         <div className="admin-banner-card editing">
           <div className="form-grid">
             <div className="form-row">
-              <label>한글 <span className="required-mark" aria-hidden="true">*</span></label>
+              <label>한글 <RequiredMark /></label>
               <input value={draft.ko} onChange={(e) => setDraft({ ...draft, ko: e.target.value })} placeholder="예배하는" required />
             </div>
             <div className="form-row">
@@ -515,11 +524,11 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
         <div className="admin-banner-card editing">
           <div className="form-grid">
             <div className="form-row">
-              <label>연도 <span className="required-mark" aria-hidden="true">*</span></label>
+              <label>연도 <RequiredMark /></label>
               <input value={draft.year} onChange={(e) => setDraft({ ...draft, year: e.target.value })} placeholder="1979" required />
             </div>
             <div className="form-row">
-              <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
+              <label>제목 <RequiredMark /></label>
               <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="교회 설립" required />
             </div>
             <div className="form-row full">
@@ -648,7 +657,7 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
         <div className="admin-banner-card editing">
           <div className="form-grid">
             <div className="form-row">
-              <label>이름 <span className="required-mark" aria-hidden="true">*</span></label>
+              <label>이름 <RequiredMark /></label>
               <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="홍길동" required />
             </div>
             <div className="form-row">
