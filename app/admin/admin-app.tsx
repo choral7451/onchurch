@@ -1425,7 +1425,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
         <form onSubmit={onSave} noValidate={isTest} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && sideCollapsed ? "side-collapsed" : ""} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {isTest && (
           <aside className={`admin-sidebar admin-sidebar-v2 ${sideCollapsed ? "collapsed" : ""}`}>
-            <a
+            <Link
               href="/admin"
               className="admin-v2-brand"
               onClick={(e) => {
@@ -1438,7 +1438,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/everychurch-logo.jpeg" alt="온교회" className="admin-v2-brand-logo" />
               <span className="admin-sidebar-item-label">관리자 콘솔</span>
-            </a>
+            </Link>
             <div className="admin-v2-church">
               {logoPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
