@@ -235,7 +235,7 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
       )}
 
       <div className="admin-design-layout">
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
+        <div className="admin-design-side">
           <section className="admin-section">
             <div className="admin-section-head">
               <div className="admin-section-eyebrow">COLORS</div>

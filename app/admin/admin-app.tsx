@@ -1302,7 +1302,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   }
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell ${isTest && activeSection === "home-order" ? "admin-design-fit" : ""}`}>
+      {/* 테스트 교회 디자인 화면은 페이지 전체가 스크롤되지 않게 화면 높이에 맞추고, 왼쪽 설정·오른쪽 미리보기가 각각 스크롤된다. */}
       {forcePwChange && <ForcePasswordChangeModal onDone={() => setForcePwChange(false)} />}
       {quickLimitMsg && (
         <div

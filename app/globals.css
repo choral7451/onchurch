@@ -1247,6 +1247,21 @@ main { flex: 1; }
 .admin-design-fab.clean { box-shadow: var(--shadow-md); }
 .admin-design-fab.clean .admin-design-fab-apply:disabled { background: var(--surface-2); color: var(--muted); border-color: transparent; opacity: 1; }
 .admin-design-layout { display: grid; grid-template-columns: minmax(340px, 400px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.admin-design-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+/* 디자인 화면(테스트 교회): 페이지 전체는 화면 높이에 고정하고, 왼쪽 설정과 오른쪽 미리보기가 각각 스크롤된다. */
+@media (min-width: 769px) {
+  .admin-shell.admin-design-fit { height: 100vh; min-height: 0; overflow: hidden; }
+  .admin-design-fit .admin-main { min-height: 0; padding-bottom: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .admin-design-fit .admin-layout { flex: 1; min-height: 0; height: auto; }
+  .admin-design-fit .admin-sidebar-v2 { height: auto; max-height: none; position: static; align-self: stretch; overflow-y: auto; }
+  .admin-design-fit .admin-content { min-height: 0; padding: 16px 0; display: flex; flex-direction: column; overflow: hidden; }
+  .admin-design-fit .admin-container { flex: 1; min-height: 0; width: 100%; }
+  .admin-design-fit .admin-design-layout { flex: 1; min-height: 0; align-items: stretch; }
+  .admin-design-fit .admin-design-side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; padding-bottom: 88px; }
+  .admin-design-fit .admin-design-side > * { flex-shrink: 0; }
+  .admin-design-fit .admin-design-preview { position: static; min-height: 0; display: flex; flex-direction: column; }
+  .admin-design-fit .admin-design-frame { flex: 1; height: auto; min-height: 0; }
+}
 @media (max-width: 1100px) { .admin-design-layout { grid-template-columns: 1fr; } }
 .admin-design-presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .admin-design-swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line); display: inline-block; }
