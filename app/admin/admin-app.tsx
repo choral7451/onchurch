@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { AddressPicker } from "@/components/address-picker";
@@ -382,6 +382,12 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [templateSaving, setTemplateSaving] = useState(false);
   // 테스트 교회(소유자 is_test)에만 새 '디자인' 화면(섹션별 기본/모던 + 색)을 노출한다. 기존 교회는 영향 없음.
   const [isTest, setIsTest] = useState(false);
+  // 테스트 교회 관리자는 휴대폰 접속을 막고 컴퓨터 접속을 안내한다(앱 WebView 포함). 화면 폭이 아닌 UA 로 판별해 좁은 PC 창은 막지 않는다.
+  const isPhone = useSyncExternalStore(
+    () => () => {},
+    () => /Mobi|iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent),
+    () => false,
+  );
   const [siteDesign, setSiteDesign] = useState<SiteDesign | null>(null);
   const [designSaving, setDesignSaving] = useState(false);
   // 메뉴 구성(페이지 온오프)이 서버에 저장될 때마다 올려 디자인 미리보기를 새로 불러오게 한다.
@@ -1255,6 +1261,24 @@ export function AdminApp({ initial }: { initial: Initial }) {
     if (target === "page:worship") return <OnboardFirstWorship onChanged={refreshRequiredStatus} />;
     return null;
   };
+
+  if (isTest && isPhone) {
+    return (
+      <div
+        role="alert"
+        style={{
+          minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          gap: 12, padding: 24, textAlign: "center",
+        }}
+      >
+        <span aria-hidden="true" style={{ fontSize: 40 }}>💻</span>
+        <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>관리자 페이지는 컴퓨터에서 접속할 수 있습니다</h1>
+        <p style={{ fontSize: 14.5, color: "oklch(0.5 0 0)", margin: 0, lineHeight: 1.6 }}>
+          휴대폰에서는 관리자 페이지를 이용할 수 없습니다.<br />PC 브라우저에서 다시 접속해 주세요.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-shell">
