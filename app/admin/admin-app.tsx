@@ -1345,7 +1345,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
           {publishHint}
         </div>
       )}
-      <header className={`admin-topbar ${isTest ? "admin-v2" : ""} onboarded`}>
+      {/* 테스트 교회는 상단바 없이 로고·사이트 운영·홈페이지 바로가기·로그아웃을 왼쪽 사이드바에 둔다. */}
+      {!isTest && (
+      <header className="admin-topbar onboarded">
         <div className="admin-topbar-inner">
           <Link
             href="/admin"
@@ -1417,11 +1419,26 @@ export function AdminApp({ initial }: { initial: Initial }) {
           </button>
         </div>
       </header>
+      )}
 
       <main className="admin-main">
         <form onSubmit={onSave} noValidate={isTest} className={`admin-layout ${isTest ? "admin-v2" : ""} ${isTest && sideCollapsed ? "side-collapsed" : ""} ${activeSection === "settings" ? "settings-active" : ""} ${mobileDetail ? "mobile-detail" : ""}`}>
           {isTest && (
           <aside className={`admin-sidebar admin-sidebar-v2 ${sideCollapsed ? "collapsed" : ""}`}>
+            <a
+              href="/admin"
+              className="admin-v2-brand"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileDetail(false);
+                setActiveSection("home-order");
+                setAreaV2("design");
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/everychurch-logo.jpeg" alt="온교회" className="admin-v2-brand-logo" />
+              <span className="admin-sidebar-item-label">관리자 콘솔</span>
+            </a>
             <div className="admin-v2-church">
               {logoPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -1433,6 +1450,36 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 <div className="admin-v2-church-name">{name || "교회 이름"}</div>
                 <div className="admin-v2-church-slug">{slug ? `${slug}.onchurch.kr` : "서브도메인 미설정"}</div>
               </div>
+            </div>
+
+            <div className="admin-v2-site">
+              <div className="admin-v2-site-row">
+                <span className="admin-v2-site-label">
+                  사이트 운영
+                  <span className={`admin-publish-state ${isPublished ? "on" : "off"}`}>
+                    {isPublished ? "ON" : !allRequiredFilled ? "🔒 OFF" : "OFF"}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  className={`toggle ${isPublished ? "on" : ""}`}
+                  onClick={() => void onTogglePublish()}
+                  disabled={!loaded || publishLoading}
+                  aria-label="사이트 운영 토글"
+                  aria-pressed={isPublished}
+                  title={
+                    isPublished
+                      ? "클릭하면 사이트를 비공개로 전환합니다"
+                      : allRequiredFilled
+                        ? "클릭하면 사이트를 공개합니다"
+                        : `필수 ${requiredTotal - requiredDoneCount}단계를 완료하면 공개할 수 있어요`
+                  }
+                />
+              </div>
+              <Link href={previewHref} className="btn btn-secondary admin-v2-site-home" target="_blank" onClick={(e) => onClickGoHome(e, false)}>
+                <Icon.arrow style={{ width: 14, height: 14 }} />
+                홈페이지 바로가기
+              </Link>
             </div>
 
             <div className="admin-sidebar-group admin-sidebar-areas">
@@ -1469,6 +1516,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
               <a href="http://pf.kakao.com/_slJXX/chat" target="_blank" rel="noopener noreferrer" className="btn btn-secondary admin-v2-help">
                 카카오톡 문의
               </a>
+              <button type="button" className="btn btn-ghost admin-v2-logout" onClick={onLogout}>
+                로그아웃
+              </button>
             </div>
             <button
               type="button"
