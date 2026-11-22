@@ -69,6 +69,7 @@ export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang =
             )}
             {showAppDownload && <AppDownloadLinks />}
           </div>
+          <nav className="footer-nav" aria-label={brand.name}>
           {groups.map((g) => (
             <div key={g.heading} className="footer-col">
               <h4>{g.heading}</h4>
@@ -81,6 +82,7 @@ export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang =
               </ul>
             </div>
           ))}
+          </nav>
         </div>
         <div className="footer-meta">
           <div>© {new Date().getFullYear()} {brand.name}. All rights reserved.</div>
