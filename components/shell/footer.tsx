@@ -13,11 +13,9 @@ type Props = {
   pathPrefix: string;
   enabledPages?: string[];
   lang?: Lang;
-  // 테스트 교회(소유자 is_test)에만 온교회 앱 다운로드 버튼을 보여준다.
-  showAppDownload?: boolean;
 };
 
-export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang = "ko", showAppDownload = false }: Props) {
+export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang = "ko" }: Props) {
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const navById = new Map(nav.map((n) => [n.id, n] as const));
   const isEnabled = (id: string) =>
@@ -67,7 +65,8 @@ export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang =
                 )}
               </div>
             )}
-            {showAppDownload && <AppDownloadLinks />}
+            {/* 모든 교회 홈페이지에 온교회 앱 다운로드 버튼(앱 안에서는 숨김). */}
+            <AppDownloadLinks />
           </div>
           <nav className="footer-nav" aria-label={brand.name}>
           {groups.map((g) => (
