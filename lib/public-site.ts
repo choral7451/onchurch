@@ -8,6 +8,8 @@ import type { SiteDesign } from "@/lib/site-design";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
 export type PublicChurch = {
+  // 소유자가 테스트 계정인지(공개 사이트 조회에서만 옴). 시험 기능 노출 판단용.
+  ownerIsTest?: boolean;
   id: number;
   slug: string;
   name: string;

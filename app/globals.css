@@ -169,6 +169,12 @@ main { flex: 1; }
 .footer-contacts { display: flex; flex-wrap: wrap; gap: 14px 18px; margin-top: 4px; font-size: 13px; opacity: 0.75; }
 .footer-contact { display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.15s ease; }
 .footer-contact:hover { opacity: 1; }
+.footer-app { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.footer-app-label { font-size: 12.5px; opacity: 0.65; }
+.footer-app-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.footer-app-btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.18); color: #fff; font-size: 13.5px; font-weight: 600; text-decoration: none; transition: background 0.15s ease; }
+.footer-app-btn:hover { background: oklch(1 0 0 / 0.16); }
+.footer-app-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .footer-col h4 { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: oklch(0.85 0.02 245); margin: 0 0 16px; }
 .footer h4 { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: oklch(0.85 0.02 245); margin: 0 0 16px; }
 .footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { type Brand, type NavItem, isCustomNavId } from "@/lib/types";
 import { type Lang, pick, SHELL } from "@/lib/i18n";
+import { AppDownloadLinks } from "@/components/shell/app-download";
 
 type FooterNavGroup = { heading: string; ids: string[] };
 
@@ -12,9 +13,11 @@ type Props = {
   pathPrefix: string;
   enabledPages?: string[];
   lang?: Lang;
+  // 테스트 교회(소유자 is_test)에만 온교회 앱 다운로드 버튼을 보여준다.
+  showAppDownload?: boolean;
 };
 
-export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang = "ko" }: Props) {
+export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang = "ko", showAppDownload = false }: Props) {
   const link = (href: string) => (href === "/" ? pathPrefix || "/" : `${pathPrefix}${href}`);
   const navById = new Map(nav.map((n) => [n.id, n] as const));
   const isEnabled = (id: string) =>
@@ -64,6 +67,7 @@ export function Footer({ brand, nav, footerNav, pathPrefix, enabledPages, lang =
                 )}
               </div>
             )}
+            {showAppDownload && <AppDownloadLinks />}
           </div>
           {groups.map((g) => (
             <div key={g.heading} className="footer-col">
