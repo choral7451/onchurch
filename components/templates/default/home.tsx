@@ -635,8 +635,7 @@ export function buildDefaultHomeSections({ church, tenant, lang, pathPrefix }: H
         <PastorSection slug={slug} url={url} lang={lang} />
       </Suspense>
     ),
-    // 소식·갤러리의 기본 디자인. 기본 템플릿 홈(DefaultHome)의 섹션 순서에는 없어서 기존 교회 홈에는 나오지 않고,
-    // 섹션별 디자인을 쓰는 홈(mixed-home)에서 '기본'을 골랐을 때만 그려진다.
+    // 소식·갤러리의 기본 디자인. 관리자 '메뉴 · 홈 구성'이 두 섹션을 모든 교회에 보여주므로 기본 템플릿 홈에도 그린다.
     news: isPageEnabled("notices") ? (
       <Suspense fallback={<SectionSkeleton tinted height={260} />}>
         <HomeNewsSection slug={slug} url={url} lang={lang} />
@@ -660,7 +659,8 @@ export async function DefaultHome({ church, tenant, lang, pathPrefix }: { church
   const isPageEnabled = (id: string) => (id === "directions" ? !enabled.includes("hide:directions") : enabled.length === 0 || enabled.includes(id));
   const sermonsEnabled = isPageEnabled("sermons");
   const initialLive = sermonsEnabled ? (await fetchLiveStatus(tenant)).isLive : false;
-  const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder);
+  // 관리자 '메뉴 · 홈 구성'과 같은 목록(소식·갤러리 포함)으로 그린다 — 메뉴를 켰는데 홈에 안 나오는 일이 없도록.
+  const sectionOrder = normalizeHomeSectionOrder(church.homeSectionOrder, "modern");
   const sections = buildDefaultHomeSections({ church, tenant, lang, pathPrefix, initialLive });
 
   return (
