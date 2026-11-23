@@ -419,7 +419,6 @@ export function SignupForm() {
                 onBlur={syncFromDom}
                 required
               />
-              <span className="form-hint">홈페이지에 노출되는 교회 대표 연락처입니다.</span>
             </div>
             <div className="form-row full">
               <input
