@@ -80,6 +80,24 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   const [device, setDevice] = useState<"pc" | "mobile">("pc");
   // 펼친 줄 — 디자인·메뉴 표시·상세 설정은 줄을 눌러 펼쳤을 때만 보여 한 줄을 단순하게 둔다.
   const [openKey, setOpenKey] = useState<HomeSectionKey | null>(null);
+  // 휴대폰: 미리보기를 화면 아래에 붙이면 설정 목록과 미리보기 두 곳이 따로 스크롤돼 불편하다.
+  // 그래서 미리보기는 '미리보기' 버튼으로 여는 전체 화면 시트로 띄운다(iframe 은 계속 살아 있어 초안이 바로 반영된다).
+  const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => {
+    // 휴대폰에서는 미리보기 폭 기본값을 모바일로 — PC 폭을 축소해 보여주면 글씨가 너무 작다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 화면 폭은 마운트 뒤에만 알 수 있다
+    if (window.matchMedia("(max-width: 768px)").matches) setDevice("mobile");
+  }, []);
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSheetOpen(false); };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [sheetOpen]);
   const [previewSrc, setPreviewSrc] = useState("");
   // PC 미리보기: 미리보기 칸이 좁아도 공개 홈이 모바일 레이아웃으로 바뀌지 않도록
   // iframe 을 데스크톱 폭(PC_WIDTH)으로 그린 뒤 칸 너비에 맞게 축소한다.
@@ -195,6 +213,9 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
     <>
       {/* 스크롤해도 항상 보이도록 '되돌리기 · 홈페이지에 적용'은 화면 오른쪽 아래에 고정한다. */}
       <div className={`admin-design-fab ${dirty === 0 ? "clean" : ""}`}>
+        <button type="button" className="btn btn-secondary admin-design-fab-preview" onClick={() => setSheetOpen(true)}>
+          미리보기
+        </button>
         {dirty > 0 && (
           <button type="button" className="btn btn-secondary" disabled={saving} onClick={() => { setDraft(draftFrom(saved, savedOrder)); onRevertExtra?.(); }}>
             되돌리기
@@ -368,8 +389,11 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
 
         </div>
 
-        <div className="admin-design-preview">
+        <div className={`admin-design-preview ${sheetOpen ? "sheet-open" : ""}`} role={sheetOpen ? "dialog" : undefined} aria-modal={sheetOpen || undefined} aria-label={sheetOpen ? "홈 미리보기" : undefined}>
           <div className="admin-design-previewbar">
+            <button type="button" className="admin-design-sheet-close" onClick={() => setSheetOpen(false)} aria-label="미리보기 닫기">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
             <span>미리보기</span>
             <span className="admin-design-previewnote">초안 기준 · 저장 전</span>
             <div className="admin-design-seg" role="group" aria-label="미리보기 폭" style={{ marginLeft: "auto" }}>

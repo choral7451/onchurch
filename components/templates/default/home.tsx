@@ -1,4 +1,5 @@
 import { Suspense, type CSSProperties, type ReactNode } from "react";
+import { withSampleContent } from "@/lib/site-sample";
 import Link from "next/link";
 import { fetchLiveStatus, type PublicChurch } from "@/lib/public-site";
 import { LiveBadge } from "@/components/live-badge";
@@ -79,13 +80,14 @@ type PublicPastor = {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
+  // 관리자 디자인 미리보기에서는 비어 있는 응답을 예시 콘텐츠로 바꾼다(공개 홈에는 영향 없음).
   try {
     const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
-    if (!res.ok) return fallback;
+    if (!res.ok) return withSampleContent(API_BASE, path, fallback);
     const body = await res.json();
-    return (body?.item ?? fallback) as T;
+    return withSampleContent(API_BASE, path, (body?.item ?? fallback) as T);
   } catch {
-    return fallback;
+    return withSampleContent(API_BASE, path, fallback);
   }
 }
 

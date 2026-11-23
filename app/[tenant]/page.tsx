@@ -9,6 +9,7 @@ import { DefaultHome } from "@/components/templates/default/home";
 import { MixedHome } from "@/components/templates/mixed-home";
 import { SiteColorStyle } from "@/components/site-color-style";
 import { decodeDesignPreview, normalizeSiteDesign } from "@/lib/site-design";
+import { enableSampleContent } from "@/lib/site-sample";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -33,6 +34,8 @@ export default async function TenantHome({ params, searchParams }: { params: Pro
 
   // 관리자 '디자인' 화면의 미리보기: 저장 전 초안을 쿼리로 받아 그 설정으로 렌더한다(저장하지 않음).
   const preview = decodeDesignPreview((await searchParams).design);
+  // 관리자 디자인 미리보기: 아직 글·사진이 없는 섹션도 어떻게 보일지 알 수 있게 예시 콘텐츠로 채운다.
+  if (preview) enableSampleContent();
   const siteDesign = preview ? preview.design : normalizeSiteDesign(church.siteDesign);
 
   // 초안의 메뉴 켜기/끄기·빠른 이동 설정을 저장 없이 홈에 반영한다.
