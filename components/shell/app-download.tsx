@@ -2,9 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 
-// 온교회 앱 스토어 주소. 앱 안(WebView)에서는 이미 앱을 쓰는 중이므로 버튼을 숨긴다.
-const APP_STORE_URL = "https://apps.apple.com/kr/app/id6837218463";
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=kr.co.everychurch.app";
+import { APP_STORE_URL, PLAY_STORE_URL } from "@/lib/app-links";
+
+// 온교회 앱 스토어 버튼. 앱 안(WebView)에서는 이미 앱을 쓰는 중이므로 숨긴다.
 
 const subscribe = () => () => {};
 const inApp = () => typeof window !== "undefined" && "ReactNativeWebView" in window;

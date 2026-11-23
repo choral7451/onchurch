@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { churchPublicUrl } from "@/lib/site-host";
+import { APP_DOWNLOAD_URL } from "@/lib/app-links";
 
 type QrTarget = {
-  key: "home" | "join";
-  eyebrow: string;
+  key: "home" | "join" | "app";
   title: string;
   desc: string;
   url: string;
@@ -19,19 +19,25 @@ function buildTargets(slug: string, customDomain: string | null): QrTarget[] {
   return [
     {
       key: "home",
-      eyebrow: "HOMEPAGE",
-      title: "홈페이지 QR",
-      desc: "스캔하면 교회 홈페이지 첫 화면으로 이동합니다. 주보·현수막·안내문에 넣어 활용하세요.",
+      title: "홈페이지",
+      desc: "교회 홈페이지 첫 화면이 열려요",
       url: origin,
       fileBase: `${slug}-homepage-qr`,
     },
     {
       key: "join",
-      eyebrow: "SIGN UP",
-      title: "회원가입 QR",
-      desc: "스캔하면 홈페이지 회원가입 화면이 바로 열립니다. 새가족 등록·성도 가입 안내에 활용하세요.",
+      title: "회원가입",
+      desc: "새가족·성도 가입 화면이 바로 열려요",
       url: `${origin}/login?tab=join`,
       fileBase: `${slug}-signup-qr`,
+    },
+    {
+      // 한 QR 로 iPhone 은 App Store, Android 는 Google Play 로 간다 (app/app/page.tsx)
+      key: "app",
+      title: "앱 다운로드",
+      desc: "아이폰·안드로이드 스토어로 바로 가요",
+      url: APP_DOWNLOAD_URL,
+      fileBase: "onchurch-app-download-qr",
     },
   ];
 }
@@ -42,12 +48,11 @@ export function QrCodesBlock({ slug, customDomain }: { slug: string; customDomai
   return (
     <div className="admin-qr-block">
       <div className="admin-qr-block-head">
-        <div className="admin-section-eyebrow">QR CODE</div>
         <h3>QR 코드</h3>
         <p>
           {slug
-            ? "홈페이지와 회원가입 페이지로 연결되는 QR 코드입니다. 인쇄용은 PNG 또는 SVG로 내려받으세요."
-            : "서브도메인을 입력하고 저장하면 홈페이지·회원가입 QR 코드가 자동으로 생성됩니다."}
+            ? "주보·현수막에 넣어 보세요. 인쇄용은 PNG 또는 SVG로 내려받을 수 있어요."
+            : "서브도메인을 입력하고 저장하면 QR 코드가 자동으로 생성됩니다."}
         </p>
       </div>
       {slug ? (
@@ -73,7 +78,7 @@ function QrCard({ target }: { target: QrTarget }) {
 
   useEffect(() => {
     let cancelled = false;
-    QRCode.toDataURL(target.url, { margin: 1, width: 480, errorCorrectionLevel: "M" })
+    QRCode.toDataURL(target.url, { margin: 0, width: 240, errorCorrectionLevel: "M" })
       .then((d) => { if (!cancelled) setPreviewUrl(d); })
       .catch(() => { if (!cancelled) setPreviewUrl(""); });
     return () => { cancelled = true; };
@@ -124,32 +129,23 @@ function QrCard({ target }: { target: QrTarget }) {
 
   return (
     <div className="admin-qr-card">
-      <div className="admin-qr-card-head">
-        <div className="admin-section-eyebrow">{target.eyebrow}</div>
-        <h3>{target.title}</h3>
-        <p>{target.desc}</p>
-      </div>
-      <div className="admin-qr-preview">
+      <a className="admin-qr-preview" href={target.url} target="_blank" rel="noopener noreferrer" title="새 탭에서 열기">
         {previewUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={previewUrl} alt={`${target.title} 미리보기`} />
+          <img src={previewUrl} alt={`${target.title} QR`} />
         ) : (
-          <div className="admin-qr-preview-placeholder">생성 중…</div>
+          <span className="admin-qr-preview-placeholder">…</span>
         )}
-      </div>
-      <a className="admin-qr-url" href={target.url} target="_blank" rel="noopener noreferrer">
-        {target.url}
       </a>
-      <div className="admin-qr-actions">
-        <button type="button" className="btn btn-primary" onClick={downloadPng} disabled={busy || !previewUrl}>
-          PNG 다운로드
-        </button>
-        <button type="button" className="btn btn-secondary" onClick={downloadSvg} disabled={busy || !previewUrl}>
-          SVG 다운로드
-        </button>
-        <button type="button" className="btn btn-secondary" onClick={copyUrl}>
-          {copied ? "복사됨 ✓" : "주소 복사"}
-        </button>
+      <div className="admin-qr-info">
+        <strong className="admin-qr-title">{target.title}</strong>
+        <span className="admin-qr-desc">{target.desc}</span>
+        <span className="admin-qr-url" title={target.url}>{target.url.replace(/^https?:\/\//, "")}</span>
+        <div className="admin-qr-actions">
+          <button type="button" className="admin-qr-btn primary" onClick={downloadPng} disabled={busy || !previewUrl}>PNG</button>
+          <button type="button" className="admin-qr-btn" onClick={downloadSvg} disabled={busy || !previewUrl}>SVG</button>
+          <button type="button" className="admin-qr-btn" onClick={copyUrl}>{copied ? "복사됨 ✓" : "주소 복사"}</button>
+        </div>
       </div>
     </div>
   );
