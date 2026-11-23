@@ -51,7 +51,7 @@ import { CustomPageEditor } from "./page-editors/custom-page";
 import { QrCodesBlock } from "./page-editors/qr-codes";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, isCustomLinkReady, type HomeCustomLink } from "@/lib/quick-links";
 // import { BulletinEditor } from "./page-editors/bulletin"; // 주보 만들기 - 임시 숨김
-import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
+import { MODERN_HOME_SECTION_KEYS, normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 import { DEFAULT_TEMPLATE_ID, resolveTemplateId } from "@/components/templates/meta";
 import { normalizeSiteDesign, type DesignPreviewSite, type SiteDesign } from "@/lib/site-design";
 import { type Lang, normalizeLang } from "@/lib/i18n";
@@ -559,7 +559,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
             next["worship"] = c.enabledPages.includes("worship");
             next["directions"] = true;
             // 테스트 교회 디자인 화면에서 끌 수 있는 항목(기본 표시). 끈 것만 hide:* 로 저장된다.
-            for (const k of ["hide:banner", "hide:quick", "hide:directions"]) next[k] = c.enabledPages.includes(k);
+            // hide:directions 는 '찾아오시는 길' 메뉴, hide:<홈 섹션> 은 홈에서만 숨긴 섹션.
+            for (const k of ["hide:directions", ...MODERN_HOME_SECTION_KEYS.map((key) => `hide:${key}`)]) next[k] = c.enabledPages.includes(k);
             for (const k of ABOUT_SUB_KEYS) next[k] = c.enabledPages.includes(k);
             setBoards(next);
           }
@@ -2172,21 +2173,25 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   saved={siteDesign}
                   savedOrder={homeSectionOrder}
                   pages={(() => {
-                    // 홈 섹션 ↔ 메뉴(페이지) 1:1 짝. 배너·빠른 이동은 홈 전용 항목.
+                    // 홈 섹션마다 '홈에 표시'(hide:<섹션>, 끈 것만 저장)와 짝을 이루는 메뉴(페이지) 켜짐을 따로 둔다.
+                    // 배너·빠른 이동은 메뉴가 없는 홈 전용 항목.
                     const navLabel = (id: string) => initial.nav.find((n) => n.id === id)?.label ?? id;
-                    const pair = (id: string) => ({ label: navLabel(id), on: dBoards[id] ?? true, toggle: () => toggleBoardDraft(id) });
-                    // 기본이 표시인 항목: boards["hide:*"] 가 켜져 있으면 숨김.
-                    const hideable = (label: string, hideKey: string) => ({ label, on: !dBoards[hideKey], toggle: () => toggleBoardDraft(hideKey) });
+                    const home = (key: HomeSectionKey) => ({ on: !dBoards[`hide:${key}`], toggle: () => toggleBoardDraft(`hide:${key}`) });
+                    const menu = (id: string) => ({ label: navLabel(id), on: dBoards[id] ?? true, toggle: () => toggleBoardDraft(id) });
                     return {
-                      banner: hideable("상단 배너", "hide:banner"),
-                      quick: hideable("빠른 이동", "hide:quick"),
-                      events: pair("schedule"),
-                      worship: pair("worship"),
-                      sermons: pair("sermons"),
-                      news: pair("notices"),
-                      gallery: pair("gallery"),
-                      pastor: pair("about"),
-                      visit: hideable(navLabel("directions"), "hide:directions"),
+                      banner: { label: "상단 배너", home: home("banner") },
+                      quick: { label: "빠른 이동", home: home("quick") },
+                      events: { label: navLabel("schedule"), home: home("events"), menu: menu("schedule") },
+                      worship: { label: navLabel("worship"), home: home("worship"), menu: menu("worship") },
+                      sermons: { label: navLabel("sermons"), home: home("sermons"), menu: menu("sermons") },
+                      news: { label: navLabel("notices"), home: home("news"), menu: menu("notices") },
+                      gallery: { label: navLabel("gallery"), home: home("gallery"), menu: menu("gallery") },
+                      pastor: { label: "담임목사 인사", home: home("pastor"), menu: menu("about") },
+                      visit: {
+                        label: navLabel("directions"),
+                        home: home("visit"),
+                        menu: { label: navLabel("directions"), on: !dBoards["hide:directions"], toggle: () => toggleBoardDraft("hide:directions") },
+                      },
                     };
                   })()}
                   menuOnly={[

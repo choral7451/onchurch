@@ -10,7 +10,7 @@ import { fetchLiveStatus } from "@/lib/public-site";
 import { QUICK_LINK_DEFS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
 import { parseYouTubeId, youtubeThumbnail } from "@/lib/youtube";
 import { type Lang, pick } from "@/lib/i18n";
-import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
+import { isHomeSectionHidden, normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api-artinfokorea.com";
 
@@ -562,7 +562,7 @@ export async function ModernHome({ church, tenant, lang, pathPrefix }: Props) {
   return (
     <div className="chc-root">
       {sermonsEnabled && <LiveBadge slug={tenant} sermonsHref={url("/sermons")} initialLive={initialLive} />}
-      {order.map((key) => (
+      {order.filter((key) => !isHomeSectionHidden(enabled, key)).map((key) => (
         <div key={key} style={{ display: "contents" }}>
           {sections[key]}
         </div>

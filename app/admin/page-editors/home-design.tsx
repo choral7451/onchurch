@@ -22,7 +22,7 @@ import {
 
 // 홈 '디자인' 편집기 — 섹션별 디자인(기본/모던) + 순서 + 메인·포인트 색을 초안으로 모았다가 한 번에 적용한다.
 // 적용 전까지는 공개 홈에 반영되지 않고, 오른쪽 미리보기(?design= 쿼리)에만 보인다.
-// 테스트 교회(isTest)에만 노출되는 화면. 기존 교회는 site-template.tsx + home-order.tsx 를 그대로 쓴다.
+// 모든 교회의 관리자 '디자인' 화면 (2026-11-23 전체 적용).
 
 type Draft = {
   colors: SiteDesignColors | null;
@@ -30,14 +30,16 @@ type Draft = {
   order: HomeSectionKey[];
 };
 
+type Toggle = { on: boolean; toggle: () => void };
+
 type Props = {
   // 공개 홈 주소(미리보기 iframe 의 바탕). 관리자 앱의 buildPreviewUrl 결과.
   previewUrl: string;
   siteTemplate: string;
   saved: SiteDesign | null;
   savedOrder: HomeSectionKey[];
-  // 홈 섹션과 짝을 이루는 메뉴(페이지). 줄 이름·켜짐 여부·토글을 준다. 짝이 없거나 항상 노출인 섹션은 toggle 이 없다.
-  pages: Partial<Record<HomeSectionKey, { label: string; on: boolean; toggle?: () => void }>>;
+  // 홈 섹션별 줄 이름, '홈에 표시' 토글, 짝을 이루는 메뉴(페이지) 토글. 배너·빠른 이동처럼 메뉴가 없는 섹션은 menu 가 없다.
+  pages: Partial<Record<HomeSectionKey, { label: string; home: Toggle; menu?: Toggle & { label: string } }>>;
   // 홈 섹션이 없는 메뉴(교제·자유 페이지). 목록 아래에 켜고 끄기만 있는 줄로 붙는다.
   menuOnly: { key: string; label: string; on: boolean; toggle: () => void }[];
   saving: boolean;
@@ -76,6 +78,8 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   }
 
   const [device, setDevice] = useState<"pc" | "mobile">("pc");
+  // 펼친 줄 — 디자인·메뉴 표시·상세 설정은 줄을 눌러 펼쳤을 때만 보여 한 줄을 단순하게 둔다.
+  const [openKey, setOpenKey] = useState<HomeSectionKey | null>(null);
   const [previewSrc, setPreviewSrc] = useState("");
   // PC 미리보기: 미리보기 칸이 좁아도 공개 홈이 모바일 레이아웃으로 바뀌지 않도록
   // iframe 을 데스크톱 폭(PC_WIDTH)으로 그린 뒤 칸 너비에 맞게 축소한다.
@@ -276,47 +280,86 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                   </div>
                 </div>
               </div>
-              <p>보여줄 항목을 켜고, 드래그해서 홈 화면 순서를 정해보세요.</p>
+              <p>오른쪽 스위치로 홈에 보일지 정하고, 드래그해서 순서를 바꿔요. 줄을 누르면 디자인과 메뉴 표시를 바꿀 수 있어요.</p>
             </div>
             <div className="admin-section-body">
               <ol className="admin-design-rows">
                 {visible.map((key, idx) => {
                   const meta = HOME_SECTION_LABELS[key];
                   const page = pages[key];
-                  const on = page?.on ?? true;
                   const label = page?.label ?? meta.title;
+                  const homeOn = page?.home.on ?? true;
+                  const menuOff = !!page?.menu && !page.menu.on;
+                  // 메뉴(페이지)를 끄면 그 섹션도 홈에서 빠진다.
+                  const shown = homeOn && !menuOff;
                   const current = draft.sections[key] ?? base;
                   const hasSettings = !!settingsKeys?.includes(key);
+                  const open = openKey === key;
+                  const note = menuOff ? "메뉴가 꺼져 홈에도 안 보여요" : !homeOn ? "홈에서 숨김" : `${sectionDesignLabel(key, current)} 디자인`;
                   return (
-                    <li key={key} className={`admin-design-row ${on ? "" : "off"}`} {...getItemProps(idx)}>
-                      <DragHandle />
-                      <span className="admin-design-row-title" title={meta.desc}>{label}</span>
-                      {hasSettings && on && (
-                        <button type="button" className="admin-design-row-set" onClick={() => onSectionSettings?.(key)}>설정</button>
-                      )}
-                      {on && (
-                        <div className="admin-design-seg" role="group" aria-label={`${label} 디자인`}>
-                          {SECTION_DESIGN_IDS.map((id) => (
-                            <button key={id} type="button" aria-pressed={current === id} onClick={() => setSection(key, id)}>
-                              {sectionDesignLabel(key, id)}
+                    <li key={key} className={`admin-design-row ${shown ? "" : "off"} ${open ? "open" : ""}`} {...getItemProps(idx)}>
+                      <div className="admin-design-row-main">
+                        <DragHandle />
+                        <button
+                          type="button"
+                          className="admin-design-row-head"
+                          aria-expanded={open}
+                          aria-controls={`design-row-${key}`}
+                          onClick={() => setOpenKey(open ? null : key)}
+                        >
+                          <span className="admin-design-row-title" title={meta.desc}>{label}</span>
+                          <span className="admin-design-row-sub">{note}</span>
+                        </button>
+                        <svg className="admin-design-row-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                        {page && (
+                          <button
+                            type="button"
+                            className={`toggle ${shown ? "on" : ""}`}
+                            // 스위치는 '홈에 실제로 보이는지'. 메뉴가 꺼져 숨은 섹션은 켜면 메뉴부터 켠다.
+                            onClick={menuOff ? page.menu?.toggle : page.home.toggle}
+                            aria-label={`${label} 홈에 표시`}
+                            aria-pressed={shown}
+                          />
+                        )}
+                      </div>
+                      {open && (
+                        <div className="admin-design-row-detail" id={`design-row-${key}`}>
+                          <div className="admin-design-row-opt">
+                            <span>디자인</span>
+                            <div className="admin-design-seg" role="group" aria-label={`${label} 디자인`}>
+                              {SECTION_DESIGN_IDS.map((id) => (
+                                <button key={id} type="button" aria-pressed={current === id} onClick={() => setSection(key, id)}>
+                                  {sectionDesignLabel(key, id)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          {page?.menu && (
+                            <div className="admin-design-row-opt">
+                              <span>메뉴에 ‘{page.menu.label}’ 표시</span>
+                              <button type="button" className={`toggle ${page.menu.on ? "on" : ""}`} onClick={page.menu.toggle} aria-label={`메뉴에 ${page.menu.label} 표시`} aria-pressed={page.menu.on} />
+                            </div>
+                          )}
+                          {hasSettings && (
+                            <button type="button" className="admin-design-row-set" onClick={() => onSectionSettings?.(key)}>
+                              {label} 내용 설정
                             </button>
-                          ))}
+                          )}
                         </div>
-                      )}
-                      {page?.toggle ? (
-                        <button type="button" className={`toggle ${on ? "on" : ""}`} onClick={page.toggle} aria-label={`${label} 표시`} aria-pressed={on} />
-                      ) : (
-                        <span className="admin-design-row-fixed" title="항상 표시되는 항목입니다">고정</span>
                       )}
                     </li>
                   );
                 })}
                 {menuOnly.map((m) => (
                   <li key={m.key} className={`admin-design-row menu-only ${m.on ? "" : "off"}`}>
+                    <div className="admin-design-row-main">
                     <span className="admin-design-row-spacer" aria-hidden="true" />
-                    <span className="admin-design-row-title">{m.label}</span>
-                    <span className="admin-design-row-note">메뉴에만 표시</span>
-                    <button type="button" className={`toggle ${m.on ? "on" : ""}`} onClick={m.toggle} aria-label={`${m.label} 표시`} aria-pressed={m.on} />
+                    <span className="admin-design-row-head">
+                      <span className="admin-design-row-title">{m.label}</span>
+                      <span className="admin-design-row-sub">메뉴에만 있는 페이지</span>
+                    </span>
+                    <button type="button" className={`toggle ${m.on ? "on" : ""}`} onClick={m.toggle} aria-label={`${m.label} 메뉴에 표시`} aria-pressed={m.on} />
+                    </div>
                   </li>
                 ))}
               </ol>

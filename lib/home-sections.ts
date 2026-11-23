@@ -94,3 +94,9 @@ export function normalizeHomeSectionOrder(
   }
   return result;
 }
+
+// 홈에서만 숨긴 섹션 — 관리자 '메뉴 · 홈 구성'의 홈 표시 토글. 끈 것만 enabledPages 에 hide:<섹션> 으로 남는다.
+// (메뉴 켜짐 여부와는 따로다. 메뉴를 꺼도 해당 섹션은 홈에서 빠진다.)
+export function isHomeSectionHidden(enabledPages: readonly string[] | null | undefined, key: HomeSectionKey): boolean {
+  return !!enabledPages?.includes(`hide:${key}`);
+}

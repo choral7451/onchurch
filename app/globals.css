@@ -1353,24 +1353,30 @@ main { flex: 1; }
 .admin-design-custom code { margin-left: auto; font-size: 11.5px; color: var(--muted); }
 /* 섹션별 디자인 · 순서: 한 줄짜리 간결한 목록 */
 .admin-design-rows { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
-.admin-design-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 6px; background: var(--surface); transition: box-shadow 0.15s ease, opacity 0.15s ease, background 0.15s ease; }
+.admin-design-row { background: var(--surface); transition: box-shadow 0.15s ease, opacity 0.15s ease, background 0.15s ease; }
 .admin-design-row + .admin-design-row { border-top: 1px solid var(--line); }
-.admin-design-row:hover { background: var(--bg-tinted); }
 .admin-design-row[data-dragging] { opacity: 0.4; }
 .admin-design-row[data-drag-over] { box-shadow: inset 0 2px 0 0 var(--accent); }
-.admin-design-row-title { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.admin-design-row-set { background: transparent; border: 1px solid var(--line); border-radius: 999px; font: inherit; font-size: 12px; font-weight: 600; color: var(--primary-deep); padding: 4px 10px; cursor: pointer; flex-shrink: 0; }
-.admin-design-row-set:hover { border-color: var(--primary); background: var(--surface); }
-.admin-design-row .admin-design-seg button { padding: 5px 10px; font-size: 12px; }
-.admin-design-row { min-height: 44px; }
-.admin-design-row .toggle { width: 30px; height: 17px; flex-shrink: 0; border: 0; padding: 0; cursor: pointer; }
-.admin-design-row .toggle::after { width: 13px; height: 13px; }
-.admin-design-row .toggle.on::after { transform: translateX(13px); }
+.admin-design-row-main { display: flex; align-items: center; gap: 6px; min-height: 52px; padding: 6px 14px 6px 6px; }
+.admin-design-row-main:hover { background: var(--bg-tinted); }
+.admin-design-row-head { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 4px 2px; background: none; border: 0; font: inherit; text-align: left; cursor: pointer; color: inherit; }
+button.admin-design-row-head:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.admin-design-row-title { max-width: 100%; font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-design-row-sub { max-width: 100%; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-design-row-chev { color: var(--muted); flex-shrink: 0; margin-right: 6px; transition: transform 0.15s ease; pointer-events: none; }
+.admin-design-row.open .admin-design-row-chev { transform: rotate(180deg); }
+.admin-design-row .toggle { width: 34px; height: 20px; flex-shrink: 0; border: 0; padding: 0; cursor: pointer; }
+.admin-design-row .toggle::after { width: 16px; height: 16px; }
+.admin-design-row .toggle.on::after { transform: translateX(14px); }
 .admin-design-row.off .admin-design-row-title { color: var(--muted); font-weight: 500; }
-.admin-design-row-fixed, .admin-design-row-note { font-size: 11px; font-weight: 600; color: var(--muted); flex-shrink: 0; }
-.admin-design-row-fixed { width: 30px; text-align: center; }
+.admin-design-row-detail { display: flex; flex-direction: column; gap: 10px; margin: 0 14px 12px 36px; padding: 12px 14px; border-radius: 10px; background: var(--bg-tinted); }
+.admin-design-row-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--ink-2); }
+.admin-design-row-opt .admin-design-seg button { padding: 5px 12px; font-size: 12px; }
+.admin-design-row-set { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--primary-deep); padding: 6px 12px; cursor: pointer; }
+.admin-design-row-set:hover { border-color: var(--primary); }
 .admin-design-row-spacer { width: 24px; flex-shrink: 0; }
 .admin-design-row.menu-only { background: var(--bg-tinted); }
+.admin-design-row.menu-only .admin-design-row-main:hover { background: transparent; }
 .admin-design-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .admin-design-head-row h2 { margin: 6px 0 4px; }
 .admin-design-all { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); }

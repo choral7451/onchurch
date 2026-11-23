@@ -7,7 +7,7 @@ import { Reveal } from "@/components/reveal";
 import { buildDefaultHomeSections } from "@/components/templates/default/home";
 import { buildModernHomeSections } from "@/components/templates/modern/home";
 import { mixedSectionOrder, resolveSectionDesign, type SectionDesignId, type SiteDesign } from "@/lib/site-design";
-import type { HomeSectionKey } from "@/lib/home-sections";
+import { isHomeSectionHidden, type HomeSectionKey } from "@/lib/home-sections";
 
 // 디자인 설정이 있는 교회의 홈. 섹션마다 기본/모던 구현 중 설정된 쪽을 골라 순서대로 그린다.
 // 설정이 없는 섹션은 site_template(기본/모던)을 따른다.
@@ -39,8 +39,7 @@ export async function MixedHome({ church, tenant, lang, pathPrefix, design, orde
     // 담임목사 인사는 '교회 소개' 메뉴와 짝이라, 그 메뉴를 끄면 홈에서도 함께 숨긴다.
     if (key === "pastor" && !isPageEnabled("about")) continue;
     // 상단 배너·빠른 이동·찾아오시는 길은 기본이 표시라, 끈 경우에만 enabledPages 에 hide:* 로 남는다.
-    if (key === "banner" && enabled.includes("hide:banner")) continue;
-    if (key === "quick" && enabled.includes("hide:quick")) continue;
+    if (isHomeSectionHidden(enabled, key)) continue;
     if (key === "visit" && !isPageEnabled("directions")) continue;
     const node = variant === "modern" ? moderns[key] : defaults[key];
     if (node) rendered.push({ key, variant, node });

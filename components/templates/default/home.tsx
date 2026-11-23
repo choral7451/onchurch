@@ -8,7 +8,7 @@ import { SermonFeatureGrid } from "@/components/sermon-feature-grid";
 import { TopBanner } from "@/components/top-banner";
 import { Reveal } from "@/components/reveal";
 import type { Sermon } from "@/lib/types";
-import { normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
+import { isHomeSectionHidden, normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
 import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
 import { type Lang, pick } from "@/lib/i18n";
 
@@ -669,8 +669,9 @@ export async function DefaultHome({ church, tenant, lang, pathPrefix }: { church
       {(() => {
         // 실제로 렌더되는 첫 번째 섹션은 리빌 애니메이션 없이 바로 노출하고,
         // 두 번째 섹션부터 애니메이션을 적용한다.
-        const firstRenderedKey = sectionOrder.find((key) => sections[key]);
-        return sectionOrder.map((key) => {
+        const shown = sectionOrder.filter((key) => !isHomeSectionHidden(enabled, key));
+        const firstRenderedKey = shown.find((key) => sections[key]);
+        return shown.map((key) => {
           const node = sections[key];
           if (!node) return null;
           if (key === firstRenderedKey) return <div key={key}>{node}</div>;
