@@ -846,6 +846,22 @@ main { flex: 1; }
 .cta-banner-desc { font-size: 17px; opacity: 0.82; margin: 0 0 40px; }
 .cta-banner-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
+/* 가입 직후 첫 홈페이지 — 7일 무료 체험 안내 */
+.trial-welcome-backdrop { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 20px; background: oklch(0.2 0.03 250 / 0.55); animation: trial-welcome-fade 0.2s ease; }
+.trial-welcome { width: 100%; max-width: 420px; padding: 32px 28px 24px; border-radius: 20px; background: var(--surface, #fff); box-shadow: 0 24px 60px -16px oklch(0.2 0.05 250 / 0.45); text-align: center; animation: trial-welcome-rise 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.trial-welcome-badge { display: inline-flex; align-items: center; height: 30px; padding: 0 14px; border-radius: 999px; background: oklch(0.62 0.14 245 / 0.1); color: var(--primary); font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+.trial-welcome-title { margin: 14px 0 10px; font-size: 24px; font-weight: 700; letter-spacing: -0.03em; color: var(--primary-deep, #14283d); }
+.trial-welcome-desc { margin: 0; font-size: 15px; line-height: 1.65; color: var(--ink-2, #333); }
+.trial-welcome-desc strong { color: var(--primary); }
+.trial-welcome-list { list-style: none; margin: 20px 0 22px; padding: 16px 18px; border-radius: 14px; background: var(--bg-tinted, #f4f7fa); text-align: left; display: flex; flex-direction: column; gap: 9px; }
+.trial-welcome-list li { position: relative; padding-left: 16px; font-size: 13.5px; line-height: 1.55; color: var(--muted, #667); }
+.trial-welcome-list li::before { content: ""; position: absolute; left: 2px; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent, var(--primary)); }
+.trial-welcome-actions { display: flex; flex-direction: column; gap: 8px; }
+.trial-welcome-actions .btn { width: 100%; justify-content: center; height: 48px; font-size: 15px; }
+@keyframes trial-welcome-fade { from { opacity: 0; } }
+@keyframes trial-welcome-rise { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .trial-welcome-backdrop, .trial-welcome { animation: none; } }
+
 /* Landing footer */
 .landing-footer { background: var(--surface-2); border-top: 1px solid var(--line); padding: 32px 0; }
 .landing-footer-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }

@@ -4,6 +4,7 @@ import { UtilBar } from "@/components/shell/util-bar";
 import { Nav } from "@/components/shell/nav";
 import { Footer } from "@/components/shell/footer";
 import { DemoCtaSticky } from "@/components/shell/demo-cta-sticky";
+import { TrialWelcomeModal } from "@/components/shell/trial-welcome-modal";
 import { fetchPublicChurch, brandFromChurch, getPublicNav, getPublicFooterNav, fetchPublicCustomPages, withCustomPages, customPageNavItems } from "@/lib/public-site";
 import { normalizeLang } from "@/lib/i18n";
 import { getPathPrefix } from "@/lib/path-prefix";
@@ -71,6 +72,7 @@ export default async function TenantLayout({
       <main>{children}</main>
       <Footer brand={brand} nav={nav} footerNav={footerNav} pathPrefix={pathPrefix} enabledPages={church.enabledPages} lang={lang} />
       <DemoCtaSticky />
+      <TrialWelcomeModal churchName={church.name} />
     </div>
   );
 }
