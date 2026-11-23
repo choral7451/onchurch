@@ -1362,51 +1362,6 @@ main { flex: 1; }
 .admin-design-frame.pc { justify-content: flex-start; }
 .admin-design-frame.mobile iframe { max-width: 400px; }
 
-/* 테스트 교회 관리자 — 휴대폰 접속 시 PC 이용 안내 화면 */
-.admin-pc-only {
-  min-height: 100dvh; display: grid; place-items: center; padding: 24px 20px;
-  background:
-    radial-gradient(120% 70% at 50% 0%, oklch(0.93 0.04 245 / 0.7), transparent 70%),
-    var(--bg);
-}
-.admin-pc-only-card {
-  width: 100%; max-width: 380px; padding: 36px 24px 28px; text-align: center;
-  background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r-xl);
-  box-shadow: var(--shadow-md);
-  word-break: keep-all; overflow-wrap: break-word;
-}
-.admin-pc-only-art {
-  width: 84px; height: 84px; margin: 0 auto 22px; display: grid; place-items: center;
-  color: var(--primary); border-radius: 26px;
-  background: linear-gradient(160deg, oklch(0.95 0.03 245), oklch(0.9 0.05 245));
-}
-.admin-pc-only-title {
-  margin: 0; font-family: var(--font-display); font-size: 21px; font-weight: 700;
-  line-height: 1.4; letter-spacing: -0.02em; color: var(--ink);
-}
-.admin-pc-only-desc {
-  margin: 12px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--muted);
-}
-.admin-pc-only-url {
-  margin-top: 26px; padding: 14px; text-align: left;
-  background: var(--surface-2); border-radius: var(--r-md);
-}
-.admin-pc-only-url-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
-.admin-pc-only-url-row { margin-top: 6px; display: flex; align-items: center; gap: 10px; }
-.admin-pc-only-url-text {
-  flex: 1; min-width: 0; font-size: 15px; font-weight: 600; color: var(--ink);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.admin-pc-only-copy {
-  flex: none; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; cursor: pointer;
-  font-size: 13px; font-weight: 600; color: #fff; background: var(--primary);
-}
-.admin-pc-only-copy:active { background: var(--primary-deep); }
-.admin-pc-only-home {
-  margin-top: 18px; display: inline-flex; align-items: center; gap: 6px;
-  font-size: 14px; font-weight: 600; color: var(--primary-soft); text-decoration: none;
-}
-
 /* 테스트 교회 전용 5개 영역 사이드바 + 시작 화면 */
 .admin-sidebar-v2 { height: calc(100vh - 68px); max-height: none; } /* 흰 배경이 화면 아래 끝까지 */
 .admin-sidebar-areas { padding-bottom: 14px; border-bottom: 1px solid var(--line); }
@@ -1539,6 +1494,94 @@ main { flex: 1; }
   .admin-v2 .admin-section-head { padding: 16px 16px 0; }
   .admin-v2 .admin-section-body { padding: 14px 16px 18px; }
 }
+/* 테스트 교회 모바일(768px 이하): 사이드바를 숨기고 상단바 + 하단 탭으로. 본문은 화면 전체 폭. */
+.admin-m-bar { display: none; }
+@media (max-width: 768px) {
+  .admin-m-bar {
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 70;
+    padding: 10px 8px 10px 16px; padding-top: calc(10px + env(safe-area-inset-top));
+    background: color-mix(in oklch, var(--surface) 92%, transparent);
+    backdrop-filter: saturate(1.6) blur(14px); -webkit-backdrop-filter: saturate(1.6) blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .admin-m-church { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
+  .admin-m-church .admin-v2-church-mark { width: 34px; height: 34px; border-radius: 10px; font-size: 14px; }
+  .admin-m-church-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .admin-m-church-name { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .admin-m-church-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .admin-m-church-status.on { color: oklch(0.42 0.14 145); }
+  .admin-m-church-status.on .admin-v2-status-dot { background: oklch(0.6 0.16 145); box-shadow: 0 0 0 3px oklch(0.6 0.16 145 / 0.18); }
+  .admin-m-church-period { font-weight: 500; color: var(--muted); padding-left: 6px; border-left: 1px solid var(--line); overflow: hidden; text-overflow: ellipsis; }
+  .admin-m-church-status.expired .admin-m-church-period { color: oklch(0.52 0.18 28); font-weight: 600; }
+  .admin-m-more { position: relative; flex-shrink: 0; }
+  .admin-m-more-btn { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 12px; background: transparent; color: var(--ink-2); cursor: pointer; }
+  .admin-m-more-btn[aria-expanded="true"], .admin-m-more-btn:active { background: var(--bg-tinted); }
+  .admin-m-menu-scrim { position: fixed; inset: 0; z-index: 1; border: 0; padding: 0; background: oklch(0 0 0 / 0.12); cursor: default; }
+  .admin-m-menu {
+    position: absolute; right: 0; top: calc(100% + 6px); z-index: 2; min-width: 232px; padding: 6px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-lg);
+    display: flex; flex-direction: column; animation: admin-m-menu-in 0.16s ease-out;
+  }
+  @keyframes admin-m-menu-in { from { opacity: 0; transform: translateY(-4px); } }
+  .admin-m-menu-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 8px 12px; border: 0; border-radius: 11px; background: transparent; font: inherit; font-size: 14.5px; font-weight: 600; color: var(--ink); text-decoration: none; text-align: left; cursor: pointer; }
+  .admin-m-menu-item svg { flex-shrink: 0; color: var(--muted); }
+  .admin-m-menu-item span { display: flex; flex-direction: column; min-width: 0; }
+  .admin-m-menu-item small { font-size: 12px; font-weight: 500; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .admin-m-menu-item:active { background: var(--bg-tinted); }
+  .admin-m-menu-item + .admin-m-menu-item:last-child { margin-top: 4px; border-top: 1px solid var(--line); border-radius: 0 0 11px 11px; color: var(--muted); }
+
+  /* 레이아웃: 사이드바 없이 본문만. 기존 교회용 모바일 목록/상세 전환 규칙은 v2 에 적용하지 않는다. */
+  .admin-v2.admin-layout { grid-template-columns: 1fr; min-height: 0; }
+  .admin-v2 .admin-sidebar-v2 { display: none; }
+  /* 기존 교회용 목록/상세 전환 규칙(.admin-layout:not(.mobile-detail)…)이 본문을 숨기므로 그보다 우선한다. */
+  .admin-v2.admin-layout .admin-content { display: block !important; padding: 14px 0 24px; }
+  .admin-v2 .admin-mobile-back { display: none !important; }
+  .admin-v2 .admin-container-wide { padding: 0 16px; }
+  .admin-v2 .admin-container { gap: 12px; }
+  .admin-main:has(> .admin-v2) { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+
+  /* 하단 탭 */
+  .admin-bottom-nav-v2 {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: color-mix(in oklch, var(--surface) 94%, transparent);
+    backdrop-filter: saturate(1.6) blur(14px); -webkit-backdrop-filter: saturate(1.6) blur(14px);
+    border-top: 1px solid var(--line); box-shadow: none;
+  }
+  .admin-bottom-nav-v2 .admin-bottom-nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 52px; justify-content: center;
+    padding: 6px 2px; border: 0; border-radius: 12px; background: transparent; cursor: pointer;
+    font-size: 11px; font-weight: 600; color: var(--muted);
+  }
+  .admin-bottom-nav-v2 .admin-bottom-nav-item svg { width: 22px; height: 22px; }
+  .admin-bottom-nav-v2 .admin-bottom-nav-item.active { color: var(--primary-deep); background: transparent; }
+  .admin-bottom-nav-v2 .admin-bottom-nav-item.active svg { stroke-width: 2.2; }
+
+  /* 필수 안내 한 줄과 탭 */
+  .admin-v2-required { padding: 10px 12px; font-size: 13px; gap: 8px; }
+  .admin-v2-required-links { margin-left: 0; }
+  .admin-v2-bar { margin: 0 -16px; padding: 0 8px; gap: 0; background: transparent; }
+  .admin-v2-tabs { scrollbar-width: none; }
+  .admin-v2-tabs::-webkit-scrollbar { display: none; }
+  .admin-v2-tab-ghost { display: none; }
+
+  /* 카드와 입력: 손가락으로 누르기 쉬운 크기, iOS 확대 방지(16px) */
+  .admin-v2 .admin-section { border-radius: 14px; }
+  .admin-v2 .form-row input, .admin-v2 .form-row select, .admin-v2 .form-row textarea { font-size: 16px; min-height: 44px; }
+  .admin-v2 .admin-savebar { gap: 10px; }
+  .admin-v2 .admin-savebar-actions .btn { width: 100%; justify-content: center; }
+
+  /* 디자인 화면: 설정 카드 아래에 미리보기. '홈페이지 적용' 버튼은 하단 탭 위에 띄운다. */
+  .admin-v2 .admin-design-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .admin-v2 .admin-design-preview { position: static; }
+  .admin-v2 .admin-design-frame { height: 72vh; min-height: 480px; }
+  .admin-design-fab { left: 16px; right: 16px; bottom: calc(72px + env(safe-area-inset-bottom)); justify-content: flex-end; padding: 6px; }
+  .admin-design-fab-apply { flex: 1; justify-content: center; }
+  .admin-design-fab.clean { display: none; }
+  .admin-v2-bar.single { display: none; }
+}
+
 .admin-template-note { font-size: 12.5px; color: var(--muted); margin: 0; }
 .admin-template-note code { font-family: inherit; padding: 1px 5px; border-radius: 4px; background: var(--surface-2); }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { AddressPicker } from "@/components/address-picker";
@@ -290,6 +290,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [areaV2, setAreaV2] = useState<AreaKey>("design");
   // 5개 영역 사이드바 접기. 접으면 아이콘만 남고, 마우스를 올리면 본문 위로 원래 폭(240px)만큼 펼쳐진다(CSS). 선택은 브라우저에 기억.
   const SIDE_COLLAPSED_KEY = "onchurch.admin.sideCollapsed";
+  // 테스트 교회 모바일 상단바의 더보기(홈페이지·문의·로그아웃) 메뉴.
+  const [mobileMenu, setMobileMenu] = useState(false);
   const [sideCollapsed, setSideCollapsed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try { return window.localStorage.getItem(SIDE_COLLAPSED_KEY) === "1"; } catch { return false; }
@@ -376,13 +378,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
   const [templateSaving, setTemplateSaving] = useState(false);
   // 테스트 교회(소유자 is_test)에만 새 '디자인' 화면(섹션별 기본/모던 + 색)을 노출한다. 기존 교회는 영향 없음.
   const [isTest, setIsTest] = useState(false);
-  // 테스트 교회 관리자는 휴대폰 접속을 막고 컴퓨터 접속을 안내한다(앱 WebView 포함). 화면 폭이 아닌 UA 로 판별해 좁은 PC 창은 막지 않는다.
-  const isPhone = useSyncExternalStore(
-    () => () => {},
-    () => /Mobi|iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent),
-    () => false,
-  );
-  const [adminUrlCopied, setAdminUrlCopied] = useState(false);
   const [siteDesign, setSiteDesign] = useState<SiteDesign | null>(null);
   const [designSaving, setDesignSaving] = useState(false);
   // 메뉴 구성(페이지 온오프)이 서버에 저장될 때마다 올려 디자인 미리보기를 새로 불러오게 한다.
@@ -1240,56 +1235,6 @@ export function AdminApp({ initial }: { initial: Initial }) {
     </div>
   );
 
-  if (isTest && isPhone) {
-    const adminUrl = "everychurch.co.kr/admin";
-    return (
-      <main className="admin-pc-only">
-        <div className="admin-pc-only-card" role="alert">
-          <div className="admin-pc-only-art" aria-hidden="true">
-            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="12" rx="2" />
-              <path d="M8 20h8M12 16v4" />
-            </svg>
-          </div>
-          <h1 className="admin-pc-only-title">
-            관리자 페이지는
-            <br />
-            컴퓨터에서 이용할 수 있어요
-          </h1>
-          <p className="admin-pc-only-desc">
-            홈페이지 꾸미기와 성도 관리는
-            <br />
-            넓은 화면의 PC에서 편하게 이용해 주세요.
-          </p>
-          <div className="admin-pc-only-url">
-            <span className="admin-pc-only-url-label">PC 브라우저에서 접속</span>
-            <div className="admin-pc-only-url-row">
-              <span className="admin-pc-only-url-text">{adminUrl}</span>
-              <button
-                type="button"
-                className="admin-pc-only-copy"
-                onClick={() => {
-                  void navigator.clipboard?.writeText(`https://${adminUrl}`).then(() => {
-                    setAdminUrlCopied(true);
-                    setTimeout(() => setAdminUrlCopied(false), 2000);
-                  });
-                }}
-              >
-                {adminUrlCopied ? "복사됨" : "주소 복사"}
-              </button>
-            </div>
-          </div>
-          {churchExistsOnServer && slug && (
-            <a className="admin-pc-only-home" href={previewHref}>
-              <Icon.home style={{ width: 16, height: 16 }} />
-              우리 교회 홈페이지 보기
-            </a>
-          )}
-        </div>
-      </main>
-    );
-  }
-
   return (
     <div className={`admin-shell ${isTest && activeSection === "home-order" ? "admin-design-fit" : ""}`}>
       {/* 테스트 교회 디자인 화면은 페이지 전체가 스크롤되지 않게 화면 높이에 맞추고, 왼쪽 설정·오른쪽 미리보기가 각각 스크롤된다. */}
@@ -1408,6 +1353,80 @@ export function AdminApp({ initial }: { initial: Initial }) {
           </button>
         </div>
       </header>
+      )}
+
+      {/* 테스트 교회 모바일(768px 이하): 사이드바 대신 상단바(교회·운영 토글·더보기) + 하단 탭. 데스크톱에서는 CSS로 숨김. */}
+      {isTest && (
+        <header className="admin-m-bar">
+          <div className="admin-m-church">
+            {logoPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="admin-v2-church-mark admin-v2-church-logo" src={logoPreview} alt="" />
+            ) : (
+              <div className="admin-v2-church-mark" aria-hidden="true">{(name || "교").slice(0, 1)}</div>
+            )}
+            <div className="admin-m-church-text">
+              <div className="admin-m-church-name">{name || "교회 이름"}</div>
+              <div className={`admin-m-church-status ${isPublished ? "on" : ""} ${subscription && !subscription.isActive ? "expired" : ""}`}>
+                <span className="admin-v2-status-dot" aria-hidden="true" />
+                {isPublished ? "운영 중" : "비공개"}
+                {subscription && (() => {
+                  const until = subscription.isActive ? (subscription.isFreeTrial ? subscription.freeTrialUntil : subscription.paidUntil) : null;
+                  return <span className="admin-m-church-period">{until ? `${formatYMD(until)}까지` : "기간 만료"}</span>;
+                })()}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            className={`toggle ${isPublished ? "on" : ""}`}
+            onClick={() => void onTogglePublish()}
+            disabled={!loaded || publishLoading}
+            aria-label="사이트 운영"
+            aria-pressed={isPublished}
+          />
+          <div className="admin-m-more">
+            <button
+              type="button"
+              className="admin-m-more-btn"
+              aria-label="더보기"
+              aria-expanded={mobileMenu}
+              onClick={() => setMobileMenu((v) => !v)}
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
+              </svg>
+            </button>
+            {mobileMenu && (
+              <>
+                <button type="button" className="admin-m-menu-scrim" aria-label="메뉴 닫기" onClick={() => setMobileMenu(false)} />
+                <div className="admin-m-menu" role="menu">
+                  {slug && (
+                    <Link href={previewHref} target="_blank" role="menuitem" className="admin-m-menu-item" onClick={(e) => { setMobileMenu(false); onClickGoHome(e, false); }}>
+                      <Icon.home style={{ width: 18, height: 18 }} />
+                      <span>
+                        홈페이지 보기
+                        <small>{slug}.everychurch.co.kr</small>
+                      </span>
+                    </Link>
+                  )}
+                  <a href="http://pf.kakao.com/_slJXX/chat" target="_blank" rel="noopener noreferrer" role="menuitem" className="admin-m-menu-item" onClick={() => setMobileMenu(false)}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+                    </svg>
+                    <span>카카오톡 문의</span>
+                  </a>
+                  <button type="button" role="menuitem" className="admin-m-menu-item" onClick={onLogout}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
+                    </svg>
+                    <span>로그아웃</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </header>
       )}
 
       <main className="admin-main">
@@ -1775,7 +1794,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </div>
               )}
               {isTest && areaV2 !== "design" && (
-                <div className="admin-v2-bar">
+                <div className={`admin-v2-bar ${areaV2 !== "content" && (AREA_ITEMS[areaV2] ?? []).length <= 1 ? "single" : ""}`}>
                   <div className="admin-v2-bar-title">{AREA_META.find((a) => a.key === areaV2)?.label}</div>
                   <div className="admin-v2-tabs" role="tablist">
                     {areaV2 === "content"
@@ -2718,7 +2737,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
 
       {/* 모바일 전용 바텀 네비게이션. 데스크톱에서는 CSS로 숨김. */}
       {isTest && (
-        <nav className="admin-bottom-nav" aria-label="모바일 메뉴">
+        <nav className="admin-bottom-nav admin-bottom-nav-v2" aria-label="모바일 메뉴">
           {AREA_META.map((a) => {
             const AreaIcon = Icon[a.icon];
             return (
