@@ -299,6 +299,22 @@ export function CommunityBoard({ slug, initialPosts, totalCount, pageSize, categ
       .catch(() => {});
   }, [slug]);
 
+  // 앱 알림에서 들어온 경우(/community?post=ID) 그 글을 바로 연다.
+  useEffect(() => {
+    const id = Number(new URLSearchParams(window.location.search).get("post"));
+    if (!Number.isInteger(id) || id <= 0) return;
+    let cancelled = false;
+    onchurchCommunity
+      .getPublic(slug, id)
+      .then((post) => {
+        if (!cancelled && post) setActive(post);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
   async function blockUser(userId: number, name: string) {
     if (!confirm(t.confirmBlock(name))) return;
     try {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiError, onchurchCommunity, type CommunityComment } from "@/lib/api-client";
 import { type Lang, pick } from "@/lib/i18n";
 
@@ -19,24 +19,29 @@ type Props = {
   onBlock: (userId: number, name: string) => void;
 };
 
-function formatDate(iso: string): string {
+// 방금 · 5분 전 · 3시간 전 · 어제 · 2026.11.20 (올해가 아니면 연도까지)
+function formatWhen(iso: string, lang: Lang): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return pick(lang, { ko: "방금", en: "just now" });
+  if (diff < 3600) return pick(lang, { ko: `${Math.floor(diff / 60)}분 전`, en: `${Math.floor(diff / 60)}m ago` });
+  if (diff < 86400) return pick(lang, { ko: `${Math.floor(diff / 3600)}시간 전`, en: `${Math.floor(diff / 3600)}h ago` });
+  if (diff < 172800) return pick(lang, { ko: "어제", en: "yesterday" });
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
-  return `${d.getFullYear()}.${mm}.${dd} ${hh}:${mi}`;
+  return d.getFullYear() === new Date().getFullYear() ? `${mm}.${dd}` : `${d.getFullYear()}.${mm}.${dd}`;
 }
 
+const MAX_LEN = 1000;
 // 게시글 상세 모달 안의 댓글 영역 — 목록 + 입력(로그인 시) + 본인 댓글 삭제.
 export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lang, onCountChange, blockedIds, onBlock }: Props) {
   const t = pick(lang, {
     ko: {
       title: "댓글",
       loading: "불러오는 중...",
-      empty: "첫 댓글을 남겨보세요.",
-      placeholder: "따뜻한 한마디를 남겨주세요.",
+      empty: "아직 댓글이 없어요. 첫 마음을 나눠 주세요.",
+      placeholder: "따뜻한 한마디를 남겨주세요",
       submit: "등록",
       saving: "등록 중...",
       loginToComment: "로그인하고 댓글 남기기",
@@ -49,7 +54,7 @@ export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lan
     en: {
       title: "Comments",
       loading: "Loading...",
-      empty: "Be the first to comment.",
+      empty: "No comments yet. Be the first to share.",
       placeholder: "Leave a kind word.",
       submit: "Post",
       saving: "Posting...",
@@ -66,6 +71,16 @@ export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lan
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const listEndRef = useRef<HTMLLIElement>(null);
+
+  // 입력 줄 수에 맞춰 높이를 늘린다(최대 높이는 CSS).
+  function autoSize() {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -99,6 +114,10 @@ export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lan
         return next;
       });
       setText("");
+      requestAnimationFrame(() => {
+        autoSize();
+        listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
     } catch (e) {
       setErr(e instanceof ApiError ? e.message : t.saveFail);
     } finally {
@@ -135,21 +154,26 @@ export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lan
         <p className="cmt-empty">{t.empty}</p>
       ) : (
         <ul className="cmt-list">
-          {visible.map((c) => (
-            <li key={c.id} className="cmt-item">
-              <div className="cmt-meta">
-                <span className="cmt-author">{c.authorName}</span>
-                <span className="cmt-date">{formatDate(c.createdAt)}</span>
-                {myId != null && myId === c.authorId && (
-                  <button type="button" className="cmt-del" onClick={() => remove(c)}>{t.del}</button>
-                )}
-                {loggedIn && myId !== c.authorId && (
-                  <button type="button" className="cmt-del" onClick={() => onBlock(c.authorId, c.authorName)}>{t.block}</button>
-                )}
-              </div>
-              <p className="cmt-body">{c.content}</p>
-            </li>
-          ))}
+          {visible.map((c, i) => {
+            const mine = myId != null && myId === c.authorId;
+            return (
+              <li key={c.id} className="cmt-item" ref={i === visible.length - 1 ? listEndRef : undefined}>
+                <span className={`cmt-avatar ${mine ? "mine" : ""}`} aria-hidden="true">{(c.authorName || "?").slice(0, 1)}</span>
+                <div className="cmt-main">
+                  <div className="cmt-meta">
+                    <span className="cmt-author">{c.authorName}</span>
+                    <time className="cmt-date" dateTime={c.createdAt}>{formatWhen(c.createdAt, lang)}</time>
+                    {mine ? (
+                      <button type="button" className="cmt-action" onClick={() => remove(c)}>{t.del}</button>
+                    ) : (
+                      loggedIn && <button type="button" className="cmt-action" onClick={() => onBlock(c.authorId, c.authorName)}>{t.block}</button>
+                    )}
+                  </div>
+                  <p className="cmt-body">{c.content}</p>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -162,24 +186,41 @@ export function CommunityComments({ slug, postId, loggedIn, myId, loginHref, lan
           }}
         >
           <textarea
+            ref={inputRef}
             value={text}
-            maxLength={1000}
-            rows={2}
+            maxLength={MAX_LEN}
+            rows={1}
             placeholder={t.placeholder}
-            onChange={(e) => setText(e.target.value)}
+            aria-label={t.placeholder}
+            onChange={(e) => {
+              setText(e.target.value);
+              autoSize();
+            }}
             onKeyDown={(e) => {
               // Cmd/Ctrl+Enter 로 바로 등록
               if ((e.metaKey || e.ctrlKey) && e.key === "Enter") void submit();
             }}
           />
-          <button type="submit" className="btn btn-primary" disabled={saving || !text.trim()}>
-            {saving ? t.saving : t.submit}
+          <button type="submit" className="cmt-send" disabled={saving || !text.trim()} aria-label={saving ? t.saving : t.submit}>
+            {saving ? (
+              <span className="cmt-spinner" aria-hidden="true" />
+            ) : (
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+            )}
           </button>
         </form>
       ) : (
-        <Link href={loginHref} className="btn btn-secondary cmt-login">{t.loginToComment}</Link>
+        <Link href={loginHref} className="cmt-form cmt-login">
+          <span>{t.loginToComment}</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </Link>
       )}
-      {err && <p className="cmt-err">{err}</p>}
+      {text.length > MAX_LEN - 100 && <p className="cmt-limit">{text.length} / {MAX_LEN}</p>}
+      {err && <p className="cmt-err" role="alert">{err}</p>}
     </div>
   );
 }

@@ -1950,6 +1950,14 @@ export type CommunityCategoryWriteInput = {
 
 export type CommunityBlock = { userId: number; name: string; createdAt: string };
 
+// 온교회 앱 알림 받기 (새 공지·설교·앨범·교제 글, 내 글의 댓글). 저장 전엔 켜짐. 기기 토큰 등록은 앱이 직접 한다.
+export const onchurchPush = {
+  getPreferences: () =>
+    request<{ enabled: boolean }>("/onchurch/push/preferences", { method: "GET", auth: true }),
+  setEnabled: (enabled: boolean) =>
+    request<{ enabled: boolean }>("/onchurch/push/preferences", { method: "PUT", auth: true, body: JSON.stringify({ enabled }) }),
+};
+
 export const onchurchCommunity = {
   listPublic: (slug: string, opts?: { category?: string; page?: number; size?: number }) => {
     const qs = new URLSearchParams();

@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type Lang, pick } from "@/lib/i18n";
 import {
   ApiError,
   clearTokens,
-  getCurrentUserId,
   getCurrentUserName,
   isLoggedInForChurch,
   onchurchAuth,
   onchurchCommunity,
+  onchurchPush,
   onchurchUser,
   type CommunityBlock,
-  type CommunityPost,
 } from "@/lib/api-client";
 
 const CODE_TTL_SECONDS = 300;
@@ -27,18 +26,11 @@ function formatPhone(raw: string) {
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
-
 export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { slug: string; loginHref: string; communityHref: string; lang?: Lang }) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [name, setName] = useState<string>(pick(lang, { ko: "성도", en: "Member" }));
-  const [myPosts, setMyPosts] = useState<CommunityPost[]>([]);
 
   // 회원정보 수정
   const [loginId, setLoginId] = useState("");
@@ -117,12 +109,10 @@ export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { 
     setLoggedIn(ok);
     if (!ok) { setReady(true); return; }
     setName(getCurrentUserName() ?? pick(lang, { ko: "성도", en: "Member" }));
-    const myId = getCurrentUserId();
     (async () => {
       try {
-        const [profile, postsRes, blockList] = await Promise.all([
+        const [profile, blockList] = await Promise.all([
           onchurchUser.getMe().catch(() => null),
-          onchurchCommunity.listPublic(slug, { size: 100 }).catch(() => ({ posts: [], totalCount: 0 })),
           onchurchCommunity.listBlocks().catch(() => []),
         ]);
         setBlocks(blockList);
@@ -133,7 +123,6 @@ export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { 
           setEditPhone(profile.phone);
           setOrigPhone(profile.phone);
         }
-        setMyPosts((postsRes.posts ?? []).filter((p) => myId != null && p.authorId === myId));
       } finally {
         setReady(true);
       }
@@ -241,6 +230,8 @@ export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { 
         <button type="button" className="btn btn-ghost" onClick={logout}>{pick(lang, { ko: "로그아웃", en: "Log out" })}</button>
       </div>
 
+      <AppPushSetting lang={lang} />
+
       {/* 회원정보 수정 */}
       <div>
         <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px" }}>{pick(lang, { ko: "회원정보 수정", en: "Edit Profile" })}</h3>
@@ -322,33 +313,6 @@ export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { 
         </form>
       </div>
 
-      <div>
-        <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px" }}>{pick(lang, { ko: "내가 쓴 교제 글", en: "My Community Posts" })}</h3>
-        {myPosts.length === 0 ? (
-          <div className="card" style={{ padding: 32, textAlign: "center", color: "var(--muted)" }}>
-            {pick(lang, { ko: "아직 작성한 글이 없습니다.", en: "You haven't written any posts yet." })}{" "}
-            <Link href={communityHref} style={{ color: "var(--accent)", fontWeight: 600 }}>{pick(lang, { ko: "교제 게시판으로 가기", en: "Go to the community board" })}</Link>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {myPosts.map((p) => (
-              <Link
-                key={p.id}
-                href={communityHref}
-                className="card card-hover"
-                style={{ padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                  {p.category && <span className="notice-cat">{p.category}</span>}
-                  <strong style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</strong>
-                </div>
-                <span style={{ color: "var(--muted)", fontSize: 12, flexShrink: 0 }}>{formatDate(p.createdAt)}</span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
       {blocks.length > 0 && (
         <div>
           <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px" }}>{pick(lang, { ko: "차단한 사용자", en: "Blocked Users" })}</h3>
@@ -393,6 +357,94 @@ export function MyPageClient({ slug, loginHref, communityHref, lang = "ko" }: { 
             </form>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// 앱(웹뷰)에 메시지를 보낸다 — 앱이 아니면 아무것도 하지 않는다.
+function postToApp(message: { type: "push-status" | "push-enable" | "open-settings" }) {
+  const bridge = (window as unknown as { ReactNativeWebView?: { postMessage: (data: string) => void } }).ReactNativeWebView;
+  bridge?.postMessage(JSON.stringify(message));
+}
+
+// 앱 알림 받기 — 온교회 앱 안에서만 보인다. 받을지 말지는 서버에 저장되고, 기기에서 알림이 꺼져 있으면 설정을 열도록 안내한다.
+function AppPushSetting({ lang }: { lang: Lang }) {
+  const inApp = useSyncExternalStore(
+    () => () => {},
+    () => "ReactNativeWebView" in window,
+    () => false,
+  );
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+  // 앱이 알려 주는 이 기기의 알림 상태 — "denied" 면 휴대폰 설정에서 꺼진 것
+  const [device, setDevice] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    if (!inApp) return;
+    onchurchPush
+      .getPreferences()
+      .then((r) => setEnabled(r.enabled))
+      .catch(() => setEnabled(true));
+    const onStatus = (e: Event) => setDevice((e as CustomEvent<string>).detail);
+    window.addEventListener("onchurch-push-status", onStatus);
+    postToApp({ type: "push-status" });
+    return () => window.removeEventListener("onchurch-push-status", onStatus);
+  }, [inApp]);
+
+  async function toggle() {
+    if (enabled === null || saving) return;
+    const next = !enabled;
+    setEnabled(next);
+    setSaving(true);
+    setErr("");
+    try {
+      await onchurchPush.setEnabled(next);
+      if (next) postToApp({ type: "push-enable" });
+    } catch (e) {
+      setEnabled(!next);
+      setErr(e instanceof ApiError ? e.message : pick(lang, { ko: "알림 설정을 바꾸지 못했습니다.", en: "Failed to update notifications." }));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // 앱이 상태를 답해야 보여준다 — 푸시를 지원하지 않는 이전 버전 앱에서는 숨긴다.
+  if (!inApp || device === null) return null;
+
+  return (
+    <div>
+      <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px" }}>{pick(lang, { ko: "앱 알림", en: "App Notifications" })}</h3>
+      <div className="card mypage-push">
+        <div className="mypage-push-row">
+          <div className="mypage-push-text">
+            <strong>{pick(lang, { ko: "알림 받기", en: "Receive notifications" })}</strong>
+            <span>
+              {pick(lang, {
+                ko: "새 공지·설교·앨범과 교제 글, 내 글에 달린 댓글을 알려드려요.",
+                en: "New notices, sermons, albums, community posts, and comments on your posts.",
+              })}
+            </span>
+          </div>
+          <button
+            type="button"
+            className={`toggle ${enabled ? "on" : ""}`}
+            onClick={() => void toggle()}
+            disabled={enabled === null || saving}
+            aria-pressed={!!enabled}
+            aria-label={pick(lang, { ko: "알림 받기", en: "Receive notifications" })}
+          />
+        </div>
+        {enabled && device === "denied" && (
+          <div className="mypage-push-warn">
+            <span>{pick(lang, { ko: "휴대폰 설정에서 온교회 알림이 꺼져 있어요.", en: "Notifications are turned off in your phone settings." })}</span>
+            <button type="button" className="btn btn-secondary" onClick={() => postToApp({ type: "open-settings" })}>
+              {pick(lang, { ko: "설정 열기", en: "Open Settings" })}
+            </button>
+          </div>
+        )}
+        {err && <p className="mypage-push-err">{err}</p>}
       </div>
     </div>
   );
