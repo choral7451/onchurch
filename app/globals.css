@@ -1651,6 +1651,8 @@ button.admin-design-row-head:focus-visible { outline: 2px solid var(--accent); o
   .admin-design-fab-apply { flex: 1; justify-content: center; }
   .admin-design-fab.clean .admin-design-fab-apply { display: none; }
   .admin-design-fab.clean .admin-design-fab-preview { flex: 1; }
+  /* 미리보기 시트가 열려 있으면 하단 버튼은 숨긴다(시트 위로 겹쳐 보이던 문제) */
+  .admin-design-fab.behind-sheet { display: none; }
   @keyframes admin-sheet-up { from { transform: translateY(24px); opacity: 0; } }
   .admin-v2-bar.single { display: none; }
 }

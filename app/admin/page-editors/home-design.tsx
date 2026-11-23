@@ -212,7 +212,7 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   return (
     <>
       {/* 스크롤해도 항상 보이도록 '되돌리기 · 홈페이지에 적용'은 화면 오른쪽 아래에 고정한다. */}
-      <div className={`admin-design-fab ${dirty === 0 ? "clean" : ""}`}>
+      <div className={`admin-design-fab ${dirty === 0 ? "clean" : ""} ${sheetOpen ? "behind-sheet" : ""}`}>
         <button type="button" className="btn btn-secondary admin-design-fab-preview" onClick={() => setSheetOpen(true)}>
           미리보기
         </button>

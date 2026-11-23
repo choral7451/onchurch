@@ -28,12 +28,26 @@ function dateDaysAgo(days: number): string {
   return new Date(Date.now() - days * DAY).toISOString().slice(0, 10);
 }
 
-const SAMPLE_NOTICES = [
-  { id: -1, category: null, title: "예시 · 이번 주 주보와 교회 소식", publishedAt: null, createdAt: isoDaysFromNow(-1) },
-  { id: -2, category: null, title: "예시 · 새가족 환영회 안내", publishedAt: null, createdAt: isoDaysFromNow(-4) },
-  { id: -3, category: null, title: "예시 · 여름 수련회 신청을 받습니다", publishedAt: null, createdAt: isoDaysFromNow(-8) },
-  { id: -4, category: null, title: "예시 · 주차 안내와 예배 시간 변경", publishedAt: null, createdAt: isoDaysFromNow(-12) },
+// 소식 예시 — 카테고리 카드가 여러 개로 나뉘어 보이도록 카테고리별로 글을 둔다.
+const SAMPLE_NOTICE_CATEGORY_NAMES = ["공지사항", "교회행사", "주보"];
+const SAMPLE_NOTICE_TITLES = [
+  ["예시 · 이번 주 교회 소식", "예시 · 주차 안내와 예배 시간 변경", "예시 · 새가족 등록 안내"],
+  ["예시 · 새가족 환영회 안내", "예시 · 여름 수련회 신청을 받습니다", "예시 · 전교인 체육대회"],
+  ["예시 · 이번 주 주보", "예시 · 지난주 주보", "예시 · 2주 전 주보"],
 ];
+
+function sampleNotices(categoryNames: string[]) {
+  const names = categoryNames.length ? categoryNames.slice(0, 3) : SAMPLE_NOTICE_CATEGORY_NAMES;
+  let id = 0;
+  return names.flatMap((name, ci) =>
+    SAMPLE_NOTICE_TITLES[ci % SAMPLE_NOTICE_TITLES.length].map((title, i) => {
+      id -= 1;
+      return { id, category: name, title, publishedAt: null, createdAt: isoDaysFromNow(-(ci + i * 4 + 1)) };
+    }),
+  );
+}
+
+const SAMPLE_NOTICE_CATEGORIES = SAMPLE_NOTICE_CATEGORY_NAMES.map((name, i) => ({ id: -(i + 1), name, sortOrder: i + 1, isActive: true, isAll: false }));
 
 const SAMPLE_SERMONS = [
   { id: -1, seriesId: null, title: "예시 · 두려워하지 말라", pastor: "담임목사", date: dateDaysAgo(2), duration: "38:12", videoUrl: null, isFeatured: true },
@@ -71,15 +85,26 @@ const SAMPLE_PASTOR = {
 
 const empty = (v: unknown) => !Array.isArray(v) || v.length === 0;
 
-// 소식 예시는 카테고리가 없어서, 실제 공지가 하나도 없는 교회는 카테고리 목록도 비워 '교회 소식' 한 묶음으로 보이게 한다.
-const hasNotices = cache(async (apiBase: string, slug: string): Promise<boolean> => {
+type NoticeCategory = { name: string; isActive: boolean; isAll: boolean };
+
+async function fetchItem<T>(apiBase: string, path: string): Promise<T | null> {
   try {
-    const res = await fetch(`${apiBase}/onchurch/sites/${slug}/notices?page=1&size=1`, { cache: "no-store" });
+    const res = await fetch(`${apiBase}${path}`, { cache: "no-store" });
     const body = await res.json();
-    return Array.isArray(body?.item?.notices) && body.item.notices.length > 0;
+    return (body?.item ?? null) as T | null;
   } catch {
-    return true;
+    return null;
   }
+}
+
+// 실제 공지가 있는지 / 교회가 정해 둔 공지 카테고리(전체 제외, 켜진 것) — 예시 글을 그 카테고리에 나눠 담는다.
+const hasNotices = cache(async (apiBase: string, slug: string): Promise<boolean> => {
+  const item = await fetchItem<{ notices?: unknown[] }>(apiBase, `/onchurch/sites/${slug}/notices?page=1&size=1`);
+  return item === null || (Array.isArray(item.notices) && item.notices.length > 0);
+});
+const activeCategoryNames = cache(async (apiBase: string, slug: string): Promise<string[]> => {
+  const item = await fetchItem<{ categories?: NoticeCategory[] }>(apiBase, `/onchurch/sites/${slug}/notice-categories`);
+  return (item?.categories ?? []).filter((c) => c.isActive && !c.isAll).map((c) => c.name);
 });
 
 /**
@@ -94,9 +119,13 @@ export async function withSampleContent<T>(apiBase: string, path: string, value:
   const v = (value ?? {}) as Record<string, unknown>;
   switch (resource) {
     case "notices":
-      return (empty(v.notices) ? { ...v, notices: SAMPLE_NOTICES } : value) as T;
-    case "notice-categories":
-      return ((await hasNotices(apiBase, slug)) ? value : { ...v, categories: [] }) as T;
+      return (empty(v.notices) ? { ...v, notices: sampleNotices(await activeCategoryNames(apiBase, slug)) } : value) as T;
+    case "notice-categories": {
+      // 글이 없고 카테고리도 안 만든 교회는 예시 카테고리 3개로 나눠 보여준다.
+      if (await hasNotices(apiBase, slug)) return value;
+      const own = Array.isArray(v.categories) ? (v.categories as NoticeCategory[]).filter((c) => c.isActive && !c.isAll) : [];
+      return (own.length ? value : { ...v, categories: SAMPLE_NOTICE_CATEGORIES }) as T;
+    }
     case "sermons":
       return (empty(v.sermons) ? { ...v, sermons: SAMPLE_SERMONS } : value) as T;
     case "galleries":
