@@ -375,8 +375,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
   // 템플릿마다 홈 섹션 구성이 다르다(classic만 소식·갤러리 보유). 마스터도 바꿀 수 있고 여기서도 바꾼다.
   const [siteTemplate, setSiteTemplate] = useState<string>(DEFAULT_TEMPLATE_ID);
   const [templateSaving, setTemplateSaving] = useState(false);
-  // 테스트 교회(소유자 is_test)에만 새 '디자인' 화면(섹션별 기본/모던 + 색)을 노출한다. 기존 교회는 영향 없음.
-  const [isTest, setIsTest] = useState(false);
+  // 새 관리자 화면(디자인·콘텐츠·성도관리·결제)을 모든 교회에 쓴다 (2026-11-23 전체 적용).
+  // 원래 테스트 교회(소유자 is_test)에만 열던 분기라, 기존 화면 코드는 isTest 가 false 인 쪽에 남아 있다.
+  const isTest = true;
   const [siteDesign, setSiteDesign] = useState<SiteDesign | null>(null);
   const [designSaving, setDesignSaving] = useState(false);
   // 메뉴 구성(페이지 온오프)이 서버에 저장될 때마다 올려 디자인 미리보기를 새로 불러오게 한다.
@@ -553,9 +554,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
           if (c.enabledPages?.length) {
             const next: Record<string, boolean> = {};
             for (const n of initial.nav) next[n.id] = c.enabledPages.includes(n.id);
-            // 교회 소개·예배 안내는 기존 교회에선 항상 노출. 테스트 교회만 메뉴 구성에서 끌 수 있다.
-            next["about"] = res.isTest ? c.enabledPages.includes("about") : true;
-            next["worship"] = res.isTest ? c.enabledPages.includes("worship") : true;
+            // 교회 소개·예배 안내도 메뉴 구성에서 켜고 끌 수 있다(저장값 그대로).
+            next["about"] = c.enabledPages.includes("about");
+            next["worship"] = c.enabledPages.includes("worship");
             next["directions"] = true;
             // 테스트 교회 디자인 화면에서 끌 수 있는 항목(기본 표시). 끈 것만 hide:* 로 저장된다.
             for (const k of ["hide:banner", "hide:quick", "hide:directions"]) next[k] = c.enabledPages.includes(k);
@@ -565,15 +566,14 @@ export function AdminApp({ initial }: { initial: Initial }) {
           const template = resolveTemplateId(c.siteTemplate);
           setSiteTemplate(template);
           // 디자인 화면은 두 템플릿 섹션의 합집합(모던 목록)으로 순서를 다루므로 테스트 교회는 그 기준으로 정규화한다.
-          setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? [], res.isTest ? "modern" : template));
+          setHomeSectionOrder(normalizeHomeSectionOrder(c.homeSectionOrder ?? [], "modern"));
           setSiteDesign(normalizeSiteDesign(c.siteDesign));
           setIsPublished(c.isPublished);
           setChurchExistsOnServer(true);
         }
         if (res?.subscription) setSubscription(res.subscription);
-        setIsTest(!!res?.isTest);
         // 테스트 교회는 디자인 화면, 기존 교회는 기본 정보로 시작한다.
-        if (res?.isTest) setActiveSection("home-order");
+        setActiveSection("home-order");
       } catch (err) {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
