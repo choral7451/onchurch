@@ -78,8 +78,6 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   }
 
   const [device, setDevice] = useState<"pc" | "mobile">("pc");
-  // 펼친 줄 — 디자인·메뉴 표시·상세 설정은 줄을 눌러 펼쳤을 때만 보여 한 줄을 단순하게 둔다.
-  const [openKey, setOpenKey] = useState<HomeSectionKey | null>(null);
   // 휴대폰: 미리보기를 화면 아래에 붙이면 설정 목록과 미리보기 두 곳이 따로 스크롤돼 불편하다.
   // 그래서 미리보기는 '미리보기' 버튼으로 여는 전체 화면 시트로 띄운다(iframe 은 계속 살아 있어 초안이 바로 반영된다).
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -301,7 +299,7 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                   </div>
                 </div>
               </div>
-              <p>오른쪽 스위치로 홈에 보일지 정하고, 드래그해서 순서를 바꿔요. 줄을 누르면 디자인과 메뉴 표시를 바꿀 수 있어요.</p>
+              <p>오른쪽 스위치로 페이지를 켜고 끄고, 드래그해서 홈 순서를 바꿔요.</p>
             </div>
             <div className="admin-section-body">
               <ol className="admin-design-rows">
@@ -310,64 +308,40 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                   const page = pages[key];
                   const label = page?.label ?? meta.title;
                   const homeOn = page?.home.on ?? true;
-                  const menuOff = !!page?.menu && !page.menu.on;
-                  // 메뉴(페이지)를 끄면 그 섹션도 홈에서 빠진다.
-                  const shown = homeOn && !menuOff;
+                  // 스위치 하나 = 페이지 켜고 끄기(메뉴와 홈 섹션 함께). 메뉴가 없는 배너·빠른 이동은 홈 표시만.
+                  const shown = page?.menu ? page.menu.on && homeOn : homeOn;
                   const current = draft.sections[key] ?? base;
                   const hasSettings = !!settingsKeys?.includes(key);
-                  const open = openKey === key;
-                  const note = menuOff ? "메뉴가 꺼져 홈에도 안 보여요" : !homeOn ? "홈에서 숨김" : `${sectionDesignLabel(key, current)} 디자인`;
                   return (
-                    <li key={key} className={`admin-design-row ${shown ? "" : "off"} ${open ? "open" : ""}`} {...getItemProps(idx)}>
+                    <li key={key} className={`admin-design-row ${shown ? "" : "off"}`} {...getItemProps(idx)}>
                       <div className="admin-design-row-main">
                         <DragHandle />
-                        <button
-                          type="button"
-                          className="admin-design-row-head"
-                          aria-expanded={open}
-                          aria-controls={`design-row-${key}`}
-                          onClick={() => setOpenKey(open ? null : key)}
-                        >
+                        <span className="admin-design-row-head">
                           <span className="admin-design-row-title" title={meta.desc}>{label}</span>
-                          <span className="admin-design-row-sub">{note}</span>
-                        </button>
-                        <svg className="admin-design-row-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                          {hasSettings && (
+                            <button type="button" className="admin-design-row-link" onClick={() => onSectionSettings?.(key)}>
+                              내용 설정
+                            </button>
+                          )}
+                        </span>
+                        <div className="admin-design-seg" role="group" aria-label={`${label} 디자인`}>
+                          {SECTION_DESIGN_IDS.map((id) => (
+                            <button key={id} type="button" aria-pressed={current === id} onClick={() => setSection(key, id)}>
+                              {sectionDesignLabel(key, id)}
+                            </button>
+                          ))}
+                        </div>
                         {page && (
                           <button
                             type="button"
                             className={`toggle ${shown ? "on" : ""}`}
-                            // 스위치는 '홈에 실제로 보이는지'. 메뉴가 꺼져 숨은 섹션은 켜면 메뉴부터 켠다.
-                            onClick={menuOff ? page.menu?.toggle : page.home.toggle}
-                            aria-label={`${label} 홈에 표시`}
+                            // 예전에 '홈에서만 숨김'으로 꺼 둔 섹션은 먼저 그 표시를 풀어 준다.
+                            onClick={!homeOn ? page.home.toggle : page.menu ? page.menu.toggle : page.home.toggle}
+                            aria-label={`${label} 켜기`}
                             aria-pressed={shown}
                           />
                         )}
                       </div>
-                      {open && (
-                        <div className="admin-design-row-detail" id={`design-row-${key}`}>
-                          <div className="admin-design-row-opt">
-                            <span>디자인</span>
-                            <div className="admin-design-seg" role="group" aria-label={`${label} 디자인`}>
-                              {SECTION_DESIGN_IDS.map((id) => (
-                                <button key={id} type="button" aria-pressed={current === id} onClick={() => setSection(key, id)}>
-                                  {sectionDesignLabel(key, id)}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          {page?.menu && (
-                            <div className="admin-design-row-opt">
-                              <span>메뉴에 ‘{page.menu.label}’ 표시</span>
-                              <button type="button" className={`toggle ${page.menu.on ? "on" : ""}`} onClick={page.menu.toggle} aria-label={`메뉴에 ${page.menu.label} 표시`} aria-pressed={page.menu.on} />
-                            </div>
-                          )}
-                          {hasSettings && (
-                            <button type="button" className="admin-design-row-set" onClick={() => onSectionSettings?.(key)}>
-                              {label} 내용 설정
-                            </button>
-                          )}
-                        </div>
-                      )}
                     </li>
                   );
                 })}
