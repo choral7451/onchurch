@@ -10,6 +10,7 @@ import {
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
+import { MissingHint } from "@/components/admin/missing-hint";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -210,6 +211,7 @@ export function DirectionsEditor() {
               <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>
                 취소
               </button>
+              <MissingHint fields={[["구분", !draft.tag.trim()], ["제목", !draft.title.trim()]]} />
               <button
                 type="button"
                 className="btn btn-primary"

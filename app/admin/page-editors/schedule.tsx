@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ApiError, onchurchEvent, type EventItem, type EventWriteInput } from "@/lib/api-client";
+import { MissingHint } from "@/components/admin/missing-hint";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -231,6 +232,7 @@ export function ScheduleEditor() {
               <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>
                 취소
               </button>
+              <MissingHint fields={[["제목", !draft.title.trim()], ["시작 일시", !draft.startAt]]} />
               <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.title.trim() || !draft.startAt}>
                 {status === "saving" ? "저장 중..." : "저장"}
               </button>

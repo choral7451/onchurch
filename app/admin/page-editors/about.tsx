@@ -20,6 +20,7 @@ import {
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
+import { MissingHint } from "@/components/admin/missing-hint";
 
 type SectionKey = "pastor" | "vision" | "history" | "staff";
 
@@ -312,6 +313,7 @@ function PastorEditor({ onChanged }: { onChanged?: () => void }) {
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <MissingHint fields={[["이름", !draft.name.trim()]]} />
         <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
           {status === "saving" ? "저장 중..." : pastor ? "수정 저장" : "등록"}
         </button>
@@ -411,6 +413,7 @@ function VisionEditor({ visible, onToggleVisible }: { visible: boolean; onToggle
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
+            <MissingHint fields={[["한글", !draft.ko.trim()]]} />
             <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.ko.trim()}>
               {status === "saving" ? "저장 중..." : "저장"}
             </button>
@@ -538,6 +541,7 @@ function HistoryEditor({ visible, onToggleVisible }: { visible: boolean; onToggl
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
+            <MissingHint fields={[["연도", !draft.year.trim()], ["제목", !draft.title.trim()]]} />
             <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.year.trim() || !draft.title.trim()}>
               {status === "saving" ? "저장 중..." : "저장"}
             </button>
@@ -684,6 +688,7 @@ function StaffEditor({ visible, onToggleVisible }: { visible: boolean; onToggleV
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
+            <MissingHint fields={[["이름", !draft.name.trim()]]} />
             <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
               {status === "saving" ? "저장 중..." : "저장"}
             </button>

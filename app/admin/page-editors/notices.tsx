@@ -16,6 +16,7 @@ import { Icon } from "@/components/icons";
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
+import { MissingHint } from "@/components/admin/missing-hint";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -336,6 +337,7 @@ function NoticeItemsEditor({ categories }: { categories: NoticeCategoryItem[] })
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>
               취소
             </button>
+            <MissingHint fields={[["제목", !draft.title.trim()]]} />
             <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.title.trim()}>
               {status === "saving" ? "저장 중..." : "저장"}
             </button>
@@ -506,6 +508,7 @@ function NoticeCategoriesEditor({ onChanged }: { onChanged: () => void }) {
                 style={{ flex: 1, minWidth: 200 }}
               />
               <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
+              <MissingHint fields={[["카테고리 이름", !draft.name.trim()]]} />
               <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
                 {status === "saving" ? "저장 중..." : "저장"}
               </button>

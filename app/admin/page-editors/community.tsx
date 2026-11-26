@@ -13,6 +13,7 @@ import {
 import { Icon } from "@/components/icons";
 import { toEmbedUrl } from "@/lib/video-embed";
 import { DEFAULT_COMMUNITY_CATEGORIES } from "@/lib/community-defaults";
+import { MissingHint } from "@/components/admin/missing-hint";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 type SubKey = "posts" | "categories";
@@ -179,6 +180,7 @@ function PostsManager() {
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancelWrite} disabled={saving}>취소</button>
+            <MissingHint fields={[["제목", !draft.title.trim()]]} />
             <button type="button" className="btn btn-primary" onClick={submit} disabled={saving || !draft.title.trim()}>
               {saving ? "저장 중..." : "등록"}
             </button>
@@ -352,6 +354,7 @@ function CategoriesManager() {
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
+            <MissingHint fields={[["이름", !draft.name.trim()]]} />
             <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
               {status === "saving" ? "저장 중..." : "저장"}
             </button>

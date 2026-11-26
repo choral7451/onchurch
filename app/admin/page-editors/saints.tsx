@@ -15,6 +15,7 @@ import {
   type Visitation,
 } from "@/lib/api-client";
 import { Pager, PageSizeSelect } from "@/components/admin-pager";
+import { MissingHint } from "@/components/admin/missing-hint";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -1008,6 +1009,7 @@ export function SaintsEditor({
 
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
               <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>닫기</button>
+              <MissingHint fields={[["이름", !draft.name.trim()]]} />
               <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim()}>
                 {status === "saving" ? "저장 중..." : editingSaint ? "수정 저장" : "등록"}
               </button>

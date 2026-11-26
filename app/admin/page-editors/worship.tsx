@@ -11,6 +11,7 @@ import {
 import { DragHandle } from "@/components/admin/drag-handle";
 import { useDragSort } from "@/lib/use-drag-sort";
 import { applyReorder } from "@/lib/admin-reorder";
+import { MissingHint } from "@/components/admin/missing-hint";
 
 type Status = "idle" | "loading" | "saving" | "deleting";
 
@@ -184,6 +185,7 @@ function WorshipServicesEditor({ onChanged }: { onChanged?: () => void }) {
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
+            <MissingHint fields={[["이름", !draft.name.trim()], ["시간", !draft.time.trim()]]} />
             <button type="button" className="btn btn-primary" onClick={save} disabled={status === "saving" || !draft.name.trim() || !draft.time.trim()}>
               {status === "saving" ? "저장 중..." : "저장"}
             </button>
