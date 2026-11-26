@@ -358,8 +358,23 @@ export type UploadedImage = {
   originalFilename: string;
 };
 
+// 서버는 한 요청에 10장·장당 32MB 까지만 받는다(system.controller FilesInterceptor).
+const UPLOAD_BATCH = 10;
+const UPLOAD_MAX_BYTES = 32 * 1024 * 1024;
+
 export async function uploadImages(files: File[]): Promise<UploadedImage[]> {
   if (!files.length) return [];
+  const tooBig = files.find((f) => f.size > UPLOAD_MAX_BYTES);
+  if (tooBig) throw new ApiError(`‘${tooBig.name}’ 파일이 32MB를 넘어 올릴 수 없습니다.`, "FILE_TOO_LARGE", 413);
+  // 여러 장을 고르면 10장씩 나눠 차례로 올린다.
+  const result: UploadedImage[] = [];
+  for (let i = 0; i < files.length; i += UPLOAD_BATCH) {
+    result.push(...(await uploadImageBatch(files.slice(i, i + UPLOAD_BATCH))));
+  }
+  return result;
+}
+
+async function uploadImageBatch(files: File[]): Promise<UploadedImage[]> {
   const accessToken = getAccessToken();
   const form = new FormData();
   form.append("target", "USER");
