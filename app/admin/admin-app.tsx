@@ -107,7 +107,7 @@ type NavGroup = "home" | "saints";
 // 페이지 내용(설교·공지·앨범…)과 교회 정보는 디자인 화면의 각 줄·'교회 정보' 카드에서 들어간다.
 type AreaKey = "design" | "saints" | "settings";
 const AREA_META: { key: AreaKey; label: string; icon: keyof typeof Icon }[] = [
-  { key: "design", label: "디자인", icon: "image" },
+  { key: "design", label: "홈페이지", icon: "home" },
   { key: "saints", label: "성도관리", icon: "users" },
   { key: "settings", label: "결제", icon: "wallet" },
 ];
@@ -1812,7 +1812,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 <div className="admin-v2-back">
                   <button type="button" className="admin-v2-back-btn" onClick={() => openSection("home-order")}>
                     <Icon.chevL style={{ width: 16, height: 16 }} />
-                    디자인
+                    홈페이지
                   </button>
                   <span className="admin-v2-back-title">
                     {activeSection === "site"
