@@ -99,7 +99,7 @@ const BOARD_DESCRIPTIONS: Record<string, string> = {
   bible: "성경 통독 · QT 가이드",
 };
 
-type SectionKey = "home" | "site" | "logo" | "contact" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
+type SectionKey = "home" | "site" | "logo" | "contact" | "directions" | "banners" | "home-order" | "bulletin" | "billing" | "members" | "saints-roster" | "visitations" | "attendance" | "settings" | `page:${string}` | "custom-page";
 
 type NavGroup = "home" | "saints";
 
@@ -126,7 +126,7 @@ const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>>
 };
 function sectionArea(key: SectionKey): AreaKey {
   if (key === "home" || key === "home-order" || key === "logo") return "design";
-  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners" || key === "site" || key === "contact") return "design";
+  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners" || key === "site" || key === "contact" || key === "directions") return "design";
   if (key === "saints-roster" || key === "visitations" || key === "attendance" || key === "members") return "saints";
   return "settings";
 }
@@ -1818,7 +1818,9 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     {activeSection === "site"
                       ? "기본 정보"
                       : activeSection === "contact"
-                        ? "연락처 · 오시는 길"
+                        ? "연락처"
+                        : activeSection === "directions"
+                          ? initial.nav.find((n) => n.id === "directions")?.label ?? "찾아오시는 길"
                         : activeSection === "banners"
                           ? "홈 배너"
                           : activeSection === "logo"
@@ -2131,6 +2133,23 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       )}
                     </div>
                     {sectionSaveBar}
+                    {/* 테스트 교회는 오시는 길 안내를 '찾아오시는 길' 내용 관리(directions)에서 따로 편집한다. */}
+                    {!isTest && <DirectionsEditor />}
+                  </div>
+                </section>
+              )}
+
+              {activeSection === "directions" && (
+                <section className="admin-section">
+                  <div className="admin-section-head">
+                    <div className="admin-section-eyebrow">DIRECTIONS</div>
+                    <h2>{initial.nav.find((n) => n.id === "directions")?.label ?? "찾아오시는 길"}</h2>
+                    <p>
+                      지도와 주소는 교회 정보의 연락처 주소로 보여요.{" "}
+                      <button type="button" className="admin-inline-link" onClick={() => openSection("contact")}>주소 바꾸기</button>
+                    </p>
+                  </div>
+                  <div className="admin-section-body">
                     <DirectionsEditor />
                   </div>
                 </section>
@@ -2188,7 +2207,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                       sermons: "page:sermons",
                       news: "page:notices",
                       gallery: "page:gallery",
-                      visit: "contact",
+                      visit: "directions",
                     };
                     const to = target[key];
                     if (to) openSection(to);
@@ -2206,7 +2225,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         <ul className="admin-info-links">
                           {([
                             { key: "site", label: "기본 정보", desc: "교회 이름 · 서브도메인", missing: !siteRequiredFilled },
-                            { key: "contact", label: "연락처 · 오시는 길", desc: "전화 · 이메일 · 주소 · 교통 안내", missing: !contactRequiredFilled },
+                            { key: "contact", label: "연락처", desc: "전화 · 이메일 · 주소", missing: !contactRequiredFilled },
                           ] as const).map((it) => (
                             <li key={it.key}>
                               <button type="button" className="admin-info-link" onClick={() => openSection(it.key)}>
