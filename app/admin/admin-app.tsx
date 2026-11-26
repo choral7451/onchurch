@@ -103,11 +103,11 @@ type SectionKey = "home" | "site" | "logo" | "contact" | "banners" | "home-order
 
 type NavGroup = "home" | "saints";
 
-// 테스트 교회 전용 4개 영역 사이드바(디자인 · 콘텐츠 · 성도관리 · 결제). 기존 교회는 NavGroup 사이드바 그대로.
-type AreaKey = "design" | "content" | "saints" | "settings";
+// 테스트 교회 전용 3개 영역 사이드바(디자인 · 성도관리 · 결제). 기존 교회는 NavGroup 사이드바 그대로.
+// 페이지 내용(설교·공지·앨범…)과 교회 정보는 디자인 화면의 각 줄·'교회 정보' 카드에서 들어간다.
+type AreaKey = "design" | "saints" | "settings";
 const AREA_META: { key: AreaKey; label: string; icon: keyof typeof Icon }[] = [
   { key: "design", label: "디자인", icon: "image" },
-  { key: "content", label: "콘텐츠", icon: "bible" },
   { key: "saints", label: "성도관리", icon: "users" },
   { key: "settings", label: "결제", icon: "wallet" },
 ];
@@ -126,7 +126,7 @@ const AREA_ITEMS: Partial<Record<AreaKey, { key: SectionKey; label: string }[]>>
 };
 function sectionArea(key: SectionKey): AreaKey {
   if (key === "home" || key === "home-order" || key === "logo") return "design";
-  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners" || key === "site" || key === "contact") return "content";
+  if (key.startsWith("page:") || key === "custom-page" || key === "bulletin" || key === "banners" || key === "site" || key === "contact") return "design";
   if (key === "saints-roster" || key === "visitations" || key === "attendance" || key === "members") return "saints";
   return "settings";
 }
@@ -316,7 +316,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
     setAreaV2(area);
     // 하위 항목은 본문 상단 탭 바에 있으므로 모바일도 바로 본문으로 들어간다.
     setMobileDetail(true);
-    const first: Record<AreaKey, SectionKey> = { design: "home-order", content: "site", saints: "saints-roster", settings: "billing" };
+    const first: Record<AreaKey, SectionKey> = { design: "home-order", saints: "saints-roster", settings: "billing" };
     setActiveSection(first[area]);
   }
 
@@ -1504,8 +1504,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   >
                     <AreaIcon style={{ width: 18, height: 18 }} />
                     <span className="admin-sidebar-item-label">{a.label}</span>
-                    {a.key === "content" && pendingInquiries > 0 && <span className="admin-sidebar-pill incomplete" title="미답변 문의">문의 {pendingInquiries}</span>}
-                    {a.key === "content" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete" title="필수 설정 미완료">{requiredTotal - requiredDoneCount}</span>}
+                    {a.key === "design" && pendingInquiries > 0 && <span className="admin-sidebar-pill incomplete" title="미답변 문의">문의 {pendingInquiries}</span>}
+                    {a.key === "design" && !allRequiredFilled && <span className="admin-sidebar-pill incomplete" title="필수 설정 미완료">{requiredTotal - requiredDoneCount}</span>}
                     {a.key === "saints" && saintsLocked && <span className="admin-sidebar-pill optional">결제</span>}
                   </button>
                 );
@@ -1794,69 +1794,41 @@ export function AdminApp({ initial }: { initial: Initial }) {
                 </div>
               )}
               {isTest && areaV2 !== "design" && (
-                <div className={`admin-v2-bar ${areaV2 !== "content" && (AREA_ITEMS[areaV2] ?? []).length <= 1 ? "single" : ""}`}>
+                <div className={`admin-v2-bar ${(AREA_ITEMS[areaV2] ?? []).length <= 1 ? "single" : ""}`}>
                   <div className="admin-v2-bar-title">{AREA_META.find((a) => a.key === areaV2)?.label}</div>
                   <div className="admin-v2-tabs" role="tablist">
-                    {areaV2 === "content"
-                      ? (
-                        <>
-                          {([
-                            { key: "site", label: "기본 정보", missing: !siteRequiredFilled },
-                            { key: "contact", label: "연락처", missing: !contactRequiredFilled },
-                          ] as const).map((it) => (
-                            <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""}`}>
-                              <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
-                                {it.label}
-                                <span className="required-mark" aria-label="필수">*</span>
-                                {it.missing && <span className="admin-v2-tab-dot" aria-label="필수 미입력" />}
-                              </button>
-                            </div>
-                          ))}
-                          {/* 켜진 페이지만 탭으로 보여준다. 꺼진 페이지가 열려 있으면(시작 화면 바로가기 등) 그 탭만 '숨김' 표시로 남긴다. 온오프는 디자인 화면의 메뉴 구성 카드. */}
-                          {initial.nav.filter((n) => n.id !== "directions").map((n) => {
-                            const on = boards[n.id] ?? true;
-                            const key = `page:${n.id}` as SectionKey;
-                            const isActive = activeSection === key;
-                            if (!on && !isActive) return null;
-                            const requiredMissing = n.id === "about" ? !aboutOk : n.id === "worship" ? !worshipOk : false;
-                            return (
-                              <div key={n.id} className={`admin-v2-tab ${isActive ? "active" : ""} ${!on ? "off" : ""}`}>
-                                <button type="button" role="tab" aria-selected={isActive} onClick={() => openSection(key)}>
-                                  {n.label}
-                                  {requiredMissing && <span className="admin-v2-tab-dot" aria-label="필수 미입력" />}
-                                  {!on && <span className="admin-v2-tab-hidden">숨김</span>}
-                                </button>
-                              </div>
-                            );
-                          })}
-                          {(customPage?.isActive || activeSection === "custom-page") && (
-                            <div className={`admin-v2-tab ${activeSection === "custom-page" ? "active" : ""} ${!customPage?.isActive ? "off" : ""}`}>
-                              <button type="button" role="tab" aria-selected={activeSection === "custom-page"} onClick={() => openSection("custom-page")}>
-                                {customPage?.title?.trim() || "새 페이지"}
-                                {customPage?.visibility === "member" && <span className="admin-v2-tab-hidden member">회원</span>}
-                                {!customPage?.isActive && <span className="admin-v2-tab-hidden">숨김</span>}
-                              </button>
-                            </div>
-                          )}
-                          <div className={`admin-v2-tab ${activeSection === "banners" ? "active" : ""}`}>
-                            <button type="button" role="tab" aria-selected={activeSection === "banners"} onClick={() => openSection("banners")}>홈 배너</button>
-                          </div>
-                          <div className="admin-v2-tab admin-v2-tab-ghost">
-                            <button type="button" onClick={() => openSection("home-order")} title="디자인 화면에서 페이지를 켜거나 끕니다">
-                              <Icon.gear style={{ width: 13, height: 13 }} />
-                              메뉴 구성
-                            </button>
-                          </div>
-                        </>
-                      )
-                      : (AREA_ITEMS[areaV2] ?? []).map((it) => (
-                        <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""}`}>
-                          <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
-                            {it.label}
-                          </button>
-                        </div>
-                      ))}
+                    {(AREA_ITEMS[areaV2] ?? []).map((it) => (
+                      <div key={it.key} className={`admin-v2-tab ${activeSection === it.key ? "active" : ""}`}>
+                        <button type="button" role="tab" aria-selected={activeSection === it.key} onClick={() => openSection(it.key)}>
+                          {it.label}
+                        </button>
+                      </div>
+                    ))}
                   </div>
+                </div>
+              )}
+              {/* 디자인 화면의 줄·교회 정보 카드에서 들어온 내용 관리 화면 — 위에 '디자인으로' 돌아가는 줄을 둔다. */}
+              {isTest && areaV2 === "design" && activeSection !== "home-order" && activeSection !== "home" && (
+                <div className="admin-v2-back">
+                  <button type="button" className="admin-v2-back-btn" onClick={() => openSection("home-order")}>
+                    <Icon.chevL style={{ width: 16, height: 16 }} />
+                    디자인
+                  </button>
+                  <span className="admin-v2-back-title">
+                    {activeSection === "site"
+                      ? "기본 정보"
+                      : activeSection === "contact"
+                        ? "연락처 · 오시는 길"
+                        : activeSection === "banners"
+                          ? "홈 배너"
+                          : activeSection === "logo"
+                            ? "로고"
+                            : activeSection === "custom-page"
+                              ? customPage?.title?.trim() || "새 페이지"
+                              : activeSection === "bulletin"
+                                ? "주보"
+                                : activePageItem?.label ?? ""}
+                  </span>
                 </div>
               )}
 
@@ -2195,8 +2167,8 @@ export function AdminApp({ initial }: { initial: Initial }) {
                     };
                   })()}
                   menuOnly={[
-                    { key: "community", label: initial.nav.find((n) => n.id === "community")?.label ?? "교제", on: dBoards["community"] ?? true, toggle: () => toggleBoardDraft("community") },
-                    { key: "custom", label: customPage?.title?.trim() || "새 페이지", on: dCustomActive, toggle: toggleCustomPageDraft },
+                    { key: "community", label: initial.nav.find((n) => n.id === "community")?.label ?? "교제", on: dBoards["community"] ?? true, toggle: () => toggleBoardDraft("community"), onOpen: () => openSection("page:community" as SectionKey) },
+                    { key: "custom", label: customPage?.title?.trim() || "새 페이지", on: dCustomActive, toggle: toggleCustomPageDraft, onOpen: () => openSection("custom-page") },
                   ]}
                   saving={designSaving}
                   onApply={applySiteDesign}
@@ -2205,9 +2177,51 @@ export function AdminApp({ initial }: { initial: Initial }) {
                   onRevertExtra={revertDesignExtras}
                   previewSite={{ pages: Object.entries(dBoards).filter(([, on]) => on).map(([id]) => id), quick: dQuick, custom: dCustomActive }}
                   previewLogo={logoPreview || null}
-                  onSectionSettings={(key) => { if (key === "quick") { setExtDraft({ youtube: dQuick.youtube ?? "", instagram: dQuick.instagram ?? "" }); setQuickModal(true); } else if (key === "pastor") setAboutModal(true); }}
-                  settingsKeys={["quick", "pastor"]}
+                  onSectionSettings={(key) => {
+                    if (key === "quick") { setExtDraft({ youtube: dQuick.youtube ?? "", instagram: dQuick.instagram ?? "" }); setQuickModal(true); return; }
+                    if (key === "pastor") { setAboutModal(true); return; }
+                    // 각 줄의 '내용 관리' → 그 페이지의 내용 편집 화면
+                    const target: Partial<Record<HomeSectionKey, SectionKey>> = {
+                      banner: "banners",
+                      events: "page:schedule",
+                      worship: "page:worship",
+                      sermons: "page:sermons",
+                      news: "page:notices",
+                      gallery: "page:gallery",
+                      visit: "contact",
+                    };
+                    const to = target[key];
+                    if (to) openSection(to);
+                  }}
+                  settingsKeys={["banner", "quick", "events", "worship", "sermons", "news", "gallery", "pastor", "visit"]}
                   afterSlot={
+                    <>
+                    {/* 페이지가 없는 교회 기본 설정 — 색상·로고처럼 디자인 화면에서 바로 들어간다. */}
+                    <section className="admin-section">
+                      <div className="admin-section-head">
+                        <div className="admin-section-eyebrow">CHURCH</div>
+                        <h2>교회 정보</h2>
+                      </div>
+                      <div className="admin-section-body">
+                        <ul className="admin-info-links">
+                          {([
+                            { key: "site", label: "기본 정보", desc: "교회 이름 · 서브도메인", missing: !siteRequiredFilled },
+                            { key: "contact", label: "연락처 · 오시는 길", desc: "전화 · 이메일 · 주소 · 교통 안내", missing: !contactRequiredFilled },
+                          ] as const).map((it) => (
+                            <li key={it.key}>
+                              <button type="button" className="admin-info-link" onClick={() => openSection(it.key)}>
+                                <span className="admin-info-link-text">
+                                  <strong>{it.label} <span className="required-mark" aria-label="필수">*</span></strong>
+                                  <small>{it.missing ? "필수 입력이 남았어요" : it.desc}</small>
+                                </span>
+                                {it.missing && <span className="admin-v2-tab-dot" aria-hidden="true" />}
+                                <Icon.chevR style={{ width: 16, height: 16 }} />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </section>
                     <section className="admin-section">
                       <div className="admin-section-head">
                         <div className="admin-section-eyebrow">LOGO</div>
@@ -2274,6 +2288,7 @@ export function AdminApp({ initial }: { initial: Initial }) {
                         {logoErr && <p className="form-hint" style={{ margin: "8px 0 0", color: "oklch(0.55 0.18 28)" }}>{logoErr}</p>}
                       </div>
                     </section>
+                    </>
                   }
                 />
               )}

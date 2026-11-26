@@ -1383,8 +1383,9 @@ main { flex: 1; }
 button.admin-design-row-head:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 .admin-design-row-title { max-width: 100%; font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-design-row-sub { max-width: 100%; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.admin-design-row-link { padding: 0; background: none; border: 0; font: inherit; font-size: 12px; font-weight: 600; color: var(--primary); cursor: pointer; }
-.admin-design-row-link:hover { text-decoration: underline; }
+.admin-design-row-link { font-size: 12px; font-weight: 600; color: var(--primary); }
+button.admin-design-row-head:hover .admin-design-row-title { color: var(--primary); }
+button.admin-design-row-head:hover .admin-design-row-link { text-decoration: underline; }
 .admin-design-row-main .admin-design-seg { margin-right: 8px; }
 .admin-design-row-main .admin-design-seg button { padding: 5px 10px; font-size: 12px; }
 .admin-design-row .toggle { width: 34px; height: 20px; flex-shrink: 0; border: 0; padding: 0; cursor: pointer; }
@@ -2559,3 +2560,18 @@ button.admin-design-row-head:focus-visible { outline: 2px solid var(--accent); o
 .admin-field-error { display: block; margin-top: 6px; font-size: 12.5px; font-weight: 600; color: oklch(0.55 0.2 25); }
 .admin-v2 input[aria-invalid="true"], .admin-v2 select[aria-invalid="true"], .admin-banner-card input[aria-invalid="true"], .admin-banner-card select[aria-invalid="true"] { border-color: oklch(0.6 0.2 25); box-shadow: 0 0 0 3px oklch(0.6 0.2 25 / 0.15); }
 .admin-missing-hint { margin-right: auto; font-size: 12.5px; color: var(--muted); }
+
+/* 관리자 v2 — 디자인 화면에서 들어온 내용 관리 화면 상단의 돌아가기 줄 */
+.admin-v2-back { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.admin-v2-back-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px 6px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font: inherit; font-size: 13px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.admin-v2-back-btn:hover { border-color: var(--primary); color: var(--primary); }
+.admin-v2-back-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+/* 디자인 화면 '교회 정보' 카드 — 기본 정보·연락처로 들어가는 줄 */
+.admin-info-links { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.admin-info-links li + li { border-top: 1px solid var(--line); }
+.admin-info-link { width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface); border: 0; font: inherit; text-align: left; color: var(--muted); cursor: pointer; }
+.admin-info-link:hover { background: var(--bg-tinted); }
+.admin-info-link:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.admin-info-link-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.admin-info-link-text strong { font-size: 14px; font-weight: 600; color: var(--ink); }
+.admin-info-link-text small { font-size: 12px; color: var(--muted); }
