@@ -113,11 +113,23 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   // 사진들을 하나의 앨범(묶음)으로 보여줄지 여부. 기본은 묶지 않음(각 사진 개별 노출).
   const [draftGrouped, setDraftGrouped] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const categorySelectRef = useRef<HTMLSelectElement>(null);
+  // 저장을 한 번 눌러 본 뒤에만 빠진 필수 항목을 빨간색으로 알려준다(처음부터 빨간 칸이면 거슬린다).
+  const [triedSave, setTriedSave] = useState(false);
   // '전체' 보기가 없으면 미분류(categoryId null) 사진은 공개되지 않으므로 카테고리 선택을 강제한다.
   const hasAll = categories.some((c) => c.isAll);
   const categoryRequired = !hasAll && draftCategoryId == null;
 
   const groups = useMemo(() => groupGalleries(items), [items]);
+
+  const missing = {
+    photos: draftPhotos.filter((p) => p.url).length === 0,
+    category: categoryRequired,
+    title: !draftTitle.trim(),
+  };
+  const missingLabels = [missing.photos && "사진", missing.category && "카테고리", missing.title && "제목"].filter(Boolean) as string[];
+  const showMissing = triedSave && missingLabels.length > 0;
 
   useEffect(() => { void load(); }, []);
 
@@ -136,6 +148,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     setDraftPhotos([]);
     setRemovedIds([]);
     setDraftGrouped(true); // 여러 장 등록 시 묶어서 보여주기를 기본 체크로 시작.
+    setTriedSave(false);
     setErrMsg("");
   }
   function startEdit(g: GalleryGroup) {
@@ -146,11 +159,12 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
     setDraftVisibility(g.items[0].visibility ?? "public");
     setDraftPhotos(g.items.map((it) => ({ id: it.id, url: it.photoUrl ?? "", grad: it.grad })));
     setRemovedIds([]);
+    setTriedSave(false);
     setErrMsg("");
   }
   function cancel() {
     setEditingKey(null);
-    setDraftTitle(""); setDraftCategoryId(null); setDraftVisibility("public"); setDraftPhotos([]); setRemovedIds([]); setDraftGrouped(false); setErrMsg("");
+    setDraftTitle(""); setDraftCategoryId(null); setDraftVisibility("public"); setDraftPhotos([]); setRemovedIds([]); setDraftGrouped(false); setTriedSave(false); setErrMsg("");
   }
 
   async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
@@ -186,10 +200,15 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
   }
 
   async function save() {
-    if (!draftTitle.trim()) { setErrMsg("제목은 필수입니다."); return; }
+    // 빠진 필수 항목이 있으면 저장 버튼 옆과 그 칸 아래에 알려주고, 첫 번째 빠진 칸으로 이동한다.
+    if (missingLabels.length > 0) {
+      setTriedSave(true);
+      if (missing.photos) photoInputRef.current?.parentElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+      else if (missing.category) categorySelectRef.current?.focus();
+      else titleInputRef.current?.focus();
+      return;
+    }
     const remaining = draftPhotos.filter((p) => p.url);
-    if (remaining.length === 0) { setErrMsg("사진을 1장 이상 업로드해주세요."); return; }
-    if (categoryRequired) { setErrMsg("‘전체’ 보기가 없어 미분류로는 올릴 수 없습니다. 카테고리를 선택해주세요."); return; }
     setStatus("saving"); setErrMsg("");
     try {
       const title = draftTitle.trim();
@@ -246,7 +265,7 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {errMsg && <div className="phone-msg phone-msg-error">{errMsg}</div>}
+      {errMsg && editingKey === null && <div className="phone-msg phone-msg-error">{errMsg}</div>}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="button" className="btn btn-primary" onClick={startNew} disabled={editingKey !== null}>+ 사진 추가</button>
       </div>
@@ -287,11 +306,14 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
                     JPG/PNG · 최대 32MB{draftPhotos.length > 0 ? ` · ${draftPhotos.length}장` : ""}
                   </span>
                 </div>
+                {showMissing && missing.photos && <span className="admin-field-error" role="alert">사진을 1장 이상 올려주세요.</span>}
               </div>
             </div>
             <div className="form-row">
               <label>카테고리</label>
               <select
+                ref={categorySelectRef}
+                aria-invalid={showMissing && missing.category}
                 value={draftCategoryId ?? ""}
                 onChange={(e) => setDraftCategoryId(e.target.value === "" ? null : Number(e.target.value))}
               >
@@ -310,7 +332,18 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
             </div>
             <div className="form-row">
               <label>제목 <span className="required-mark" aria-hidden="true">*</span></label>
-              <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder="2026 신년 감사예배" required />
+              <input
+                ref={titleInputRef}
+                value={draftTitle}
+                onChange={(e) => setDraftTitle(e.target.value)}
+                placeholder="예) 2026 신년 감사예배"
+                aria-invalid={showMissing && missing.title}
+                aria-describedby={showMissing && missing.title ? "gallery-title-error" : undefined}
+                required
+              />
+              {showMissing && missing.title && (
+                <span className="admin-field-error" id="gallery-title-error" role="alert">제목을 입력해주세요. 갤러리에 사진 이름으로 보여요.</span>
+              )}
               {draftPhotos.length > 1 && (
                 <span className="form-hint" style={{ fontSize: 12, marginTop: 4 }}>
                   {draftPhotos.length}장 모두에 동일한 제목으로 적용됩니다.
@@ -360,13 +393,21 @@ function GalleryItemsEditor({ categories }: { categories: GalleryCategoryItem[] 
               </div>
             )}
           </div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", alignItems: "center", flexWrap: "wrap", marginTop: 12 }}>
+            {errMsg && !showMissing && (
+              <span className="admin-field-error" style={{ marginRight: "auto" }} role="alert">{errMsg}</span>
+            )}
+            {showMissing && (
+              <span className="admin-field-error" style={{ marginRight: "auto" }} role="status">
+                {missingLabels.join(", ")}을(를) 입력해야 저장할 수 있어요.
+              </span>
+            )}
             <button type="button" className="btn btn-ghost" onClick={cancel} disabled={status === "saving"}>취소</button>
             <button
               type="button"
               className="btn btn-primary"
               onClick={save}
-              disabled={status === "saving" || !draftTitle.trim() || draftPhotos.length === 0 || categoryRequired}
+              disabled={status === "saving" || uploading}
             >
               {status === "saving"
                 ? "저장 중..."

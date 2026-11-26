@@ -2554,3 +2554,7 @@ button.admin-design-row-head:focus-visible { outline: 2px solid var(--accent); o
 .app-dl-card p { margin: 0 0 24px; font-size: 14px; color: var(--muted); }
 .app-dl-links { display: grid; gap: 10px; }
 .app-dl-links .btn { justify-content: center; }
+
+/* 관리자 폼 — 저장을 눌렀는데 빠진 필수 항목 안내 */
+.admin-field-error { display: block; margin-top: 6px; font-size: 12.5px; font-weight: 600; color: oklch(0.55 0.2 25); }
+.admin-v2 input[aria-invalid="true"], .admin-v2 select[aria-invalid="true"], .admin-banner-card input[aria-invalid="true"], .admin-banner-card select[aria-invalid="true"] { border-color: oklch(0.6 0.2 25); box-shadow: 0 0 0 3px oklch(0.6 0.2 25 / 0.15); }
