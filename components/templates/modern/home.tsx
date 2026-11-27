@@ -8,7 +8,7 @@ import { ModernHero, type ModernHeroSlide } from "@/components/templates/modern/
 import { ModernLiveLink } from "@/components/templates/modern/live-link";
 import type { PublicChurch } from "@/lib/public-site";
 import { fetchLiveStatus } from "@/lib/public-site";
-import { QUICK_LINK_DEFS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
+import { QUICK_LINK_DEFS, DEFAULT_QUICK_LINK_KEYS, quickLinkLabels, isCustomLinkReady, normalizeCustomLinkUrl } from "@/lib/quick-links";
 import { parseYouTubeId, youtubeThumbnail } from "@/lib/youtube";
 import { type Lang, pick } from "@/lib/i18n";
 import { isHomeSectionHidden, normalizeHomeSectionOrder, type HomeSectionKey } from "@/lib/home-sections";
@@ -468,8 +468,8 @@ export function buildModernHomeSections({ church, tenant, lang, pathPrefix, init
   const youtubeUrl = church.youtubeUrl?.trim() || null;
   const instagramUrl = church.instagramUrl?.trim() || null;
 
-  // 바로가기 항목: 관리자가 고른 항목이 있으면 그것, 없으면 사용 가능한 전체 퀵링크 정의.
-  const guideKeys = church.homeQuickLinks?.length ? church.homeQuickLinks : QUICK_LINK_DEFS.map((d) => d.key);
+  // 바로가기 항목: 관리자가 고른 항목(최대 4개), 없으면 기본 4개 — 관리자 '빠른 이동' 선택·기본 템플릿과 같은 규칙.
+  const guideKeys = (church.homeQuickLinks?.length ? church.homeQuickLinks : DEFAULT_QUICK_LINK_KEYS).slice(0, 4);
   const guideItems = guideKeys
     .map((k) => QUICK_LINK_DEFS.find((d) => d.key === k))
     .filter((d): d is (typeof QUICK_LINK_DEFS)[number] => !!d)
