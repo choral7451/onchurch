@@ -669,6 +669,19 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ googleVerification }),
     }),
+  // 다른(워드프레스) 교회 사이트 → 온교회 교회로 글 가져오기
+  listWordpressCategories: (sourceUrl: string) =>
+    request<{ categories: { id: number; name: string; count: number }[] }>("/onchurch/master/import/wordpress/categories", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ sourceUrl }),
+    }),
+  importWordpressPage: (churchId: number, input: WordpressImportInput) =>
+    request<WordpressImportResult>(`/onchurch/master/import/churches/${churchId}/wordpress`, {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(input),
+    }),
   // 교회 마스터 메모 설정. 빈 문자열/null이면 삭제. 응답으로 정규화된 값 반환.
   updateChurchMasterMemo: (churchId: number, masterMemo: string | null) =>
     request<{ masterMemo: string | null }>(`/onchurch/master/churches/${churchId}/master-memo`, {
@@ -790,6 +803,17 @@ export type LedgerListResult = {
   totalExpense: number;
   balance: number;
 };
+
+export type WordpressImportTarget = "sermon" | "notice" | "gallery" | "community";
+export type WordpressImportInput = {
+  sourceUrl: string;
+  mappings: { categoryId: number; name: string; target: WordpressImportTarget }[];
+  pastorName: string | null;
+  authorName: string;
+  page: number;
+  perPage: number;
+};
+export type WordpressImportResult = { imported: number; skipped: number; failed: number; totalPages: number; nextPage: number | null; errors: string[] };
 
 export type ChurchOverview = {
   id: number;
