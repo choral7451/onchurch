@@ -1491,6 +1491,17 @@ export function AdminApp({ initial }: { initial: Initial }) {
               })()}
             </div>
 
+            {/* 내 홈페이지를 새 탭으로 연다(운영 OFF면 안내만). 접힌 사이드바에서는 아이콘만 보인다. */}
+            {slug && (
+              <Link href={previewHref} target="_blank" className="admin-sidebar-item admin-v2-gohome" title="홈페이지 보기" onClick={(e) => onClickGoHome(e, false)}>
+                <Icon.home style={{ width: 18, height: 18 }} />
+                <span className="admin-sidebar-item-label">홈페이지 보기</span>
+                <svg className="admin-v2-gohome-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M7 17 17 7M9 7h8v8" />
+                </svg>
+              </Link>
+            )}
+
             <div className="admin-sidebar-group admin-sidebar-areas">
               {AREA_META.map((a) => {
                 const AreaIcon = Icon[a.icon];

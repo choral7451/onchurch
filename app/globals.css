@@ -2576,3 +2576,9 @@ button.admin-design-row-head:hover .admin-design-row-link { text-decoration: und
 .admin-info-link-text strong { font-size: 14px; font-weight: 600; color: var(--ink); }
 .admin-info-link-text small { font-size: 12px; color: var(--muted); }
 .admin-inline-link { padding: 0; background: none; border: 0; font: inherit; font-weight: 600; color: var(--primary); text-decoration: underline; cursor: pointer; }
+/* 사이드바 '홈페이지 보기' — 영역 메뉴와 구분되게 테두리 버튼으로 */
+.admin-v2-gohome { justify-content: flex-start; margin-top: 2px; border: 1px solid var(--line); border-radius: 10px; color: var(--primary-deep); font-weight: 600; text-decoration: none; }
+.admin-v2-gohome:hover { border-color: var(--primary); background: oklch(0.62 0.14 245 / 0.06); }
+.admin-v2-gohome-arrow { margin-left: auto; opacity: 0.6; }
+.admin-sidebar-v2.collapsed .admin-v2-gohome { padding-left: 10px; padding-right: 10px; }
+.admin-sidebar-v2.collapsed:not(:hover) .admin-v2-gohome-arrow { display: none; }
