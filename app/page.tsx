@@ -265,22 +265,23 @@ export default async function LandingPage() {
           </div>
 
           <div className="bundle-sum" aria-label="홈페이지, 성도 관리, 교회 앱을 합쳐 월 1만원">
-            {TRIO.map((t, i) => {
-              const TrioIcon = Icon[t.ic];
-              return (
-                <div key={t.id} className="bundle-sum-part">
-                  {i > 0 && <span className="bundle-sum-op" aria-hidden="true">+</span>}
-                  <a href={`#trio-${t.id}`} className="bundle-sum-item">
-                    <TrioIcon width={22} height={22} />
-                    {t.name}
-                  </a>
-                </div>
-              );
-            })}
-            <span className="bundle-sum-op" aria-hidden="true">=</span>
+            <div className="bundle-sum-items">
+              {TRIO.map((t, i) => {
+                const TrioIcon = Icon[t.ic];
+                return (
+                  <div key={t.id} className="bundle-sum-part">
+                    {i > 0 && <span className="bundle-sum-op" aria-hidden="true">+</span>}
+                    <a href={`#trio-${t.id}`} className="bundle-sum-item">
+                      <span className="bundle-sum-icon"><TrioIcon width={20} height={20} /></span>
+                      {t.name}
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
             <div className="bundle-sum-total">
-              <span className="bundle-sum-month">월</span>
-              <strong>1만원</strong>
+              <span>모두 합쳐</span>
+              <strong>월 1만원</strong>
             </div>
           </div>
 
@@ -358,7 +359,7 @@ export default async function LandingPage() {
 
       <section id="pricing" className="section" data-section="pricing" data-section-index={5}>
         <div className="container" style={{ maxWidth: 720 }}>
-          <div className="section-head" style={{ marginBottom: 40, justifyContent: "center", textAlign: "center" }}>
+          <div className="section-head section-head-center" style={{ marginBottom: 40 }}>
             <div>
               <span className="eyebrow">Pricing</span>
               <h2>세 가지 모두, 한 달 1만원</h2>
