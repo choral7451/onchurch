@@ -676,6 +676,11 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ sourceUrl }),
     }),
+  fixImportedNoticeAttachments: (churchId: number, sourceUrl: string, offset: number, limit: number) =>
+    request<{ updated: number; checked: number; total: number; nextOffset: number | null; errors: string[] }>(
+      `/onchurch/master/import/churches/${churchId}/wordpress/attachments`,
+      { method: "POST", auth: true, body: JSON.stringify({ sourceUrl, offset, limit }) },
+    ),
   findBrokenSermons: (churchId: number, offset: number, limit: number) =>
     request<{ broken: BrokenSermon[]; checked: number; total: number; nextOffset: number | null }>(`/onchurch/master/import/churches/${churchId}/sermons/broken`, {
       method: "POST",

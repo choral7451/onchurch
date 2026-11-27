@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { BrokenSermonsTool } from "./broken-sermons";
+import { AttachmentFixTool } from "./attachment-fix";
 import { ApiError, onchurchMaster, type ChurchOverview, type WordpressImportTarget } from "@/lib/api-client";
 
 // 다른 교회 홈페이지(워드프레스)의 글을 온교회 교회로 옮긴다.
@@ -261,6 +262,7 @@ export function ContentImportFeature() {
         )}
       </section>
 
+      {church && <AttachmentFixTool church={church} sourceUrl={sourceUrl} />}
       {church && <BrokenSermonsTool church={church} />}
     </div>
   );
