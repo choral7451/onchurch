@@ -641,8 +641,20 @@ function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone: () => 
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-gray-600">
-            엑셀·구글 시트에서 <b>제목 줄까지</b> 복사해 붙여넣으세요. 교회명, 교단, 지역, 주소, 담임목사, 전화, 이메일, 홈페이지, 출처, 메모 제목을 알아봅니다.
+            엑셀·구글 시트에서 <b>제목 줄까지</b> 복사해 붙여넣거나 CSV·TSV 파일을 고르세요. 교회명, 교단, 지역, 주소, 담임목사, 전화, 이메일, 홈페이지, 출처, 메모 제목을 알아봅니다.
           </p>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-semibold">
+            파일 선택
+            <input
+              type="file"
+              accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void file.text().then((t) => setText(t.replace(/^\uFEFF/, "")));
+              }}
+            />
+          </label>
           <textarea
             className="h-48 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-xs"
             placeholder={"교회명\t교단\t지역\t전화\t이메일\t홈페이지\n사랑교회\t예장통합\t경기 수원시\t031-123-4567\tlove@naver.com\t홈페이지가 없습니다"}
