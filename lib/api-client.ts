@@ -669,6 +669,25 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ googleVerification }),
     }),
+  // 영업 대상 교회 DB
+  searchSalesLeads: (filter: SalesLeadFilter) =>
+    request<{ items: SalesLead[]; total: number; counts: Partial<Record<SalesLeadStatus, number>> }>("/onchurch/master/sales-leads/search", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(filter),
+    }),
+  importSalesLeads: (rows: Partial<Record<keyof SalesLeadInput, string | boolean | null>>[]) =>
+    request<{ created: number; skipped: number; invalid: number }>("/onchurch/master/sales-leads/import", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ rows }),
+    }),
+  createSalesLead: (input: SalesLeadInput) =>
+    request<SalesLead>("/onchurch/master/sales-leads", { method: "POST", auth: true, body: JSON.stringify(input) }),
+  updateSalesLead: (id: number, input: SalesLeadInput) =>
+    request<SalesLead>(`/onchurch/master/sales-leads/${id}`, { method: "PUT", auth: true, body: JSON.stringify(input) }),
+  deleteSalesLeads: (ids: number[]) =>
+    request<{ deleted: number }>("/onchurch/master/sales-leads/delete", { method: "POST", auth: true, body: JSON.stringify({ ids }) }),
   // 다른(워드프레스) 교회 사이트 → 온교회 교회로 글 가져오기
   listWordpressCategories: (sourceUrl: string) =>
     request<{ categories: { id: number; name: string; count: number }[] }>("/onchurch/master/import/wordpress/categories", {
@@ -821,6 +840,38 @@ export type LedgerListResult = {
   balance: number;
 };
 
+export type SalesLeadStatus = "new" | "contacted" | "consulting" | "trial" | "joined" | "rejected";
+export type SalesHomepageStatus = "unknown" | "none" | "blog" | "old" | "has";
+export type SalesLead = {
+  id: number;
+  name: string;
+  denomination: string | null;
+  region: string | null;
+  address: string | null;
+  pastor: string | null;
+  phone: string | null;
+  email: string | null;
+  homepageStatus: SalesHomepageStatus;
+  homepageUrl: string | null;
+  source: string | null;
+  status: SalesLeadStatus;
+  emailConsent: boolean;
+  memo: string | null;
+  lastContactedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+export type SalesLeadInput = Omit<SalesLead, "id" | "lastContactedAt" | "createdAt" | "updatedAt">;
+export type SalesLeadFilter = {
+  keyword?: string | null;
+  status?: SalesLeadStatus | null;
+  homepage?: SalesHomepageStatus | "need" | null;
+  contact?: "email" | "phone" | "any" | null;
+  region?: string | null;
+  denomination?: string | null;
+  page: number;
+  size: number;
+};
 export type BrokenSermon = { id: number; title: string; date: string | null; videoUrl: string | null; reason: "no-link" | "unavailable" };
 export type WordpressImportTarget = "sermon" | "notice" | "gallery" | "community";
 export type WordpressImportInput = {

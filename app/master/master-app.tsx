@@ -12,13 +12,15 @@ import { LedgerFeature } from "./features/ledger";
 import { CalendarFeature } from "./features/calendar";
 import { AppVersionFeature } from "./features/app-version";
 import { ContentImportFeature } from "./features/content-import";
+import { SalesLeadsFeature } from "./features/sales-leads";
 
 // 사이드바 메뉴 + 렌더링할 화면. 새 기능은 여기 한 줄과 render()의 case만 추가하면 된다.
-type SectionKey = "dashboard" | "churches" | "calendar" | "ledger" | "bulk-email" | "bulk-sms" | "app-version" | "content-import";
+type SectionKey = "dashboard" | "churches" | "calendar" | "ledger" | "bulk-email" | "bulk-sms" | "app-version" | "content-import" | "sales-leads";
 
 const SECTIONS: { key: SectionKey; label: string; icon: (typeof Icon)[keyof typeof Icon] }[] = [
   { key: "dashboard", label: "대시보드", icon: Icon.building },
   { key: "churches", label: "교회 확인", icon: Icon.users },
+  { key: "sales-leads", label: "영업 대상", icon: Icon.phone },
   { key: "calendar", label: "결제 달력", icon: Icon.calendar },
   { key: "ledger", label: "재무 관리", icon: Icon.wallet },
   { key: "bulk-email", label: "대량 메일 발송", icon: Icon.mail },
@@ -173,6 +175,7 @@ export function MasterApp() {
           {section === "bulk-sms" && <BulkSmsFeature />}
           {section === "app-version" && <AppVersionFeature />}
           {section === "content-import" && <ContentImportFeature />}
+          {section === "sales-leads" && <SalesLeadsFeature />}
         </div>
       </main>
 
