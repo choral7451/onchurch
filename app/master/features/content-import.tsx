@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { BrokenSermonsTool } from "./broken-sermons";
 import { ApiError, onchurchMaster, type ChurchOverview, type WordpressImportTarget } from "@/lib/api-client";
 
 // 다른 교회 홈페이지(워드프레스)의 글을 온교회 교회로 옮긴다.
@@ -259,6 +260,8 @@ export function ContentImportFeature() {
           </div>
         )}
       </section>
+
+      {church && <BrokenSermonsTool church={church} />}
     </div>
   );
 }

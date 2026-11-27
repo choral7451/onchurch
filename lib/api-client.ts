@@ -676,6 +676,18 @@ export const onchurchMaster = {
       auth: true,
       body: JSON.stringify({ sourceUrl }),
     }),
+  findBrokenSermons: (churchId: number, offset: number, limit: number) =>
+    request<{ broken: BrokenSermon[]; checked: number; total: number; nextOffset: number | null }>(`/onchurch/master/import/churches/${churchId}/sermons/broken`, {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ offset, limit }),
+    }),
+  deleteSermonsAsMaster: (churchId: number, ids: number[]) =>
+    request<{ deleted: number }>(`/onchurch/master/import/churches/${churchId}/sermons/delete`, {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ ids }),
+    }),
   importWordpressPage: (churchId: number, input: WordpressImportInput) =>
     request<WordpressImportResult>(`/onchurch/master/import/churches/${churchId}/wordpress`, {
       method: "POST",
@@ -804,6 +816,7 @@ export type LedgerListResult = {
   balance: number;
 };
 
+export type BrokenSermon = { id: number; title: string; date: string | null; videoUrl: string | null; reason: "no-link" | "unavailable" };
 export type WordpressImportTarget = "sermon" | "notice" | "gallery" | "community";
 export type WordpressImportInput = {
   sourceUrl: string;
