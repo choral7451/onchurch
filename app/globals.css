@@ -777,16 +777,10 @@ main { flex: 1; }
 .bundle-head { text-align: center; max-width: 640px; margin: 0 auto 44px; }
 .bundle-head h2 { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -0.035em; line-height: 1.2; color: var(--primary-deep); margin: 0 0 14px; text-wrap: balance; }
 .bundle-head p { font-size: 16px; color: var(--muted); line-height: 1.7; margin: 0; text-wrap: pretty; }
-.bundle-sum { max-width: 560px; margin: 0 auto 48px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
-.bundle-sum-items { display: flex; align-items: center; justify-content: center; padding: 26px 20px 22px; }
-.bundle-sum-part { display: flex; align-items: center; flex: 1; min-width: 0; }
-.bundle-sum-op { flex: none; width: 24px; text-align: center; font-size: 18px; font-weight: 500; color: var(--muted); }
-.bundle-sum-item { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--primary-deep); white-space: nowrap; }
-.bundle-sum-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: oklch(0.62 0.14 245 / 0.1); color: var(--accent); transition: background 0.15s ease; }
-.bundle-sum-item:hover .bundle-sum-icon { background: oklch(0.62 0.14 245 / 0.18); }
-.bundle-sum-total { display: flex; align-items: baseline; justify-content: center; gap: 10px; padding: 18px 20px; border-top: 1px solid var(--line); background: var(--bg); }
-.bundle-sum-total span { font-size: 15px; color: var(--muted); }
-.bundle-sum-total strong { font-family: var(--font-display); font-size: 28px; font-weight: 800; letter-spacing: -0.035em; color: var(--primary-deep); }
+.bundle-sum { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; column-gap: 12px; row-gap: 4px; margin: -20px auto 44px; font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink-2); }
+.bundle-sum-part { display: inline-flex; align-items: baseline; gap: 12px; white-space: nowrap; }
+.bundle-sum-op { color: var(--muted); font-weight: 400; }
+.bundle-sum-total strong { font-size: 22px; font-weight: 800; color: var(--accent); }
 .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .trio-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 30px 28px 28px; display: flex; flex-direction: column; scroll-margin-top: 96px; }
 .trio-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
@@ -803,13 +797,9 @@ main { flex: 1; }
   .bundle-head { margin-bottom: 28px; }
   .bundle-head h2 { font-size: 27px; }
   .bundle-head p { font-size: 14.5px; }
-  .bundle-sum { margin-bottom: 32px; border-radius: 16px; }
-  .bundle-sum-items { padding: 20px 8px 16px; }
-  .bundle-sum-op { width: 14px; font-size: 15px; }
-  .bundle-sum-item { font-size: 14px; gap: 8px; }
-  .bundle-sum-icon { width: 38px; height: 38px; border-radius: 12px; }
-  .bundle-sum-total { padding: 14px 16px; }
-  .bundle-sum-total strong { font-size: 24px; }
+  .bundle-sum { margin: -8px auto 28px; font-size: 15px; column-gap: 8px; }
+  .bundle-sum-part { gap: 8px; }
+  .bundle-sum-total strong { font-size: 18px; }
   .trio-card { padding: 22px 20px; }
   .trio-name { font-size: 19px; }
   .trio-lead { font-size: 14px; margin-bottom: 14px; padding-bottom: 14px; }

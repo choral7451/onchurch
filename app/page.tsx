@@ -264,26 +264,18 @@ export default async function LandingPage() {
             <p>홈페이지를 만들고, 명부 프로그램을 사고, 앱을 외주 맡기던 일을 온교회 하나로 끝냅니다.</p>
           </div>
 
-          <div className="bundle-sum" aria-label="홈페이지, 성도 관리, 교회 앱을 합쳐 월 1만원">
-            <div className="bundle-sum-items">
-              {TRIO.map((t, i) => {
-                const TrioIcon = Icon[t.ic];
-                return (
-                  <div key={t.id} className="bundle-sum-part">
-                    {i > 0 && <span className="bundle-sum-op" aria-hidden="true">+</span>}
-                    <a href={`#trio-${t.id}`} className="bundle-sum-item">
-                      <span className="bundle-sum-icon"><TrioIcon width={20} height={20} /></span>
-                      {t.name}
-                    </a>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="bundle-sum-total">
-              <span>모두 합쳐</span>
+          <p className="bundle-sum">
+            {TRIO.map((t, i) => (
+              <span key={t.id} className="bundle-sum-part">
+                {i > 0 && <span className="bundle-sum-op" aria-hidden="true">+</span>}
+                {t.name}
+              </span>
+            ))}
+            <span className="bundle-sum-part bundle-sum-total">
+              <span className="bundle-sum-op" aria-hidden="true">=</span>
               <strong>월 1만원</strong>
-            </div>
-          </div>
+            </span>
+          </p>
 
           <div className="trio">
             {TRIO.map((t) => {
