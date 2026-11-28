@@ -140,6 +140,8 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   // iframe 이 다 불러와지면 한 번 더 보내 로고 초안까지 맞춘다.
   const [loadedTick, setLoadedTick] = useState(0);
   const sentRefreshKey = useRef(refreshKey);
+  // 방금 디자인을 바꾼 섹션. 다음 미리보기 메시지에 실어 보내면 미리보기가 그 섹션으로 스크롤해 강조한다.
+  const focusRef = useRef<{ key: HomeSectionKey; variant: SectionDesignId } | null>(null);
   const previewSiteKey = JSON.stringify(previewSite ?? null);
   useEffect(() => {
     if (!previewUrl) return;
@@ -150,7 +152,8 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
       if (loadedRef.current && win) {
         let origin = window.location.origin;
         try { origin = new URL(previewUrl, window.location.href).origin; } catch { /* 상대 주소면 현재 출처 */ }
-        win.postMessage({ type: "onchurch:design-preview", design: q, refresh: sentRefreshKey.current !== refreshKey, logo: previewLogo }, origin);
+        win.postMessage({ type: "onchurch:design-preview", design: q, refresh: sentRefreshKey.current !== refreshKey, logo: previewLogo, focus: focusRef.current }, origin);
+        focusRef.current = null;
       } else {
         setPreviewSrc(`${previewUrl}${previewUrl.includes("?") ? "&" : "?"}design=${q}`);
       }
@@ -168,6 +171,9 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
   });
 
   function setSection(key: HomeSectionKey, id: SectionDesignId) {
+    focusRef.current = { key, variant: id };
+    // 휴대폰에서는 미리보기가 닫힌 시트라 바뀐 걸 볼 수 없으니 바로 열어 준다.
+    if (window.matchMedia("(max-width: 768px)").matches) setSheetOpen(true);
     setDraft((d) => {
       const sections = { ...d.sections };
       // 템플릿 기본값과 같으면 굳이 저장하지 않는다(폴백).

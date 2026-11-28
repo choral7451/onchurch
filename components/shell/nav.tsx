@@ -73,17 +73,37 @@ export function Nav({ tenant, brand, nav, pathPrefix, enabledPages, lang = "ko" 
     // 쿼리만 바꿔 서버 컴포넌트를 다시 그리고, 메뉴처럼 레이아웃 데이터가 바뀐 경우에는 refresh 까지 한다.
     const onMessage = (e: MessageEvent) => {
       if (e.source !== window.parent) return;
-      const d = e.data as { type?: unknown; design?: unknown; refresh?: unknown; logo?: unknown } | null;
+      const d = e.data as { type?: unknown; design?: unknown; refresh?: unknown; logo?: unknown; focus?: unknown } | null;
       if (!d || d.type !== "onchurch:design-preview" || typeof d.design !== "string") return;
       if ("logo" in d) setPreviewLogo(typeof d.logo === "string" && /^https?:\/\//.test(d.logo) ? d.logo : null);
       setPreviewSite(decodeDesignPreview(decodeURIComponent(d.design))?.site ?? null);
       router.replace(`${window.location.pathname}?design=${d.design}`, { scroll: false });
       if (d.refresh) router.refresh();
+      // 디자인을 바꾼 섹션이 있으면, 새 디자인으로 다시 그려질 때까지 기다렸다가 그 섹션으로 스크롤하고 잠깐 강조한다.
+      const f = d.focus as { key?: unknown; variant?: unknown } | null | undefined;
+      if (f && typeof f.key === "string" && typeof f.variant === "string") focusSection(f.key, f.variant);
+    };
+    let focusTimer = 0;
+    const focusSection = (key: string, variant: string) => {
+      window.clearInterval(focusTimer);
+      const started = Date.now();
+      focusTimer = window.setInterval(() => {
+        const el = document.querySelector<HTMLElement>(`[data-home-section="${CSS.escape(key)}"][data-home-variant="${CSS.escape(variant)}"]`);
+        if (!el && Date.now() - started < 6000) return;
+        window.clearInterval(focusTimer);
+        if (!el) return;
+        el.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+        el.classList.remove("home-section-flash");
+        void el.offsetWidth; // 같은 섹션을 연달아 바꿔도 강조가 다시 보이도록
+        el.classList.add("home-section-flash");
+        window.setTimeout(() => el.classList.remove("home-section-flash"), 2200);
+      }, 100);
     };
     if (embedded) window.addEventListener("message", onMessage);
     return () => {
       document.removeEventListener("click", block, true);
       window.removeEventListener("message", onMessage);
+      window.clearInterval(focusTimer);
     };
   }, [router]);
 

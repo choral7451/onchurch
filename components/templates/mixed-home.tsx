@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { PublicChurch } from "@/lib/public-site";
 import { fetchLiveStatus } from "@/lib/public-site";
 import type { Lang } from "@/lib/i18n";
@@ -49,15 +49,20 @@ export async function MixedHome({ church, tenant, lang, pathPrefix, design, orde
     <div>
       {sermonsEnabled && <LiveBadge slug={tenant} sermonsHref={url("/sermons")} initialLive={initialLive} />}
       {rendered.map(({ key, variant, node }, i) => {
+        // data-home-section: 관리자 미리보기에서 디자인을 바꾼 섹션을 찾아 스크롤·강조할 때 쓴다(components/shell/nav.tsx).
         if (variant === "modern") {
           return (
-            <div key={key} className="chc-root">
+            <div key={key} className="chc-root" data-home-section={key} data-home-variant={variant}>
               {node}
             </div>
           );
         }
         // 기본 홈과 같이 첫 섹션은 바로 노출하고 두 번째부터 리빌 애니메이션.
-        return i === 0 ? <Fragment key={key}>{node}</Fragment> : <Reveal key={key}>{node}</Reveal>;
+        return (
+          <div key={key} data-home-section={key} data-home-variant={variant}>
+            {i === 0 ? node : <Reveal>{node}</Reveal>}
+          </div>
+        );
       })}
     </div>
   );
