@@ -19,6 +19,7 @@ import {
   type SiteDesignColors,
   type DesignPreviewSite,
 } from "@/lib/site-design";
+import { SECTION_DESIGN_DESCS, SectionDesignMock } from "./section-design-mock";
 
 // 홈 '디자인' 편집기 — 섹션별 디자인(기본/모던) + 순서 + 메인·포인트 색을 초안으로 모았다가 한 번에 적용한다.
 // 적용 전까지는 공개 홈에 반영되지 않고, 오른쪽 미리보기(?design= 쿼리)에만 보인다.
@@ -205,6 +206,17 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
     return () => window.removeEventListener("keydown", onKey);
   }, [colorModal]);
 
+  // 섹션 디자인 고르기 모달: 줄의 디자인 버튼을 누르면 그 섹션의 기본·모던 모형을 보여주고, 고르면 초안에 반영하고 닫는다.
+  const [pickKey, setPickKey] = useState<HomeSectionKey | null>(null);
+  useEffect(() => {
+    if (!pickKey) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPickKey(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pickKey]);
+  const pickLabel = pickKey ? pages[pickKey]?.label ?? HOME_SECTION_LABELS[pickKey].title : "";
+  const pickCurrent = pickKey ? draft.sections[pickKey] ?? base : base;
+
   const sameColors = (a: SiteDesignColors | null, p: { main: string; point: string }) => !!a && a.main === p.main && a.point === p.point;
 
   return (
@@ -253,6 +265,36 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {pickKey && (
+        <div className="admin-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="design-pick-title" onClick={() => setPickKey(null)}>
+          <div className="admin-modal admin-pick-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-color-modal-head">
+              <h3 className="admin-modal-title" id="design-pick-title">{pickLabel} 디자인</h3>
+              <button type="button" className="admin-color-modal-close" aria-label="닫기" onClick={() => setPickKey(null)}>×</button>
+            </div>
+            <p className="form-hint" style={{ margin: "0 0 14px" }}>누르면 바로 미리보기에 적용됩니다. 그림은 대략적인 배치예요.</p>
+            <div className="admin-pick-grid">
+              {SECTION_DESIGN_IDS.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`admin-pick-card ${pickCurrent === id ? "active" : ""}`}
+                  aria-pressed={pickCurrent === id}
+                  onClick={() => { setSection(pickKey, id); setPickKey(null); }}
+                >
+                  <SectionDesignMock section={pickKey} variant={id} />
+                  <span className="admin-pick-name">
+                    {sectionDesignLabel(pickKey, id)}
+                    {pickCurrent === id && <span className="admin-template-badge">사용 중</span>}
+                  </span>
+                  <span className="admin-template-desc">{SECTION_DESIGN_DESCS[pickKey][id]}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -327,13 +369,11 @@ export function HomeDesignEditor({ previewUrl, siteTemplate, saved, savedOrder, 
                             <span className="admin-design-row-title" title={meta.desc}>{label}</span>
                           </span>
                         )}
-                        <div className="admin-design-seg" role="group" aria-label={`${label} 디자인`}>
-                          {SECTION_DESIGN_IDS.map((id) => (
-                            <button key={id} type="button" aria-pressed={current === id} onClick={() => setSection(key, id)}>
-                              {sectionDesignLabel(key, id)}
-                            </button>
-                          ))}
-                        </div>
+                        <button type="button" className="admin-design-pick" onClick={() => setPickKey(key)} aria-label={`${label} 디자인 고르기 (지금: ${sectionDesignLabel(key, current)})`}>
+                          <SectionDesignMock section={key} variant={current} />
+                          <span>{sectionDesignLabel(key, current)}</span>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                        </button>
                         {page && (
                           <button
                             type="button"
